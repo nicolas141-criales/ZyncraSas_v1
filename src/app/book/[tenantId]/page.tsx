@@ -14,6 +14,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   const [services, setServices] = useState<any[]>([]);
   const [professionals, setProfessionals] = useState<any[]>([]);
   const [tenant, setTenant] = useState<any>(null);
+  const [branding, setBranding] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
 
   const [selectedService, setSelectedService] = useState<string | null>(null);
@@ -26,13 +27,14 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   useEffect(() => {
     async function loadTenantData() {
       // 1. Fetch Tenant
-      const { data: tenantData } = await supabase
+      const { data: tenants } = await supabase
         .from('tenants')
         .select('*')
         .eq('slug', unwrappedParams.tenantId)
-        .single();
+        .limit(1);
       
-      if (tenantData) {
+      if (tenants && tenants.length > 0) {
+        const tenantData = tenants[0];
         setTenant(tenantData);
 
         // 2. Fetch Services
@@ -51,6 +53,15 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
           .eq('is_active', true);
         
         if (profData) setProfessionals(profData);
+
+        // 4. Fetch Branding
+        const { data: brandings } = await supabase
+          .from('branding')
+          .select('*')
+          .eq('tenant_id', tenantData.id)
+          .limit(1);
+        
+        if (brandings && brandings.length > 0) setBranding(brandings[0]);
       }
       setLoadingData(false);
     }
@@ -58,6 +69,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   }, [unwrappedParams.tenantId]);
 
   const formatTenantName = (slug: string) => {
+    if (branding?.business_name) return branding.business_name;
     if (tenant?.name) return tenant.name;
     return slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
@@ -97,7 +109,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
 
       // 2. Create Appointment
       if (clientId) {
-        await supabase
+        const { error: aptErr } = await supabase
           .from('appointments')
           .insert({
             tenant_id: tenant.id,
@@ -108,6 +120,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
             appointment_time: selectedTime,
             status: 'pending'
           });
+
       }
 
       setIsBooked(true);
@@ -163,18 +176,67 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
       );
     }
 
+    const primaryColor = branding?.primary_color || "#6366f1";
+    const secondaryColor = branding?.secondary_color || "#a78bfa";
+    const bgUrl = branding?.background_image_url || null;
+
     return (
-      <main className={styles.wizardContainer}>
-        <div className={styles.header}>
-          {tenant?.settings?.coverImage && (
-            <div style={{ 
-              width: "100%", height: "200px", backgroundImage: `url(${tenant.settings.coverImage})`, 
-              backgroundSize: "cover", backgroundPosition: "center", borderRadius: "var(--radius-base)", marginBottom: "var(--spacing-md)" 
-            }} />
-          )}
-          <h1 className={styles.salonName}>{formatTenantName(unwrappedParams.tenantId)}</h1>
-          <p className={styles.subtitle}>Reserva tu cita en 3 simples pasos</p>
-        </div>
+      <main 
+        className={styles.wizardContainer} 
+        style={{
+          "--accent-blue": primaryColor,
+          padding: bgUrl ? "40px 16px" : "var(--spacing-2xl) var(--spacing-md)",
+          maxWidth: "100%",
+          minHeight: "100vh",
+          background: bgUrl ? `linear-gradient(rgba(5,8,20,0.85), rgba(5,8,20,0.85)), url('${bgUrl}') center/cover no-repeat fixed` : "var(--bg-base)",
+        } as React.CSSProperties}
+      >
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+          <div className={styles.header}>
+            {branding?.logo_url ? (
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "12px",
+                marginBottom: "8px",
+              }}>
+                <div style={{
+                  width: "110px",
+                  height: "110px",
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.45), 0 0 0 4px rgba(255,255,255,0.08)",
+                  border: "3px solid rgba(255,255,255,0.15)",
+                  background: "#0a0d1a",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}>
+                  <img
+                    src={branding.logo_url}
+                    alt="Logo"
+                    style={{ 
+                      width: `${branding.logo_size || 85}%`, 
+                      height: `${branding.logo_size || 85}%`, 
+                      objectFit: "contain",
+                      objectPosition: branding.logo_object_position || "center",
+                      imageRendering: "high-quality"
+                    }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <h1 className={styles.salonName} style={{ 
+                background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, 
+                WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" 
+              }}>
+                ◆ {formatTenantName(unwrappedParams.tenantId)}
+              </h1>
+            )}
+            <p className={styles.subtitle}>{branding?.welcome_message || "Reserva tu cita en 3 simples pasos"}</p>
+          </div>
 
         <div className={styles.stepIndicator}>
           <div className={`${styles.step} ${step >= 1 ? styles.active : ""} ${step > 1 ? styles.completed : ""}`}>1</div>
@@ -193,6 +255,13 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                     className={`${styles.serviceCard} ${selectedService === service.id ? styles.selected : ""}`}
                     onClick={() => setSelectedService(service.id)}
                   >
+                    {service.image_url && (
+                      <img 
+                        src={service.image_url} 
+                        alt={service.name} 
+                        style={{ width: "100%", height: "140px", objectFit: "cover", borderBottom: "1px solid var(--border-light)", imageRendering: "high-quality" }} 
+                      />
+                    )}
                     <div className={styles.serviceContent}>
                       <div className={styles.serviceName}>{service.name}</div>
                       <div className={styles.serviceDesc}>{service.description}</div>
@@ -224,8 +293,8 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
               <span>Mayo 2026</span>
             </div>
             <div className={styles.calendarGrid}>
-              {["D", "L", "M", "M", "J", "V", "S"].map(d => (
-                <div key={d} style={{ textAlign: "center", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>{d}</div>
+              {["D", "L", "M", "M", "J", "V", "S"].map((d, idx) => (
+                <div key={idx} style={{ textAlign: "center", fontSize: "12px", color: "var(--text-secondary)", fontWeight: 600 }}>{d}</div>
               ))}
               {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
                 <div 
@@ -304,7 +373,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                   type="tel" 
                   required
                   className={styles.inputField} 
-                  placeholder="+34 600 000 000"
+                  placeholder="300 000 0000"
                   value={details.phone}
                   onChange={(e) => setDetails({ ...details, phone: e.target.value })}
                 />
@@ -328,13 +397,39 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
 
               <div className={styles.actions}>
                 <button type="button" className="btn-secondary" onClick={handleBack}>Atrás</button>
-                <button type="submit" className="btn-primary">
+                <button type="submit" className="btn-primary" style={{ background: primaryColor, borderColor: primaryColor }}>
                   Confirmar Reserva
                 </button>
               </div>
             </form>
           </div>
         )}
+        </div>
+        
+        <div style={{ textAlign: "center", marginTop: "32px" }}>
+          <a 
+            href="https://wa.me/573000000000?text=Hola,%20no%20encuentro%20un%20espacio%20para%20agendar,%20%C2%BFme%20ayudan?"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ 
+              display: "inline-flex", 
+              alignItems: "center", 
+              gap: "8px", 
+              color: primaryColor, 
+              fontWeight: 600, 
+              fontSize: "14px",
+              textDecoration: "none",
+              background: "var(--surface)",
+              padding: "10px 20px",
+              borderRadius: "100px",
+              border: `1px solid ${primaryColor}40`,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)"
+            }}
+          >
+            💬 ¿No encuentras un espacio? Contactar a un asesor
+          </a>
+        </div>
+
       </div>
     </main>
   );

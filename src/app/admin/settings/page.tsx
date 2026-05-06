@@ -24,7 +24,6 @@ export default function SettingsPage() {
               <div style={{ fontSize: "14px", color: "var(--text-secondary)" }}>Pide a los clientes que paguen una cantidad parcial al reservar.</div>
             </div>
             
-            {/* Toggle Switch */}
             <label style={{ display: "flex", alignItems: "center", cursor: "pointer", position: "relative" }}>
               <input 
                 type="checkbox" 
@@ -75,41 +74,19 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <h2 style={{ fontSize: "18px", fontWeight: 600, marginBottom: "var(--spacing-md)", marginTop: "var(--spacing-2xl)" }}>Personalización de Marca</h2>
-        <p style={{ color: "var(--text-secondary)", marginBottom: "var(--spacing-lg)", fontSize: "14px" }}>
-          Modifica cómo se ve tu portal de reservas para tus clientes.
-        </p>
-
-        <div style={{ padding: "var(--spacing-lg)", border: "1px solid var(--border-light)", borderRadius: "var(--radius-base)", marginBottom: "var(--spacing-xl)" }}>
-          <div style={{ marginBottom: "var(--spacing-lg)" }}>
-            <label style={{ display: "block", fontWeight: 600, fontSize: "14px", marginBottom: "8px" }}>Nombre del Salón</label>
-            <input 
-              type="text" 
-              defaultValue="Demo Salon"
-              style={{ width: "100%", padding: "10px", border: "1px solid var(--border-light)", borderRadius: "var(--radius-sm)", fontFamily: "inherit" }}
-            />
+        <div style={{ padding: "var(--spacing-lg)", border: "1px solid var(--border-light)", borderRadius: "var(--radius-base)", background: "rgba(99,102,241,0.04)" }}>
+          <div style={{ fontWeight: 600, marginBottom: "4px" }}>💡 Personalización de Marca</div>
+          <div style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
+            Para cambiar el logo, colores y mensaje de bienvenida de tu landing de citas, ve a la sección <strong>Mi Marca</strong> en el menú lateral.
           </div>
-          
-          <div style={{ marginBottom: "var(--spacing-lg)" }}>
-            <label style={{ display: "block", fontWeight: 600, fontSize: "14px", marginBottom: "8px" }}>Color Principal (Acento)</label>
-            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <input type="color" defaultValue="#2563EB" style={{ width: "40px", height: "40px", padding: 0, border: "none", borderRadius: "4px", cursor: "pointer" }} />
-              <span style={{ fontSize: "14px", color: "var(--text-secondary)" }}>Este color se usará en botones y detalles de tu portal.</span>
-            </div>
-          </div>
-
-          <div style={{ marginBottom: "var(--spacing-lg)" }}>
-            <label style={{ display: "block", fontWeight: 600, fontSize: "14px", marginBottom: "8px" }}>URL de Imagen Principal</label>
-            <input 
-              type="url" 
-              placeholder="https://..."
-              style={{ width: "100%", padding: "10px", border: "1px solid var(--border-light)", borderRadius: "var(--radius-sm)", fontFamily: "inherit" }}
-            />
-            <p style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>Se mostrará como cabecera en tu página de reservas.</p>
-          </div>
+          <a href="/admin/branding" style={{ color: "var(--accent-blue)", fontWeight: 600, fontSize: "14px", textDecoration: "none" }}>
+            → Ir a Mi Marca
+          </a>
         </div>
 
-        <button className="btn-primary">Guardar Configuración</button>
+        <div style={{ marginTop: "var(--spacing-xl)" }}>
+          <button className="btn-primary">Guardar Configuración</button>
+        </div>
       </div>
     </div>
   );

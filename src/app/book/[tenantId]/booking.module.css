@@ -217,7 +217,7 @@
   font-size: 14px;
   font-weight: 500;
   transition: all 0.2s;
-  min-height: 38px;
+  min-height: 44px;
 }
 
 .calendarDay:hover:not(.disabled) {
@@ -244,7 +244,7 @@
 }
 
 .timeSlot {
-  padding: 10px 4px;
+  padding: 12px 4px;
   text-align: center;
   border: 1.5px solid var(--border-light);
   border-radius: var(--radius-base);
@@ -253,6 +253,10 @@
   cursor: pointer;
   background-color: var(--surface);
   transition: all 0.2s ease;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .timeSlot:hover {
@@ -389,8 +393,8 @@
 
   /* Calendar days tighter */
   .calendarDay {
-    font-size: 12px;
-    min-height: 34px;
+    font-size: 13px;
+    min-height: 44px;
   }
 
   /* Professional cards 3 per row */

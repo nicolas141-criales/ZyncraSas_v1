@@ -16,9 +16,11 @@
   align-items: center;
   justify-content: space-between;
   padding: 0 5%;
-  position: sticky;
+  position: fixed;
   top: 0;
-  z-index: 50;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
   background: rgba(5, 8, 20, 0.75);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -41,6 +43,30 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+.navLinks {
+  display: none;
+  gap: 24px;
+  align-items: center;
+}
+
+@media (min-width: 768px) {
+  .navLinks {
+    display: flex !important;
+  }
+}
+
+.navLink {
+  color: rgba(232, 238, 255, 0.7);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.navLink:hover {
+  color: #fff;
 }
 
 .navActions {
@@ -105,6 +131,39 @@
   50% { opacity: 0.5; transform: scale(1.3); }
 }
 
+.heroTitle {
+  font-size: clamp(38px, 7vw, 78px);
+  line-height: 1.05;
+  margin-bottom: 24px;
+  font-weight: 900;
+  color: #F0F4FF;
+  letter-spacing: -2px;
+}
+
+.heroWord {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.heroWordWhite {
+  color: #ffffff;
+}
+
+.wordVisible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.heroSpan {
+  background: linear-gradient(135deg, #818cf8 0%, #a78bfa 50%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Legacy fallback */
 .hero h1 {
   font-size: clamp(38px, 7vw, 78px);
   line-height: 1.05;
@@ -177,6 +236,68 @@
 .btnHeroSecondary:hover {
   background: rgba(255, 255, 255, 0.09);
   border-color: rgba(255, 255, 255, 0.2);
+}
+
+.btnWhatsApp {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: #fff;
+  padding: 16px 40px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px rgba(37, 211, 102, 0.5);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  animation: pulse-wa 2s infinite;
+}
+
+.btnWhatsApp:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 0 40px rgba(37, 211, 102, 0.8);
+}
+
+@keyframes pulse-wa {
+  0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+  70% { box-shadow: 0 0 0 15px rgba(37, 211, 102, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+}
+
+.btnWhatsApp {
+  background: linear-gradient(135deg, #25D366, #128C7E);
+  color: #fff;
+  padding: 16px 40px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 0 20px rgba(37, 211, 102, 0.5);
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  animation: pulse-wa 2s infinite;
+}
+
+.btnWhatsApp:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 0 40px rgba(37, 211, 102, 0.8);
+}
+
+@keyframes pulse-wa {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
 }
 
 /* Hero stats bar */
@@ -266,8 +387,8 @@
 }
 
 .featureCard {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(99, 102, 241, 0.15);
+  background: rgba(16, 185, 129, 0.04);
+  border: 1px solid rgba(16, 185, 129, 0.2);
   padding: 36px 32px;
   border-radius: 20px;
   transition: all 0.3s ease;
@@ -280,14 +401,14 @@
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(129, 140, 248, 0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.5), transparent);
   opacity: 0;
   transition: opacity 0.3s;
 }
 
 .featureCard:hover {
-  background: rgba(99, 102, 241, 0.07);
-  border-color: rgba(99, 102, 241, 0.4);
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.5);
   transform: translateY(-6px);
 }
 
@@ -330,11 +451,27 @@
 }
 
 .reviewsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: flex;
   gap: 24px;
-  max-width: 1100px;
-  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+
+.reviewsTrack {
+  display: flex;
+  gap: 24px;
+  animation: scroll-carousel 20s linear infinite;
+  width: max-content;
+}
+
+.reviewsTrack:hover {
+  animation-play-state: paused;
+}
+
+@keyframes scroll-carousel {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(calc(-50% - 12px)); }
 }
 
 .reviewCard {
@@ -345,6 +482,8 @@
   display: flex;
   flex-direction: column;
   transition: border-color 0.3s;
+  width: 340px;
+  flex-shrink: 0;
 }
 
 .reviewCard:hover {
