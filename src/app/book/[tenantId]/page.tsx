@@ -84,12 +84,14 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
     try {
       // 1. Upsert Client (find or create by phone)
       let clientId;
+      const cleanPhone = details.phone.replace(/\D/g, '').slice(0, 10);
+      
       const { data: existingClient } = await supabase
         .from('clients')
         .select('id')
-        .eq('phone', details.phone)
+        .eq('phone', cleanPhone)
         .eq('tenant_id', tenant.id)
-        .single();
+        .maybeSingle();
         
       if (existingClient) {
         clientId = existingClient.id;
@@ -99,7 +101,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
           .insert({
             tenant_id: tenant.id,
             name: details.name,
-            phone: details.phone,
+            phone: cleanPhone,
             email: details.email
           })
           .select('id')
@@ -109,6 +111,21 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
 
       // 2. Create Appointment
       if (clientId) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(selectedDate).padStart(2, '0');
+        
+        // Convert AM/PM to 24h format for Postgres and Admin Dashboard
+        let timeStr = "09:00:00";
+        if (selectedTime) {
+          const [timePart, modifier] = selectedTime.split(" ");
+          let [hours, minutes] = timePart.split(":");
+          if (hours === "12") hours = "00";
+          if (modifier === "PM") hours = String(parseInt(hours, 10) + 12);
+          timeStr = `${hours.padStart(2, '0')}:${minutes}:00`;
+        }
+        
         const { error: aptErr } = await supabase
           .from('appointments')
           .insert({
@@ -116,8 +133,8 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
             client_id: clientId,
             service_id: selectedService,
             professional_id: selectedProfessional,
-            appointment_date: `2026-05-${selectedDate?.toString().padStart(2, '0')}`,
-            appointment_time: selectedTime,
+            appointment_date: `${year}-${month}-${day}`,
+            appointment_time: timeStr,
             status: 'pending'
           });
 
@@ -147,7 +164,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
             <h3 style={{ fontSize: "16px", marginBottom: "var(--spacing-md)", borderBottom: "1px solid var(--border-light)", paddingBottom: "8px" }}>Detalles de tu cita</h3>
             <p style={{ marginBottom: "8px" }}><strong>Servicio:</strong> {serviceName}</p>
             <p style={{ marginBottom: "8px" }}><strong>Profesional:</strong> {profName}</p>
-            <p style={{ marginBottom: "8px" }}><strong>Fecha:</strong> {selectedDate} de Mayo 2026</p>
+            <p style={{ marginBottom: "8px" }}><strong>Fecha:</strong> {selectedDate} del mes actual</p>
             <p style={{ marginBottom: "0" }}><strong>Hora:</strong> {selectedTime}</p>
           </div>
 
@@ -368,14 +385,19 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                 />
               </div>
               <div className={styles.formGroup}>
-                <label className={styles.label}>Número de WhatsApp</label>
+                <label className={styles.label}>Número de WhatsApp (10 dígitos)</label>
                 <input 
                   type="tel" 
                   required
                   className={styles.inputField} 
-                  placeholder="300 000 0000"
+                  placeholder="3000000000"
                   value={details.phone}
-                  onChange={(e) => setDetails({ ...details, phone: e.target.value })}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                    setDetails({ ...details, phone: val });
+                  }}
+                  pattern="\d{10}"
+                  title="Ingresa exactamente 10 números, sin espacios ni símbolos"
                 />
               </div>
               <div className={styles.formGroup}>
