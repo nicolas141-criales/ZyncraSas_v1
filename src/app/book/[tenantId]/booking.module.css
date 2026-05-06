@@ -21,6 +21,7 @@
   font-size: 14px;
 }
 
+/* ─── STEP INDICATOR ─── */
 .stepIndicator {
   display: flex;
   align-items: center;
@@ -42,8 +43,8 @@
 }
 
 .step {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-full);
   background-color: var(--surface);
   border: 2px solid var(--border-light);
@@ -51,7 +52,7 @@
   align-items: center;
   justify-content: center;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-secondary);
   z-index: 2;
   transition: all 0.3s ease;
@@ -68,21 +69,24 @@
   color: #fff;
 }
 
+/* ─── SECTION TITLE ─── */
 .sectionTitle {
   font-size: 20px;
-  font-weight: 600;
-  margin-bottom: var(--spacing-md);
+  font-weight: 700;
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-primary);
 }
 
+/* ─── SERVICE CARDS ─── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: 1fr;
+  gap: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
 }
 
 .serviceCard {
-  border: 1px solid var(--border-light);
+  border: 1.5px solid var(--border-light);
   border-radius: var(--radius-lg);
   overflow: hidden;
   cursor: pointer;
@@ -93,21 +97,13 @@
 }
 
 .serviceCard:hover {
-  transform: translateY(-2px);
   box-shadow: var(--shadow-level-2);
+  border-color: #c7d2fe;
 }
 
 .serviceCard.selected {
   border-color: var(--accent-blue);
   box-shadow: 0 0 0 2px var(--accent-blue);
-}
-
-.serviceImage {
-  width: 100%;
-  height: 140px;
-  background-color: var(--bg-base);
-  background-size: cover;
-  background-position: center;
 }
 
 .serviceContent {
@@ -129,6 +125,7 @@
   color: var(--text-secondary);
   margin-bottom: var(--spacing-md);
   flex: 1;
+  line-height: 1.5;
 }
 
 .serviceMeta {
@@ -151,12 +148,12 @@
 .servicePrice {
   font-weight: 700;
   color: var(--accent-blue);
-  font-size: 16px;
+  font-size: 17px;
 }
 
-/* Minimalist Form Inputs */
+/* ─── FORM ─── */
 .formGroup {
-  margin-bottom: var(--spacing-xl); /* Increased spacing */
+  margin-bottom: var(--spacing-xl);
 }
 
 .label {
@@ -170,7 +167,7 @@
 
 .inputField {
   width: 100%;
-  padding: 12px 0;
+  padding: 14px 0;
   border: none;
   border-bottom: 2px solid var(--border-light);
   border-radius: 0;
@@ -179,6 +176,8 @@
   background-color: transparent;
   color: var(--text-primary);
   transition: border-color 0.2s ease;
+  /* Prevent iOS zoom on focus */
+  -webkit-text-size-adjust: 100%;
 }
 
 .inputField:focus {
@@ -190,20 +189,66 @@
   color: #A0AEC0;
 }
 
-/* Calendar & Times */
+/* ─── CALENDAR ─── */
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text-primary);
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-top: var(--spacing-md);
+}
+
+.calendarDay {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-base);
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+  min-height: 38px;
+}
+
+.calendarDay:hover:not(.disabled) {
+  background-color: rgba(37, 99, 235, 0.08);
+}
+
+.calendarDay.selected {
+  background-color: var(--accent-blue);
+  color: white;
+  font-weight: 700;
+}
+
+.calendarDay.disabled {
+  color: var(--border-light);
+  cursor: not-allowed;
+}
+
+/* ─── TIME SLOTS ─── */
 .timeGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-  gap: var(--spacing-sm);
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
   margin-top: var(--spacing-lg);
 }
 
 .timeSlot {
-  padding: var(--spacing-sm) 0;
+  padding: 10px 4px;
   text-align: center;
-  border: 1px solid var(--border-light);
+  border: 1.5px solid var(--border-light);
   border-radius: var(--radius-base);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   background-color: var(--surface);
@@ -212,6 +257,7 @@
 
 .timeSlot:hover {
   border-color: var(--accent-blue);
+  background: rgba(37, 99, 235, 0.04);
 }
 
 .timeSlot.selected {
@@ -220,17 +266,22 @@
   border-color: var(--accent-blue);
 }
 
-/* Selección de Profesionales */
+.timeSlot.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── PROFESSIONAL CARDS ─── */
 .professionalGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--spacing-md);
   margin-top: var(--spacing-lg);
 }
 
 .professionalCard {
   background-color: var(--surface);
-  border: 1px solid var(--border-light);
+  border: 1.5px solid var(--border-light);
   border-radius: var(--radius-lg);
   padding: var(--spacing-md);
   text-align: center;
@@ -250,8 +301,8 @@
 }
 
 .avatar {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   background-color: var(--bg-base);
   margin: 0 auto var(--spacing-sm);
@@ -261,78 +312,123 @@
   font-weight: 700;
   color: var(--accent-blue);
   border: 2px solid var(--border-light);
+  background-size: cover;
+  background-position: center;
 }
 
 .profName {
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   color: var(--text-primary);
 }
 
 .profRole {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-secondary);
+  margin-top: 2px;
 }
 
-/* Calendario Visual */
-.calendarGrid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: var(--spacing-xs);
-  margin-top: var(--spacing-md);
-}
-
-.calendarDay {
-  aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  font-size: 14px;
-  transition: all 0.2s;
-}
-
-.calendarDay:hover:not(.disabled) {
-  background-color: var(--bg-base);
-}
-
-.calendarDay.selected {
-  background-color: var(--accent-blue);
-  color: white;
-}
-
-.calendarDay.disabled {
-  color: var(--border-light);
-  cursor: not-allowed;
-}
-
-.calendarHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--spacing-sm);
-  font-weight: 600;
-}
-
-.timeSlot.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background-color: var(--bg-base);
-}
-
-.formGroup {
-  margin-bottom: var(--spacing-md);
-}
-
+/* ─── ACTIONS ─── */
 .actions {
   display: flex;
   justify-content: space-between;
   margin-top: var(--spacing-xl);
   padding-top: var(--spacing-md);
   border-top: 1px solid var(--border-light);
+  gap: var(--spacing-md);
 }
 
 .actions.single {
   justify-content: flex-end;
+}
+
+/* ─── MOBILE RESPONSIVE — iPhone ─── */
+@media (max-width: 480px) {
+  .wizardContainer {
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+  }
+
+  .wizardContainer .card {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .header {
+    padding: 20px 16px 0;
+    margin-bottom: 20px;
+  }
+
+  .salonName {
+    font-size: 20px;
+  }
+
+  .stepIndicator {
+    padding: 0 16px;
+    margin-bottom: 20px;
+  }
+
+  /* Card within wizard */
+  .wizardContainer > main > .card,
+  .wizardContainer > .card {
+    border-radius: 16px 16px 0 0;
+    box-shadow: none;
+  }
+
+  /* Time grid: 3 columns on iPhone */
+  .timeGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .timeSlot {
+    font-size: 12px;
+    padding: 10px 2px;
+  }
+
+  /* Calendar days tighter */
+  .calendarDay {
+    font-size: 12px;
+    min-height: 34px;
+  }
+
+  /* Professional cards 3 per row */
+  .professionalGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .profName {
+    font-size: 11px;
+  }
+
+  .profRole {
+    font-size: 10px;
+  }
+
+  /* Full-width action buttons */
+  .actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .actions > * {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .sectionTitle {
+    font-size: 17px;
+  }
+
+  /* Prevent iOS from zooming on input focus */
+  .inputField {
+    font-size: 16px !important;
+  }
 }

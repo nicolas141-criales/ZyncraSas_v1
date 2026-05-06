@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import styles from "./admin.module.css";
 
 export default function AdminLayout({
@@ -10,62 +11,83 @@ export default function AdminLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const closeSidebar = () => setSidebarOpen(false);
 
   return (
     <div className={styles.adminLayout}>
+      {/* Mobile Overlay */}
+      <div
+        className={`${styles.overlay} ${sidebarOpen ? styles.open : ""}`}
+        onClick={closeSidebar}
+      />
+
       {/* Sidebar */}
-      <aside className={styles.sidebar}>
-        <div className={styles.brand}>Admin Salon</div>
-        
+      <aside className={`${styles.sidebar} ${sidebarOpen ? styles.open : ""}`}>
+        <div className={styles.brand}>◆ BookSalon</div>
+
         <nav>
-          <Link href="/admin">
-            <div className={`${styles.navItem} ${pathname === "/admin" ? styles.active : ""}`}>
-              <span>📊</span> Resumen
-            </div>
-          </Link>
-          <Link href="/admin/calendar">
-            <div className={`${styles.navItem} ${pathname === "/admin/calendar" ? styles.active : ""}`}>
-              <span>📅</span> Calendario
-            </div>
-          </Link>
-          <Link href="/admin/clients">
-            <div className={`${styles.navItem} ${pathname === "/admin/clients" ? styles.active : ""}`}>
-              <span>👥</span> Clientes (CRM)
-            </div>
-          </Link>
-          <Link href="/admin/services">
-            <div className={`${styles.navItem} ${pathname === "/admin/services" ? styles.active : ""}`}>
-              <span>✂️</span> Servicios
-            </div>
-          </Link>
-          <Link href="/admin/professionals">
-            <div className={`${styles.navItem} ${pathname === "/admin/professionals" ? styles.active : ""}`}>
-              <span>🧑‍💼</span> Equipo
-            </div>
-          </Link>
-          <Link href="/admin/settings">
-            <div className={`${styles.navItem} ${pathname === "/admin/settings" ? styles.active : ""}`}>
-              <span>⚙️</span> Configuración
-            </div>
-          </Link>
+          {[
+            { href: "/admin", icon: "📊", label: "Resumen" },
+            { href: "/admin/calendar", icon: "📅", label: "Calendario" },
+            { href: "/admin/clients", icon: "👥", label: "Clientes (CRM)" },
+            { href: "/admin/services", icon: "✂️", label: "Servicios" },
+            { href: "/admin/professionals", icon: "🧑‍💼", label: "Equipo" },
+            { href: "/admin/settings", icon: "⚙️", label: "Configuración" },
+          ].map((item) => (
+            <Link key={item.href} href={item.href} onClick={closeSidebar}>
+              <div
+                className={`${styles.navItem} ${
+                  pathname === item.href ? styles.active : ""
+                }`}
+              >
+                <span>{item.icon}</span> {item.label}
+              </div>
+            </Link>
+          ))}
         </nav>
       </aside>
 
       {/* Main Content Area */}
       <div className={styles.mainContent}>
         <header className={styles.header}>
+          {/* Hamburger */}
+          <button
+            className={styles.menuToggle}
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            aria-label="Abrir menú"
+          >
+            {sidebarOpen ? "✕" : "☰"}
+          </button>
+
           <div className={styles.headerTitle}>Panel de Control</div>
-          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-            <span style={{ fontWeight: 500 }}>Dueño Demo</span>
-            <div style={{ width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "var(--accent-blue)", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold" }}>
+
+          <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+            <span style={{ fontWeight: 500, fontSize: "14px", display: "var(--hide-mobile, block)" }}>
+              Dueño Demo
+            </span>
+            <div
+              style={{
+                width: "36px",
+                height: "36px",
+                borderRadius: "50%",
+                backgroundColor: "var(--accent-blue)",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: "bold",
+                fontSize: "13px",
+                flexShrink: 0,
+              }}
+            >
               DD
             </div>
           </div>
         </header>
 
-        <main className={styles.contentArea}>
-          {children}
-        </main>
+        <main className={styles.contentArea}>{children}</main>
       </div>
     </div>
   );
