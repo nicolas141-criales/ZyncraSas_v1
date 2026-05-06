@@ -142,66 +142,70 @@ export default function CalendarPage() {
       </div>
 
       <div className={styles.listCard} style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", padding: 0 }}>
-        {/* Header Row */}
-        <div style={{ display: "grid", gridTemplateColumns: "64px repeat(7, 1fr)", borderBottom: "1px solid var(--border-light)", backgroundColor: "var(--bg-base)", flexShrink: 0 }}>
-          <div style={{ padding: "var(--spacing-sm)", borderRight: "1px solid var(--border-light)" }}></div>
-          {weekDays.map((day, i) => {
-            const isToday = toISO(day) === toISO(new Date());
-            return (
-              <div key={i} style={{
-                padding: "10px var(--spacing-sm)", textAlign: "center", fontWeight: 600,
-                borderRight: "1px solid var(--border-light)",
-                color: isToday ? "var(--accent-blue)" : "var(--text-primary)",
-                background: isToday ? "rgba(99,102,241,0.06)" : undefined,
-              }}>
-                <div style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 500 }}>{DAYS_SHORT[i]}</div>
-                <div style={{ fontSize: "18px", fontWeight: 700, lineHeight: 1.2 }}>{day.getDate()}</div>
-              </div>
-            );
-          })}
-        </div>
+        <div style={{ overflowX: "auto", flex: 1, display: "flex", flexDirection: "column", WebkitOverflowScrolling: "touch" }}>
+          <div style={{ minWidth: "700px", display: "flex", flexDirection: "column", flex: 1 }}>
+            {/* Header Row */}
+            <div style={{ display: "grid", gridTemplateColumns: "64px repeat(7, 1fr)", borderBottom: "1px solid var(--border-light)", backgroundColor: "var(--bg-base)", flexShrink: 0 }}>
+              <div style={{ padding: "var(--spacing-sm)", borderRight: "1px solid var(--border-light)" }}></div>
+              {weekDays.map((day, i) => {
+                const isToday = toISO(day) === toISO(new Date());
+                return (
+                  <div key={i} style={{
+                    padding: "10px var(--spacing-sm)", textAlign: "center", fontWeight: 600,
+                    borderRight: "1px solid var(--border-light)",
+                    color: isToday ? "var(--accent-blue)" : "var(--text-primary)",
+                    background: isToday ? "rgba(99,102,241,0.06)" : undefined,
+                  }}>
+                    <div style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 500 }}>{DAYS_SHORT[i]}</div>
+                    <div style={{ fontSize: "18px", fontWeight: 700, lineHeight: 1.2 }}>{day.getDate()}</div>
+                  </div>
+                );
+              })}
+            </div>
 
-        {/* Time Slots */}
-        <div style={{ flex: 1, overflowY: "auto" }}>
-          {loading ? (
-            <div style={{ padding: "40px", textAlign: "center", color: "var(--text-secondary)" }}>Cargando citas...</div>
-          ) : (
-            HOURS.map((hour) => (
-              <div key={hour} style={{ display: "grid", gridTemplateColumns: "64px repeat(7, 1fr)", borderBottom: "1px solid var(--border-light)", minHeight: "72px" }}>
-                <div style={{ padding: "8px 6px", textAlign: "center", color: "var(--text-secondary)", fontSize: "11px", borderRight: "1px solid var(--border-light)", flexShrink: 0 }}>
-                  {hour}
-                </div>
-                {weekDays.map((day, di) => {
-                  const apts = getAptsForSlot(day, hour);
-                  return (
-                    <div key={di} style={{ borderRight: "1px solid var(--border-light)", position: "relative", padding: "4px" }}>
-                      {apts.map((apt, ai) => (
-                        <div key={ai} onClick={() => openEditModal(apt)} style={{
-                          background: apt.status === "confirmed" ? "rgba(16,185,129,0.15)" : apt.status === "cancelled" ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.15)",
-                          border: `1px solid ${apt.status === "confirmed" ? "rgba(16,185,129,0.4)" : apt.status === "cancelled" ? "rgba(239,68,68,0.4)" : "rgba(99,102,241,0.4)"}`,
-                          borderRadius: "6px",
-                          padding: "4px 6px",
-                          fontSize: "11px",
-                          marginBottom: "2px",
-                          overflow: "hidden",
-                          cursor: "pointer",
-                          textDecoration: apt.status === "cancelled" ? "line-through" : "none",
-                          opacity: apt.status === "cancelled" ? 0.6 : 1
-                        }}>
-                          <div style={{ fontWeight: 700, color: apt.status === "confirmed" ? "var(--success)" : apt.status === "cancelled" ? "var(--error)" : "var(--accent-blue)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {apt.appointment_time} {(apt.clients as any)?.name || "Cliente"}
-                          </div>
-                          <div style={{ color: "var(--text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                            {(apt.services as any)?.name || "Servicio"}
-                          </div>
-                        </div>
-                      ))}
+            {/* Time Slots */}
+            <div style={{ flex: 1, overflowY: "auto" }}>
+              {loading ? (
+                <div style={{ padding: "40px", textAlign: "center", color: "var(--text-secondary)" }}>Cargando citas...</div>
+              ) : (
+                HOURS.map((hour) => (
+                  <div key={hour} style={{ display: "grid", gridTemplateColumns: "64px repeat(7, 1fr)", borderBottom: "1px solid var(--border-light)", minHeight: "72px" }}>
+                    <div style={{ padding: "8px 6px", textAlign: "center", color: "var(--text-secondary)", fontSize: "11px", borderRight: "1px solid var(--border-light)", flexShrink: 0 }}>
+                      {hour}
                     </div>
-                  );
-                })}
-              </div>
-            ))
-          )}
+                    {weekDays.map((day, di) => {
+                      const apts = getAptsForSlot(day, hour);
+                      return (
+                        <div key={di} style={{ borderRight: "1px solid var(--border-light)", position: "relative", padding: "4px" }}>
+                          {apts.map((apt, ai) => (
+                            <div key={ai} onClick={() => openEditModal(apt)} style={{
+                              background: apt.status === "confirmed" ? "rgba(16,185,129,0.15)" : apt.status === "cancelled" ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.15)",
+                              border: `1px solid ${apt.status === "confirmed" ? "rgba(16,185,129,0.4)" : apt.status === "cancelled" ? "rgba(239,68,68,0.4)" : "rgba(99,102,241,0.4)"}`,
+                              borderRadius: "6px",
+                              padding: "4px 6px",
+                              fontSize: "11px",
+                              marginBottom: "2px",
+                              overflow: "hidden",
+                              cursor: "pointer",
+                              textDecoration: apt.status === "cancelled" ? "line-through" : "none",
+                              opacity: apt.status === "cancelled" ? 0.6 : 1
+                            }}>
+                              <div style={{ fontWeight: 700, color: apt.status === "confirmed" ? "var(--success)" : apt.status === "cancelled" ? "var(--error)" : "var(--accent-blue)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {apt.appointment_time} {(apt.clients as any)?.name || "Cliente"}
+                              </div>
+                              <div style={{ color: "var(--text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {(apt.services as any)?.name || "Servicio"}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

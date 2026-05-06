@@ -1,6 +1,6 @@
 .adminLayout {
   display: flex;
-  min-height: 100vh;
+  min-height: 100dvh;
   background-color: var(--bg-base);
 }
 
@@ -260,6 +260,10 @@
 
   .listCard[style*="overflow: hidden"] {
     overflow-x: auto !important;
+  }
+
+  .hideMobile {
+    display: none !important;
   }
 }
 

@@ -136,7 +136,7 @@ export default function AdminLayout({
             <div className={styles.headerTitle}>Panel de Control</div>
 
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-              <span style={{ fontWeight: 500, fontSize: "14px", display: "var(--hide-mobile, block)" }}>
+              <span className={styles.hideMobile} style={{ fontWeight: 500, fontSize: "14px" }}>
                 {tenantInfo.name}
               </span>
               {/* Dynamic Logo or Initials */}
