@@ -1,0 +1,152 @@
+/* src/app/globals.css */
+
+:root {
+  /* Colors */
+  --bg-base: #F8FAFC;
+  --surface: #FFFFFF;
+  --text-primary: #0F172A; /* Deep Slate */
+  --text-secondary: #64748B; /* Slate Gray */
+  --accent-blue: #2563EB; /* Trust Blue */
+  --accent-blue-hover: #1D4ED8;
+  --border-light: #E2E8F0;
+  
+  /* Semantic */
+  --success: #10B981;
+  --error: #EF4444;
+  --warning: #F59E0B;
+
+  /* Typography */
+  --font-heading: 'Manrope', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Shapes */
+  --radius-sm: 4px;
+  --radius-base: 8px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Shadows */
+  --shadow-level-1: none;
+  --shadow-level-2: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -2px rgba(15, 23, 42, 0.05);
+  --shadow-level-3: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.1);
+  
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 40px;
+  --spacing-2xl: 64px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  font-family: var(--font-body);
+  border: none;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input, textarea, select {
+  font-family: var(--font-body);
+}
+
+/* Base Utility Classes for Vanilla CSS */
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-md);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--accent-blue);
+  color: #fff;
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-base);
+  font-weight: 500;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-primary:hover {
+  background-color: var(--accent-blue-hover);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--text-secondary);
+  padding: var(--spacing-sm) var(--spacing-lg);
+  border-radius: var(--radius-base);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-secondary:hover {
+  background-color: var(--border-light);
+}
+
+/* Cards */
+.card {
+  background-color: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-level-2);
+  padding: var(--spacing-lg);
+}
+
+/* Inputs */
+.input-field {
+  width: 100%;
+  padding: 12px var(--spacing-md);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-base);
+  background-color: var(--surface);
+  color: var(--text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-field:focus {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  outline: none;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+}

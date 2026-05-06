@@ -1,0 +1,338 @@
+.wizardContainer {
+  max-width: 600px;
+  margin: var(--spacing-2xl) auto;
+  padding: 0 var(--spacing-md);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.salonName {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-xs);
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.stepIndicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-xl);
+  position: relative;
+}
+
+.stepIndicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--border-light);
+  z-index: 1;
+  transform: translateY(-50%);
+}
+
+.step {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  background-color: var(--surface);
+  border: 2px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  z-index: 2;
+  transition: all 0.3s ease;
+}
+
+.step.active {
+  border-color: var(--accent-blue);
+  color: var(--accent-blue);
+}
+
+.step.completed {
+  background-color: var(--accent-blue);
+  border-color: var(--accent-blue);
+  color: #fff;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.serviceCard {
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background-color: var(--surface);
+  display: flex;
+  flex-direction: column;
+}
+
+.serviceCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-level-2);
+}
+
+.serviceCard.selected {
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 2px var(--accent-blue);
+}
+
+.serviceImage {
+  width: 100%;
+  height: 140px;
+  background-color: var(--bg-base);
+  background-size: cover;
+  background-position: center;
+}
+
+.serviceContent {
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.serviceName {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.serviceDesc {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-md);
+  flex: 1;
+}
+
+.serviceMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: auto;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-light);
+}
+
+.serviceDuration {
+  color: var(--text-secondary);
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.servicePrice {
+  font-weight: 700;
+  color: var(--accent-blue);
+  font-size: 16px;
+}
+
+/* Minimalist Form Inputs */
+.formGroup {
+  margin-bottom: var(--spacing-xl); /* Increased spacing */
+}
+
+.label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-primary);
+  font-size: 14px;
+  letter-spacing: 0.02em;
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px 0;
+  border: none;
+  border-bottom: 2px solid var(--border-light);
+  border-radius: 0;
+  font-family: inherit;
+  font-size: 16px;
+  background-color: transparent;
+  color: var(--text-primary);
+  transition: border-color 0.2s ease;
+}
+
+.inputField:focus {
+  outline: none;
+  border-bottom-color: var(--accent-blue);
+}
+
+.inputField::placeholder {
+  color: #A0AEC0;
+}
+
+/* Calendar & Times */
+.timeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-lg);
+}
+
+.timeSlot {
+  padding: var(--spacing-sm) 0;
+  text-align: center;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-base);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  background-color: var(--surface);
+  transition: all 0.2s ease;
+}
+
+.timeSlot:hover {
+  border-color: var(--accent-blue);
+}
+
+.timeSlot.selected {
+  background-color: var(--accent-blue);
+  color: white;
+  border-color: var(--accent-blue);
+}
+
+/* Selección de Profesionales */
+.professionalGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+}
+
+.professionalCard {
+  background-color: var(--surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-md);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.professionalCard:hover {
+  border-color: var(--accent-blue);
+  transform: translateY(-2px);
+}
+
+.professionalCard.selected {
+  border-color: var(--accent-blue);
+  background-color: rgba(37, 99, 235, 0.05);
+  box-shadow: 0 0 0 2px var(--accent-blue);
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background-color: var(--bg-base);
+  margin: 0 auto var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: var(--accent-blue);
+  border: 2px solid var(--border-light);
+}
+
+.profName {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.profRole {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+/* Calendario Visual */
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--spacing-xs);
+  margin-top: var(--spacing-md);
+}
+
+.calendarDay {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.calendarDay:hover:not(.disabled) {
+  background-color: var(--bg-base);
+}
+
+.calendarDay.selected {
+  background-color: var(--accent-blue);
+  color: white;
+}
+
+.calendarDay.disabled {
+  color: var(--border-light);
+  cursor: not-allowed;
+}
+
+.calendarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.timeSlot.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: var(--bg-base);
+}
+
+.formGroup {
+  margin-bottom: var(--spacing-md);
+}
+
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-light);
+}
+
+.actions.single {
+  justify-content: flex-end;
+}

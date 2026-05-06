@@ -1,0 +1,154 @@
+.adminLayout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-base);
+}
+
+.sidebar {
+  width: 260px;
+  background-color: var(--text-primary); /* Deep Slate */
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-lg) 0;
+}
+
+.brand {
+  font-family: var(--font-heading);
+  font-size: 20px;
+  font-weight: 700;
+  padding: 0 var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+  color: white;
+}
+
+.navItem {
+  padding: var(--spacing-md) var(--spacing-lg);
+  color: var(--text-secondary);
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.navItem:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.navItem.active {
+  background-color: var(--accent-blue);
+  color: white;
+  border-right: 4px solid white;
+}
+
+.mainContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  height: 72px;
+  background-color: var(--surface);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-xl);
+}
+
+.headerTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.contentArea {
+  padding: var(--spacing-xl);
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Dashboard specific */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.statCard {
+  background-color: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-level-2);
+}
+
+.statLabel {
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.statValue {
+  font-family: var(--font-heading);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.listCard {
+  background-color: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-level-2);
+  padding: var(--spacing-lg);
+}
+
+.listHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.listTitle {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md) 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.listItem:last-child {
+  border-bottom: none;
+}
+
+.itemMain {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.itemSub {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.itemBadge {
+  background-color: rgba(37, 99, 235, 0.1);
+  color: var(--accent-blue);
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+}
