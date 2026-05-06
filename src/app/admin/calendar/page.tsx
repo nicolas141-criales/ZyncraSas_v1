@@ -42,6 +42,10 @@ export default function CalendarPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [weekRef, setWeekRef] = useState(new Date());
+  
+  const [selectedApt, setSelectedApt] = useState<Appointment | null>(null);
+  const [editForm, setEditForm] = useState({ date: "", time: "", status: "" });
+  const [isSaving, setIsSaving] = useState(false);
 
   const weekDays = getWeekDays(weekRef);
   const startDate = toISO(weekDays[0]);
@@ -95,6 +99,32 @@ export default function CalendarPage() {
     return appointments.filter(a => a.appointment_date === dateStr && a.appointment_time.startsWith(hour.substring(0, 2)));
   };
 
+  const openEditModal = (apt: Appointment) => {
+    setSelectedApt(apt);
+    setEditForm({ date: apt.appointment_date, time: apt.appointment_time, status: apt.status });
+  };
+
+  const saveApt = async () => {
+    if (!selectedApt) return;
+    setIsSaving(true);
+    const { error } = await supabase
+      .from("appointments")
+      .update({
+        appointment_date: editForm.date,
+        appointment_time: editForm.time,
+        status: editForm.status
+      })
+      .eq("id", selectedApt.id);
+      
+    if (!error) {
+      setSelectedApt(null);
+      fetchAppointments(tenantId!, startDate, endDate);
+    } else {
+      alert("Error al actualizar la cita.");
+    }
+    setIsSaving(false);
+  };
+
   const monthLabel = weekDays[0].toLocaleDateString("es-CO", { month: "long", year: "numeric" });
 
   return (
@@ -146,16 +176,19 @@ export default function CalendarPage() {
                   return (
                     <div key={di} style={{ borderRight: "1px solid var(--border-light)", position: "relative", padding: "4px" }}>
                       {apts.map((apt, ai) => (
-                        <div key={ai} style={{
-                          background: apt.status === "confirmed" ? "rgba(16,185,129,0.15)" : "rgba(99,102,241,0.15)",
-                          border: `1px solid ${apt.status === "confirmed" ? "rgba(16,185,129,0.4)" : "rgba(99,102,241,0.4)"}`,
+                        <div key={ai} onClick={() => openEditModal(apt)} style={{
+                          background: apt.status === "confirmed" ? "rgba(16,185,129,0.15)" : apt.status === "cancelled" ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.15)",
+                          border: `1px solid ${apt.status === "confirmed" ? "rgba(16,185,129,0.4)" : apt.status === "cancelled" ? "rgba(239,68,68,0.4)" : "rgba(99,102,241,0.4)"}`,
                           borderRadius: "6px",
                           padding: "4px 6px",
                           fontSize: "11px",
                           marginBottom: "2px",
                           overflow: "hidden",
+                          cursor: "pointer",
+                          textDecoration: apt.status === "cancelled" ? "line-through" : "none",
+                          opacity: apt.status === "cancelled" ? 0.6 : 1
                         }}>
-                          <div style={{ fontWeight: 700, color: apt.status === "confirmed" ? "var(--success)" : "var(--accent-blue)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                          <div style={{ fontWeight: 700, color: apt.status === "confirmed" ? "var(--success)" : apt.status === "cancelled" ? "var(--error)" : "var(--accent-blue)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                             {apt.appointment_time} {(apt.clients as any)?.name || "Cliente"}
                           </div>
                           <div style={{ color: "var(--text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
@@ -171,6 +204,44 @@ export default function CalendarPage() {
           )}
         </div>
       </div>
+
+      {selectedApt && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "16px" }}>
+          <div style={{ background: "var(--surface)", padding: "24px", borderRadius: "16px", width: "100%", maxWidth: "400px", boxShadow: "0 10px 40px rgba(0,0,0,0.2)" }}>
+            <h2 style={{ fontSize: "18px", fontWeight: 700, marginBottom: "16px" }}>Gestionar Cita</h2>
+            <div style={{ marginBottom: "20px", fontSize: "14px", color: "var(--text-secondary)" }}>
+              <p style={{ marginBottom: "6px" }}><strong>Cliente:</strong> {(selectedApt.clients as any)?.name}</p>
+              <p style={{ marginBottom: "6px" }}><strong>Servicio:</strong> {(selectedApt.services as any)?.name}</p>
+              <p style={{ marginBottom: "0" }}><strong>Profesional:</strong> {(selectedApt.professionals as any)?.name}</p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "24px" }}>
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "6px", display: "block" }}>Fecha</label>
+                <input type="date" value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-light)", background: "var(--bg-base)", color: "var(--text-primary)", fontSize: "14px" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "6px", display: "block" }}>Hora</label>
+                <input type="time" value={editForm.time} onChange={e => setEditForm({ ...editForm, time: e.target.value })} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-light)", background: "var(--bg-base)", color: "var(--text-primary)", fontSize: "14px" }} />
+              </div>
+              <div>
+                <label style={{ fontSize: "12px", fontWeight: 600, color: "var(--text-secondary)", marginBottom: "6px", display: "block" }}>Estado de la reserva</label>
+                <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} style={{ width: "100%", padding: "10px", borderRadius: "8px", border: "1px solid var(--border-light)", background: "var(--bg-base)", color: "var(--text-primary)", fontSize: "14px" }}>
+                  <option value="pending">Pendiente</option>
+                  <option value="confirmed">Confirmada</option>
+                  <option value="completed">Completada</option>
+                  <option value="cancelled">Cancelada</option>
+                </select>
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "12px" }}>
+              <button className="btn-secondary" onClick={() => setSelectedApt(null)}>Cerrar</button>
+              <button className="btn-primary" onClick={saveApt} disabled={isSaving} style={{ backgroundColor: editForm.status === "cancelled" ? "var(--error)" : undefined, borderColor: editForm.status === "cancelled" ? "var(--error)" : undefined }}>
+                {isSaving ? "Guardando..." : "Guardar Cambios"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
