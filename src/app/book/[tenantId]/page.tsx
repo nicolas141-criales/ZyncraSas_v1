@@ -222,7 +222,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                       height: `${branding.logo_size || 85}%`, 
                       objectFit: "contain",
                       objectPosition: branding.logo_object_position || "center",
-                      imageRendering: "high-quality"
+                      imageRendering: "crisp-edges"
                     }}
                   />
                 </div>
@@ -259,7 +259,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                       <img 
                         src={service.image_url} 
                         alt={service.name} 
-                        style={{ width: "100%", height: "140px", objectFit: "cover", borderBottom: "1px solid var(--border-light)", imageRendering: "high-quality" }} 
+                        style={{ width: "100%", height: "140px", objectFit: "cover", borderBottom: "1px solid var(--border-light)", imageRendering: "crisp-edges" }} 
                       />
                     )}
                     <div className={styles.serviceContent}>

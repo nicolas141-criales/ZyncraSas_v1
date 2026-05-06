@@ -196,7 +196,7 @@ export default function ServicesPage() {
                       )}
                     </td>
                     <td style={{ padding: "var(--spacing-md)", fontWeight: 600 }}>{s.name}</td>
-                    <td style={{ padding: "var(--spacing-md)", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{s.duration_min} min</td>
+                    <td style={{ padding: "var(--spacing-md)", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{s.duration_minutes} min</td>
                     <td style={{ padding: "var(--spacing-md)", fontWeight: 700, color: "var(--accent-blue)", whiteSpace: "nowrap" }}>{formatCOP(s.price)}</td>
                     <td style={{ padding: "var(--spacing-md)" }}>
                       <div style={{ display: "flex", gap: "12px" }}>
