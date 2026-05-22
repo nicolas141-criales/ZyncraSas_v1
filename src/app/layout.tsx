@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Manrope, Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -10,12 +10,6 @@ const inter = Inter({
 const manrope = Manrope({
   variable: "--font-manrope",
   subsets: ["latin"],
-});
-
-const plusJakarta = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -30,7 +24,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${inter.variable} ${manrope.variable} ${plusJakarta.variable}`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+      </head>
+      <body className={`${inter.variable} ${manrope.variable}`}>
         {children}
       </body>
     </html>
