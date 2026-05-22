@@ -4,8 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import styles from "./landing.module.css";
 
-// Counter animation hook
-function useCountUp(target: number, duration = 1800, suffix = "") {
+function useCountUp(target: number, duration = 1800) {
   const [count, setCount] = useState(0);
   const ref = useRef<HTMLSpanElement>(null);
   const started = useRef(false);
@@ -35,54 +34,45 @@ function useCountUp(target: number, duration = 1800, suffix = "") {
   return { count, ref };
 }
 
-function AnimatedStat({ value, label, suffix = "" }: { value: number | null; label: string; suffix?: string }) {
-  const { count, ref } = useCountUp(value ?? 0, 1800);
-  if (value === null) return (
-    <div className={styles.statItem}>
-      <span ref={ref} className={styles.statNumber}>∞</span>
-      <span className={styles.statLabel}>{label}</span>
-    </div>
-  );
-  return (
-    <div className={styles.statItem}>
-      <span ref={ref} className={styles.statNumber}>{count}{suffix}</span>
-      <span className={styles.statLabel}>{label}</span>
-    </div>
-  );
+function StatCount({ value, suffix = "" }: { value: number; suffix?: string }) {
+  const { count, ref } = useCountUp(value);
+  return <span ref={ref} className={styles.statNumber}>{count}{suffix}</span>;
 }
 
-// Animated headline words
-function AnimatedHeadline() {
-  const [visible, setVisible] = useState(false);
-  const ref = useRef<HTMLHeadingElement>(null);
+const tickerItems = [
+  { icon: "📅", text: "Reservas en 60 segundos" },
+  { icon: "💳", text: "Depósitos anti no-shows con Stripe" },
+  { icon: "📱", text: "Recordatorios WhatsApp automáticos" },
+  { icon: "📊", text: "Panel de control en tiempo real" },
+  { icon: "✅", text: "Sin apps, sin registro de cliente" },
+  { icon: "🔒", text: "Pagos 100% seguros" },
+];
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([e]) => { if (e.isIntersecting) setVisible(true); },
-      { threshold: 0.3 }
-    );
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
+const reviews = [
+  {
+    stars: "★★★★★",
+    text: "\"Desde que usamos BookSalon, las inasistencias se redujeron a cero gracias a los depósitos de Stripe. Es increíble.\"",
+    name: "Carlos Mendoza",
+    salon: "The Gentleman's Club",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
+  },
+  {
+    stars: "★★★★★",
+    text: "\"La interfaz es súper limpia. Mis clientes mayores que no son buenos con la tecnología ahora reservan sin pedirme ayuda.\"",
+    name: "Laura Gómez",
+    salon: "Studio 54 Beauty",
+    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80",
+  },
+  {
+    stars: "★★★★★",
+    text: "\"El panel de administración me ahorra al menos 5 horas a la semana. Ya no uso cuadernos ni Excel para nada.\"",
+    name: "Miguel Torres",
+    salon: "Torres Barbershop",
+    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80",
+  },
+];
 
-  return (
-    <h1 ref={ref} className={styles.heroTitle} aria-label="Reservas inteligentes. Sin fricción. Sin faltas.">
-      <span className={`${styles.heroWord} ${styles.heroWordWhite} ${visible ? styles.wordVisible : ""}`} style={{ transitionDelay: "0ms" }}>
-        Reservas
-      </span>{" "}
-      <span className={`${styles.heroWord} ${styles.heroWordWhite} ${visible ? styles.wordVisible : ""}`} style={{ transitionDelay: "80ms" }}>
-        inteligentes.
-      </span>
-      <br />
-      <span className={`${styles.heroSpan} ${styles.heroWord} ${visible ? styles.wordVisible : ""}`} style={{ transitionDelay: "200ms", color: "#ffffff" }}>
-        Sin fricción.
-      </span>{" "}
-      <span className={`${styles.heroSpan} ${styles.heroWord} ${visible ? styles.wordVisible : ""}`} style={{ transitionDelay: "320ms", color: "#ffffff" }}>
-        Sin faltas.
-      </span>
-    </h1>
-  );
-}
+const WA_LINK = "https://wa.me/573000000000?text=Hola,%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20BookSalon.";
 
 export default function LandingPage() {
   return (
@@ -92,49 +82,152 @@ export default function LandingPage() {
         <div className={styles.logo}>
           <span>◆</span>BookSalon
         </div>
-        <div className={styles.navLinks}>
-          <a href="#features" className={styles.navLink}>Características</a>
-          <a href="#reviews" className={styles.navLink}>Reseñas</a>
-          <a href="#pricing" className={styles.navLink}>Precios</a>
-        </div>
+        <ul className={styles.navLinks}>
+          <li><a href="#features" className={styles.navLink}>Características</a></li>
+          <li><a href="#reviews" className={styles.navLink}>Reseñas</a></li>
+          <li><a href="#pricing" className={styles.navLink}>Precios</a></li>
+        </ul>
         <div className={styles.navActions}>
-          <Link href="/login" className="btn-secondary" style={{ padding: "8px 18px", fontSize: "14px", color: "rgba(220,228,255,0.8)", borderColor: "rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)" }}>
-            Ingresar
-          </Link>
+          <Link href="/login" className={styles.btnGhost}>Ingresar</Link>
         </div>
       </nav>
 
+      {/* ─── TICKER ─── */}
+      <div className={styles.ticker}>
+        <div className={styles.tickerTrack}>
+          {[...tickerItems, ...tickerItems].map((item, i) => (
+            <div key={i} className={styles.tickerItem}>
+              <span className={styles.tickerIcon}>{item.icon}</span>
+              {item.text}
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* ─── HERO ─── */}
-      <header className={styles.hero}>
-        <div className={styles.heroBadge}>
-          <span className={styles.heroBadgeDot} />
-          Plataforma SaaS para salones y barberías
+      <section className={styles.hero}>
+        <div className={styles.blob + " " + styles.blob1} />
+        <div className={styles.blob + " " + styles.blob2} />
+
+        {/* Left */}
+        <div className={styles.heroLeft}>
+          <div className={styles.heroChip}>
+            <span className={styles.chipBadge}>Nuevo</span>
+            <span className={styles.chipDot} />
+            Plataforma SaaS para salones y barberías
+          </div>
+
+          <h1 className={styles.heroTitle}>
+            Reservas <span className={styles.accent}>inteligentes</span> para tu salón
+          </h1>
+
+          <p className={styles.heroSub}>
+            Automatiza tu agenda, elimina inasistencias con depósitos Stripe y da a tus clientes una experiencia de reserva de nivel premium — desde cualquier dispositivo.
+          </p>
+
+          <div className={styles.heroActions}>
+            <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={styles.btnXl}>
+              Hablar con Ventas 💬
+            </a>
+            <a href="#features" className={styles.btnXlGhost}>Ver características →</a>
+          </div>
+
+          <div className={styles.heroTrust}>
+            <div className={styles.trustItem}>
+              <span className={styles.trustDot}>✓</span>
+              Sin tarjeta al registrarte
+            </div>
+            <div className={styles.trustItem}>
+              <span className={styles.trustDot}>✓</span>
+              1 mes gratis
+            </div>
+            <div className={styles.trustItem}>
+              <span className={styles.trustDot}>✓</span>
+              Configuración en minutos
+            </div>
+          </div>
         </div>
 
-        <AnimatedHeadline />
+        {/* Right – App Mockup */}
+        <div className={styles.heroRight}>
+          <div className={styles.appCard}>
+            <div className={styles.appTopbar}>
+              <div className={styles.appDots}>
+                <div className={styles.appDot} style={{ background: "#ff5f57" }} />
+                <div className={styles.appDot} style={{ background: "#febc2e" }} />
+                <div className={styles.appDot} style={{ background: "#28c840" }} />
+              </div>
+              <span className={styles.appTitle}>Mi Agenda</span>
+              <span className={styles.appDate}>Hoy</span>
+            </div>
 
-        <p>
-          Automatiza tu agenda, elimina inasistencias con depósitos Stripe y da a tus clientes una experiencia de reserva de nivel premium — desde cualquier dispositivo.
-        </p>
+            <div className={styles.slotRow}>
+              <span className={styles.slotTime}>9:00</span>
+              <div className={`${styles.slot} ${styles.slotRed}`}>
+                <span>Corte + Barba</span>
+                <span className={styles.slotName}>Carlos M.</span>
+              </div>
+            </div>
+            <div className={styles.slotRow}>
+              <span className={styles.slotTime}>10:30</span>
+              <div className={`${styles.slot} ${styles.slotPurple}`}>
+                <span>Tinte + Corte</span>
+                <span className={styles.slotName}>Ana G.</span>
+              </div>
+            </div>
+            <div className={styles.slotRow}>
+              <span className={styles.slotTime}>12:00</span>
+              <div className={`${styles.slot} ${styles.slotBlue}`}>
+                <span>Manicure</span>
+                <span className={styles.slotName}>María L.</span>
+              </div>
+            </div>
+            <div className={styles.slotRow}>
+              <span className={styles.slotTime}>14:00</span>
+              <div className={`${styles.slot} ${styles.slotGray}`}>
+                <span>Disponible</span>
+                <span className={styles.slotName}>—</span>
+              </div>
+            </div>
+          </div>
 
-        <div className={styles.ctaGroup}>
-          <a 
-            href="https://wa.me/573000000000?text=Hola,%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20BookSalon." 
-            target="_blank" 
-            rel="noopener noreferrer" 
-            className={styles.btnWhatsApp}
-          >
-            Hablar con Ventas 💬
-          </a>
+          {/* Floating cards */}
+          <div className={styles.floatCard1}>
+            <span className={styles.waDot} />
+            <div>
+              <div className={styles.floatText}>Recordatorio enviado ✓</div>
+              <div className={styles.floatSub}>WhatsApp · hace 2 min</div>
+            </div>
+          </div>
+          <div className={styles.floatCard2}>
+            <div className={styles.floatIcon}>💳</div>
+            <div>
+              <div className={styles.floatText}>Depósito recibido</div>
+              <div className={styles.floatSub}>$15.000 · Stripe</div>
+            </div>
+          </div>
         </div>
+      </section>
 
-        <div className={styles.statsBar}>
-          <AnimatedStat value={40} label="Reducción de inasistencias" suffix="%" />
-          <AnimatedStat value={60} label="Tiempo de reserva (seg)" suffix="s" />
-          <AnimatedStat value={100} label="Multi-dispositivo" suffix="%" />
-          <AnimatedStat value={null} label="Clientes y Citas" />
+      {/* ─── STATS STRIP ─── */}
+      <div className={styles.statsStrip}>
+        <div className={styles.statItem}>
+          <StatCount value={40} suffix="%" />
+          <div className={styles.statLabel}>Menos inasistencias</div>
         </div>
-      </header>
+        <div className={styles.statItem}>
+          <StatCount value={60} suffix="s" />
+          <div className={styles.statLabel}>Para reservar</div>
+        </div>
+        <div className={styles.statItem}>
+          <StatCount value={100} suffix="%" />
+          <div className={styles.statLabel}>Multi-dispositivo</div>
+        </div>
+        <div className={styles.statItem}>
+          <span className={styles.statNumber}>∞</span>
+          <div className={styles.statLabel}>Clientes y Citas</div>
+        </div>
+      </div>
 
       {/* ─── FEATURES ─── */}
       <section id="features" className={styles.featuresSection} style={{ scrollMarginTop: "80px" }}>
@@ -164,63 +257,31 @@ export default function LandingPage() {
             <h3>Panel de Control</h3>
             <p>Gestiona profesionales, servicios y monitorea el rendimiento de tu negocio en tiempo real desde un panel elegante.</p>
           </div>
+          <div className={styles.featureCard}>
+            <div className={styles.featureIconWrapper}>👥</div>
+            <h3>CRM de Clientes</h3>
+            <p>Historial completo de cada cliente, sus preferencias y citas anteriores. Construye relaciones duraderas.</p>
+          </div>
+          <div className={styles.featureCard}>
+            <div className={styles.featureIconWrapper}>🎨</div>
+            <h3>Branding Personalizado</h3>
+            <p>Tu logo, tus colores, tu dominio. La experiencia de reserva lleva tu marca, no la nuestra.</p>
+          </div>
         </div>
       </section>
 
       {/* ─── REVIEWS ─── */}
       <section id="reviews" className={styles.reviewsSection} style={{ scrollMarginTop: "80px" }}>
-        <div className={styles.sectionTitle}>
-          <span className={styles.sectionEyebrow}>Testimonios</span>
-          <h2>Lo que dicen nuestros clientes</h2>
-          <p>Barberías y salones que ya transformaron su negocio.</p>
+        <div className={styles.reviewsHeader}>
+          <div className={styles.sectionTitle}>
+            <span className={styles.sectionEyebrow}>Testimonios</span>
+            <h2>Lo que dicen nuestros clientes</h2>
+            <p>Barberías y salones que ya transformaron su negocio.</p>
+          </div>
         </div>
         <div className={styles.reviewsGrid}>
           <div className={styles.reviewsTrack}>
-            {[
-              {
-                stars: "★★★★★",
-                text: "\"Desde que usamos BookSalon, las inasistencias se redujeron a cero gracias a los depósitos de Stripe. Es increíble.\"",
-                name: "Carlos Mendoza",
-                salon: "The Gentleman's Club",
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80"
-              },
-              {
-                stars: "★★★★★",
-                text: "\"La interfaz es súper limpia. Mis clientes mayores que no son buenos con la tecnología ahora reservan sin pedirme ayuda.\"",
-                name: "Laura Gómez",
-                salon: "Studio 54 Beauty",
-                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80"
-              },
-              {
-                stars: "★★★★★",
-                text: "\"El panel de administración me ahorra al menos 5 horas a la semana. Ya no uso cuadernos ni Excel para nada.\"",
-                name: "Miguel Torres",
-                salon: "Torres Barbershop",
-                avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80"
-              },
-              // Duplicados para el carrusel infinito
-              {
-                stars: "★★★★★",
-                text: "\"Desde que usamos BookSalon, las inasistencias se redujeron a cero gracias a los depósitos de Stripe. Es increíble.\"",
-                name: "Carlos Mendoza",
-                salon: "The Gentleman's Club",
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80"
-              },
-              {
-                stars: "★★★★★",
-                text: "\"La interfaz es súper limpia. Mis clientes mayores que no son buenos con la tecnología ahora reservan sin pedirme ayuda.\"",
-                name: "Laura Gómez",
-                salon: "Studio 54 Beauty",
-                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80"
-              },
-              {
-                stars: "★★★★★",
-                text: "\"El panel de administración me ahorra al menos 5 horas a la semana. Ya no uso cuadernos ni Excel para nada.\"",
-                name: "Miguel Torres",
-                salon: "Torres Barbershop",
-                avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80"
-              }
-            ].map((r, i) => (
+            {[...reviews, ...reviews].map((r, i) => (
               <div key={i} className={styles.reviewCard}>
                 <div className={styles.reviewStars}>{r.stars}</div>
                 <p className={styles.reviewText}>{r.text}</p>
@@ -249,11 +310,11 @@ export default function LandingPage() {
             <div style={{ background: "linear-gradient(135deg, #10b981, #059669)", color: "white", padding: "4px 16px", borderRadius: "9999px", fontSize: "11px", fontWeight: 800, display: "inline-block", marginBottom: "16px", letterSpacing: "0.08em", textTransform: "uppercase" }}>
               🎁 1 MES GRATIS AL REGISTRARTE
             </div>
-            <h3 style={{ fontSize: "22px" }}>Plan Profesional</h3>
+            <h3>Plan Profesional</h3>
             <div className={styles.price}>
               $60.000<span>/mes</span>
             </div>
-            <p style={{ fontSize: "13px", color: "rgba(200,210,255,0.5)", marginTop: "-12px", marginBottom: "24px" }}>
+            <p style={{ fontSize: "13px", color: "var(--ink-4)", marginTop: "-12px", marginBottom: "24px" }}>
               Pesos colombianos (COP) · IVA no incluido
             </p>
             <ul className={styles.priceList}>
@@ -266,34 +327,82 @@ export default function LandingPage() {
               <li>✓ Google Calendar sincronizado</li>
               <li>✓ Soporte prioritario 24/7</li>
             </ul>
-            <a 
-              href="https://wa.me/573000000000?text=Hola,%20quiero%20m%C3%A1s%20informaci%C3%B3n%20sobre%20BookSalon." 
-              target="_blank" 
-              rel="noopener noreferrer" 
-              className={styles.btnWhatsApp} 
-              style={{ width: "100%", justifyContent: "center", marginTop: "8px", boxSizing: "border-box" }}
+            <a
+              href={WA_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.btnXl}
+              style={{ width: "100%", justifyContent: "center", boxSizing: "border-box" }}
             >
               Hablar con Ventas 💬
             </a>
-            <p style={{ fontSize: "12px", color: "rgba(200,210,255,0.4)", marginTop: "12px", textAlign: "center" }}>
+            <p style={{ fontSize: "12px", color: "var(--ink-4)", marginTop: "12px", textAlign: "center" }}>
               Sin tarjeta de crédito para el período de prueba
             </p>
           </div>
         </div>
       </section>
 
+      {/* ─── CTA BANNER ─── */}
+      <div className={styles.ctaBanner}>
+        <h2 className={styles.ctaBannerTitle}>¿Listo para transformar tu negocio?</h2>
+        <p className={styles.ctaBannerSub}>Únete a los salones y barberías que ya automatizaron sus reservas.</p>
+        <div className={styles.ctaActions}>
+          <a href={WA_LINK} target="_blank" rel="noopener noreferrer" className={styles.btnWhite}>
+            Hablar con Ventas 💬
+          </a>
+          <a href="#features" className={styles.btnOutlineWhite}>Ver características</a>
+        </div>
+        <p className={styles.ctaNote}>Sin tarjeta de crédito · 1 mes gratis · Cancela cuando quieras</p>
+      </div>
+
       {/* ─── FOOTER ─── */}
       <footer className={styles.footer}>
-        <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "center" }}>
-          <div>© 2026 BookSalon. Todos los derechos reservados.</div>
-          <div style={{ fontSize: "12px", color: "rgba(200, 210, 255, 0.4)" }}>
-            Creado por <a href="https://www.instagram.com/soypipecontreras/" target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Felipe Contreras</a> y <a href="https://www.instagram.com/nicolascrialess/" target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Nicolas Criales</a>
+        <div className={styles.footerTop}>
+          <div>
+            <div className={styles.footerLogo}>
+              <span>◆</span>BookSalon
+            </div>
+            <p className={styles.footerDesc}>
+              La plataforma de reservas inteligentes para salones y barberías modernas. Automatiza tu agenda, elimina inasistencias y crece sin esfuerzo.
+            </p>
+          </div>
+          <div>
+            <div className={styles.footerColTitle}>Producto</div>
+            <ul className={styles.footerLinks}>
+              <li><a href="#features">Características</a></li>
+              <li><a href="#pricing">Precios</a></li>
+              <li><a href="#reviews">Testimonios</a></li>
+            </ul>
+          </div>
+          <div>
+            <div className={styles.footerColTitle}>Empresa</div>
+            <ul className={styles.footerLinks}>
+              <li><a href="#">Acerca de</a></li>
+              <li><a href="#">Blog</a></li>
+              <li><a href={WA_LINK} target="_blank" rel="noreferrer">Contacto</a></li>
+            </ul>
+          </div>
+          <div>
+            <div className={styles.footerColTitle}>Legal</div>
+            <ul className={styles.footerLinks}>
+              <li><a href="#">Privacidad</a></li>
+              <li><a href="#">Términos</a></li>
+              <li><a href="#">Cookies</a></li>
+            </ul>
           </div>
         </div>
-        <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
-          <Link href="#">Privacidad</Link>
-          <Link href="#">Términos</Link>
-          <Link href="#">Contacto</Link>
+        <div className={styles.footerBottom}>
+          <div className={styles.footerCopy}>
+            © 2026 BookSalon. Todos los derechos reservados. Creado por{" "}
+            <a href="https://www.instagram.com/soypipecontreras/" target="_blank" rel="noreferrer" style={{ color: "#aaaabc" }}>Felipe Contreras</a>{" "}y{" "}
+            <a href="https://www.instagram.com/nicolascrialess/" target="_blank" rel="noreferrer" style={{ color: "#aaaabc" }}>Nicolas Criales</a>
+          </div>
+          <div className={styles.footerLegal}>
+            <a href="#">Privacidad</a>
+            <a href="#">Términos</a>
+            <a href="#">Contacto</a>
+          </div>
         </div>
       </footer>
     </div>
