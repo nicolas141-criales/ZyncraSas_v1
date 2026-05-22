@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",
     "dotenv": "^17.4.2",
