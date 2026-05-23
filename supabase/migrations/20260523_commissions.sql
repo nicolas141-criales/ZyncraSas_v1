@@ -75,3 +75,41 @@ CREATE POLICY "tenant_cash_sessions" ON public.cash_sessions
 
 CREATE POLICY "tenant_cash_movements" ON public.cash_movements
   USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+-- =====================================================================
+-- Zyncra – Sistema POS
+-- =====================================================================
+
+CREATE TABLE IF NOT EXISTS public.pos_sales (
+  id             uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id      uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  client_id      uuid REFERENCES public.clients(id) ON DELETE SET NULL,
+  subtotal       numeric NOT NULL DEFAULT 0,
+  discount_type  text CHECK (discount_type IN ('percentage', 'fixed')),
+  discount_value numeric NOT NULL DEFAULT 0,
+  total          numeric NOT NULL DEFAULT 0,
+  payment_method text NOT NULL DEFAULT 'efectivo',
+  note           text,
+  created_at     timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.pos_sale_items (
+  id         uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  sale_id    uuid NOT NULL REFERENCES public.pos_sales(id) ON DELETE CASCADE,
+  service_id uuid REFERENCES public.services(id) ON DELETE SET NULL,
+  name       text NOT NULL,
+  price      numeric NOT NULL,
+  quantity   integer NOT NULL DEFAULT 1
+);
+
+ALTER TABLE public.pos_sales      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.pos_sale_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "tenant_pos_sales" ON public.pos_sales
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+CREATE POLICY "tenant_pos_sale_items" ON public.pos_sale_items
+  USING (sale_id IN (
+    SELECT id FROM public.pos_sales
+    WHERE tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid())
+  ));
