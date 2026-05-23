@@ -197,10 +197,10 @@ export default function ServicesPage() {
                     </td>
                     <td style={{ padding: "var(--spacing-md)", fontWeight: 600 }}>{s.name}</td>
                     <td style={{ padding: "var(--spacing-md)", color: "var(--text-secondary)", whiteSpace: "nowrap" }}>{s.duration_minutes} min</td>
-                    <td style={{ padding: "var(--spacing-md)", fontWeight: 700, color: "var(--accent-blue)", whiteSpace: "nowrap" }}>{formatCOP(s.price)}</td>
+                    <td style={{ padding: "var(--spacing-md)", fontWeight: 700, color: "#fb0f05", whiteSpace: "nowrap" }}>{formatCOP(s.price)}</td>
                     <td style={{ padding: "var(--spacing-md)" }}>
                       <div style={{ display: "flex", gap: "12px" }}>
-                        <button onClick={() => openEdit(s)} style={{ background: "none", border: "none", color: "var(--accent-blue)", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>Editar</button>
+                        <button onClick={() => openEdit(s)} style={{ background: "none", border: "none", color: "#fb0f05", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>Editar</button>
                         <button onClick={() => handleDelete(s.id)} style={{ background: "none", border: "none", color: "var(--error)", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>Eliminar</button>
                       </div>
                     </td>

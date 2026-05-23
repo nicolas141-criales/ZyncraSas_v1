@@ -21,8 +21,8 @@ const DEFAULT_CONFIG: BrandingConfig = {
   logo_url: "",
   logo_object_position: "center",
   logo_size: 85,
-  primary_color: "#6366f1",
-  secondary_color: "#a78bfa",
+  primary_color: "#fb0f05",
+  secondary_color: "#0027fe",
   background_image_url: "",
   welcome_message: "Reserva tu cita fácil y rápido",
 };
@@ -143,7 +143,7 @@ export default function BrandingPage() {
       <div className={styles.listCard} style={{ marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
         <div>
           <div style={{ fontWeight: 700, marginBottom: "4px" }}>🔗 Tu link de reservas para clientes</div>
-          <div style={{ fontFamily: "monospace", fontSize: "13px", color: "var(--accent-blue)", wordBreak: "break-all" }}>{bookingLink}</div>
+          <div style={{ fontFamily: "monospace", fontSize: "13px", color: "#fb0f05", wordBreak: "break-all" }}>{bookingLink}</div>
           <div style={{ fontSize: "12px", color: "var(--text-secondary)", marginTop: "4px" }}>Comparte este link con tus clientes para que reserven directamente.</div>
         </div>
         <button
@@ -190,7 +190,7 @@ export default function BrandingPage() {
                       <input 
                         type="range" min="30" max="150" value={config.logo_size} 
                         onChange={e => setConfig({...config, logo_size: parseInt(e.target.value)})}
-                        style={{ flex: 1, accentColor: "var(--accent-blue)" }}
+                        style={{ flex: 1, accentColor: "#fb0f05" }}
                       />
                       <span style={{ fontSize: "12px", fontWeight: 600, width: "32px" }}>{config.logo_size}%</span>
                     </div>

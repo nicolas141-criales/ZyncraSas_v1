@@ -183,7 +183,7 @@ export default function ProfessionalsPage() {
                         backgroundSize: "cover", backgroundPosition: "center",
                         backgroundColor: "var(--border-light)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        fontWeight: 700, color: "var(--accent-blue)", fontSize: "14px",
+                        fontWeight: 700, color: "#fb0f05", fontSize: "14px",
                         flexShrink: 0,
                       }}>
                         {!prof.avatar_url && prof.name.substring(0, 2).toUpperCase()}
@@ -202,7 +202,7 @@ export default function ProfessionalsPage() {
                     </td>
                     <td style={{ padding: "var(--spacing-md)" }}>
                       <div style={{ display: "flex", gap: "16px" }}>
-                        <button onClick={() => handleToggleActive(prof)} style={{ background: "none", border: "none", color: "var(--accent-blue)", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>
+                        <button onClick={() => handleToggleActive(prof)} style={{ background: "none", border: "none", color: "#fb0f05", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>
                           {prof.is_active ? "Desactivar" : "Activar"}
                         </button>
                         <button onClick={() => handleDelete(prof.id)} style={{ background: "none", border: "none", color: "var(--error)", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>

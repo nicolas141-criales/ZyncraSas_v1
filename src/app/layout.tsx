@@ -13,8 +13,8 @@ const manrope = Manrope({
 });
 
 export const metadata: Metadata = {
-  title: "Salon & Barber Booking SaaS",
-  description: "Frictionless booking experience for high-end salons and barbershops.",
+  title: "Zyncra — Gestión para negocios de servicios",
+  description: "Agenda, POS y Marketing en un solo lugar. La solución todo en uno para salones, spas, manicuristas y negocios de servicios en Colombia.",
 };
 
 export default function RootLayout({

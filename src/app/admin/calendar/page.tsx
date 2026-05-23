@@ -153,8 +153,8 @@ export default function CalendarPage() {
                   <div key={i} style={{
                     padding: "10px var(--spacing-sm)", textAlign: "center", fontWeight: 600,
                     borderRight: "1px solid var(--border-light)",
-                    color: isToday ? "var(--accent-blue)" : "var(--text-primary)",
-                    background: isToday ? "rgba(99,102,241,0.06)" : undefined,
+                    color: isToday ? "#fb0f05" : "var(--text-primary)",
+                    background: isToday ? "rgba(251,15,5,0.06)" : undefined,
                   }}>
                     <div style={{ fontSize: "12px", color: "var(--text-secondary)", fontWeight: 500 }}>{DAYS_SHORT[i]}</div>
                     <div style={{ fontSize: "18px", fontWeight: 700, lineHeight: 1.2 }}>{day.getDate()}</div>
@@ -179,8 +179,8 @@ export default function CalendarPage() {
                         <div key={di} style={{ borderRight: "1px solid var(--border-light)", position: "relative", padding: "4px" }}>
                           {apts.map((apt, ai) => (
                             <div key={ai} onClick={() => openEditModal(apt)} style={{
-                              background: apt.status === "confirmed" ? "rgba(16,185,129,0.15)" : apt.status === "cancelled" ? "rgba(239,68,68,0.15)" : "rgba(99,102,241,0.15)",
-                              border: `1px solid ${apt.status === "confirmed" ? "rgba(16,185,129,0.4)" : apt.status === "cancelled" ? "rgba(239,68,68,0.4)" : "rgba(99,102,241,0.4)"}`,
+                              background: apt.status === "confirmed" ? "rgba(16,185,129,0.15)" : apt.status === "cancelled" ? "rgba(239,68,68,0.15)" : "rgba(251,15,5,0.12)",
+                              border: `1px solid ${apt.status === "confirmed" ? "rgba(16,185,129,0.4)" : apt.status === "cancelled" ? "rgba(239,68,68,0.4)" : "rgba(251,15,5,0.4)"}`,
                               borderRadius: "6px",
                               padding: "4px 6px",
                               fontSize: "11px",
@@ -190,7 +190,7 @@ export default function CalendarPage() {
                               textDecoration: apt.status === "cancelled" ? "line-through" : "none",
                               opacity: apt.status === "cancelled" ? 0.6 : 1
                             }}>
-                              <div style={{ fontWeight: 700, color: apt.status === "confirmed" ? "var(--success)" : apt.status === "cancelled" ? "var(--error)" : "var(--accent-blue)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                              <div style={{ fontWeight: 700, color: apt.status === "confirmed" ? "var(--success)" : apt.status === "cancelled" ? "var(--error)" : "#fb0f05", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                 {apt.appointment_time} {(apt.clients as any)?.name || "Cliente"}
                               </div>
                               <div style={{ color: "var(--text-secondary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>

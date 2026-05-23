@@ -35,7 +35,7 @@ export default function SettingsPage() {
                 display: "inline-block",
                 width: "48px",
                 height: "24px",
-                backgroundColor: requireDeposit ? "var(--accent-blue)" : "var(--border-light)",
+                backgroundColor: requireDeposit ? "#fb0f05" : "var(--border-light)",
                 borderRadius: "var(--radius-full)",
                 position: "relative",
                 transition: "background-color 0.2s"
@@ -74,12 +74,12 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <div style={{ padding: "var(--spacing-lg)", border: "1px solid var(--border-light)", borderRadius: "var(--radius-base)", background: "rgba(99,102,241,0.04)" }}>
+        <div style={{ padding: "var(--spacing-lg)", border: "1px solid rgba(251,15,5,0.15)", borderRadius: "var(--radius-base)", background: "rgba(251,15,5,0.04)" }}>
           <div style={{ fontWeight: 600, marginBottom: "4px" }}>💡 Personalización de Marca</div>
           <div style={{ fontSize: "14px", color: "var(--text-secondary)", marginBottom: "12px" }}>
             Para cambiar el logo, colores y mensaje de bienvenida de tu landing de citas, ve a la sección <strong>Mi Marca</strong> en el menú lateral.
           </div>
-          <a href="/admin/branding" style={{ color: "var(--accent-blue)", fontWeight: 600, fontSize: "14px", textDecoration: "none" }}>
+          <a href="/admin/branding" style={{ color: "#fb0f05", fontWeight: 600, fontSize: "14px", textDecoration: "none" }}>
             → Ir a Mi Marca
           </a>
         </div>

@@ -166,7 +166,7 @@ export default function ClientsPage() {
                     <td style={{ padding: "var(--spacing-md)", color: "var(--text-secondary)" }}>{client.email || "—"}</td>
                     <td style={{ padding: "var(--spacing-md)" }}>
                       <div style={{ display: "flex", gap: "12px" }}>
-                        <button onClick={() => openEdit(client)} style={{ background: "none", border: "none", color: "var(--accent-blue)", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>
+                        <button onClick={() => openEdit(client)} style={{ background: "none", border: "none", color: "#fb0f05", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>
                           Editar
                         </button>
                         <button onClick={() => handleDelete(client.id)} style={{ background: "none", border: "none", color: "var(--error)", cursor: "pointer", fontWeight: 600, fontSize: "13px" }}>

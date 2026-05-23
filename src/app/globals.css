@@ -6,8 +6,8 @@
   --surface: #FFFFFF;
   --text-primary: #0F172A; /* Deep Slate */
   --text-secondary: #64748B; /* Slate Gray */
-  --accent-blue: #2563EB; /* Trust Blue */
-  --accent-blue-hover: #1D4ED8;
+  --accent-blue: #fb0f05; /* Zyncra Red */
+  --accent-blue-hover: #d90d04;
   --border-light: #E2E8F0;
   
   /* Semantic */
@@ -16,8 +16,8 @@
   --warning: #F59E0B;
 
   /* Typography */
-  --font-heading: 'Manrope', sans-serif;
-  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Plus Jakarta Sans', 'Manrope', sans-serif;
+  --font-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
 
   /* Shapes */
   --radius-sm: 4px;
@@ -87,19 +87,27 @@ input, textarea, select {
 
 /* Buttons */
 .btn-primary {
-  background-color: var(--accent-blue);
+  background: linear-gradient(135deg, #fb0f05 0%, #9B3FC8 50%, #0027fe 100%);
   color: #fff;
   padding: var(--spacing-sm) var(--spacing-lg);
   border-radius: var(--radius-base);
-  font-weight: 500;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+  box-shadow: 0 2px 10px rgba(251,15,5,0.25);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  border: none;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-primary:hover {
-  background-color: var(--accent-blue-hover);
+  opacity: 0.9;
+  box-shadow: 0 4px 16px rgba(251,15,5,0.35);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-secondary {
@@ -138,8 +146,8 @@ input, textarea, select {
 }
 
 .input-field:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  border-color: #fb0f05;
+  box-shadow: 0 0 0 3px rgba(251, 15, 5, 0.1);
   outline: none;
 }
 

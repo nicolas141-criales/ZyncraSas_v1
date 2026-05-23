@@ -31,7 +31,7 @@ const EMPTY: DashboardData = {
 };
 
 // ─── Mini sparkline (SVG) ──────────────────────────────────
-function Sparkline({ data, color = "#6366f1" }: { data: number[]; color?: string }) {
+function Sparkline({ data, color = "#fb0f05" }: { data: number[]; color?: string }) {
   if (!data.length) return null;
   const max = Math.max(...data, 1);
   const w = 80, h = 32;
@@ -53,7 +53,7 @@ function BarChart({ data }: { data: { label: string; value: number; color?: stri
           <div style={{
             width: "100%", borderRadius: "4px 4px 0 0",
             height: `${Math.max((d.value / max) * 70, 4)}px`,
-            background: d.color || "linear-gradient(to top, #6366f1, #a78bfa)",
+            background: d.color || "linear-gradient(135deg, #fb0f05, #9B3FC8, #0027fe)",
             transition: "height 0.5s ease",
           }} />
           <span style={{ fontSize: "9px", color: "var(--text-secondary)", textAlign: "center" }}>{d.label}</span>
@@ -321,7 +321,7 @@ export default function AdminOverview() {
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh", flexDirection: "column", gap: "16px" }}>
-        <div style={{ width: "44px", height: "44px", border: "4px solid var(--border-light)", borderTopColor: "var(--accent-blue)", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+        <div style={{ width: "44px", height: "44px", border: "4px solid var(--border-light)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
         <p style={{ color: "var(--text-secondary)", fontSize: "14px" }}>Cargando panel...</p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -348,9 +348,9 @@ export default function AdminOverview() {
               if (f !== "custom") fetchAll(tenantId!, f);
             }} style={{
               padding: "7px 16px", borderRadius: "10px", fontSize: "13px", fontWeight: 600, cursor: "pointer",
-              border: filter === f ? "1px solid var(--accent-blue)" : "1px solid var(--border-light)",
-              background: filter === f ? "rgba(99,102,241,0.15)" : "var(--surface)",
-              color: filter === f ? "var(--accent-blue)" : "var(--text-secondary)",
+              border: filter === f ? "1px solid #fb0f05" : "1px solid var(--border-light)",
+              background: filter === f ? "rgba(251,15,5,0.1)" : "var(--surface)",
+              color: filter === f ? "#fb0f05" : "var(--text-secondary)",
               transition: "all 0.2s",
             }}>
               {f === "hoy" ? "Hoy" : f === "semana" ? "7 días" : f === "mes" ? "30 días" : "Personalizado"}
@@ -361,7 +361,7 @@ export default function AdminOverview() {
               <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid var(--border-light)", background: "var(--bg-base)", color: "var(--text-primary)", fontSize: "12px" }} />
               <span style={{ color: "var(--text-secondary)" }}>-</span>
               <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid var(--border-light)", background: "var(--bg-base)", color: "var(--text-primary)", fontSize: "12px" }} />
-              <button onClick={() => fetchAll(tenantId!, "custom", customStart, customEnd)} disabled={!customStart || !customEnd} style={{ padding: "7px 14px", borderRadius: "8px", border: "none", background: (!customStart || !customEnd) ? "var(--border-light)" : "var(--accent-blue)", color: "#fff", cursor: (!customStart || !customEnd) ? "not-allowed" : "pointer", fontSize: "13px", fontWeight: 600 }}>
+              <button onClick={() => fetchAll(tenantId!, "custom", customStart, customEnd)} disabled={!customStart || !customEnd} style={{ padding: "7px 14px", borderRadius: "8px", border: "none", background: (!customStart || !customEnd) ? "var(--border-light)" : "#fb0f05", color: "#fff", cursor: (!customStart || !customEnd) ? "not-allowed" : "pointer", fontSize: "13px", fontWeight: 600 }}>
                 Buscar
               </button>
             </div>
@@ -381,7 +381,7 @@ export default function AdminOverview() {
           trendVal={`${Math.abs(revDiff) > 0 ? fmt(Math.abs(revDiff)) : "igual"} vs ayer`}
           trend={revTrend}
           spark={data.weeklyRevenue.map(d => d.revenue)}
-          sparkColor="#6366f1"
+          sparkColor="#fb0f05"
         />
         <MetricCard
           icon="📅"
@@ -457,7 +457,7 @@ export default function AdminOverview() {
                     <div style={{ height: "6px", borderRadius: "3px", background: "var(--border-light)", overflow: "hidden" }}>
                       <div style={{
                         height: "100%", width: `${(s.count / maxCount) * 100}%`,
-                        background: `linear-gradient(90deg, #6366f1, #a78bfa)`,
+                        background: `linear-gradient(90deg, #fb0f05, #9B3FC8, #0027fe)`,
                         borderRadius: "3px", transition: "width 0.6s ease",
                       }} />
                     </div>
@@ -487,7 +487,7 @@ export default function AdminOverview() {
               data.upcomingApts.map((apt, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 22px", borderBottom: "1px solid var(--border-light)" }}>
                   <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
-                    <div style={{ fontWeight: 800, fontSize: "13px", color: "var(--accent-blue)", minWidth: "54px" }}>{apt.appointment_time}</div>
+                    <div style={{ fontWeight: 800, fontSize: "13px", color: "#fb0f05", minWidth: "54px" }}>{apt.appointment_time}</div>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: "14px" }}>{apt.clients?.name || "—"}</div>
                       <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
@@ -523,7 +523,7 @@ export default function AdminOverview() {
                 <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                   <div style={{
                     width: "34px", height: "34px", borderRadius: "50%",
-                    background: "linear-gradient(135deg, #6366f1, #a78bfa)",
+                    background: "linear-gradient(135deg, #fb0f05, #9B3FC8, #0027fe)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     color: "#fff", fontWeight: 700, fontSize: "12px", flexShrink: 0,
                   }}>
@@ -534,7 +534,7 @@ export default function AdminOverview() {
                     <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>{s.count} citas esta semana</div>
                   </div>
                 </div>
-                <div style={{ fontWeight: 700, fontSize: "13px", color: "var(--accent-blue)" }}>{fmt(s.revenue)}</div>
+                <div style={{ fontWeight: 700, fontSize: "13px", color: "#fb0f05" }}>{fmt(s.revenue)}</div>
               </div>
             ))
           )}
@@ -546,7 +546,7 @@ export default function AdminOverview() {
         <div style={{ fontWeight: 700, fontSize: "14px", marginBottom: "16px" }}>⚡ Acciones Rápidas</div>
         <div style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
           {[
-            { icon: "➕", label: "Nueva Cita", color: "#6366f1", onClick: openNewAppt },
+            { icon: "➕", label: "Nueva Cita", color: "#fb0f05", onClick: openNewAppt },
             { icon: "🚫", label: "Bloquear Horario", color: "#64748b", onClick: () => { setBlockMsg(""); setBlockForm({ date:"",start:"",end:"",reason:"" }); setShowBlock(true); } },
             { icon: "💬", label: "Recordatorio WhatsApp", color: "#25D366", onClick: () => setShowWA(true) },
             { icon: "👤", label: "Nuevo Cliente", color: "#f59e0b", onClick: () => window.location.href = "/admin/clients" },
