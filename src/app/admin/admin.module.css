@@ -4,6 +4,7 @@
   min-height: 100dvh;
   background: #f7f5f2;
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 
 /* ─── SIDEBAR ─── */
