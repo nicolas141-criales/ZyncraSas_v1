@@ -70,7 +70,7 @@ const NAV_GROUPS: NavGroup[] = [
 // Pages that are coming soon
 const COMING_SOON = new Set([
   "/admin/reminders", "/admin/whatsapp", "/admin/reviews-google",
-  "/admin/reviews-site", "/admin/pos", "/admin/caja",
+  "/admin/reviews-site", "/admin/pos",
   "/admin/invoices", "/admin/custom-fields",
 ]);
 
