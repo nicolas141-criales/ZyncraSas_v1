@@ -239,3 +239,36 @@ CREATE POLICY "tenant_site_reviews_admin" ON public.site_reviews
 -- Allow anyone to insert a site_review (public form)
 CREATE POLICY "public_insert_site_reviews" ON public.site_reviews
   FOR INSERT WITH CHECK (true);
+
+-- =====================================================================
+-- Zyncra – Marketing WhatsApp
+-- =====================================================================
+
+CREATE TABLE IF NOT EXISTS public.wa_campaigns (
+  id               uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id        uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  name             text NOT NULL,
+  message          text NOT NULL,
+  segment          text NOT NULL DEFAULT 'all',
+  recipients_count integer NOT NULL DEFAULT 0,
+  status           text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'sending', 'sent')),
+  sent_at          timestamptz,
+  created_at       timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.wa_templates (
+  id         uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id  uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  name       text NOT NULL,
+  message    text NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.wa_campaigns ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.wa_templates ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "tenant_wa_campaigns" ON public.wa_campaigns
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+CREATE POLICY "tenant_wa_templates" ON public.wa_templates
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));

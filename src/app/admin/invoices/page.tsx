@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAdminContext } from "../admin-context";
+import { useAdmin } from "../admin-context";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -159,7 +159,7 @@ function StatusBadge({ status }: { status: string }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function InvoicesPage() {
-  const { tenantId } = useAdminContext();
+  const { tenantId } = useAdmin();
   const [tab, setTab] = useState<"config" | "nueva" | "historial">("config");
 
   // Settings

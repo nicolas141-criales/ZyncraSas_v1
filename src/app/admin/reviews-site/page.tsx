@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAdminContext } from "../admin-context";
+import { useAdmin } from "../admin-context";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -50,7 +50,7 @@ function StatusBadge({ status }: { status: string }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function ReviewsSitePage() {
-  const { tenantId } = useAdminContext();
+  const { tenantId } = useAdmin();
   const [tab, setTab] = useState<"resumen" | "resenas" | "config">("resumen");
 
   const [reviews, setReviews] = useState<SiteReview[]>([]);

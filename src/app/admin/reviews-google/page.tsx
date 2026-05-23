@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
-import { useAdminContext } from "../admin-context";
+import { useAdmin } from "../admin-context";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -52,7 +52,7 @@ function StarDisplay({ n }: { n: number }) {
 // ── Main ──────────────────────────────────────────────────────────────────────
 
 export default function ReviewsGooglePage() {
-  const { tenantId } = useAdminContext();
+  const { tenantId } = useAdmin();
   const [tab, setTab] = useState<"config" | "solicitar" | "historial">("config");
 
   // Settings
