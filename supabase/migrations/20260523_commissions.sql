@@ -187,3 +187,55 @@ CREATE POLICY "tenant_invoice_items" ON public.invoice_items
     SELECT id FROM public.invoices
     WHERE tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid())
   ));
+
+-- =====================================================================
+-- Zyncra – Reseñas Google & Reseñas del Negocio
+-- =====================================================================
+
+CREATE TABLE IF NOT EXISTS public.google_review_settings (
+  id                  uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id           uuid NOT NULL UNIQUE REFERENCES public.tenants(id) ON DELETE CASCADE,
+  google_maps_url     text,
+  message_template    text,
+  show_on_booking     boolean NOT NULL DEFAULT true,
+  created_at          timestamptz NOT NULL DEFAULT now(),
+  updated_at          timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.review_requests (
+  id           uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id    uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  client_id    uuid REFERENCES public.clients(id) ON DELETE SET NULL,
+  client_name  text NOT NULL,
+  client_phone text,
+  sent_via     text NOT NULL DEFAULT 'manual',
+  created_at   timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.site_reviews (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id   uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  client_name text NOT NULL,
+  rating      integer NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  comment     text,
+  service     text,
+  status      text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.google_review_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.review_requests        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.site_reviews           ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "tenant_google_review_settings" ON public.google_review_settings
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+CREATE POLICY "tenant_review_requests" ON public.review_requests
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+CREATE POLICY "tenant_site_reviews_admin" ON public.site_reviews
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+-- Allow anyone to insert a site_review (public form)
+CREATE POLICY "public_insert_site_reviews" ON public.site_reviews
+  FOR INSERT WITH CHECK (true);
