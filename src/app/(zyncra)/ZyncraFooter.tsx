@@ -7,7 +7,7 @@ export default function ZyncraFooter() {
       <div className="z-footer-top">
         <div>
           <div className="z-footer-logo"><ZyncraLogo height={32} invert /></div>
-          <p className="z-footer-desc">Software de gestión todo en uno para barberías y salones en Colombia y Latinoamérica.</p>
+          <p className="z-footer-desc">Software de gestión todo en uno para negocios de servicios con citas en Colombia y Latinoamérica.</p>
         </div>
         <div>
           <div className="z-footer-col-title">Producto</div>

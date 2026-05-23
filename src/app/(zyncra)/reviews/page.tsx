@@ -31,14 +31,14 @@ export default function ReviewsPage() {
           Lo que dicen<br />nuestros clientes
         </h1>
         <p className="z-section-sub z-fadeup z-d2" style={{ maxWidth: 480, margin: "0 auto" }}>
-          Barberías reales que transformaron su operación con Zyncra.
+          Negocios reales que transformaron su operación con Zyncra.
         </p>
       </div>
 
       {/* ── METRICS ── */}
       <section style={{ background: "var(--z-cream-2)" }}>
         <div className="z-metrics-grid">
-          {[["500+","Barberías activas"],["4.9★","Calificación promedio"],["−60%","Reducción de no-shows"],["98%","Clientes satisfechos"]].map(([val, label], i) => (
+          {[["500+","Negocios activos"],["4.9★","Calificación promedio"],["−60%","Reducción de no-shows"],["98%","Clientes satisfechos"]].map(([val, label], i) => (
             <div key={i} className={`z-metric-card z-reveal z-d${i + 1}`}>
               <span className="z-metric-val">{val}</span>
               <div className="z-metric-label">{label}</div>
@@ -105,7 +105,7 @@ export default function ReviewsPage() {
         <div style={{ textAlign: "center", marginBottom: 52 }} className="z-reveal">
           <div className="z-label" style={{ justifyContent: "center" }}>Video testimonios</div>
           <h2 className="z-section-title">Ellos lo cuentan mejor</h2>
-          <p className="z-section-sub" style={{ maxWidth: 480, margin: "0 auto" }}>Escucha directamente a los dueños de barbería que ya usan Zyncra.</p>
+          <p className="z-section-sub" style={{ maxWidth: 480, margin: "0 auto" }}>Escucha directamente a los dueños de negocios de servicios que ya usan Zyncra.</p>
         </div>
         <div className="z-video-grid">
           {videos.map((v, i) => (
@@ -125,7 +125,7 @@ export default function ReviewsPage() {
 
       {/* ── CTA ── */}
       <div className="z-cta-banner z-reveal">
-        <h2 className="z-cta-title">Únete a las barberías<br />que ya crecen con Zyncra</h2>
+        <h2 className="z-cta-title">Únete a los negocios<br />que ya crecen con Zyncra</h2>
         <p className="z-cta-sub">Empieza gratis, sin tarjeta de crédito.</p>
         <div className="z-cta-actions">
           <Link href="/pricing" className="z-btn-white">Ver planes →</Link>

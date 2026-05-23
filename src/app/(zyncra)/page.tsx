@@ -22,10 +22,10 @@ export default function HomePage() {
             Zyncra Business Suite 2025
           </div>
           <h1 className="z-hero-title z-fadeup z-d1">
-            Software de gestión<br />para tu <span className="accent">barbería.</span>
+            Software de gestión<br />para tu <span className="accent">negocio.</span>
           </h1>
           <p className="z-hero-sub z-fadeup z-d2">
-            Agenda inteligente, marketing por WhatsApp, sistema POS y facturación electrónica DIAN. Todo en una sola plataforma.
+            Agenda inteligente, marketing por WhatsApp, sistema POS y facturación electrónica DIAN. Para barberías, spas, salones, manicuristas y más.
           </p>
           <div className="z-hero-actions z-fadeup z-d3">
             <Link href="/pricing" className="z-btn-xl">Empezar gratis →</Link>
@@ -105,7 +105,7 @@ export default function HomePage() {
 
       {/* ── STATS STRIP ── */}
       <div className="z-stats-strip">
-        <div className="z-stat-item z-reveal"><span className="z-stat-val">500+</span><div className="z-stat-label">Barberías activas</div></div>
+        <div className="z-stat-item z-reveal"><span className="z-stat-val">500+</span><div className="z-stat-label">Negocios activos</div></div>
         <div className="z-stat-item z-reveal z-d1"><span className="z-stat-val">1M+</span><div className="z-stat-label">Citas gestionadas</div></div>
         <div className="z-stat-item z-reveal z-d2"><span className="z-stat-val">4.9★</span><div className="z-stat-label">Valoración promedio</div></div>
         <div className="z-stat-item z-reveal z-d3"><span className="z-stat-val">−60%</span><div className="z-stat-label">Reducción no-shows</div></div>
@@ -133,8 +133,8 @@ export default function HomePage() {
       <section style={{ background: "var(--z-cream)" }}>
         <div style={{ textAlign: "center", marginBottom: 56 }} className="z-reveal">
           <div className="z-label" style={{ justifyContent: "center" }}>Funcionalidades</div>
-          <h2 className="z-section-title">Todo lo que tu barbería necesita</h2>
-          <p className="z-section-sub" style={{ maxWidth: 500, margin: "0 auto" }}>Una plataforma completa para el día a día de tu negocio.</p>
+          <h2 className="z-section-title">Todo lo que tu negocio necesita</h2>
+          <p className="z-section-sub" style={{ maxWidth: 500, margin: "0 auto" }}>Una plataforma completa para negocios de servicios que trabajan con citas.</p>
         </div>
         <div className="z-features-grid">
           {[
@@ -160,8 +160,8 @@ export default function HomePage() {
 
       {/* ── CTA BANNER ── */}
       <div className="z-cta-banner z-reveal">
-        <h2 className="z-cta-title">¿Listo para transformar<br />tu barbería?</h2>
-        <p className="z-cta-sub">Únete a más de 500 barberías que ya usan Zyncra.</p>
+        <h2 className="z-cta-title">¿Listo para transformar<br />tu negocio?</h2>
+        <p className="z-cta-sub">Únete a más de 500 negocios de servicios que ya usan Zyncra.</p>
         <div className="z-cta-actions">
           <Link href="/pricing" className="z-btn-white">Empezar gratis →</Link>
           <Link href="/features" className="z-btn-outline-white">Ver funciones</Link>

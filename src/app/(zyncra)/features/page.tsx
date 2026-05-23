@@ -15,10 +15,10 @@ export default function FeaturesPage() {
         <div style={{ position: "relative", zIndex: 1 }}>
           <div className="z-label z-fadein" style={{ justifyContent: "center" }}>Funcionalidades</div>
           <h1 className="z-section-title z-fadeup z-d1" style={{ fontSize: "clamp(36px,5vw,58px)" }}>
-            Todo para hacer crecer<br />tu barbería
+            Todo para hacer crecer<br />tu negocio
           </h1>
           <p className="z-section-sub z-fadeup z-d2" style={{ maxWidth: 520, margin: "0 auto" }}>
-            Cada función fue diseñada pensando en las necesidades reales de las barberías colombianas.
+            Cada función fue diseñada para negocios de servicios que gestionan citas: spas, salones, clínicas, estudios y más.
           </p>
         </div>
       </div>
@@ -90,7 +90,7 @@ export default function FeaturesPage() {
           <div className="z-reveal-r" style={{ direction: "ltr" }}>
             <div className="z-label">WhatsApp & Marketing</div>
             <h2 className="z-section-title">Tu negocio activo 24/7<br />por WhatsApp</h2>
-            <p className="z-section-sub">Reservas automáticas, recordatorios y campañas de marketing desde tu propio número.</p>
+            <p className="z-section-sub">Reservas automáticas, recordatorios y campañas de marketing desde tu número, sin importar el tipo de servicio que ofrezcas.</p>
             <div className="z-feat-list">
               <div className="z-feat-li">
                 <div className="z-feat-li-icon">📲</div>
@@ -164,7 +164,7 @@ export default function FeaturesPage() {
 
       {/* ── CTA ── */}
       <div className="z-cta-banner z-reveal">
-        <h2 className="z-cta-title">Todas las funciones en<br />una sola plataforma</h2>
+        <h2 className="z-cta-title">Una sola plataforma<br />para todo tu equipo</h2>
         <p className="z-cta-sub">Empieza gratis, sin tarjeta de crédito.</p>
         <div className="z-cta-actions">
           <Link href="/pricing" className="z-btn-white">Ver planes →</Link>

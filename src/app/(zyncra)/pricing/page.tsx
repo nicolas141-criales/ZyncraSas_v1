@@ -11,7 +11,7 @@ const faqs = [
   { q: "¿Qué pasa si cancelo mi suscripción?", a: "Puedes cancelar cuando quieras sin penalización. Tendrás acceso hasta el final del período pagado y podrás exportar tus datos." },
   { q: "¿El precio incluye IVA?", a: "Los precios mostrados no incluyen IVA. Para empresas puede aplicar deducción de impuestos. Consulta con tu contador." },
   { q: "¿Cómo funciona la facturación electrónica DIAN?", a: "Está integrada directamente en el sistema. Al cerrar una venta, la factura se genera y envía automáticamente al cliente. Incluye CUFE, XML y habilitación DIAN." },
-  { q: "¿Funciona para salones de belleza también?", a: "Sí, Zyncra es ideal para barberías, salones de belleza, peluquerías y centros de estética en general." },
+  { q: "¿Funciona para negocios distintos a barberías?", a: "Sí. Zyncra está diseñado para cualquier negocio que gestione citas: spas, salones de belleza, centros de estética, manicuristas, clínicas de bienestar, estudios de tatuajes y más." },
 ];
 
 function FaqItem({ q, a }: { q: string; a: string }) {
@@ -49,7 +49,7 @@ export default function PricingPage() {
           {/* Plan Esencial */}
           <div className="z-plan-card z-reveal">
             <div className="z-plan-name">Plan Esencial</div>
-            <p className="z-plan-tagline">Para digitalizar tu barbería.</p>
+            <p className="z-plan-tagline">Para digitalizar tu negocio.</p>
             <div className="z-plan-price"><sup>$</sup>99.900</div>
             <div className="z-plan-period">/ mes · hasta 3 colaboradores</div>
             <hr className="z-plan-divider" />
@@ -79,7 +79,7 @@ export default function PricingPage() {
           <div className="z-plan-card featured z-reveal z-d2">
             <div className="z-plan-popular">Más popular</div>
             <div className="z-plan-name">Plan Pro</div>
-            <p className="z-plan-tagline">Para barberías que quieren escalar.</p>
+            <p className="z-plan-tagline">Para negocios que quieren escalar.</p>
             <div className="z-plan-price"><sup>$</sup>199.900</div>
             <div className="z-plan-period">/ mes · colaboradores ilimitados</div>
             <hr className="z-plan-divider" />
@@ -111,7 +111,7 @@ export default function PricingPage() {
           </div>
         </div>
         <p style={{ textAlign: "center", marginTop: 28, fontSize: 14, color: "var(--z-ink-4)" }}>
-          ¿Tienes más de una sede?{" "}
+          ¿Tienes múltiples sedes o un equipo grande?{" "}
           <Link href="#" style={{ color: "var(--z-red)", textDecoration: "none", fontWeight: 600 }}>Contáctanos</Link>
           {" "}para un plan personalizado.
         </p>
