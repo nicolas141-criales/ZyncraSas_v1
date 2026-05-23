@@ -202,47 +202,90 @@ export default function BrandingPage() {
         <div>
           <div style={{ fontWeight: 700, fontSize: "13px", color: "#6b6b80", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>Vista previa en vivo</div>
           <div style={{ border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
+
             {/* Browser bar mockup */}
-            <div style={{ background: "#f7f5f2", padding: "10px 16px", display: "flex", alignItems: "center", gap: "8px", borderBottom: "1px solid #e8e6e2" }}>
+            <div style={{ background: "#f0eee9", padding: "10px 14px", display: "flex", alignItems: "center", gap: "8px", borderBottom: "1px solid #e8e6e2" }}>
               <div style={{ display: "flex", gap: "5px" }}>
-                {["#ff5f57","#ffbd2e","#28c840"].map(c => <div key={c} style={{ width: "10px", height: "10px", borderRadius: "50%", background: c }} />)}
+                {["#ff5f57","#ffbd2e","#28c840"].map(c => <div key={c} style={{ width: "9px", height: "9px", borderRadius: "50%", background: c }} />)}
               </div>
-              <div style={{ flex: 1, background: "white", border: "1px solid #e8e6e2", borderRadius: "6px", padding: "4px 10px", fontSize: "11px", color: "#a0a0b0", fontFamily: "monospace" }}>
+              <div style={{ flex: 1, background: "white", border: "1px solid #e8e6e2", borderRadius: "5px", padding: "3px 9px", fontSize: "10px", color: "#a0a0b0", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 zyncra.app/book/{tenantSlug}
               </div>
             </div>
 
-            {/* Preview content */}
-            <div style={{ background: "#050814", padding: "28px 24px", minHeight: "260px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "14px" }}>
-              {logoPreview ? (
-                <div style={{ width: "88px", height: "88px", borderRadius: "50%", background: "#12182b", border: "2px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                  <img src={logoPreview} alt="logo" style={{ width: `${config.logo_size}%`, height: `${config.logo_size}%`, objectFit: "contain", objectPosition: config.logo_object_position }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
-                </div>
-              ) : (
-                <div style={{ width: "72px", height: "72px", borderRadius: "50%", background: `linear-gradient(135deg,${config.primary_color},${config.secondary_color})`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: "28px", fontWeight: 900, color: "white" }}>{config.business_name.charAt(0)}</span>
-                </div>
-              )}
-              <div style={{ textAlign: "center" }}>
-                <div style={{ fontSize: "20px", fontWeight: 900, color: "#F0F4FF", letterSpacing: "-0.5px", lineHeight: 1.2, marginBottom: "6px" }}>{config.business_name}</div>
-                <p style={{ fontSize: "13px", color: "rgba(200,210,255,0.6)", marginBottom: "18px" }}>{config.welcome_message}</p>
-                <button style={{ background: `linear-gradient(135deg,${config.primary_color},${config.secondary_color})`, color: "#fff", border: "none", padding: "10px 24px", borderRadius: "10px", fontWeight: 700, cursor: "pointer", fontSize: "13px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  Reservar cita →
-                </button>
+            {/* Page background */}
+            <div style={{ background: "#f7f5f2", padding: "20px 16px", minHeight: "380px" }}>
+
+              {/* Header */}
+              <div style={{ textAlign: "center", marginBottom: "16px" }}>
+                {logoPreview ? (
+                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "white", border: "2px solid #e8e6e2", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", margin: "0 auto 8px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
+                    <img src={logoPreview} alt="logo" style={{ width: `${config.logo_size}%`, height: `${config.logo_size}%`, objectFit: "contain", objectPosition: config.logo_object_position }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                  </div>
+                ) : (
+                  <div style={{ fontSize: "16px", fontWeight: 800, letterSpacing: "-0.3px", marginBottom: "4px", background: `linear-gradient(135deg,${config.primary_color},${config.secondary_color})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    {config.business_name}
+                  </div>
+                )}
+                {logoPreview && (
+                  <div style={{ fontSize: "13px", fontWeight: 800, color: "#111118", marginBottom: "2px" }}>{config.business_name}</div>
+                )}
+                <div style={{ fontSize: "11px", color: "#6b6b80" }}>{config.welcome_message}</div>
               </div>
 
-              {/* Slot preview */}
-              <div style={{ width: "100%", maxWidth: "260px", marginTop: "8px" }}>
+              {/* Progress bar preview */}
+              <div style={{ display: "flex", alignItems: "center", marginBottom: "14px", gap: "0" }}>
                 {[
-                  { time: "9:00", label: "Disponible", style: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(200,210,255,0.5)" } },
-                  { time: "10:30", label: "Disponible", style: { background: `${config.primary_color}18`, border: `1px solid ${config.primary_color}40`, color: config.primary_color } },
-                  { time: "12:00", label: "Disponible", style: { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(200,210,255,0.5)" } },
-                ].map((slot, i) => (
-                  <div key={i} style={{ display: "flex", gap: "8px", alignItems: "center", marginBottom: "5px" }}>
-                    <span style={{ fontSize: "10px", color: "rgba(200,210,255,0.35)", fontWeight: 600, minWidth: "34px" }}>{slot.time}</span>
-                    <div style={{ flex: 1, padding: "7px 10px", borderRadius: "8px", fontSize: "11px", fontWeight: 600, ...slot.style }}>{slot.label}</div>
+                  { label: "Servicio", active: true },
+                  { label: "Fecha", active: false },
+                  { label: "Datos", active: false },
+                ].map((s, idx) => (
+                  <div key={idx} style={{ display: "flex", alignItems: "center", flex: 1 }}>
+                    {idx > 0 && <div style={{ flex: 1, height: "2px", background: "#e8e6e2", margin: "0 4px", marginBottom: "14px" }} />}
+                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", flexShrink: 0 }}>
+                      <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: s.active ? `linear-gradient(135deg,${config.primary_color},${config.secondary_color})` : "white", border: `1.5px solid ${s.active ? config.primary_color : "#e8e6e2"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 700, color: s.active ? "white" : "#a0a0b0" }}>
+                        {idx + 1}
+                      </div>
+                      <span style={{ fontSize: "9px", fontWeight: 600, color: s.active ? "#111118" : "#a0a0b0", whiteSpace: "nowrap" }}>{s.label}</span>
+                    </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Card preview */}
+              <div style={{ background: "white", borderRadius: "16px", border: "1px solid #e8e6e2", padding: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+                <div style={{ fontSize: "12px", fontWeight: 800, color: "#111118", marginBottom: "12px" }}>¿Qué servicio necesitas?</div>
+
+                {/* Service row examples */}
+                {[
+                  { name: "Servicio de ejemplo", dur: "45 min", price: "$50", selected: false },
+                  { name: "Servicio destacado", dur: "60 min", price: "$80", selected: true },
+                ].map((svc, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "11px", border: `1.5px solid ${svc.selected ? config.primary_color : "#e8e6e2"}`, background: svc.selected ? config.primary_color + "12" : "white", marginBottom: i === 0 ? "8px" : 0 }}>
+                    <div style={{ width: "36px", height: "36px", borderRadius: "9px", background: config.primary_color + "14", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={config.primary_color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
+                      </svg>
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: "11px", fontWeight: 700, color: "#111118" }}>{svc.name}</div>
+                      <div style={{ fontSize: "10px", color: "#6b6b80", marginTop: "2px" }}>{svc.dur}</div>
+                    </div>
+                    <div style={{ fontSize: "13px", fontWeight: 800, color: config.primary_color, flexShrink: 0 }}>{svc.price}</div>
+                    {svc.selected && (
+                      <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: config.primary_color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {/* Continue button */}
+                <div style={{ marginTop: "14px", paddingTop: "12px", borderTop: "1px solid #f0eeeb", display: "flex", justifyContent: "flex-end" }}>
+                  <div style={{ background: `linear-gradient(135deg,${config.primary_color},${config.secondary_color})`, color: "white", padding: "8px 18px", borderRadius: "8px", fontSize: "11px", fontWeight: 700 }}>
+                    Continuar →
+                  </div>
+                </div>
               </div>
             </div>
           </div>
