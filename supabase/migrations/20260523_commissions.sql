@@ -272,3 +272,95 @@ CREATE POLICY "tenant_wa_campaigns" ON public.wa_campaigns
 
 CREATE POLICY "tenant_wa_templates" ON public.wa_templates
   USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+-- =====================================================================
+-- Zyncra – Platform Admin (Super Admin del SaaS)
+-- =====================================================================
+
+-- Administradores de la plataforma
+CREATE TABLE IF NOT EXISTS public.platform_admins (
+  user_id    uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Planes de suscripción
+CREATE TABLE IF NOT EXISTS public.saas_plans (
+  id             uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  name           text NOT NULL,
+  price          numeric NOT NULL DEFAULT 0,
+  billing_cycle  text NOT NULL DEFAULT 'monthly',
+  description    text,
+  features       jsonb NOT NULL DEFAULT '[]',
+  active         boolean NOT NULL DEFAULT true,
+  created_at     timestamptz NOT NULL DEFAULT now()
+);
+
+-- Suscripción de cada tenant
+CREATE TABLE IF NOT EXISTS public.saas_subscriptions (
+  id                   uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id            uuid NOT NULL UNIQUE REFERENCES public.tenants(id) ON DELETE CASCADE,
+  plan_id              uuid REFERENCES public.saas_plans(id) ON DELETE SET NULL,
+  status               text NOT NULL DEFAULT 'trial'
+                         CHECK (status IN ('trial','active','overdue','suspended','cancelled')),
+  trial_ends_at        timestamptz,
+  current_period_start date,
+  current_period_end   date,
+  amount               numeric NOT NULL DEFAULT 0,
+  notes                text,
+  created_at           timestamptz NOT NULL DEFAULT now(),
+  updated_at           timestamptz NOT NULL DEFAULT now()
+);
+
+-- Registro de pagos
+CREATE TABLE IF NOT EXISTS public.saas_payments (
+  id              uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id       uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  subscription_id uuid REFERENCES public.saas_subscriptions(id) ON DELETE SET NULL,
+  amount          numeric NOT NULL,
+  status          text NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending','paid','failed')),
+  due_date        date,
+  paid_at         timestamptz,
+  method          text,
+  reference       text,
+  notes           text,
+  created_at      timestamptz NOT NULL DEFAULT now()
+);
+
+-- RLS: solo platform_admins leen todo
+ALTER TABLE public.platform_admins   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.saas_plans        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.saas_subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.saas_payments     ENABLE ROW LEVEL SECURITY;
+
+-- platform_admins se gestiona solo (el admin se inserta directamente)
+CREATE POLICY "platform_admin_self" ON public.platform_admins
+  USING (user_id = auth.uid());
+
+-- saas_plans: cualquier autenticado puede leer (para mostrar pricing público)
+CREATE POLICY "public_read_saas_plans" ON public.saas_plans
+  FOR SELECT USING (true);
+
+CREATE POLICY "platform_admin_manage_plans" ON public.saas_plans
+  USING (EXISTS (SELECT 1 FROM public.platform_admins WHERE user_id = auth.uid()));
+
+-- saas_subscriptions: solo platform_admin
+CREATE POLICY "platform_admin_subscriptions" ON public.saas_subscriptions
+  USING (EXISTS (SELECT 1 FROM public.platform_admins WHERE user_id = auth.uid()));
+
+-- saas_payments: solo platform_admin
+CREATE POLICY "platform_admin_payments" ON public.saas_payments
+  USING (EXISTS (SELECT 1 FROM public.platform_admins WHERE user_id = auth.uid()));
+
+-- Permite al platform_admin leer TODOS los tenants (además de la política existente)
+CREATE POLICY "platform_admin_read_all_tenants" ON public.tenants
+  FOR SELECT USING (
+    owner_id = auth.uid()
+    OR EXISTS (SELECT 1 FROM public.platform_admins WHERE user_id = auth.uid())
+  );
+
+-- Insertar el platform admin (criales66@gmail.com)
+-- IMPORTANTE: Ejecutar DESPUÉS de que el usuario haya creado su cuenta
+INSERT INTO public.platform_admins (user_id)
+SELECT id FROM auth.users WHERE email = 'criales66@gmail.com'
+ON CONFLICT (user_id) DO NOTHING;
