@@ -22,7 +22,7 @@ export default function ZyncraLogo({ height = 36, dark = false }: ZyncraLogoProp
   if (dark) {
     return (
       <div style={{
-        background: "rgba(255,255,255,0.12)",
+        background: "white",
         borderRadius: 10,
         padding: "5px 12px",
         display: "inline-flex",

@@ -42,7 +42,7 @@ export default function LoginPage() {
       {/* ── Left brand panel ── */}
       <div className={styles.brand}>
         <div className={styles.brandLogo}>
-          <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "7px 14px", display: "inline-flex" }}>
+          <div style={{ background: "white", borderRadius: 12, padding: "7px 14px", display: "inline-flex" }}>
             <Image src="/zyncra-logo.png" alt="Zyncra" height={28} width={86} style={{ height: 28, width: "auto" }} />
           </div>
         </div>

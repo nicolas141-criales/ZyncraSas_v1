@@ -132,7 +132,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Logo */}
             <div className={styles.brand}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 10, padding: "6px 12px", display: "inline-flex" }}>
+                <div style={{ background: "white", borderRadius: 10, padding: "6px 12px", display: "inline-flex" }}>
                   <Image src="/zyncra-logo.png" alt="Zyncra" height={26} width={80}
                     style={{ height: 26, width: "auto" }} />
                 </div>
