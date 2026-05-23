@@ -73,7 +73,9 @@ export default function LoginPage() {
         <div className={styles.card}>
           {/* Logo only on mobile */}
           <div className={styles.logoMobile}>
-            <Image src="/zyncra-logo.png" alt="Zyncra" height={32} width={98} style={{ height: 32, width: "auto" }} />
+            <div style={{ background: "white", borderRadius: 10, padding: "5px 12px", display: "inline-flex", border: "1px solid #e8e6e2" }}>
+              <Image src="/zyncra-logo.png" alt="Zyncra" height={28} width={86} style={{ height: 28, width: "auto" }} />
+            </div>
           </div>
 
           <h1 className={styles.heading}>Bienvenido de vuelta</h1>
