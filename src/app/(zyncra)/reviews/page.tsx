@@ -13,9 +13,9 @@ const reviews = [
 ];
 
 const videos = [
-  { emoji: "💈", name: "Alejandro Ruiz",  biz: "Black Fade · Bogotá",    gradient: "linear-gradient(160deg,#E8192C 0%,#9B3FC8 100%)" },
-  { emoji: "✂️", name: "Carlos Medina",   biz: "Barber Club · Medellín", gradient: "linear-gradient(160deg,#9B3FC8 0%,#2042E8 100%)" },
-  { emoji: "🪒", name: "Luis Pedraza",    biz: "The Sharp Cut · Cali",   gradient: "linear-gradient(160deg,#2042E8 0%,#E8192C 100%)" },
+  { emoji: "💈", name: "Alejandro Ruiz",  biz: "Black Fade · Bogotá",    gradient: "linear-gradient(160deg,#fb0f05 0%,#9B3FC8 100%)" },
+  { emoji: "✂️", name: "Carlos Medina",   biz: "Barber Club · Medellín", gradient: "linear-gradient(160deg,#9B3FC8 0%,#0027fe 100%)" },
+  { emoji: "🪒", name: "Luis Pedraza",    biz: "The Sharp Cut · Cali",   gradient: "linear-gradient(160deg,#0027fe 0%,#fb0f05 100%)" },
 ];
 
 export default function ReviewsPage() {

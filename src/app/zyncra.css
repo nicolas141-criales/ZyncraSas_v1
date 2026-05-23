@@ -3,11 +3,11 @@
    ============================================================ */
 
 :root {
-  --z-red: #E8192C;
-  --z-red-tint: #fef0f1;
+  --z-red: #fb0f05;
+  --z-red-tint: #fff0f0;
   --z-purple: #7B2FBE;
-  --z-blue: #2042E8;
-  --z-gradient: linear-gradient(135deg,#E8192C 0%,#9B3FC8 50%,#2042E8 100%);
+  --z-blue: #0027fe;
+  --z-gradient: linear-gradient(135deg,#fb0f05 0%,#9B3FC8 50%,#0027fe 100%);
   --z-ink: #111118;
   --z-ink-2: #3a3a48;
   --z-ink-3: #6b6b80;
@@ -99,9 +99,9 @@
 .z-btn-ghost { padding: 7px 18px; background: transparent; color: var(--z-ink-2); font-family: var(--z-font); font-size: 14px; font-weight: 500; border: 1.5px solid var(--z-border); border-radius: 9px; cursor: pointer; text-decoration: none; transition: all .15s; display: inline-flex; align-items: center; }
 .z-btn-ghost:hover { border-color: var(--z-ink-3); color: var(--z-ink); }
 .z-btn-red { padding: 8px 20px; background: var(--z-red); color: white; font-family: var(--z-font); font-size: 14px; font-weight: 600; border: none; border-radius: 9px; cursor: pointer; text-decoration: none; transition: all .2s; display: inline-flex; align-items: center; gap: 6px; }
-.z-btn-red:hover { background: #c9101f; transform: translateY(-1px); }
-.z-btn-xl { padding: 13px 28px; background: var(--z-red); color: white; font-family: var(--z-font); font-size: 15px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all .25s; box-shadow: 0 4px 14px rgba(232,25,44,.3); }
-.z-btn-xl:hover { background: #c9101f; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(232,25,44,.35); }
+.z-btn-red:hover { background: #d90d04; transform: translateY(-1px); }
+.z-btn-xl { padding: 13px 28px; background: var(--z-red); color: white; font-family: var(--z-font); font-size: 15px; font-weight: 700; border: none; border-radius: 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all .25s; box-shadow: 0 4px 14px rgba(251,15,5,.3); }
+.z-btn-xl:hover { background: #d90d04; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(251,15,5,.35); }
 .z-btn-xl-ghost { padding: 13px 24px; background: transparent; color: var(--z-ink); font-family: var(--z-font); font-size: 15px; font-weight: 500; border: 1.5px solid var(--z-border); border-radius: 12px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all .25s; }
 .z-btn-xl-ghost:hover { border-color: var(--z-ink-3); }
 .z-btn-white { padding: 13px 28px; background: white; color: var(--z-red); font-family: var(--z-font); font-size: 15px; font-weight: 700; border: none; border-radius: 11px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; transition: all .2s; }
@@ -125,8 +125,8 @@
 /* ── Hero (index) ── */
 .z-hero { min-height: 100vh; padding: 110px 48px 80px; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 64px; position: relative; overflow: hidden; background: var(--z-cream); }
 .z-blob { position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none; z-index: 0; }
-.z-blob-1 { width: 600px; height: 600px; top: -150px; right: -100px; background: radial-gradient(circle,rgba(232,25,44,.13) 0%,transparent 70%); }
-.z-blob-2 { width: 400px; height: 400px; bottom: -100px; left: 100px; background: radial-gradient(circle,rgba(32,66,232,.08) 0%,transparent 70%); }
+.z-blob-1 { width: 600px; height: 600px; top: -150px; right: -100px; background: radial-gradient(circle,rgba(251,15,5,.13) 0%,transparent 70%); }
+.z-blob-2 { width: 400px; height: 400px; bottom: -100px; left: 100px; background: radial-gradient(circle,rgba(0,39,254,.08) 0%,transparent 70%); }
 .z-hero-chip { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 6px; background: white; border: 1.5px solid var(--z-border); border-radius: 100px; font-size: 12px; font-weight: 500; color: var(--z-ink-2); margin-bottom: 26px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
 .z-chip-badge { padding: 3px 9px; background: var(--z-gradient); color: white; border-radius: 100px; font-size: 11px; font-weight: 700; }
 .z-chip-dot { width: 6px; height: 6px; background: var(--z-red); border-radius: 50%; animation: z-pulse 2s infinite; display: inline-block; }
@@ -177,7 +177,7 @@
 .z-features-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; }
 .z-feat-card { background: white; border: 1px solid var(--z-border); border-radius: var(--z-rl); padding: 28px; transition: all .3s; position: relative; overflow: hidden; }
 .z-feat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: transparent; transition: background .3s; }
-.z-feat-card:hover { border-color: rgba(232,25,44,.2); transform: translateY(-5px); box-shadow: 0 16px 40px rgba(0,0,0,.07); }
+.z-feat-card:hover { border-color: rgba(251,15,5,.2); transform: translateY(-5px); box-shadow: 0 16px 40px rgba(0,0,0,.07); }
 .z-feat-card:hover::before { background: var(--z-gradient); }
 .z-feat-icon  { font-size: 32px; margin-bottom: 16px; display: block; }
 .z-feat-title { font-size: 16px; font-weight: 700; color: var(--z-ink); margin-bottom: 8px; }
@@ -210,7 +210,7 @@
 
 /* ── Page hero (features / pricing / reviews) ── */
 .z-page-hero { padding: 130px 48px 80px; text-align: center; background: white; border-bottom: 1px solid var(--z-border); position: relative; overflow: hidden; }
-.z-page-hero-blob { position: absolute; width: 700px; height: 700px; top: 50%; left: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle,rgba(232,25,44,.07) 0%,rgba(32,66,232,.05) 50%,transparent 70%); border-radius: 50%; animation: z-rotate 20s linear infinite; }
+.z-page-hero-blob { position: absolute; width: 700px; height: 700px; top: 50%; left: 50%; transform: translate(-50%,-50%); background: radial-gradient(circle,rgba(251,15,5,.07) 0%,rgba(0,39,254,.05) 50%,transparent 70%); border-radius: 50%; animation: z-rotate 20s linear infinite; }
 
 /* ── Features page ── */
 .z-feat-full-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
@@ -251,7 +251,7 @@
 .z-plans-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; max-width: 880px; margin: 0 auto; }
 .z-plan-card { background: var(--z-cream-2); border: 1.5px solid var(--z-border); border-radius: var(--z-rxl); padding: 40px; position: relative; transition: all .3s; }
 .z-plan-card:hover { transform: translateY(-4px); }
-.z-plan-card.featured { background: white; border-color: rgba(232,25,44,.35); box-shadow: 0 16px 48px rgba(232,25,44,.1); }
+.z-plan-card.featured { background: white; border-color: rgba(251,15,5,.35); box-shadow: 0 16px 48px rgba(251,15,5,.1); }
 .z-plan-card.featured::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--z-gradient); border-radius: var(--z-rxl) var(--z-rxl) 0 0; }
 .z-plan-popular { display: inline-block; margin-bottom: 16px; font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 5px 13px; background: var(--z-gradient); color: white; border-radius: 20px; }
 .z-plan-name    { font-size: 24px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 6px; color: var(--z-ink); }
@@ -266,8 +266,8 @@
 .z-check-no  { width: 19px; height: 19px; border-radius: 50%; flex-shrink: 0; background: var(--z-cream-3); color: var(--z-ink-4); display: flex; align-items: center; justify-content: center; font-size: 11px; }
 .z-check-add { width: 19px; height: 19px; border-radius: 50%; flex-shrink: 0; background: #f0f0ff; color: #5a50d6; display: flex; align-items: center; justify-content: center; font-size: 11px; }
 .z-plan-cta { display: block; text-align: center; padding: 13px; border-radius: 11px; font-family: var(--z-font); font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; transition: all .2s; }
-.z-cta-solid { background: var(--z-red); color: white; box-shadow: 0 4px 12px rgba(232,25,44,.25); }
-.z-cta-solid:hover { background: #c9101f; transform: translateY(-1px); }
+.z-cta-solid { background: var(--z-red); color: white; box-shadow: 0 4px 12px rgba(251,15,5,.25); }
+.z-cta-solid:hover { background: #d90d04; transform: translateY(-1px); }
 .z-cta-outline-plan { background: transparent; color: var(--z-ink); border: 1.5px solid var(--z-border); }
 .z-cta-outline-plan:hover { border-color: var(--z-ink-3); }
 .z-faq-list { display: flex; flex-direction: column; gap: 12px; max-width: 700px; margin: 0 auto; }
