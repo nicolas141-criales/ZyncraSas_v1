@@ -1,13 +1,14 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import ZyncraLogo from "./ZyncraLogo";
 
 export default function ZyncraNav({ active }: { active: "inicio" | "funciones" | "precios" | "resenas" }) {
   const [open, setOpen] = useState(false);
   return (
     <nav className="z-nav">
-      <Link href="/" className="z-nav-logo">
-        <span className="logo-mark">✂</span>Zyncra
+      <Link href="/" className="z-nav-logo" style={{ display: "flex", alignItems: "center" }}>
+        <ZyncraLogo height={34} />
       </Link>
       <ul className={`z-nav-links${open ? " open" : ""}`}>
         <li><Link href="/"          className={active === "inicio"    ? "active" : ""}>Inicio</Link></li>

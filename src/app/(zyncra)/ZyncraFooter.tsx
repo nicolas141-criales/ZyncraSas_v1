@@ -1,11 +1,12 @@
 import Link from "next/link";
+import ZyncraLogo from "./ZyncraLogo";
 
 export default function ZyncraFooter() {
   return (
     <footer className="z-footer">
       <div className="z-footer-top">
         <div>
-          <div className="z-footer-logo"><span className="logo-mark">✂</span>Zyncra</div>
+          <div className="z-footer-logo"><ZyncraLogo height={32} wordmarkColor="white" /></div>
           <p className="z-footer-desc">Software de gestión todo en uno para barberías y salones en Colombia y Latinoamérica.</p>
         </div>
         <div>
