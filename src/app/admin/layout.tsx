@@ -132,8 +132,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Logo */}
             <div className={styles.brand}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <Image src="/zyncra-logo.png" alt="Zyncra" height={30} width={92}
-                  style={{ filter: "brightness(0) invert(1)", height: 30, width: "auto" }} />
+                <div style={{ background: "rgba(255,255,255,0.1)", borderRadius: 10, padding: "6px 12px", display: "inline-flex" }}>
+                  <Image src="/zyncra-logo.png" alt="Zyncra" height={26} width={80}
+                    style={{ height: 26, width: "auto" }} />
+                </div>
+                <div />
                 <button onClick={() => setSidebarOpen(false)}
                   style={{ background: "none", border: "none", color: "rgba(255,255,255,.4)", cursor: "pointer", padding: 4, display: "none" }}
                   className={styles.menuToggle}>

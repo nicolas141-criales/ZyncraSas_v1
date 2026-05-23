@@ -6,7 +6,7 @@ export default function ZyncraFooter() {
     <footer className="z-footer">
       <div className="z-footer-top">
         <div>
-          <div className="z-footer-logo"><ZyncraLogo height={32} invert /></div>
+          <div className="z-footer-logo"><ZyncraLogo height={32} dark /></div>
           <p className="z-footer-desc">Software de gestión todo en uno para negocios de servicios con citas en Colombia y Latinoamérica.</p>
         </div>
         <div>

@@ -72,7 +72,9 @@ export default function RegisterPage() {
       {/* ── Left brand panel ── */}
       <div className={styles.brand}>
         <div className={styles.brandLogo}>
-          <Image src="/zyncra-logo.png" alt="Zyncra" height={34} width={104} style={{ filter: "brightness(0) invert(1)", height: 34, width: "auto" }} />
+          <div style={{ background: "rgba(255,255,255,0.15)", borderRadius: 12, padding: "7px 14px", display: "inline-flex" }}>
+            <Image src="/zyncra-logo.png" alt="Zyncra" height={28} width={86} style={{ height: 28, width: "auto" }} />
+          </div>
         </div>
 
         <div className={styles.brandCenter}>
