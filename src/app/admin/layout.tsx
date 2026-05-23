@@ -71,7 +71,7 @@ const NAV_GROUPS: NavGroup[] = [
 const COMING_SOON = new Set([
   "/admin/reminders", "/admin/whatsapp", "/admin/reviews-google",
   "/admin/reviews-site", "/admin/pos", "/admin/caja",
-  "/admin/invoices", "/admin/commissions", "/admin/custom-fields",
+  "/admin/invoices", "/admin/custom-fields",
 ]);
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
