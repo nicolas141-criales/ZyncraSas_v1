@@ -314,6 +314,91 @@
 .z-google-rating { font-size: 48px; font-weight: 800; letter-spacing: -2px; color: var(--z-ink); }
 .z-google-stars  { color: #fbbc04; font-size: 20px; letter-spacing: 3px; }
 
+/* ── WhatsApp float button ── */
+@keyframes z-wa-bounce-in {
+  0%   { opacity: 0; transform: scale(0.6) translateY(20px); }
+  70%  { transform: scale(1.08) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes z-wa-ring {
+  0%, 45% { box-shadow: 0 8px 28px rgba(37,211,102,.45), 0 0 0 0 rgba(37,211,102,.55); }
+  100%     { box-shadow: 0 8px 28px rgba(37,211,102,.15), 0 0 0 26px rgba(37,211,102,0); }
+}
+
+.z-wa-float {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 9998;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  opacity: 0;
+  animation: z-wa-bounce-in .55s cubic-bezier(.34,1.56,.64,1) 2.2s forwards;
+}
+
+.z-wa-tooltip {
+  background: var(--z-ink);
+  color: #fff;
+  font-family: var(--z-font);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 7px 13px;
+  border-radius: 10px;
+  white-space: nowrap;
+  opacity: 0;
+  transform: translateY(6px) scale(.95);
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events: none;
+  position: relative;
+}
+.z-wa-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%; right: 22px;
+  border: 5px solid transparent;
+  border-top-color: var(--z-ink);
+}
+
+.z-wa-float:hover .z-wa-tooltip {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.z-wa-btn {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  background: #25D366;
+  color: #fff;
+  font-family: var(--z-font);
+  font-size: 14px;
+  font-weight: 700;
+  padding: 13px 20px 13px 14px;
+  border-radius: 50px;
+  cursor: pointer;
+  animation: z-wa-ring 2.6s ease-out 2.8s infinite;
+  transition: transform .22s ease, background .18s ease;
+  will-change: transform;
+}
+
+.z-wa-float:hover .z-wa-btn {
+  background: #1aad54;
+  transform: translateY(-3px) scale(1.04);
+  animation-play-state: paused;
+  box-shadow: 0 18px 48px rgba(37,211,102,.55);
+}
+
+.z-wa-btn svg { flex-shrink: 0; }
+
+@media (max-width: 860px) {
+  .z-wa-float { bottom: 18px; right: 16px; }
+  .z-wa-btn { font-size: 13px; padding: 11px 16px 11px 12px; }
+  .z-wa-tooltip { display: none; }
+}
+
 /* ── Mobile ── */
 @media (max-width: 860px) {
   .z-nav { width: calc(100% - 32px); padding: 0 16px; }
