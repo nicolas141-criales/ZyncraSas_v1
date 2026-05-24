@@ -68,9 +68,7 @@ const NAV_GROUPS: NavGroup[] = [
 ];
 
 // Pages that are coming soon
-const COMING_SOON = new Set([
-  "/admin/reminders", "/admin/custom-fields",
-]);
+const COMING_SOON = new Set<string>([]);
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

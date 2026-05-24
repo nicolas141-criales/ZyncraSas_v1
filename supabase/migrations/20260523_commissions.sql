@@ -364,3 +364,76 @@ CREATE POLICY "platform_admin_read_all_tenants" ON public.tenants
 INSERT INTO public.platform_admins (user_id)
 SELECT id FROM auth.users WHERE email = 'criales66@gmail.com'
 ON CONFLICT (user_id) DO NOTHING;
+
+-- =====================================================================
+-- Zyncra – Recordatorios
+-- =====================================================================
+
+CREATE TABLE IF NOT EXISTS public.reminder_settings (
+  id                uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id         uuid NOT NULL UNIQUE REFERENCES public.tenants(id) ON DELETE CASCADE,
+  message_template  text NOT NULL DEFAULT '¡Hola {{nombre}}! Te recordamos tu cita de {{servicio}} el {{fecha}} a las {{hora}} con {{profesional}}. ¡Te esperamos! 😊',
+  hours_before      integer NOT NULL DEFAULT 24,
+  created_at        timestamptz NOT NULL DEFAULT now(),
+  updated_at        timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.reminder_logs (
+  id            uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id     uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  appointment_id uuid REFERENCES public.appointments(id) ON DELETE SET NULL,
+  client_name   text NOT NULL,
+  client_phone  text,
+  sent_via      text NOT NULL DEFAULT 'whatsapp',
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.reminder_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reminder_logs     ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "tenant_reminder_settings" ON public.reminder_settings
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+CREATE POLICY "tenant_reminder_logs" ON public.reminder_logs
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+-- =====================================================================
+-- Zyncra – Campos Personalizados
+-- =====================================================================
+
+CREATE TABLE IF NOT EXISTS public.custom_fields (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id   uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  name        text NOT NULL,
+  field_key   text NOT NULL,
+  field_type  text NOT NULL DEFAULT 'text' CHECK (field_type IN ('text', 'number', 'date', 'select', 'boolean')),
+  applies_to  text NOT NULL DEFAULT 'client' CHECK (applies_to IN ('client', 'appointment')),
+  required    boolean NOT NULL DEFAULT false,
+  options     jsonb NOT NULL DEFAULT '[]',
+  position    integer NOT NULL DEFAULT 0,
+  active      boolean NOT NULL DEFAULT true,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(tenant_id, field_key)
+);
+
+CREATE TABLE IF NOT EXISTS public.client_field_values (
+  id         uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id  uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  client_id  uuid NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
+  field_id   uuid NOT NULL REFERENCES public.custom_fields(id) ON DELETE CASCADE,
+  field_key  text NOT NULL,
+  value      text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  UNIQUE(client_id, field_id)
+);
+
+ALTER TABLE public.custom_fields       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.client_field_values ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "tenant_custom_fields" ON public.custom_fields
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+CREATE POLICY "tenant_client_field_values" ON public.client_field_values
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
