@@ -350,7 +350,7 @@ function KpiCard({ label, value, sub, children, highlight }: {
   label: string; value: string; sub: string; children?: React.ReactNode; highlight?: boolean;
 }) {
   return (
-    <div style={{ background: "white", borderRadius: 14, padding: "20px 22px", border: `1px solid ${highlight ? "#fcd34d" : "#e8e6e2"}`, background: highlight ? "#fffbeb" : "white" as any }}>
+    <div style={{ background: highlight ? "#fffbeb" : "white", borderRadius: 14, padding: "20px 22px", border: `1px solid ${highlight ? "#fcd34d" : "#e8e6e2"}` }}>
       <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
       <div style={{ fontSize: 28, fontWeight: 800, color: "#1a1a2e", lineHeight: 1 }}>{value}</div>
       {children && <div style={{ marginTop: 4 }}>{children}</div>}
