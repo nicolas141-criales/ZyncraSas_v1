@@ -120,7 +120,7 @@ export default function RemindersPage() {
       .order("appointment_date")
       .order("appointment_time");
 
-    setAppointments((data as Appointment[]) ?? []);
+    setAppointments((data as unknown as Appointment[]) ?? []);
     setLoading(false);
   }, [tenantId, daysAhead]);
 
