@@ -218,3 +218,14 @@ export default function ReviewPage({ params }: { params: Promise<{ tenantId: str
     </div>
   );
 }
+
+const labelStyle: React.CSSProperties = {
+  display: "block", fontSize: 12, fontWeight: 700, color: "#6b7280",
+  marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em",
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%", padding: "11px 14px", borderRadius: 10, border: "1.5px solid #e8e6e2",
+  background: "#f9f9fb", color: "#1a1a2e", fontSize: 14, boxSizing: "border-box",
+  fontFamily: "'Plus Jakarta Sans', sans-serif", outline: "none",
+};
