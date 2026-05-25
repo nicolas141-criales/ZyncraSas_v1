@@ -14,7 +14,6 @@ export default function HomePage() {
         <div className="z-blob z-blob-1" />
         <div className="z-blob z-blob-2" />
 
-        {/* Left */}
         <div style={{ position: "relative", zIndex: 1 }}>
           <div className="z-hero-chip z-fadein">
             <span className="z-chip-badge">Nuevo</span>
@@ -38,7 +37,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Right – App mockup */}
         <div className="z-hero-right z-slider z-d2" style={{ position: "relative", zIndex: 1 }}>
           <div className="z-float-1">
             <span className="z-wa-dot" />
@@ -47,7 +45,6 @@ export default function HomePage() {
               <div className="z-float-sub">vía WhatsApp · ahora</div>
             </div>
           </div>
-
           <div className="z-app-card">
             <div className="z-app-topbar">
               <div className="z-app-dots">
@@ -91,7 +88,6 @@ export default function HomePage() {
               </div>
             </div>
           </div>
-
           <div className="z-float-2">
             <div className="z-float-icon">💰</div>
             <div>
@@ -129,13 +125,23 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── TIPOS DE NEGOCIO ── */}
-      <section className="z-biz-section" style={{ padding: 0 }}>
-        <div style={{ textAlign: "center", padding: "96px 48px 56px" }} className="z-reveal">
+      {/* ── BRIDGE: cream → dark ── */}
+      <div style={{ height: 80, background: "linear-gradient(to bottom, var(--z-cream-2), var(--z-ink))" }} />
+
+      {/* ════════════════════════════════════════════════
+          DARK BLOCK — Tipos de negocio + Cómo funciona
+          (un solo bloque oscuro, sin cortes de color)
+          ════════════════════════════════════════════════ */}
+      <section style={{ background: "var(--z-ink)", padding: 0 }}>
+
+        {/* Biz types header */}
+        <div style={{ textAlign: "center", padding: "0 48px 52px" }} className="z-reveal">
           <div className="z-label" style={{ justifyContent: "center", color: "rgba(251,15,5,.9)" }}>Diseñado para ti</div>
           <h2 className="z-section-title" style={{ color: "white" }}>Para cualquier negocio<br />que trabaje con citas</h2>
           <p className="z-section-sub" style={{ maxWidth: 480, margin: "0 auto", color: "rgba(255,255,255,.45)" }}>Si tu negocio agenda servicios por hora, Zyncra es tu plataforma.</p>
         </div>
+
+        {/* Marquee row 1 — forward */}
         <div className="z-biz-marquee" style={{ marginBottom: 12 }}>
           <div className="z-biz-track z-biz-track-fwd">
             {([
@@ -151,6 +157,8 @@ export default function HomePage() {
             ))}
           </div>
         </div>
+
+        {/* Marquee row 2 — reverse */}
         <div className="z-biz-marquee">
           <div className="z-biz-track z-biz-track-rev">
             {([
@@ -166,42 +174,50 @@ export default function HomePage() {
             ))}
           </div>
         </div>
-        <div style={{ textAlign: "center", padding: "56px 48px 96px" }} className="z-reveal">
-          <p style={{ fontSize: 14, color: "rgba(255,255,255,.3)", marginBottom: 20 }}>¿Tu tipo de negocio no aparece? Zyncra funciona para cualquier servicio con citas.</p>
-          <Link href="/register" className="z-btn-xl">Probar gratis 14 días →</Link>
-        </div>
-      </section>
 
-      {/* ── CÓMO FUNCIONA ── */}
-      <section className="z-how-section">
-        <div style={{ textAlign: "center", marginBottom: 56 }} className="z-reveal">
-          <div className="z-label" style={{ justifyContent: "center", color: "rgba(251,15,5,.9)" }}>Proceso</div>
-          <h2 className="z-section-title" style={{ color: "white" }}>Listo en 3 pasos</h2>
-          <p className="z-section-sub" style={{ maxWidth: 440, margin: "0 auto", color: "rgba(255,255,255,.45)" }}>Sin instalaciones. Sin configuración compleja. Tu negocio online en minutos.</p>
-        </div>
-        <div style={{ position: "relative" }}>
-          <div style={{ position: "absolute", top: 52, left: "15%", right: "15%", height: 1, background: "linear-gradient(90deg,rgba(251,15,5,.0),rgba(155,63,200,.5),rgba(0,39,254,.5),rgba(251,15,5,.0))", pointerEvents: "none" }} />
-          <div className="z-how-grid">
-            {([
-              { num: "01", cls: "z-how-num-1", icon: "🏪", title: "Configura tu negocio", desc: "Agrega tus servicios, precios, equipo y personaliza tu marca. Sube tu logo y activa tu agenda pública." },
-              { num: "02", cls: "z-how-num-2", icon: "🔗", title: "Comparte tu enlace", desc: "Tus clientes reservan desde tuyo.zyncra.com — sin apps, sin formularios complicados, en segundos." },
-              { num: "03", cls: "z-how-num-3", icon: "📈", title: "Crece sin estrés", desc: "Los recordatorios van solos, el POS registra todo y ves en tiempo real cómo crece tu negocio." },
-            ]).map((s, i) => (
-              <div key={i} className={`z-how-card z-reveal z-d${i + 1}`}>
-                <div className={`z-how-num ${s.cls}`}>{s.num}</div>
-                <span className="z-how-icon">{s.icon}</span>
-                <div className="z-how-title">{s.title}</div>
-                <p className="z-how-desc">{s.desc}</p>
-              </div>
-            ))}
+        {/* Thin internal separator */}
+        <div style={{ height: 1, background: "rgba(255,255,255,.07)", margin: "68px 48px 0" }} />
+
+        {/* Cómo funciona — within same dark block */}
+        <div style={{ padding: "68px 48px 76px" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }} className="z-reveal">
+            <div className="z-label" style={{ justifyContent: "center", color: "rgba(251,15,5,.9)" }}>Proceso</div>
+            <h2 className="z-section-title" style={{ color: "white" }}>Listo en 3 pasos</h2>
+            <p className="z-section-sub" style={{ maxWidth: 440, margin: "0 auto", color: "rgba(255,255,255,.45)" }}>Sin instalaciones. Sin configuración compleja. Tu negocio online en minutos.</p>
+          </div>
+          <div style={{ position: "relative" }}>
+            <div style={{ position: "absolute", top: 52, left: "15%", right: "15%", height: 1, background: "linear-gradient(90deg,rgba(251,15,5,0),rgba(155,63,200,.5),rgba(0,39,254,.5),rgba(251,15,5,0))", pointerEvents: "none" }} />
+            <div className="z-how-grid">
+              {([
+                { num: "01", cls: "z-how-num-1", icon: "🏪", title: "Configura tu negocio", desc: "Agrega tus servicios, precios, equipo y personaliza tu marca. Sube tu logo y activa tu agenda pública." },
+                { num: "02", cls: "z-how-num-2", icon: "🔗", title: "Comparte tu enlace", desc: "Tus clientes reservan desde tuyo.zyncra.com — sin apps, sin formularios complicados, en segundos." },
+                { num: "03", cls: "z-how-num-3", icon: "📈", title: "Crece sin estrés", desc: "Los recordatorios van solos, el POS registra todo y ves en tiempo real cómo crece tu negocio." },
+              ]).map((s, i) => (
+                <div key={i} className={`z-how-card z-reveal z-d${i + 1}`}>
+                  <div className={`z-how-num ${s.cls}`}>{s.num}</div>
+                  <span className="z-how-icon">{s.icon}</span>
+                  <div className="z-how-title">{s.title}</div>
+                  <p className="z-how-desc">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div style={{ textAlign: "center", marginTop: 48 }} className="z-reveal">
+            <Link href="/register" className="z-btn-xl">Empezar gratis →</Link>
           </div>
         </div>
-        <div style={{ textAlign: "center", marginTop: 48 }} className="z-reveal">
-          <Link href="/register" className="z-btn-xl">Empezar gratis →</Link>
-        </div>
+
       </section>
 
-      {/* ── FEATURES GRID ── */}
+      {/* ── BRIDGE: dark → cream ── */}
+      <div style={{ height: 80, background: "linear-gradient(to bottom, var(--z-ink), var(--z-cream))" }} />
+
+      {/* ════════════════════════════════════════════════
+          CREAM BLOCK — Features + Antes vs Después
+          (fondo continuo, sin salto visual entre ambas)
+          ════════════════════════════════════════════════ */}
+
+      {/* Features grid */}
       <section style={{ background: "var(--z-cream)" }}>
         <div style={{ textAlign: "center", marginBottom: 56 }} className="z-reveal">
           <div className="z-label" style={{ justifyContent: "center" }}>Funcionalidades</div>
@@ -230,8 +246,8 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── ANTES vs DESPUÉS ── */}
-      <section style={{ background: "var(--z-cream)" }}>
+      {/* Antes vs Después — mismo fondo cream, sin section break visual */}
+      <section style={{ background: "var(--z-cream)", paddingTop: 0 }}>
         <div style={{ textAlign: "center", marginBottom: 52 }} className="z-reveal">
           <div className="z-label" style={{ justifyContent: "center" }}>Transformación</div>
           <h2 className="z-section-title">Tu negocio, antes y después<br />de Zyncra</h2>
@@ -278,7 +294,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS STRIP ── */}
+      {/* ── BRIDGE: cream → dark ── */}
+      <div style={{ height: 80, background: "linear-gradient(to bottom, var(--z-cream), #0a0a14)" }} />
+
+      {/* ── TESTIMONIALS ── */}
       <section className="z-testi-section">
         <div style={{ textAlign: "center", marginBottom: 56 }} className="z-reveal">
           <div className="z-label" style={{ justifyContent: "center", color: "rgba(251,15,5,.9)" }}>Testimonios</div>
@@ -319,6 +338,9 @@ export default function HomePage() {
           </Link>
         </div>
       </section>
+
+      {/* ── BRIDGE: dark → cream (before CTA) ── */}
+      <div style={{ height: 80, background: "linear-gradient(to bottom, #0a0a14, var(--z-cream))" }} />
 
       {/* ── CTA BANNER ── */}
       <div className="z-cta-banner z-reveal">
