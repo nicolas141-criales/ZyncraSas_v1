@@ -130,101 +130,74 @@ export default function HomePage() {
       </div>
 
       {/* ── TIPOS DE NEGOCIO ── */}
-      <section style={{ background: "white" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }} className="z-reveal">
-          <div className="z-label" style={{ justifyContent: "center" }}>Diseñado para ti</div>
-          <h2 className="z-section-title">Para cualquier negocio<br />que trabaje con citas</h2>
-          <p className="z-section-sub" style={{ maxWidth: 480, margin: "0 auto" }}>Si tu negocio agenda servicios por hora, Zyncra es tu plataforma.</p>
+      <section className="z-biz-section" style={{ padding: 0 }}>
+        <div style={{ textAlign: "center", padding: "96px 48px 56px" }} className="z-reveal">
+          <div className="z-label" style={{ justifyContent: "center", color: "rgba(251,15,5,.9)" }}>Diseñado para ti</div>
+          <h2 className="z-section-title" style={{ color: "white" }}>Para cualquier negocio<br />que trabaje con citas</h2>
+          <p className="z-section-sub" style={{ maxWidth: 480, margin: "0 auto", color: "rgba(255,255,255,.45)" }}>Si tu negocio agenda servicios por hora, Zyncra es tu plataforma.</p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: 14, maxWidth: 1100, margin: "0 auto", padding: "0 48px" }}>
-          {[
-            ["💈", "Barberías"],
-            ["✂️", "Salones de belleza"],
-            ["💆", "Spas & bienestar"],
-            ["💅", "Manicuristas"],
-            ["🏥", "Clínicas estéticas"],
-            ["🧖", "Centros de masajes"],
-            ["🎨", "Tatuadores"],
-            ["👁️", "Micropigmentación"],
-            ["🦷", "Odontología estética"],
-            ["🐾", "Veterinarias"],
-            ["🧘", "Yoga & fitness"],
-            ["📸", "Fotografía"],
-          ].map(([emoji, label], i) => (
-            <div key={i} className="z-reveal" style={{
-              animationDelay: `${(i % 4) * 0.08}s`,
-              background: "var(--z-cream)",
-              border: "1px solid var(--z-border)",
-              borderRadius: 14,
-              padding: "18px 16px",
-              textAlign: "center",
-              cursor: "default",
-              transition: "border-color .15s, box-shadow .15s",
-            }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>{emoji}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: "var(--z-ink-2)" }}>{label}</div>
-            </div>
-          ))}
+        <div className="z-biz-marquee" style={{ marginBottom: 12 }}>
+          <div className="z-biz-track z-biz-track-fwd">
+            {([
+              ["💈","Barberías"],["✂️","Salones de belleza"],["💆","Spas & bienestar"],
+              ["💅","Manicuristas"],["🏥","Clínicas estéticas"],["🧖","Masajes"],
+              ["💈","Barberías"],["✂️","Salones de belleza"],["💆","Spas & bienestar"],
+              ["💅","Manicuristas"],["🏥","Clínicas estéticas"],["🧖","Masajes"],
+            ] as [string,string][]).map(([e, l], i) => (
+              <div key={i} className="z-biz-card">
+                <span className="z-biz-emoji">{e}</span>
+                <span className="z-biz-label">{l}</span>
+              </div>
+            ))}
+          </div>
         </div>
-        <div style={{ textAlign: "center", marginTop: 40 }} className="z-reveal">
-          <p style={{ fontSize: 14, color: "var(--z-ink-4)", marginBottom: 16 }}>¿Tu tipo de negocio no aparece? Zyncra funciona para cualquier servicio con citas.</p>
+        <div className="z-biz-marquee">
+          <div className="z-biz-track z-biz-track-rev">
+            {([
+              ["🎨","Tatuadores"],["👁️","Micropigmentación"],["🦷","Odontología estética"],
+              ["🐾","Veterinarias"],["🧘","Yoga & fitness"],["📸","Fotografía"],
+              ["🎨","Tatuadores"],["👁️","Micropigmentación"],["🦷","Odontología estética"],
+              ["🐾","Veterinarias"],["🧘","Yoga & fitness"],["📸","Fotografía"],
+            ] as [string,string][]).map(([e, l], i) => (
+              <div key={i} className="z-biz-card">
+                <span className="z-biz-emoji">{e}</span>
+                <span className="z-biz-label">{l}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ textAlign: "center", padding: "56px 48px 96px" }} className="z-reveal">
+          <p style={{ fontSize: 14, color: "rgba(255,255,255,.3)", marginBottom: 20 }}>¿Tu tipo de negocio no aparece? Zyncra funciona para cualquier servicio con citas.</p>
           <Link href="/register" className="z-btn-xl">Probar gratis 14 días →</Link>
         </div>
       </section>
 
       {/* ── CÓMO FUNCIONA ── */}
-      <section style={{ background: "var(--z-cream-2)" }}>
+      <section className="z-how-section">
         <div style={{ textAlign: "center", marginBottom: 56 }} className="z-reveal">
-          <div className="z-label" style={{ justifyContent: "center" }}>Proceso</div>
-          <h2 className="z-section-title">Listo en 3 pasos</h2>
-          <p className="z-section-sub" style={{ maxWidth: 440, margin: "0 auto" }}>Sin instalaciones. Sin configuración compleja. Tu negocio online en minutos.</p>
+          <div className="z-label" style={{ justifyContent: "center", color: "rgba(251,15,5,.9)" }}>Proceso</div>
+          <h2 className="z-section-title" style={{ color: "white" }}>Listo en 3 pasos</h2>
+          <p className="z-section-sub" style={{ maxWidth: 440, margin: "0 auto", color: "rgba(255,255,255,.45)" }}>Sin instalaciones. Sin configuración compleja. Tu negocio online en minutos.</p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 24, maxWidth: 960, margin: "0 auto", padding: "0 48px" }}>
-          {[
-            {
-              n: "01",
-              icon: "🏪",
-              title: "Configura tu negocio",
-              desc: "Agrega tus servicios, precios, equipo y personaliza tu marca. Sube tu logo y activa tu agenda pública.",
-              color: "#fb0f05",
-            },
-            {
-              n: "02",
-              icon: "🔗",
-              title: "Comparte tu enlace",
-              desc: "Tus clientes reservan desde el enlace tuyo.zyncra.com — sin apps, sin formularios complicados, en segundos.",
-              color: "#9B3FC8",
-            },
-            {
-              n: "03",
-              icon: "📈",
-              title: "Crece sin estrés",
-              desc: "Los recordatorios van solos, el POS registra todo y tú ves en tiempo real cómo crece tu negocio.",
-              color: "#0027fe",
-            },
-          ].map((s, i) => (
-            <div key={i} className={`z-reveal z-d${i + 1}`} style={{
-              background: "white",
-              border: "1px solid var(--z-border)",
-              borderRadius: 20,
-              padding: "28px 24px",
-              position: "relative",
-            }}>
-              <div style={{
-                display: "inline-flex", alignItems: "center", justifyContent: "center",
-                width: 44, height: 44, borderRadius: 12,
-                background: `${s.color}15`,
-                fontSize: 22, marginBottom: 16,
-              }}>{s.icon}</div>
-              <div style={{
-                position: "absolute", top: 24, right: 24,
-                fontSize: 32, fontWeight: 900, color: "var(--z-cream-3)",
-                letterSpacing: "-2px", lineHeight: 1,
-              }}>{s.n}</div>
-              <div style={{ fontSize: 17, fontWeight: 800, color: "var(--z-ink)", marginBottom: 8 }}>{s.title}</div>
-              <p style={{ fontSize: 14, color: "var(--z-ink-3)", lineHeight: 1.6, margin: 0 }}>{s.desc}</p>
-            </div>
-          ))}
+        <div style={{ position: "relative" }}>
+          <div style={{ position: "absolute", top: 52, left: "15%", right: "15%", height: 1, background: "linear-gradient(90deg,rgba(251,15,5,.0),rgba(155,63,200,.5),rgba(0,39,254,.5),rgba(251,15,5,.0))", pointerEvents: "none" }} />
+          <div className="z-how-grid">
+            {([
+              { num: "01", cls: "z-how-num-1", icon: "🏪", title: "Configura tu negocio", desc: "Agrega tus servicios, precios, equipo y personaliza tu marca. Sube tu logo y activa tu agenda pública." },
+              { num: "02", cls: "z-how-num-2", icon: "🔗", title: "Comparte tu enlace", desc: "Tus clientes reservan desde tuyo.zyncra.com — sin apps, sin formularios complicados, en segundos." },
+              { num: "03", cls: "z-how-num-3", icon: "📈", title: "Crece sin estrés", desc: "Los recordatorios van solos, el POS registra todo y ves en tiempo real cómo crece tu negocio." },
+            ]).map((s, i) => (
+              <div key={i} className={`z-how-card z-reveal z-d${i + 1}`}>
+                <div className={`z-how-num ${s.cls}`}>{s.num}</div>
+                <span className="z-how-icon">{s.icon}</span>
+                <div className="z-how-title">{s.title}</div>
+                <p className="z-how-desc">{s.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ textAlign: "center", marginTop: 48 }} className="z-reveal">
+          <Link href="/register" className="z-btn-xl">Empezar gratis →</Link>
         </div>
       </section>
 
@@ -258,15 +231,14 @@ export default function HomePage() {
       </section>
 
       {/* ── ANTES vs DESPUÉS ── */}
-      <section style={{ background: "white" }}>
+      <section style={{ background: "var(--z-cream)" }}>
         <div style={{ textAlign: "center", marginBottom: 52 }} className="z-reveal">
           <div className="z-label" style={{ justifyContent: "center" }}>Transformación</div>
           <h2 className="z-section-title">Tu negocio, antes y después<br />de Zyncra</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, maxWidth: 820, margin: "0 auto", padding: "0 48px" }} className="z-reveal">
-          {/* Antes */}
-          <div style={{ background: "var(--z-cream-2)", border: "1px solid var(--z-border)", borderRadius: 20, padding: "28px 24px" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--z-ink-4)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 20 }}>😓 Sin Zyncra</div>
+        <div className="z-compare-wrap z-reveal">
+          <div className="z-compare-before">
+            <div className="z-compare-head z-compare-head-before"><span>😓</span> Sin Zyncra</div>
             {[
               "Cuadernos y hojas de Excel para anotar citas",
               "Llamadas manuales para confirmar o recordar",
@@ -276,14 +248,16 @@ export default function HomePage() {
               "Facturas a mano o en Excel",
               "Sin visibilidad de qué servicios generan más",
             ].map((t, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12, fontSize: 14, color: "var(--z-ink-3)" }}>
-                <span style={{ color: "#f87171", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✕</span> {t}
+              <div key={i} className="z-compare-item z-compare-item-before">
+                <span className="z-compare-x">✕</span> {t}
               </div>
             ))}
           </div>
-          {/* Después */}
-          <div style={{ background: "linear-gradient(135deg, rgba(251,15,5,.04), rgba(155,63,200,.06))", border: "1.5px solid rgba(251,15,5,.15)", borderRadius: 20, padding: "28px 24px" }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: "#fb0f05", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 20 }}>🚀 Con Zyncra</div>
+          <div className="z-compare-vs">
+            <span className="z-compare-vs-text">VS</span>
+          </div>
+          <div className="z-compare-after">
+            <div className="z-compare-head z-compare-head-after"><span>🚀</span> Con Zyncra</div>
             {[
               "Agenda online que tus clientes reservan solos",
               "Recordatorios automáticos por WhatsApp",
@@ -293,24 +267,25 @@ export default function HomePage() {
               "Factura electrónica DIAN con 1 clic",
               "Reportes claros de cada servicio y profesional",
             ].map((t, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 12, fontSize: 14, color: "var(--z-ink-2)", fontWeight: 500 }}>
-                <span style={{ color: "#22c55e", fontWeight: 700, flexShrink: 0, marginTop: 1 }}>✓</span> {t}
+              <div key={i} className="z-compare-item z-compare-item-after">
+                <span className="z-compare-check">✓</span> {t}
               </div>
             ))}
           </div>
         </div>
-        <div style={{ textAlign: "center", marginTop: 40 }} className="z-reveal">
+        <div style={{ textAlign: "center", marginTop: 48 }} className="z-reveal">
           <Link href="/register" className="z-btn-xl">Quiero transformar mi negocio →</Link>
         </div>
       </section>
 
       {/* ── TESTIMONIALS STRIP ── */}
-      <section style={{ background: "var(--z-cream-2)" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }} className="z-reveal">
-          <div className="z-label" style={{ justifyContent: "center" }}>Testimonios</div>
-          <h2 className="z-section-title">Lo que dicen nuestros clientes</h2>
+      <section className="z-testi-section">
+        <div style={{ textAlign: "center", marginBottom: 56 }} className="z-reveal">
+          <div className="z-label" style={{ justifyContent: "center", color: "rgba(251,15,5,.9)" }}>Testimonios</div>
+          <h2 className="z-section-title" style={{ color: "white" }}>Lo que dicen nuestros clientes</h2>
+          <p className="z-section-sub" style={{ color: "rgba(255,255,255,.4)", maxWidth: 440, margin: "0 auto" }}>Negocios reales, resultados reales.</p>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20, maxWidth: 1100, margin: "0 auto", padding: "0 48px" }}>
+        <div className="z-testi-grid">
           {[
             {
               emoji: "💈", stars: "★★★★★",
@@ -328,19 +303,18 @@ export default function HomePage() {
               name: "Diana Vásquez", biz: "Studio V · Manizales",
             },
           ].map((r, i) => (
-            <div key={i} className={`z-reveal z-d${i + 1}`} style={{
-              background: "white", border: "1px solid var(--z-border)", borderRadius: 20, padding: "24px 22px",
-            }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>{r.emoji}</div>
-              <div style={{ color: "#fbbf24", fontSize: 15, marginBottom: 12 }}>{r.stars}</div>
-              <p style={{ fontSize: 14, color: "var(--z-ink-2)", lineHeight: 1.7, margin: "0 0 16px", fontStyle: "italic" }}>"{r.text}"</p>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "var(--z-ink)" }}>{r.name}</div>
-              <div style={{ fontSize: 12, color: "var(--z-ink-4)", marginTop: 2 }}>{r.biz}</div>
+            <div key={i} className={`z-testi-card z-reveal z-d${i + 1}`}>
+              <span className="z-testi-avatar">{r.emoji}</span>
+              <span className="z-testi-stars">{r.stars}</span>
+              <span className="z-testi-quote-mark">&ldquo;</span>
+              <p className="z-testi-text">{r.text}</p>
+              <div className="z-testi-name">{r.name}</div>
+              <div className="z-testi-biz">{r.biz}</div>
             </div>
           ))}
         </div>
-        <div style={{ textAlign: "center", marginTop: 36 }} className="z-reveal">
-          <Link href="/reviews" style={{ fontSize: 14, fontWeight: 600, color: "var(--z-red)", textDecoration: "none" }}>
+        <div style={{ textAlign: "center", marginTop: 48 }} className="z-reveal">
+          <Link href="/reviews" style={{ fontSize: 14, fontWeight: 600, color: "rgba(251,15,5,.9)", textDecoration: "none" }}>
             Ver más testimonios →
           </Link>
         </div>
