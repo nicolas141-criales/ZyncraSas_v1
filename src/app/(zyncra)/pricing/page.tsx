@@ -72,7 +72,7 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <Link href="#" className="z-plan-cta z-cta-outline-plan">Empezar gratis →</Link>
+            <Link href="/register" className="z-plan-cta z-cta-outline-plan">Empezar gratis →</Link>
           </div>
 
           {/* Plan Pro */}
@@ -107,12 +107,12 @@ export default function PricingPage() {
                 </li>
               ))}
             </ul>
-            <Link href="#" className="z-plan-cta z-cta-solid">Empezar con Pro →</Link>
+            <Link href="/register" className="z-plan-cta z-cta-solid">Empezar con Pro →</Link>
           </div>
         </div>
         <p style={{ textAlign: "center", marginTop: 28, fontSize: 14, color: "var(--z-ink-4)" }}>
           ¿Tienes múltiples sedes o un equipo grande?{" "}
-          <Link href="#" style={{ color: "var(--z-red)", textDecoration: "none", fontWeight: 600 }}>Contáctanos</Link>
+          <a href="https://wa.me/573000000000?text=Hola%2C+quiero+info+sobre+un+plan+personalizado" target="_blank" rel="noopener noreferrer" style={{ color: "var(--z-red)", textDecoration: "none", fontWeight: 600 }}>Contáctanos</a>
           {" "}para un plan personalizado.
         </p>
       </section>
@@ -133,8 +133,8 @@ export default function PricingPage() {
         <h2 className="z-cta-title">Empieza gratis hoy</h2>
         <p className="z-cta-sub">14 días de prueba, sin tarjeta de crédito.</p>
         <div className="z-cta-actions">
-          <Link href="#" className="z-btn-white">Crear cuenta gratis →</Link>
-          <Link href="#" className="z-btn-outline-white">Hablar con ventas</Link>
+          <Link href="/register" className="z-btn-white">Crear cuenta gratis →</Link>
+          <a href="https://wa.me/573000000000?text=Hola%2C+quisiera+hablar+con+ventas+sobre+Zyncra" target="_blank" rel="noopener noreferrer" className="z-btn-outline-white">Hablar con ventas</a>
         </div>
         <p className="z-cta-note">✓ Sin permanencia &nbsp;·&nbsp; ✓ Soporte en español &nbsp;·&nbsp; ✓ Cancela cuando quieras</p>
       </div>

@@ -38,7 +38,7 @@ export default function ZyncraFooter() {
         </div>
       </div>
       <div className="z-footer-bottom">
-        <span className="z-footer-copy">© 2025 Zyncra. Hecho con 💈 en Colombia.</span>
+        <span className="z-footer-copy">© 2026 Zyncra. Hecho con 💈 en Colombia.</span>
         <div className="z-footer-legal">
           <Link href="#">Privacidad</Link>
           <Link href="#">Términos</Link>
