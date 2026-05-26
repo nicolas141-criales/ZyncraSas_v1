@@ -437,3 +437,77 @@ CREATE POLICY "tenant_custom_fields" ON public.custom_fields
 
 CREATE POLICY "tenant_client_field_values" ON public.client_field_values
   USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+-- =====================================================================
+-- Zyncra – Factura Electrónica (Factus / DIAN)
+-- =====================================================================
+
+CREATE TABLE IF NOT EXISTS public.invoice_settings (
+  id                   uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id            uuid NOT NULL UNIQUE REFERENCES public.tenants(id) ON DELETE CASCADE,
+  environment          text NOT NULL DEFAULT 'sandbox',
+  factus_client_id     text,
+  factus_client_secret text,
+  factus_username      text,
+  factus_password      text,
+  numbering_range_id   integer,
+  nit                  text,
+  dv                   text,
+  company_name         text,
+  address              text,
+  municipality_id      integer DEFAULT 149,
+  phone                text,
+  created_at           timestamptz NOT NULL DEFAULT now(),
+  updated_at           timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.invoices (
+  id               uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  tenant_id        uuid NOT NULL REFERENCES public.tenants(id) ON DELETE CASCADE,
+  factus_id        text,
+  cufe             text,
+  number           text,
+  status           text NOT NULL DEFAULT 'draft',
+  customer_name    text NOT NULL,
+  customer_id_type integer NOT NULL DEFAULT 13,
+  customer_id      text NOT NULL,
+  customer_email   text,
+  customer_address text,
+  customer_phone   text,
+  municipality_id  integer DEFAULT 149,
+  payment_method   text NOT NULL DEFAULT '10',
+  subtotal         numeric NOT NULL DEFAULT 0,
+  tax_total        numeric NOT NULL DEFAULT 0,
+  total            numeric NOT NULL DEFAULT 0,
+  pdf_url          text,
+  factus_response  jsonb,
+  notes            text,
+  created_at       timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.invoice_items (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  invoice_id  uuid NOT NULL REFERENCES public.invoices(id) ON DELETE CASCADE,
+  name        text NOT NULL,
+  quantity    numeric NOT NULL DEFAULT 1,
+  price       numeric NOT NULL,
+  tax_rate    text NOT NULL DEFAULT '0.00',
+  is_excluded integer NOT NULL DEFAULT 1,
+  total       numeric NOT NULL DEFAULT 0
+);
+
+ALTER TABLE public.invoice_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.invoices         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.invoice_items    ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "tenant_invoice_settings" ON public.invoice_settings
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+CREATE POLICY "tenant_invoices" ON public.invoices
+  USING (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()));
+
+CREATE POLICY "tenant_invoice_items" ON public.invoice_items
+  USING (invoice_id IN (
+    SELECT id FROM public.invoices
+    WHERE tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid())
+  ));

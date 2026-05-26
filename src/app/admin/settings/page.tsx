@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
+import { useAdmin } from "../admin-context";
 import { IconCog, IconBell, IconCreditCard, IconPalette, IconArrowRight } from "../ZyncraIcons";
 import Link from "next/link";
 
@@ -48,11 +50,53 @@ function SectionCard({ icon, title, subtitle, children }: { icon: React.ReactNod
 }
 
 export default function SettingsPage() {
-  const [requireDeposit, setRequireDeposit] = useState(false);
-  const [depositAmount, setDepositAmount] = useState("20");
+  const { tenantId } = useAdmin();
+
   const [whatsappReminders, setWhatsappReminders] = useState(true);
   const [emailNotifs, setEmailNotifs] = useState(false);
   const [autoConfirm, setAutoConfirm] = useState(false);
+  const [requireDeposit, setRequireDeposit] = useState(false);
+  const [depositAmount, setDepositAmount] = useState("20");
+  const [saving, setSaving] = useState(false);
+  const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      const { data } = await supabase
+        .from("tenant_settings")
+        .select("*")
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+      if (data) {
+        setWhatsappReminders(data.whatsapp_reminders ?? true);
+        setEmailNotifs(data.email_notifications ?? false);
+        setAutoConfirm(data.auto_confirm ?? false);
+        setRequireDeposit(data.require_deposit ?? false);
+        setDepositAmount(String(data.deposit_amount ?? 20));
+      }
+    }
+    load();
+  }, [tenantId]);
+
+  async function handleSave() {
+    setSaving(true);
+    setMsg(null);
+    const { error } = await supabase.from("tenant_settings").upsert({
+      tenant_id: tenantId,
+      whatsapp_reminders: whatsappReminders,
+      email_notifications: emailNotifs,
+      auto_confirm: autoConfirm,
+      require_deposit: requireDeposit,
+      deposit_amount: parseFloat(depositAmount) || 0,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "tenant_id" });
+    setSaving(false);
+    setMsg(error
+      ? { type: "err", text: error.message }
+      : { type: "ok", text: "Configuración guardada." }
+    );
+    setTimeout(() => setMsg(null), 3000);
+  }
 
   return (
     <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", display: "flex", flexDirection: "column", gap: "20px" }}>
@@ -118,10 +162,15 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Save button */}
-      <div style={{ display: "flex", justifyContent: "flex-end" }}>
-        <button className="btn-primary" style={{ padding: "12px 32px", fontSize: "14px" }}>
-          Guardar configuración
+      {/* Save */}
+      <div style={{ display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 14 }}>
+        {msg && (
+          <span style={{ fontSize: 13, fontWeight: 600, color: msg.type === "ok" ? "#388e3c" : "#c62828" }}>
+            {msg.type === "ok" ? "✓ " : "✕ "}{msg.text}
+          </span>
+        )}
+        <button onClick={handleSave} disabled={saving} className="btn-primary" style={{ padding: "12px 32px", fontSize: "14px", opacity: saving ? 0.7 : 1, cursor: saving ? "not-allowed" : "pointer" }}>
+          {saving ? "Guardando..." : "Guardar configuración"}
         </button>
       </div>
     </div>
