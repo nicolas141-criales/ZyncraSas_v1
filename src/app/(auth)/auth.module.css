@@ -238,10 +238,232 @@
 
 .link:hover { text-decoration: underline; }
 
+/* ─── Wizard wrapper ─── */
+.wizard {
+  width: 100%;
+  max-width: 480px;
+}
+
+/* ─── Progress bar ─── */
+.wizardProgress {
+  height: 4px;
+  background: #f0eeeb;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 28px;
+}
+
+.wizardProgressBar {
+  height: 100%;
+  background: linear-gradient(90deg, #fb0f05, #9B3FC8);
+  border-radius: 4px;
+  transition: width .45s cubic-bezier(.4,0,.2,1);
+}
+
+/* ─── Step dots (left panel) ─── */
+.stepDots {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stepDot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: rgba(255,255,255,.55);
+  transition: background .25s, color .25s;
+}
+
+.stepDotActive {
+  background: white;
+  color: #fb0f05;
+}
+
+.stepDotDone {
+  background: rgba(255,255,255,.55);
+  color: white;
+}
+
+.stepDotLabel {
+  font-size: 14px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -.2px;
+}
+
+/* ─── Group label ─── */
+.groupLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a3a48;
+  margin-bottom: 10px;
+  margin-top: 0;
+}
+
+/* ─── Biz type grid ─── */
+.bizGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.bizCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 6px;
+  background: white;
+  border: 1.5px solid #e8e6e2;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color .18s, background .18s, box-shadow .18s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.bizCard:hover {
+  border-color: #fb0f05;
+  background: rgba(251,15,5,.04);
+}
+
+.bizCardActive {
+  border-color: #fb0f05;
+  background: rgba(251,15,5,.07);
+  box-shadow: 0 0 0 3px rgba(251,15,5,.12);
+}
+
+.bizEmoji {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.bizLabel {
+  font-size: 11px;
+  font-weight: 600;
+  color: #3a3a48;
+  text-align: center;
+  line-height: 1.25;
+}
+
+/* ─── Operation grid ─── */
+.opGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.opCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: white;
+  border: 1.5px solid #e8e6e2;
+  border-radius: 11px;
+  cursor: pointer;
+  transition: border-color .18s, background .18s, box-shadow .18s;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  text-align: left;
+}
+
+.opCard:hover {
+  border-color: #fb0f05;
+  background: rgba(251,15,5,.04);
+}
+
+.opCardActive {
+  border-color: #fb0f05;
+  background: rgba(251,15,5,.07);
+  box-shadow: 0 0 0 3px rgba(251,15,5,.12);
+}
+
+.opIcon { font-size: 18px; }
+
+.opLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a3a48;
+}
+
+/* ─── Goal chips ─── */
+.goalGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.goalChip {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 16px;
+  background: white;
+  border: 1.5px solid #e8e6e2;
+  border-radius: 24px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: #3a3a48;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: border-color .18s, background .18s, box-shadow .18s, opacity .18s;
+}
+
+.goalChip:hover:not(:disabled) {
+  border-color: #fb0f05;
+  background: rgba(251,15,5,.04);
+}
+
+.goalChip:disabled {
+  opacity: .42;
+  cursor: not-allowed;
+}
+
+.goalChipActive {
+  border-color: #fb0f05;
+  background: rgba(251,15,5,.09);
+  color: #fb0f05;
+  box-shadow: 0 0 0 3px rgba(251,15,5,.1);
+}
+
+.goalCheck {
+  font-size: 11px;
+  font-weight: 800;
+}
+
+/* ─── Back button ─── */
+.btnBack {
+  padding: 13px 18px;
+  background: white;
+  border: 1.5px solid #e8e6e2;
+  border-radius: 11px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6b6b80;
+  cursor: pointer;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  transition: border-color .18s, color .18s;
+  white-space: nowrap;
+}
+
+.btnBack:hover {
+  border-color: #c0bfbc;
+  color: #3a3a48;
+}
+
 /* ─── Mobile ─── */
 @media (max-width: 768px) {
   .page { flex-direction: column; }
   .brand { display: none; }
   .form { padding: 32px 24px; align-items: flex-start; padding-top: 48px; }
   .logoMobile { display: block; }
+  .wizard { max-width: 100%; }
+  .bizGrid { grid-template-columns: repeat(2, 1fr); }
 }
