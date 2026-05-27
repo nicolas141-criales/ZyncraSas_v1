@@ -230,8 +230,8 @@ const TileWa = () => (
         style={{
           alignSelf: "flex-start",
           maxWidth: "85%",
-          background: "#E9F1ED",
-          color: "#0F3A2A",
+          background: "var(--wa-bubble-in)",
+          color: "var(--wa-text-in)",
           padding: "7px 10px",
           borderRadius: "10px 10px 10px 3px",
           fontSize: 11.5,
@@ -255,7 +255,7 @@ const TileWa = () => (
             padding: "4px 8px",
             background: "rgba(37,211,102,0.12)",
             border: "1px solid rgba(37,211,102,0.3)",
-            color: "#15803D",
+            color: "var(--wa-online)",
             borderRadius: 999,
             fontFamily: "var(--font-mono)",
           }}

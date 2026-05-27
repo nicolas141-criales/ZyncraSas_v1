@@ -277,7 +277,7 @@ const DemoWhatsapp = () => {
     >
       <div
         style={{
-          background: "#F1F7F2",
+          background: "var(--wa-panel-bg)",
           border: "1px solid rgba(52,211,153,0.2)",
           borderRadius: 20,
           padding: 16,
@@ -301,8 +301,8 @@ const DemoWhatsapp = () => {
             <IconWhatsapp size={18} style={{ color: "white" }} />
           </div>
           <div>
-            <div style={{ fontSize: 14, fontWeight: 500, color: "#14111C" }}>Studio V · Manizales</div>
-            <div style={{ fontSize: 11, color: "#15803D" }}>● en línea — Zyncra Bot</div>
+            <div style={{ fontSize: 14, fontWeight: 500, color: "var(--fg)" }}>Studio V · Manizales</div>
+            <div style={{ fontSize: 11, color: "var(--wa-online)" }}>● en línea — Zyncra Bot</div>
           </div>
         </div>
 
@@ -321,8 +321,8 @@ const DemoWhatsapp = () => {
                   background:
                     m.from === "user"
                       ? "linear-gradient(135deg, #15A85A, #0E7A40)"
-                      : "#E9F1ED",
-                  color: m.from === "user" ? "white" : "#0F3A2A",
+                      : "var(--wa-bubble-in)",
+                  color: m.from === "user" ? "white" : "var(--wa-text-in)",
                   padding: "9px 12px",
                   borderRadius: m.from === "user" ? "14px 14px 4px 14px" : "14px 14px 14px 4px",
                   fontSize: 13,
@@ -340,7 +340,7 @@ const DemoWhatsapp = () => {
                         padding: "5px 10px",
                         background: "rgba(37,211,102,0.12)",
                         border: "1px solid rgba(37,211,102,0.3)",
-                        color: "#15803D",
+                        color: "var(--wa-online)",
                         borderRadius: 999,
                         fontSize: 11,
                         fontFamily: "var(--font-mono)",
@@ -355,7 +355,7 @@ const DemoWhatsapp = () => {
                 className="mono"
                 style={{
                   fontSize: 9.5,
-                  color: "rgba(20,15,30,0.4)",
+                  color: "var(--fg-mute)",
                   marginTop: 3,
                   textAlign: m.from === "user" ? "right" : "left",
                 }}
@@ -368,7 +368,7 @@ const DemoWhatsapp = () => {
             <div
               style={{
                 alignSelf: "flex-start",
-                background: "#E9F1ED",
+                background: "var(--wa-bubble-in)",
                 padding: "10px 12px",
                 borderRadius: "14px 14px 14px 4px",
                 display: "flex",
@@ -382,7 +382,7 @@ const DemoWhatsapp = () => {
                     width: 5,
                     height: 5,
                     borderRadius: 999,
-                    background: "rgba(20,15,30,0.5)",
+                    background: "var(--fg-dim)",
                     animation: `pulseGlow 1s ease-in-out ${i * 0.2}s infinite`,
                   }}
                 />

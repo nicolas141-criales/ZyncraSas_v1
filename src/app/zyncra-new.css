@@ -19,6 +19,10 @@
   --amber: #FBBF24;
   --gradient: linear-gradient(135deg, #A78BFA 0%, #EC4899 55%, #FB923C 100%);
   --gradient-soft: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(236,72,153,0.10));
+  --wa-panel-bg: #F1F7F2;
+  --wa-bubble-in: #E9F1ED;
+  --wa-text-in: #0F3A2A;
+  --wa-online: #15803D;
   --radius: 14px;
   --radius-lg: 20px;
   --radius-xl: 28px;
@@ -166,5 +170,9 @@ button { font-family: inherit; }
   --fg: #F0EEF8;
   --fg-dim: #A09AB8;
   --fg-mute: #6B6080;
+  --wa-panel-bg: rgba(52,211,153,0.06);
+  --wa-bubble-in: rgba(52,211,153,0.09);
+  --wa-text-in: #86efac;
+  --wa-online: #34D399;
 }
 [data-theme="dark"] .zn-grain::before { mix-blend-mode: soft-light; opacity: 0.025; }
