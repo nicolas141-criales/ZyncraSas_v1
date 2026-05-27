@@ -3,7 +3,7 @@
    ============================================================ */
 
 :root {
-  --bg: #F7F4EE;
+  --bg: #FFFFFF;
   --bg-elev: #FFFFFF;
   --bg-card: #FFFFFF;
   --line: rgba(20,15,30,0.08);
@@ -155,3 +155,16 @@ button { font-family: inherit; }
 @media (max-width: 900px) {
   .demo-tabs { flex-wrap: wrap; }
 }
+
+/* ── Dark Mode ── */
+[data-theme="dark"] {
+  --bg: #09090F;
+  --bg-elev: #111118;
+  --bg-card: #111118;
+  --line: rgba(255,255,255,0.08);
+  --line-strong: rgba(255,255,255,0.16);
+  --fg: #F0EEF8;
+  --fg-dim: #A09AB8;
+  --fg-mute: #6B6080;
+}
+[data-theme="dark"] .zn-grain::before { mix-blend-mode: soft-light; opacity: 0.025; }

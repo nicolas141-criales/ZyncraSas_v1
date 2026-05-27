@@ -547,7 +547,7 @@ const DemoPos = () => {
 
       <div
         style={{
-          background: "linear-gradient(180deg, #FFFFFF 0%, #FBF8F2 100%)",
+          background: "linear-gradient(180deg, var(--bg-card) 0%, var(--bg-elev) 100%)",
           border: "1px solid var(--line-strong)",
           borderRadius: 14,
           padding: 18,
@@ -799,7 +799,7 @@ export default function DemosSection() {
             <span style={{ fontSize: 11, color: "var(--fg-mute)", fontFamily: "var(--font-mono)" }}>● en vivo</span>
           </div>
 
-          <div style={{ minHeight: 510 }}>{tabs[active].node}</div>
+          <div style={{ minHeight: 480 }}>{tabs[active].node}</div>
         </div>
 
         <div

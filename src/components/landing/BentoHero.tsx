@@ -46,6 +46,7 @@ const BentoHeroTile = ({
       overflow: "hidden",
       transition: "border-color .25s ease, transform .25s ease",
       backdropFilter: "blur(10px)",
+      minHeight: 160,
       ...style,
     }}
   >
@@ -675,9 +676,10 @@ export default function BentoHero() {
       id="top"
       style={{
         position: "relative",
-        paddingTop: 130,
+        paddingTop: 120,
         paddingBottom: 80,
         overflow: "hidden",
+        minHeight: 900,
       }}
     >
       <GradientOrb color="#8B5CF6" size={900} x="-15%" y="-30%" opacity={0.28} />
@@ -844,8 +846,8 @@ export default function BentoHero() {
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(12, 1fr)",
-            gridAutoRows: "120px",
-            gap: 12,
+            gridAutoRows: "minmax(160px, auto)",
+            gap: 16,
             position: "relative",
             zIndex: 2,
           }}

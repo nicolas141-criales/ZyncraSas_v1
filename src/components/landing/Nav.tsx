@@ -21,6 +21,19 @@ const XIcon = () => (
   </svg>
 );
 
+const SunIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+  </svg>
+);
+
+const MoonIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);
+
 const links = [
   { label: "Funciones", href: "/features" },
   { label: "Precios", href: "/pricing" },
@@ -31,11 +44,24 @@ const links = [
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("zyncra-theme") as "light" | "dark" | null;
+    if (saved === "dark" || saved === "light") setTheme(saved);
+
+    const onThemeChange = (e: Event) => {
+      const detail = (e as CustomEvent<"light" | "dark">).detail;
+      setTheme(detail);
+    };
+    window.addEventListener("zyncra:theme", onThemeChange);
+    return () => window.removeEventListener("zyncra:theme", onThemeChange);
   }, []);
 
   return (
@@ -49,7 +75,11 @@ export default function Nav() {
         padding: "14px 0",
         transition: "all .3s ease",
         backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(0px)",
-        background: scrolled ? "rgba(247,244,238,0.85)" : "transparent",
+        background: scrolled
+          ? theme === "dark"
+            ? "rgba(9,9,15,0.85)"
+            : "rgba(255,255,255,0.85)"
+          : "transparent",
         borderBottom: scrolled ? "1px solid var(--line)" : "1px solid transparent",
       }}
     >
@@ -89,6 +119,35 @@ export default function Nav() {
             >
               Iniciar sesión
             </Link>
+            <button
+              type="button"
+              onClick={() => (window as any).__zyncraToggleTheme?.()}
+              aria-label={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: "rgba(20,15,30,0.06)",
+                border: "1px solid var(--line-strong)",
+                cursor: "pointer",
+                color: "var(--fg-dim)",
+                flexShrink: 0,
+                transition: "background .2s ease, color .2s ease",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(20,15,30,0.12)";
+                (e.currentTarget as HTMLElement).style.color = "var(--fg)";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(20,15,30,0.06)";
+                (e.currentTarget as HTMLElement).style.color = "var(--fg-dim)";
+              }}
+            >
+              {theme === "dark" ? <SunIcon /> : <MoonIcon />}
+            </button>
             <Link
               href="/register"
               style={{
@@ -131,7 +190,7 @@ export default function Nav() {
             top: "100%",
             left: 0,
             right: 0,
-            background: "rgba(247,244,238,0.97)",
+            background: theme === "dark" ? "rgba(9,9,15,0.97)" : "rgba(255,255,255,0.97)",
             backdropFilter: "blur(20px)",
             borderBottom: "1px solid var(--line)",
             padding: "20px 28px 24px",
