@@ -401,210 +401,38 @@ export function CtaSection() {
 }
 
 // ── FeaturesGrid ──
-type Feature = {
-  icon: ReactNode;
-  title: string;
-  desc: string;
-  color: string;
-  span?: number;
-  visual?: ReactNode;
-};
+const compactFeatures = [
+  {
+    icon: <IconWhatsapp size={16} />,
+    title: "Marketing WhatsApp",
+    desc: "Campañas segmentadas y recordatorios automáticos.",
+    color: "#34D399",
+    metric: "Apertura 98%",
+  },
+  {
+    icon: <IconCard size={16} />,
+    title: "POS + DIAN",
+    desc: "Nequi, Daviplata o tarjeta. CUFE y XML automáticos.",
+    color: "#0027fe",
+    metric: "CUFE automático",
+  },
+  {
+    icon: <IconStar size={16} />,
+    title: "Reseñas Google",
+    desc: "Solicita reseñas tras cada visita. Tu ranking sube solo.",
+    color: "#FBBF24",
+    metric: "Rating ↑ auto",
+  },
+  {
+    icon: <IconUsers size={16} />,
+    title: "Comisiones",
+    desc: "Liquida comisiones de tu equipo en un clic.",
+    color: "#22D3EE",
+    metric: "Sin disputas",
+  },
+];
 
 export function FeaturesGrid() {
-  const features: Feature[] = [
-    {
-      icon: <IconCalendar size={22} />,
-      title: "Agenda inteligente",
-      desc: "Reservas 24/7 desde tu link público. Tus clientes eligen, confirman y pagan solos.",
-      color: "#fb0f05",
-      span: 2,
-      visual: (
-        <div
-          style={{
-            padding: 16,
-            marginTop: 14,
-            background: "rgba(20,15,30,0.02)",
-            borderRadius: 12,
-            border: "1px solid var(--line)",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 10,
-            }}
-          >
-            <span
-              className="mono"
-              style={{ fontSize: 10, color: "var(--fg-mute)" }}
-            >
-              tuyo.zyncra.com
-            </span>
-            <span
-              style={{ flex: 1, height: 1, background: "var(--line)" }}
-            />
-            <span
-              style={{
-                fontSize: 10,
-                padding: "2px 8px",
-                borderRadius: 999,
-                background: "rgba(52,211,153,0.15)",
-                color: "var(--green)",
-                fontFamily: "var(--font-mono)",
-              }}
-            >
-              ● online
-            </span>
-          </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(7, 1fr)",
-              gap: 4,
-              fontSize: 10,
-            }}
-          >
-            {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
-              <div
-                key={i}
-                style={{ textAlign: "center", color: "var(--fg-mute)" }}
-              >
-                {d}
-              </div>
-            ))}
-            {Array.from({ length: 21 }).map((_, i) => {
-              const taken = [1, 3, 4, 6, 9, 10, 13, 15, 16, 18].includes(i);
-              const today = i === 8;
-              return (
-                <div
-                  key={i}
-                  style={{
-                    aspectRatio: "1",
-                    borderRadius: 6,
-                    display: "grid",
-                    placeItems: "center",
-                    fontSize: 11,
-                    background: today
-                      ? "linear-gradient(135deg, #fb0f05, #0027fe)"
-                      : taken
-                        ? "rgba(0,39,254,0.18)"
-                        : "rgba(255,255,255,0.03)",
-                    color: today ? "white" : "var(--fg-dim)",
-                    border:
-                      "1px solid " +
-                      (taken && !today
-                        ? "rgba(0,39,254,0.3)"
-                        : "var(--line)"),
-                  }}
-                >
-                  {i + 1}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ),
-    },
-    {
-      icon: <IconWhatsapp size={22} />,
-      title: "Marketing WhatsApp",
-      desc: "Campañas segmentadas, recordatorios y reseñas automáticas.",
-      color: "#34D399",
-    },
-    {
-      icon: <IconCard size={22} />,
-      title: "POS + DIAN",
-      desc: "Cobra con Nequi, Daviplata, efectivo o tarjeta. CUFE y XML automáticos.",
-      color: "#0027fe",
-    },
-    {
-      icon: <IconStar size={22} />,
-      title: "Reseñas Google",
-      desc: "Solicita reseñas después de cada visita. Tu ranking sube solo.",
-      color: "#FBBF24",
-    },
-    {
-      icon: <IconUsers size={22} />,
-      title: "Comisiones",
-      desc: "Liquida comisiones de tu equipo en un clic. Sin disputas, sin errores.",
-      color: "#22D3EE",
-    },
-    {
-      icon: <IconChart size={22} />,
-      title: "Reportes en tiempo real",
-      desc: "Mira qué servicios y profesionales generan más. Decide con datos.",
-      color: "#FB923C",
-      span: 2,
-      visual: (
-        <div
-          style={{
-            padding: 16,
-            marginTop: 14,
-            background: "rgba(20,15,30,0.02)",
-            borderRadius: 12,
-            border: "1px solid var(--line)",
-            position: "relative",
-            height: 110,
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              marginBottom: 8,
-            }}
-          >
-            <span
-              style={{
-                fontSize: 11,
-                color: "var(--fg-mute)",
-                fontFamily: "var(--font-mono)",
-              }}
-            >
-              INGRESOS · 30D
-            </span>
-            <span
-              style={{
-                fontSize: 11,
-                color: "var(--green)",
-                fontFamily: "var(--font-mono)",
-              }}
-            >
-              ↑ +22%
-            </span>
-          </div>
-          <svg
-            width="100%"
-            height="70"
-            viewBox="0 0 300 70"
-            preserveAspectRatio="none"
-          >
-            <defs>
-              <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#0027fe" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#0027fe" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <path
-              d="M0,50 L25,42 L50,46 L75,30 L100,38 L125,28 L150,32 L175,18 L200,22 L225,12 L250,16 L275,8 L300,12 L300,70 L0,70 Z"
-              fill="url(#sparkfill)"
-            />
-            <path
-              d="M0,50 L25,42 L50,46 L75,30 L100,38 L125,28 L150,32 L175,18 L200,22 L225,12 L250,16 L275,8 L300,12"
-              stroke="#0027fe"
-              strokeWidth="2"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-      ),
-    },
-  ];
   return (
     <section id="funciones" style={{ padding: "120px 0", position: "relative" }}>
       <Container max={1240}>
@@ -618,64 +446,221 @@ export function FeaturesGrid() {
           sub="Una plataforma completa para negocios de servicios que trabajan con citas. Reemplaza 5 herramientas con una sola."
           align="left"
         />
+
+        {/* Row 1: Agenda (big) + 2×2 compact grid */}
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(3, 1fr)",
-            gap: 16,
-          }}
-          className="feat-grid"
+          style={{ display: "grid", gridTemplateColumns: "1.25fr 1fr", gap: 14 }}
+          className="feat-main-grid"
         >
-          {features.map((f, i) => (
-            <Card
-              key={i}
-              hover
+          {/* Agenda — big card */}
+          <Card hover style={{ padding: 26, position: "relative", overflow: "hidden" }}>
+            <div
               style={{
-                padding: 24,
-                gridColumn: f.span === 2 ? "span 2" : "span 1",
-                height: "100%",
-                position: "relative",
-                overflow: "hidden",
+                width: 36,
+                height: 36,
+                borderRadius: 9,
+                background: "linear-gradient(135deg, rgba(251,15,5,0.18), rgba(251,15,5,0.06))",
+                border: "1px solid rgba(251,15,5,0.28)",
+                display: "grid",
+                placeItems: "center",
+                color: "#fb0f05",
+                marginBottom: 12,
               }}
-              className={f.span === 2 ? "feat-card feat-wide" : "feat-card"}
             >
+              <IconCalendar size={18} />
+            </div>
+            <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-0.02em", marginBottom: 4 }}>
+              Agenda inteligente
+            </div>
+            <div style={{ fontSize: 13, color: "var(--fg-dim)", lineHeight: 1.5, marginBottom: 16 }}>
+              Reservas 24/7 desde tu link público. Tus clientes eligen, confirman y pagan solos.
+            </div>
+            {/* Calendar mini */}
+            <div
+              style={{
+                padding: 14,
+                background: "var(--bg-elev)",
+                borderRadius: 10,
+                border: "1px solid var(--line)",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                <span className="mono" style={{ fontSize: 10, color: "var(--fg-mute)" }}>
+                  tuyo.zyncra.com
+                </span>
+                <span style={{ flex: 1, height: 1, background: "var(--line)" }} />
+                <span
+                  style={{
+                    fontSize: 10,
+                    padding: "2px 7px",
+                    borderRadius: 999,
+                    background: "rgba(52,211,153,0.12)",
+                    color: "var(--green)",
+                    fontFamily: "var(--font-mono)",
+                  }}
+                >
+                  ● en línea
+                </span>
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 3, fontSize: 10 }}>
+                {["L", "M", "M", "J", "V", "S", "D"].map((d, i) => (
+                  <div key={i} style={{ textAlign: "center", color: "var(--fg-mute)", paddingBottom: 2 }}>
+                    {d}
+                  </div>
+                ))}
+                {Array.from({ length: 21 }).map((_, i) => {
+                  const taken = [1, 3, 4, 6, 9, 10, 13, 15, 16, 18].includes(i);
+                  const today = i === 8;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        aspectRatio: "1",
+                        borderRadius: 5,
+                        display: "grid",
+                        placeItems: "center",
+                        fontSize: 10,
+                        background: today
+                          ? "linear-gradient(135deg, #fb0f05, #0027fe)"
+                          : taken
+                            ? "rgba(0,39,254,0.12)"
+                            : "transparent",
+                        color: today ? "white" : taken ? "var(--fg-dim)" : "var(--fg-mute)",
+                        border: "1px solid " + (today ? "transparent" : taken ? "rgba(0,39,254,0.22)" : "var(--line)"),
+                      }}
+                    >
+                      {i + 1}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </Card>
+
+          {/* 2×2 compact grid */}
+          <div
+            style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "1fr 1fr", gap: 14 }}
+            className="feat-compact-grid"
+          >
+            {compactFeatures.map((f, i) => (
+              <Card
+                key={i}
+                hover
+                style={{ padding: 18, display: "flex", flexDirection: "column", gap: 0, position: "relative", overflow: "hidden" }}
+              >
+                <div
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: `${f.color}1a`,
+                    border: `1px solid ${f.color}33`,
+                    display: "grid",
+                    placeItems: "center",
+                    color: f.color,
+                    marginBottom: 10,
+                    flexShrink: 0,
+                  }}
+                >
+                  {f.icon}
+                </div>
+                <div style={{ fontSize: 13, fontWeight: 600, letterSpacing: "-0.015em", marginBottom: 4, lineHeight: 1.3 }}>
+                  {f.title}
+                </div>
+                <div style={{ fontSize: 11.5, color: "var(--fg-dim)", lineHeight: 1.45, flex: 1 }}>
+                  {f.desc}
+                </div>
+                <div
+                  style={{
+                    marginTop: 12,
+                    display: "inline-flex",
+                    alignSelf: "flex-start",
+                    fontSize: 10,
+                    fontFamily: "var(--font-mono)",
+                    fontWeight: 500,
+                    padding: "3px 8px",
+                    borderRadius: 999,
+                    background: `${f.color}15`,
+                    color: f.color,
+                    border: `1px solid ${f.color}28`,
+                  }}
+                >
+                  {f.metric}
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 2: Reportes — full-width horizontal strip */}
+        <div style={{ marginTop: 14 }}>
+          <Card hover style={{ padding: "22px 26px", display: "flex", alignItems: "center", gap: 32, overflow: "hidden", position: "relative" }} className="feat-report-strip">
+            {/* Left: text */}
+            <div style={{ flex: "0 0 auto", maxWidth: 280 }}>
               <div
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 10,
-                  background: `linear-gradient(135deg, ${f.color}33, ${f.color}11)`,
-                  border: `1px solid ${f.color}44`,
+                  width: 36,
+                  height: 36,
+                  borderRadius: 9,
+                  background: "rgba(251,146,60,0.14)",
+                  border: "1px solid rgba(251,146,60,0.28)",
                   display: "grid",
                   placeItems: "center",
-                  color: f.color,
-                  marginBottom: 16,
+                  color: "#FB923C",
+                  marginBottom: 12,
                 }}
               >
-                {f.icon}
+                <IconChart size={18} />
               </div>
+              <div style={{ fontSize: 17, fontWeight: 600, letterSpacing: "-0.02em", marginBottom: 4 }}>
+                Reportes en tiempo real
+              </div>
+              <div style={{ fontSize: 13, color: "var(--fg-dim)", lineHeight: 1.5 }}>
+                Mira qué servicios y profesionales generan más. Toma decisiones con datos, no con intuición.
+              </div>
+            </div>
+
+            {/* Right: chart */}
+            <div style={{ flex: 1, minWidth: 0 }}>
               <div
                 style={{
-                  fontSize: 18,
-                  fontWeight: 500,
-                  letterSpacing: "-0.02em",
-                  marginBottom: 6,
+                  padding: "12px 16px",
+                  background: "var(--bg-elev)",
+                  borderRadius: 10,
+                  border: "1px solid var(--line)",
                 }}
               >
-                {f.title}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                  <span style={{ fontSize: 10, color: "var(--fg-mute)", fontFamily: "var(--font-mono)" }}>
+                    INGRESOS · 30D
+                  </span>
+                  <span style={{ fontSize: 10, color: "var(--green)", fontFamily: "var(--font-mono)", fontWeight: 600 }}>
+                    ↑ +22%
+                  </span>
+                </div>
+                <svg width="100%" height="52" viewBox="0 0 300 52" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="sparkfill2" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#0027fe" stopOpacity="0.35" />
+                      <stop offset="100%" stopColor="#0027fe" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <path
+                    d="M0,40 L25,33 L50,37 L75,22 L100,30 L125,20 L150,24 L175,12 L200,15 L225,7 L250,10 L275,4 L300,7 L300,52 L0,52 Z"
+                    fill="url(#sparkfill2)"
+                  />
+                  <path
+                    d="M0,40 L25,33 L50,37 L75,22 L100,30 L125,20 L150,24 L175,12 L200,15 L225,7 L250,10 L275,4 L300,7"
+                    stroke="#0027fe"
+                    strokeWidth="1.8"
+                    fill="none"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
               </div>
-              <div
-                style={{
-                  fontSize: 13.5,
-                  color: "var(--fg-dim)",
-                  lineHeight: 1.5,
-                }}
-              >
-                {f.desc}
-              </div>
-              {f.visual}
-            </Card>
-          ))}
+            </div>
+          </Card>
         </div>
       </Container>
     </section>

@@ -83,9 +83,9 @@ const PLAN_INFO = {
   },
   Personalizado: {
     price: "A medida",
-    color: "#7B2FBE",
-    bg: "rgba(123,47,190,.07)",
-    accent: "rgba(123,47,190,.15)",
+    color: "#0027fe",
+    bg: "rgba(0,39,254,.06)",
+    accent: "rgba(0,39,254,.14)",
     reasons: [
       "Múltiples sedes centralizadas",
       "Equipo grande sin restricciones",
@@ -211,7 +211,7 @@ export default function RegisterPage() {
       {/* ── Left brand panel ── */}
       <div className={styles.brand}>
         <div className={styles.brandLogo}>
-          <div style={{ background: "white", borderRadius: 12, padding: "7px 14px", display: "inline-flex" }}>
+          <div className={styles.brandLogoBox}>
             <Image src="/zyncra-logo.png" alt="Zyncra" height={28} width={86} style={{ height: 28, width: "auto" }} />
           </div>
         </div>
@@ -266,7 +266,7 @@ export default function RegisterPage() {
       <div className={styles.form}>
         <div className={styles.wizard}>
           <div className={styles.logoMobile}>
-            <div style={{ background: "white", borderRadius: 10, padding: "5px 12px", display: "inline-flex", border: "1px solid #e8e6e2" }}>
+            <div className={styles.logoMobileBox}>
               <Image src="/zyncra-logo.png" alt="Zyncra" height={28} width={86} style={{ height: 28, width: "auto" }} />
             </div>
           </div>
@@ -385,7 +385,7 @@ export default function RegisterPage() {
                 ))}
               </div>
 
-              <p style={{ fontSize: 12, color: "#a0a0b0", textAlign: "center", marginTop: 14 }}>
+              <p style={{ fontSize: 12, color: "#8E879B", textAlign: "center", marginTop: 14 }}>
                 {goals.length}/3 seleccionados
               </p>
 
@@ -447,7 +447,7 @@ export default function RegisterPage() {
                 </button>
               </div>
 
-              <p style={{ fontSize: 12, color: "#a0a0b0", textAlign: "center", marginTop: 16, lineHeight: 1.55 }}>
+              <p style={{ fontSize: 12, color: "#8E879B", textAlign: "center", marginTop: 16, lineHeight: 1.55 }}>
                 Al registrarte aceptas los{" "}
                 <Link href="#" className={styles.link}>Términos de uso</Link> y la{" "}
                 <Link href="#" className={styles.link}>Política de privacidad</Link>
@@ -476,7 +476,7 @@ export default function RegisterPage() {
                     <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: planInfo.color, marginBottom: 4 }}>
                       Plan recomendado
                     </div>
-                    <div style={{ fontSize: 26, fontWeight: 900, color: "#111118", letterSpacing: "-.5px" }}>
+                    <div style={{ fontSize: 26, fontWeight: 900, color: "#14111C", letterSpacing: "-.03em" }}>
                       Plan {plan}
                     </div>
                   </div>
@@ -488,7 +488,7 @@ export default function RegisterPage() {
 
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {planInfo.reasons.map((r, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#3a3a48" }}>
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#3a3548" }}>
                       <div style={{
                         width: 20, height: 20, borderRadius: "50%",
                         background: planInfo.color, display: "flex",
@@ -503,8 +503,9 @@ export default function RegisterPage() {
               </div>
 
               <div style={{
-                background: "#f5f4f2", borderRadius: 12, padding: "14px 16px",
-                marginBottom: 20, fontSize: 13, color: "#6b6b80", lineHeight: 1.55,
+                background: "rgba(0,39,254,.05)", borderRadius: 12, padding: "14px 16px",
+                marginBottom: 20, fontSize: 13, color: "#564E66", lineHeight: 1.55,
+                border: "1px solid rgba(0,39,254,.12)",
               }}>
                 💡 Puedes cambiar de plan en cualquier momento desde tu panel de configuración.
               </div>
