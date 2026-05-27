@@ -71,10 +71,10 @@ export const Button = ({
   const variants: Record<string, CSSProperties> = {
     primary: {
       background:
-        "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+        "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
       color: "white",
       boxShadow:
-        "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+        "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
     },
     secondary: {
       background: "var(--bg-card)",
@@ -93,7 +93,7 @@ export const Button = ({
     if (variant === "primary") {
       e.currentTarget.style.transform = "translateY(-1px)";
       e.currentTarget.style.boxShadow =
-        "0 14px 40px -10px rgba(236,72,153,0.6), inset 0 1px 0 rgba(255,255,255,0.3)";
+        "0 14px 40px -10px rgba(0,39,254,0.55), inset 0 1px 0 rgba(255,255,255,0.3)";
     } else if (variant === "secondary") {
       e.currentTarget.style.background = "var(--bg-elev)";
     } else {
@@ -104,7 +104,7 @@ export const Button = ({
     if (variant === "primary") {
       e.currentTarget.style.transform = "translateY(0)";
       e.currentTarget.style.boxShadow =
-        "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)";
+        "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)";
     } else if (variant === "secondary") {
       e.currentTarget.style.background = "var(--bg-card)";
     } else {
@@ -163,7 +163,7 @@ export const Eyebrow = ({
       padding: "6px 12px",
       borderRadius: 999,
       border: "1px solid var(--line-strong)",
-      background: accent ? "rgba(167,139,250,0.08)" : "rgba(255,255,255,0.03)",
+      background: accent ? "rgba(0,39,254,0.08)" : "rgba(255,255,255,0.03)",
       fontSize: 12,
       letterSpacing: "0.08em",
       textTransform: "uppercase",
@@ -246,7 +246,7 @@ export const SectionTitle = ({
 
 // ── GradientOrb ──
 export const GradientOrb = ({
-  color = "#A78BFA",
+  color = "#fb0f05",
   size = 600,
   x = 0,
   y = 0,
@@ -329,7 +329,7 @@ export const Card = ({
           "transform .25s ease, border-color .25s ease, box-shadow .35s ease",
         transform: hover && h ? "translateY(-4px)" : "translateY(0)",
         borderColor: hover && h ? "var(--line-strong)" : "var(--line)",
-        boxShadow: glow ? "0 0 60px -20px rgba(167,139,250,0.3)" : "none",
+        boxShadow: glow ? "0 0 60px -20px rgba(0,39,254,0.3)" : "none",
         ...style,
       }}
     >
@@ -385,7 +385,7 @@ export const PageHero = ({
   eyebrow,
   title,
   sub,
-  accent = "#A78BFA",
+  accent = "#fb0f05",
 }: {
   eyebrow?: ReactNode;
   title: ReactNode;
@@ -402,7 +402,7 @@ export const PageHero = ({
     }}
   >
     <GradientOrb color={accent} size={700} x="-10%" y="-30%" opacity={0.25} />
-    <GradientOrb color="#EC4899" size={500} x="75%" y="-10%" opacity={0.18} />
+    <GradientOrb color="#0027fe" size={500} x="75%" y="-10%" opacity={0.18} />
     <GridBackdrop style={{ opacity: 0.5 }} />
     <Container max={1100}>
       <div style={{ position: "relative", zIndex: 2 }}>

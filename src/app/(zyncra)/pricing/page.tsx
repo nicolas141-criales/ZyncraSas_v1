@@ -17,7 +17,7 @@ export default function PricingPage() {
           </>
         }
         sub="14 días gratis, sin tarjeta. Más económico que la competencia gringa. Cancela cuando quieras."
-        accent="#EC4899"
+        accent="#0027fe"
       />
       <Pricing />
       <RoiSection />

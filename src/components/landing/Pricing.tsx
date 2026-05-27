@@ -46,7 +46,7 @@ export default function Pricing() {
       ],
       cta: "Probar Pro 14 días gratis",
       ctaVariant: "primary" as const,
-      accent: "#EC4899",
+      accent: "#0027fe",
     },
     {
       name: "Business",
@@ -64,15 +64,15 @@ export default function Pricing() {
       ],
       cta: "Hablar con ventas",
       ctaVariant: "secondary" as const,
-      accent: "#FB923C",
+      accent: "#fb0f05",
     },
   ];
   const fmt = (n: number) => `$${(n / 1000).toFixed(0)}.000`;
 
   return (
     <section id="precios" style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}>
-      <GradientOrb color="#EC4899" size={500} x="70%" y="30%" opacity={0.10} />
-      <GradientOrb color="#A78BFA" size={500} x="-10%" y="50%" opacity={0.10} />
+      <GradientOrb color="#0027fe" size={500} x="70%" y="30%" opacity={0.10} />
+      <GradientOrb color="#fb0f05" size={500} x="-10%" y="50%" opacity={0.10} />
       <Container max={1240}>
         <SectionTitle
           eyebrow="Precios"
@@ -107,7 +107,7 @@ export default function Pricing() {
                   padding: "8px 16px",
                   background:
                     yearly === v
-                      ? "linear-gradient(135deg, rgba(167,139,250,0.2), rgba(236,72,153,0.15))"
+                      ? "linear-gradient(135deg, rgba(251,15,5,0.2), rgba(0,39,254,0.15))"
                       : "transparent",
                   border:
                     yearly === v ? "1px solid var(--line-strong)" : "1px solid transparent",
@@ -141,13 +141,13 @@ export default function Pricing() {
                 borderRadius: 22,
                 position: "relative",
                 background: p.featured
-                  ? "linear-gradient(180deg, rgba(167,139,250,0.10) 0%, rgba(236,72,153,0.03) 100%)"
+                  ? "linear-gradient(180deg, rgba(251,15,5,0.08) 0%, rgba(0,39,254,0.04) 100%)"
                   : "rgba(20,15,30,0.025)",
-                border: p.featured ? "1px solid rgba(167,139,250,0.4)" : "1px solid var(--line)",
+                border: p.featured ? "1px solid rgba(0,39,254,0.4)" : "1px solid var(--line)",
                 height: "100%",
                 display: "flex",
                 flexDirection: "column",
-                boxShadow: p.featured ? "0 30px 80px -30px rgba(167,139,250,0.4)" : "none",
+                boxShadow: p.featured ? "0 30px 80px -30px rgba(0,39,254,0.4)" : "none",
               }}
             >
               {p.featured && (
@@ -157,7 +157,7 @@ export default function Pricing() {
                     top: -12,
                     right: 24,
                     padding: "5px 12px",
-                    background: "linear-gradient(135deg, #A78BFA, #EC4899)",
+                    background: "linear-gradient(135deg, #fb0f05, #0027fe)",
                     color: "white",
                     fontSize: 11,
                     fontFamily: "var(--font-mono)",
@@ -165,7 +165,7 @@ export default function Pricing() {
                     letterSpacing: "0.06em",
                     borderRadius: 999,
                     textTransform: "uppercase",
-                    boxShadow: "0 8px 20px -4px rgba(236,72,153,0.5)",
+                    boxShadow: "0 8px 20px -4px rgba(0,39,254,0.5)",
                   }}
                 >
                   Más popular
@@ -260,7 +260,7 @@ export default function Pricing() {
                   borderRadius: 12,
                   background:
                     p.ctaVariant === "primary"
-                      ? "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)"
+                      ? "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)"
                       : "rgba(20,15,30,0.06)",
                   color: p.ctaVariant === "primary" ? "white" : "var(--fg)",
                   border: p.ctaVariant === "primary" ? "none" : "1px solid var(--line-strong)",
@@ -270,7 +270,7 @@ export default function Pricing() {
                   textDecoration: "none",
                   boxShadow:
                     p.ctaVariant === "primary"
-                      ? "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)"
+                      ? "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)"
                       : "none",
                 }}
               >

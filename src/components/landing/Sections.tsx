@@ -258,11 +258,11 @@ export function CtaSection() {
             padding: "80px 60px",
             borderRadius: 28,
             background:
-              "linear-gradient(135deg, rgba(167,139,250,0.18) 0%, rgba(236,72,153,0.12) 50%, rgba(251,146,60,0.08) 100%)",
-            border: "1px solid rgba(167,139,250,0.3)",
+              "linear-gradient(135deg, rgba(251,15,5,0.18) 0%, rgba(0,39,254,0.12) 100%)",
+            border: "1px solid rgba(0,39,254,0.3)",
             overflow: "hidden",
             textAlign: "center",
-            boxShadow: "0 40px 100px -30px rgba(236,72,153,0.4)",
+            boxShadow: "0 40px 100px -30px rgba(0,39,254,0.4)",
           }}
           className="cta-wrap"
         >
@@ -280,8 +280,8 @@ export function CtaSection() {
                 "radial-gradient(ellipse at center, black 20%, transparent 70%)",
             }}
           />
-          <GradientOrb color="#A78BFA" size={400} x="-10%" y="-30%" opacity={0.4} />
-          <GradientOrb color="#EC4899" size={400} x="70%" y="60%" opacity={0.35} />
+          <GradientOrb color="#fb0f05" size={400} x="-10%" y="-30%" opacity={0.4} />
+          <GradientOrb color="#0027fe" size={400} x="70%" y="60%" opacity={0.35} />
 
           <div style={{ position: "relative" }}>
             <Eyebrow accent>Únete a 500+ negocios</Eyebrow>
@@ -329,7 +329,7 @@ export function CtaSection() {
                   padding: "14px 22px",
                   borderRadius: 14,
                   background:
-                    "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                    "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
                   color: "white",
                   fontSize: 16,
                   fontWeight: 500,
@@ -337,7 +337,7 @@ export function CtaSection() {
                   letterSpacing: "-0.01em",
                   textDecoration: "none",
                   boxShadow:
-                    "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                    "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
                 }}
               >
                 <span>Empezar gratis</span>
@@ -416,7 +416,7 @@ export function FeaturesGrid() {
       icon: <IconCalendar size={22} />,
       title: "Agenda inteligente",
       desc: "Reservas 24/7 desde tu link público. Tus clientes eligen, confirman y pagan solos.",
-      color: "#A78BFA",
+      color: "#fb0f05",
       span: 2,
       visual: (
         <div
@@ -487,15 +487,15 @@ export function FeaturesGrid() {
                     placeItems: "center",
                     fontSize: 11,
                     background: today
-                      ? "linear-gradient(135deg, #A78BFA, #EC4899)"
+                      ? "linear-gradient(135deg, #fb0f05, #0027fe)"
                       : taken
-                        ? "rgba(167,139,250,0.18)"
+                        ? "rgba(0,39,254,0.18)"
                         : "rgba(255,255,255,0.03)",
                     color: today ? "white" : "var(--fg-dim)",
                     border:
                       "1px solid " +
                       (taken && !today
-                        ? "rgba(167,139,250,0.3)"
+                        ? "rgba(0,39,254,0.3)"
                         : "var(--line)"),
                   }}
                 >
@@ -517,7 +517,7 @@ export function FeaturesGrid() {
       icon: <IconCard size={22} />,
       title: "POS + DIAN",
       desc: "Cobra con Nequi, Daviplata, efectivo o tarjeta. CUFE y XML automáticos.",
-      color: "#EC4899",
+      color: "#0027fe",
     },
     {
       icon: <IconStar size={22} />,
@@ -584,8 +584,8 @@ export function FeaturesGrid() {
           >
             <defs>
               <linearGradient id="sparkfill" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#FB923C" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#FB923C" stopOpacity="0" />
+                <stop offset="0%" stopColor="#0027fe" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#0027fe" stopOpacity="0" />
               </linearGradient>
             </defs>
             <path
@@ -594,7 +594,7 @@ export function FeaturesGrid() {
             />
             <path
               d="M0,50 L25,42 L50,46 L75,30 L100,38 L125,28 L150,32 L175,18 L200,22 L225,12 L250,16 L275,8 L300,12"
-              stroke="#FB923C"
+              stroke="#0027fe"
               strokeWidth="2"
               fill="none"
               strokeLinecap="round"
@@ -689,14 +689,14 @@ export function ProcessSteps() {
       n: "01",
       title: "Configura en minutos",
       desc: "Agrega tus servicios, equipo, precios y horarios. Sube tu logo. Activa tu agenda pública.",
-      color: "#A78BFA",
+      color: "#fb0f05",
       icon: <IconBolt size={20} />,
     },
     {
       n: "02",
       title: "Comparte tu enlace",
       desc: "tuyo.zyncra.com — tus clientes reservan en segundos, sin apps, sin descargas.",
-      color: "#EC4899",
+      color: "#0027fe",
       icon: <IconGlobe size={20} />,
     },
     {
@@ -711,7 +711,7 @@ export function ProcessSteps() {
     <section
       style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}
     >
-      <GradientOrb color="#A78BFA" size={500} x="60%" y="20%" opacity={0.12} />
+      <GradientOrb color="#fb0f05" size={500} x="60%" y="20%" opacity={0.12} />
       <Container max={1240}>
         <SectionTitle
           eyebrow="Proceso"

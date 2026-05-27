@@ -115,9 +115,9 @@ const ARTICLES: Article[] = [
 
 const COVER_BG: Record<Article["cover"], string> = {
   violet:
-    "linear-gradient(135deg, rgba(167,139,250,0.30), rgba(167,139,250,0.05))",
+    "linear-gradient(135deg, rgba(251,15,5,0.30), rgba(251,15,5,0.05))",
   magenta:
-    "linear-gradient(135deg, rgba(236,72,153,0.30), rgba(236,72,153,0.05))",
+    "linear-gradient(135deg, rgba(0,39,254,0.30), rgba(0,39,254,0.05))",
   orange:
     "linear-gradient(135deg, rgba(251,146,60,0.30), rgba(251,146,60,0.05))",
   green:
@@ -132,10 +132,10 @@ const Chip = ({ children, active = false }: { children: ReactNode; active?: bool
     style={{
       padding: "8px 14px",
       border: active
-        ? "1px solid rgba(167,139,250,0.4)"
+        ? "1px solid rgba(0,39,254,0.4)"
         : "1px solid var(--line)",
       background: active
-        ? "linear-gradient(135deg, rgba(167,139,250,0.12), rgba(236,72,153,0.06))"
+        ? "linear-gradient(135deg, rgba(251,15,5,0.12), rgba(0,39,254,0.06))"
         : "rgba(20,15,30,0.025)",
       borderRadius: 999,
       fontSize: 13,
@@ -162,7 +162,7 @@ export default function BlogPage() {
         }}
       >
         <GradientOrb color="#8B5CF6" size={700} x="-10%" y="-20%" opacity={0.30} />
-        <GradientOrb color="#EC4899" size={600} x="75%" y="-10%" opacity={0.22} />
+        <GradientOrb color="#0027fe" size={600} x="75%" y="-10%" opacity={0.22} />
         <GridBackdrop style={{ opacity: 0.6 }} />
         <Container max={1240} style={{ position: "relative", zIndex: 2 }}>
           <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
@@ -247,7 +247,7 @@ export default function BlogPage() {
             <div
               style={{
                 background:
-                  "linear-gradient(135deg, rgba(167,139,250,0.25), rgba(236,72,153,0.15))",
+                  "linear-gradient(135deg, rgba(251,15,5,0.25), rgba(0,39,254,0.15))",
                 position: "relative",
                 minHeight: 360,
                 display: "grid",
@@ -305,8 +305,8 @@ export default function BlogPage() {
                   style={{
                     padding: "4px 10px",
                     borderRadius: 999,
-                    background: "rgba(167,139,250,0.12)",
-                    border: "1px solid rgba(167,139,250,0.3)",
+                    background: "rgba(0,39,254,0.10)",
+                    border: "1px solid rgba(0,39,254,0.3)",
                     color: "var(--violet-2)",
                     textTransform: "uppercase",
                     letterSpacing: "0.06em",
@@ -355,7 +355,7 @@ export default function BlogPage() {
                     width: 36,
                     height: 36,
                     borderRadius: "50%",
-                    background: "linear-gradient(135deg, #A78BFA, #EC4899)",
+                    background: "linear-gradient(135deg, #fb0f05, #0027fe)",
                     display: "grid",
                     placeItems: "center",
                     fontFamily: "var(--font-mono)",
@@ -556,16 +556,16 @@ export default function BlogPage() {
               padding: "56px 40px",
               borderRadius: 24,
               background:
-                "linear-gradient(135deg, rgba(167,139,250,0.12) 0%, rgba(236,72,153,0.06) 100%)",
-              border: "1px solid rgba(167,139,250,0.3)",
+                "linear-gradient(135deg, rgba(251,15,5,0.08) 0%, rgba(0,39,254,0.06) 100%)",
+              border: "1px solid rgba(0,39,254,0.3)",
               textAlign: "center",
-              boxShadow: "0 30px 80px -30px rgba(167,139,250,0.4)",
+              boxShadow: "0 30px 80px -30px rgba(0,39,254,0.35)",
               position: "relative",
               overflow: "hidden",
             }}
           >
-            <GradientOrb color="#A78BFA" size={400} x="-10%" y="-30%" opacity={0.4} blur={100} />
-            <GradientOrb color="#EC4899" size={400} x="80%" y="60%" opacity={0.35} blur={100} />
+            <GradientOrb color="#fb0f05" size={400} x="-10%" y="-30%" opacity={0.4} blur={100} />
+            <GradientOrb color="#0027fe" size={400} x="80%" y="60%" opacity={0.35} blur={100} />
             <div style={{ position: "relative" }}>
               <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
                 <Eyebrow accent>Newsletter semanal</Eyebrow>
@@ -623,7 +623,7 @@ export default function BlogPage() {
                   style={{
                     padding: "11px 18px",
                     background:
-                      "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                      "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
                     color: "white",
                     border: "none",
                     borderRadius: 12,
@@ -632,7 +632,7 @@ export default function BlogPage() {
                     fontWeight: 500,
                     cursor: "pointer",
                     boxShadow:
-                      "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                      "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
                   }}
                 >
                   Suscribirme →

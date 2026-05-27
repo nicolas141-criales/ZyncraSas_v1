@@ -22,7 +22,7 @@ const BentoHeroTile = ({
   children,
   span = 1,
   rowSpan = 1,
-  accent = "#A78BFA",
+  accent = "#fb0f05",
   style = {},
   padding = 18,
 }: {
@@ -69,8 +69,8 @@ type AgendaItem = { t: string; s: string; c: string; d: number };
 
 const TileAgenda = () => {
   const [items, setItems] = useState<AgendaItem[]>([
-    { t: "09:00", s: "Corte + Barba", c: "#A78BFA", d: 45 },
-    { t: "10:30", s: "Degradado", c: "#EC4899", d: 30 },
+    { t: "09:00", s: "Corte + Barba", c: "#fb0f05", d: 45 },
+    { t: "10:30", s: "Degradado", c: "#0027fe", d: 30 },
     { t: "13:30", s: "Pack Premium", c: "#FB923C", d: 60 },
   ]);
   const [flash, setFlash] = useState(false);
@@ -363,8 +363,8 @@ const TileRevenue = () => {
               height: `${h}%`,
               background:
                 i === 11
-                  ? "linear-gradient(180deg, #EC4899, #A78BFA)"
-                  : "rgba(167,139,250,0.25)",
+                  ? "linear-gradient(180deg, #0027fe, #fb0f05)"
+                  : "rgba(0,39,254,0.25)",
               borderRadius: 2,
             }}
           />
@@ -682,9 +682,9 @@ export default function BentoHero() {
         minHeight: 900,
       }}
     >
-      <GradientOrb color="#8B5CF6" size={900} x="-15%" y="-30%" opacity={0.28} />
-      <GradientOrb color="#EC4899" size={700} x="70%" y="0%" opacity={0.22} />
-      <GradientOrb color="#FB923C" size={500} x="40%" y="60%" opacity={0.08} />
+      <GradientOrb color="#fb0f05" size={900} x="-15%" y="-30%" opacity={0.28} />
+      <GradientOrb color="#0027fe" size={700} x="70%" y="0%" opacity={0.22} />
+      <GradientOrb color="#0027fe" size={500} x="40%" y="60%" opacity={0.08} />
       <GridBackdrop style={{ opacity: 0.5 }} />
 
       <Container max={1240}>
@@ -703,7 +703,7 @@ export default function BentoHero() {
               gap: 10,
               padding: "6px 6px 6px 14px",
               border: "1px solid var(--line-strong)",
-              background: "rgba(167,139,250,0.06)",
+              background: "rgba(0,39,254,0.06)",
               borderRadius: 999,
               fontSize: 12.5,
               marginBottom: 28,
@@ -781,13 +781,13 @@ export default function BentoHero() {
                 padding: "14px 22px",
                 borderRadius: 14,
                 background:
-                  "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                  "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
                 color: "white",
                 fontSize: 16,
                 fontWeight: 500,
                 fontFamily: "var(--font-sans)",
                 boxShadow:
-                  "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
                 letterSpacing: "-0.01em",
                 textDecoration: "none",
               }}
@@ -853,17 +853,17 @@ export default function BentoHero() {
           }}
           className="bento-hero"
         >
-          <BentoHeroTile span={5} rowSpan={2} accent="#A78BFA">
+          <BentoHeroTile span={5} rowSpan={2} accent="#fb0f05">
             <TileAgenda />
           </BentoHeroTile>
           <BentoHeroTile span={4} rowSpan={2} accent="#34D399">
             <TileWa />
           </BentoHeroTile>
-          <BentoHeroTile span={3} rowSpan={2} accent="#FB923C">
+          <BentoHeroTile span={3} rowSpan={2} accent="#fb0f05">
             <TileRevenue />
           </BentoHeroTile>
 
-          <BentoHeroTile span={3} rowSpan={2} accent="#EC4899">
+          <BentoHeroTile span={3} rowSpan={2} accent="#0027fe">
             <TilePos />
           </BentoHeroTile>
           <BentoHeroTile span={3} rowSpan={2} accent="#FBBF24">
@@ -878,9 +878,9 @@ export default function BentoHero() {
             accent="#fff"
             style={{
               background:
-                "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
               border: "1px solid rgba(20,15,30,0.2)",
-              boxShadow: "0 20px 60px -20px rgba(236,72,153,0.5)",
+              boxShadow: "0 20px 60px -20px rgba(0,39,254,0.5)",
             }}
             padding={22}
           >

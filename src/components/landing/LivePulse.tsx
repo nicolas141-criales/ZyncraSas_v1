@@ -36,8 +36,8 @@ const CITIES: City[] = [
 
 type Biz = { label: string; icon: ReactNode; c: string };
 const BIZ_TYPES: Biz[] = [
-  { label: "Barbería", icon: <IconScissors size={11} />, c: "#A78BFA" },
-  { label: "Salón", icon: <IconBrush size={11} />, c: "#EC4899" },
+  { label: "Barbería", icon: <IconScissors size={11} />, c: "#fb0f05" },
+  { label: "Salón", icon: <IconBrush size={11} />, c: "#0027fe" },
   { label: "Spa", icon: <IconSpa size={11} />, c: "#22D3EE" },
   { label: "Manicure", icon: <IconHand size={11} />, c: "#FB923C" },
   { label: "Tatuajes", icon: <IconBrush size={11} />, c: "#34D399" },
@@ -97,7 +97,7 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
         position: "absolute",
         inset: "15%",
         background:
-          "radial-gradient(circle, rgba(167,139,250,0.25), transparent 70%)",
+          "radial-gradient(circle, rgba(251,15,5,0.25), transparent 70%)",
         filter: "blur(40px)",
       }}
     />
@@ -107,14 +107,14 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
     >
       <defs>
         <linearGradient id="comap" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="rgba(167,139,250,0.20)" />
-          <stop offset="100%" stopColor="rgba(236,72,153,0.10)" />
+          <stop offset="0%" stopColor="rgba(251,15,5,0.20)" />
+          <stop offset="100%" stopColor="rgba(0,39,254,0.10)" />
         </linearGradient>
       </defs>
       <path
         d="M48,5 L52,8 L56,9 L55,13 L52,15 L48,14 L45,17 L42,18 L38,18 L36,21 L35,24 L37,27 L40,28 L43,30 L46,32 L48,35 L52,33 L55,32 L58,33 L62,32 L65,33 L68,32 L70,35 L68,38 L65,40 L63,43 L62,47 L60,50 L58,53 L55,56 L52,60 L50,64 L52,67 L54,71 L55,75 L52,78 L48,80 L46,83 L48,87 L46,90 L43,92 L40,94 L36,95 L33,93 L31,88 L29,84 L27,79 L25,73 L23,67 L21,60 L20,53 L21,46 L23,40 L26,34 L28,29 L30,25 L31,21 L32,17 L33,13 L35,9 L40,7 Z"
         fill="url(#comap)"
-        stroke="rgba(167,139,250,0.4)"
+        stroke="rgba(251,15,5,0.4)"
         strokeWidth="0.4"
       />
     </svg>
@@ -137,8 +137,8 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
               position: "absolute",
               inset: 0,
               borderRadius: "50%",
-              background: "rgba(167,139,250,0.9)",
-              boxShadow: "0 0 12px rgba(167,139,250,0.8)",
+              background: "rgba(251,15,5,0.9)",
+              boxShadow: "0 0 12px rgba(251,15,5,0.8)",
             }}
           />
           {isLast && (
@@ -148,7 +148,7 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
                   position: "absolute",
                   inset: -8,
                   borderRadius: "50%",
-                  border: "2px solid #EC4899",
+                  border: "2px solid #0027fe",
                   animation: "pingRing 1.6s ease-out infinite",
                 }}
               />
@@ -157,7 +157,7 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
                   position: "absolute",
                   inset: -16,
                   borderRadius: "50%",
-                  border: "1px solid rgba(236,72,153,0.5)",
+                  border: "1px solid rgba(0,39,254,0.5)",
                   animation: "pingRing 1.6s ease-out 0.4s infinite",
                 }}
               />
@@ -195,8 +195,8 @@ export default function LivePulseSection() {
     <section
       style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}
     >
-      <GradientOrb color="#A78BFA" size={600} x="-20%" y="20%" opacity={0.12} />
-      <GradientOrb color="#EC4899" size={500} x="80%" y="60%" opacity={0.10} />
+      <GradientOrb color="#fb0f05" size={600} x="-20%" y="20%" opacity={0.12} />
+      <GradientOrb color="#0027fe" size={500} x="80%" y="60%" opacity={0.10} />
       <Container max={1240}>
         <SectionTitle
           eyebrow="Pulso en vivo"

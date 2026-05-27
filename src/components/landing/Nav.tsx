@@ -153,10 +153,10 @@ export default function Nav() {
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 fontSize: 13.5, padding: "8px 14px", borderRadius: 10,
-                background: "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                background: "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
                 color: "white", border: "none", cursor: "pointer",
                 fontFamily: "var(--font-sans)", fontWeight: 500,
-                boxShadow: "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                boxShadow: "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
                 textDecoration: "none",
               }}
             >
@@ -224,7 +224,7 @@ export default function Nav() {
               onClick={() => setOpen(false)}
               style={{
                 flex: 1, textAlign: "center", padding: "10px", borderRadius: 10,
-                background: "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                background: "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
                 color: "white", fontSize: 14, fontFamily: "var(--font-sans)", fontWeight: 500,
               }}
             >

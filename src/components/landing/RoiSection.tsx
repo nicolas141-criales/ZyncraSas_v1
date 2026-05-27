@@ -17,7 +17,7 @@ const Slider = ({
   max,
   step = 1,
   format,
-  accent = "#A78BFA",
+  accent = "#0027fe",
   suffix = "",
 }: {
   label: string;
@@ -164,8 +164,8 @@ export default function RoiSection() {
 
   return (
     <section style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}>
-      <GradientOrb color="#FB923C" size={500} x="80%" y="20%" opacity={0.10} />
-      <GradientOrb color="#EC4899" size={500} x="-15%" y="60%" opacity={0.10} />
+      <GradientOrb color="#fb0f05" size={500} x="80%" y="20%" opacity={0.10} />
+      <GradientOrb color="#0027fe" size={500} x="-15%" y="60%" opacity={0.10} />
       <Container max={1240}>
         <SectionTitle
           eyebrow="Calculadora de impacto"
@@ -216,7 +216,7 @@ export default function RoiSection() {
               min={10}
               max={300}
               step={5}
-              accent="#A78BFA"
+              accent="#fb0f05"
             />
             <Slider
               label="Ticket promedio (COP)"
@@ -226,7 +226,7 @@ export default function RoiSection() {
               max={200000}
               step={5000}
               format={(v) => `$${(v / 1000).toFixed(0)}.000`}
-              accent="#EC4899"
+              accent="#0027fe"
             />
             <Slider
               label="Profesionales en tu equipo"
@@ -235,7 +235,7 @@ export default function RoiSection() {
               min={1}
               max={20}
               step={1}
-              accent="#FB923C"
+              accent="#fb0f05"
             />
             <div
               style={{
@@ -259,10 +259,10 @@ export default function RoiSection() {
             style={{
               padding: 32,
               background:
-                "linear-gradient(180deg, rgba(167,139,250,0.10), rgba(236,72,153,0.04))",
-              border: "1px solid rgba(167,139,250,0.3)",
+                "linear-gradient(180deg, rgba(251,15,5,0.10), rgba(0,39,254,0.04))",
+              border: "1px solid rgba(0,39,254,0.3)",
               borderRadius: 22,
-              boxShadow: "0 30px 80px -30px rgba(167,139,250,0.4)",
+              boxShadow: "0 30px 80px -30px rgba(0,39,254,0.4)",
               display: "flex",
               flexDirection: "column",
             }}
@@ -348,7 +348,7 @@ export default function RoiSection() {
                     top: 0,
                     bottom: 0,
                     width: "100%",
-                    background: "linear-gradient(90deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                    background: "linear-gradient(90deg, #fb0f05 0%, #0027fe 100%)",
                     opacity: 0.85,
                     clipPath: `inset(0 0 0 ${(currentMonthly / zyncraMonthly) * 100}%)`,
                     transition: "clip-path .6s ease",
@@ -372,8 +372,8 @@ export default function RoiSection() {
             <div
               style={{
                 padding: 22,
-                background: "linear-gradient(135deg, #A78BFA22, #EC489922)",
-                border: "1px solid rgba(167,139,250,0.4)",
+                background: "linear-gradient(135deg, rgba(251,15,5,0.13), rgba(0,39,254,0.13))",
+                border: "1px solid rgba(0,39,254,0.4)",
                 borderRadius: 14,
                 marginBottom: 22,
               }}
@@ -416,7 +416,7 @@ export default function RoiSection() {
                 width: "100%",
                 padding: "14px 22px",
                 borderRadius: 14,
-                background: "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                background: "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
                 color: "white",
                 fontSize: 16,
                 fontWeight: 500,
@@ -424,7 +424,7 @@ export default function RoiSection() {
                 letterSpacing: "-0.01em",
                 textDecoration: "none",
                 boxShadow:
-                  "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
               }}
             >
               <span>Quiero esa plata extra</span>

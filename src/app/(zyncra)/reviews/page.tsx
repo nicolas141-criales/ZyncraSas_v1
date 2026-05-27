@@ -17,7 +17,7 @@ export default function ReviewsPage() {
           </>
         }
         sub="No es marketing. Son números reales de dueños de barberías, salones y spas que ya usan Zyncra."
-        accent="#FB923C"
+        accent="#fb0f05"
       />
       <StatsBar />
       <Testimonials />

@@ -28,8 +28,8 @@ type Appt = {
 
 const DemoAgenda = () => {
   const [appointments, setAppointments] = useState<Appt[]>([
-    { id: 1, time: "09:00", dur: 45, service: "Corte + Barba", client: "Juan García", stylist: "Carlos", color: "#A78BFA" },
-    { id: 2, time: "10:30", dur: 30, service: "Degradado", client: "Miguel Ríos", stylist: "Carlos", color: "#EC4899" },
+    { id: 1, time: "09:00", dur: 45, service: "Corte + Barba", client: "Juan García", stylist: "Carlos", color: "#fb0f05" },
+    { id: 2, time: "10:30", dur: 30, service: "Degradado", client: "Miguel Ríos", stylist: "Carlos", color: "#0027fe" },
     { id: 3, time: "13:30", dur: 60, service: "Pack Premium", client: "Andrés Polo", stylist: "Diana", color: "#FB923C" },
     { id: 4, time: "15:00", dur: 45, service: "Color + Corte", client: "Sara López", stylist: "Diana", color: "#22D3EE" },
   ]);
@@ -47,7 +47,7 @@ const DemoAgenda = () => {
         service: ["Manicure", "Corte clásico", "Spa facial", "Tinte"][Math.floor(Math.random() * 4)],
         client: ["Laura M.", "Pedro V.", "Carmen R.", "Daniela T."][Math.floor(Math.random() * 4)],
         stylist: ["Carlos", "Diana"][Math.floor(Math.random() * 2)],
-        color: ["#A78BFA", "#EC4899", "#FB923C", "#22D3EE"][Math.floor(Math.random() * 4)],
+        color: ["#fb0f05", "#0027fe", "#FB923C", "#22D3EE"][Math.floor(Math.random() * 4)],
       };
       setPulseId(newAppt.id);
       setAppointments((prev) =>
@@ -204,7 +204,7 @@ const DemoAgenda = () => {
           </div>
           <div style={{ fontSize: 11.5, color: "var(--fg-dim)" }}>citas agendadas</div>
         </div>
-        <div style={{ padding: 14, background: "linear-gradient(135deg, rgba(167,139,250,0.08), rgba(236,72,153,0.04))", borderRadius: 12, border: "1px solid rgba(167,139,250,0.3)" }}>
+        <div style={{ padding: 14, background: "linear-gradient(135deg, rgba(251,15,5,0.08), rgba(0,39,254,0.04))", borderRadius: 12, border: "1px solid rgba(0,39,254,0.3)" }}>
           <div style={{ fontSize: 11, color: "var(--violet-2)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Ingresos</div>
           <div className="mono" style={{ fontSize: 22, fontWeight: 500, letterSpacing: "-0.02em" }}>
             $<Counter to={840} duration={1400} />K
@@ -444,8 +444,8 @@ type Service = { name: string; price: number; c: string };
 
 const DemoPos = () => {
   const services: Service[] = [
-    { name: "Corte clásico", price: 25000, c: "#A78BFA" },
-    { name: "Corte + Barba", price: 35000, c: "#EC4899" },
+    { name: "Corte clásico", price: 25000, c: "#fb0f05" },
+    { name: "Corte + Barba", price: 35000, c: "#0027fe" },
     { name: "Degradado", price: 30000, c: "#FB923C" },
     { name: "Color", price: 60000, c: "#22D3EE" },
     { name: "Manicure", price: 28000, c: "#34D399" },
@@ -648,7 +648,7 @@ const DemoPos = () => {
                   padding: "5px 9px",
                   borderRadius: 8,
                   border: method === m && paid ? "1px solid var(--violet-2)" : "1px solid var(--line)",
-                  background: method === m && paid ? "rgba(167,139,250,0.12)" : "transparent",
+                  background: method === m && paid ? "rgba(0,39,254,0.12)" : "transparent",
                   color: method === m && paid ? "var(--violet-2)" : "var(--fg-dim)",
                   fontFamily: "var(--font-mono)",
                 }}
@@ -694,8 +694,8 @@ export default function DemosSection() {
 
   return (
     <section id="demo" style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}>
-      <GradientOrb color="#EC4899" size={700} x="-15%" y="40%" opacity={0.16} />
-      <GradientOrb color="#A78BFA" size={600} x="80%" y="10%" opacity={0.14} />
+      <GradientOrb color="#0027fe" size={700} x="-15%" y="40%" opacity={0.16} />
+      <GradientOrb color="#fb0f05" size={600} x="80%" y="10%" opacity={0.14} />
 
       <Container max={1240}>
         <SectionTitle
@@ -733,7 +733,7 @@ export default function DemosSection() {
                   padding: "10px 16px",
                   background:
                     active === i
-                      ? "linear-gradient(135deg, rgba(167,139,250,0.2), rgba(236,72,153,0.15))"
+                      ? "linear-gradient(135deg, rgba(251,15,5,0.2), rgba(0,39,254,0.15))"
                       : "transparent",
                   border: active === i ? "1px solid var(--line-strong)" : "1px solid transparent",
                   borderRadius: 10,
@@ -760,7 +760,7 @@ export default function DemosSection() {
             borderRadius: 24,
             minHeight: 560,
             overflow: "hidden",
-            boxShadow: "0 40px 80px -30px rgba(20,15,30,0.10), 0 0 100px -40px rgba(167,139,250,0.3)",
+            boxShadow: "0 40px 80px -30px rgba(20,15,30,0.10), 0 0 100px -40px rgba(0,39,254,0.3)",
           }}
         >
           <div

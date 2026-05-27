@@ -106,14 +106,14 @@ const StoryRow = ({
         background: active
           ? isWithout
             ? "rgba(20,15,30,0.04)"
-            : "linear-gradient(135deg, rgba(167,139,250,0.10), rgba(236,72,153,0.04))"
+            : "linear-gradient(135deg, rgba(251,15,5,0.10), rgba(0,39,254,0.04))"
           : "transparent",
         border:
           "1px solid " +
           (active
             ? isWithout
               ? "var(--line-strong)"
-              : "rgba(167,139,250,0.4)"
+              : "rgba(0,39,254,0.4)"
             : "transparent"),
         borderRadius: 16,
         opacity: active ? 1 : 0.35,
@@ -213,14 +213,14 @@ export default function ScrollStorySection() {
           }}
         >
           <GradientOrb
-            color="#A78BFA"
+            color="#fb0f05"
             size={500}
             x="-15%"
             y="20%"
             opacity={0.10}
           />
           <GradientOrb
-            color="#EC4899"
+            color="#0027fe"
             size={500}
             x="75%"
             y="60%"
@@ -318,13 +318,13 @@ export default function ScrollStorySection() {
                           height: isActive ? 16 : 8,
                           borderRadius: "50%",
                           background: isActive
-                            ? "linear-gradient(135deg, #A78BFA, #EC4899)"
+                            ? "linear-gradient(135deg, #fb0f05, #0027fe)"
                             : isPast
                               ? "var(--violet-2)"
                               : "rgba(20,15,30,0.2)",
                           border: "2px solid var(--bg)",
                           boxShadow: isActive
-                            ? "0 0 24px rgba(167,139,250,0.7)"
+                            ? "0 0 24px rgba(0,39,254,0.6)"
                             : "none",
                           transition: "all .3s ease",
                         }}
@@ -355,8 +355,8 @@ export default function ScrollStorySection() {
                       gap: 8,
                       padding: "6px 12px",
                       borderRadius: 999,
-                      background: "rgba(167,139,250,0.08)",
-                      border: "1px solid rgba(167,139,250,0.3)",
+                      background: "rgba(0,39,254,0.08)",
+                      border: "1px solid rgba(0,39,254,0.3)",
                     }}
                   >
                     <span
@@ -418,7 +418,7 @@ export default function ScrollStorySection() {
                   style={{
                     width: `${((activeIdx + 1) / TIMELINE.length) * 100}%`,
                     height: "100%",
-                    background: "linear-gradient(90deg, #A78BFA, #EC4899)",
+                    background: "linear-gradient(90deg, #fb0f05, #0027fe)",
                     transition: "width .4s ease",
                   }}
                 />

@@ -11,14 +11,14 @@
   --fg: #14111C;
   --fg-dim: #564E66;
   --fg-mute: #8E879B;
-  --violet: #8B5CF6;
-  --violet-2: #A78BFA;
-  --magenta: #EC4899;
+  --violet: #0027fe;
+  --violet-2: #0027fe;
+  --magenta: #fb0f05;
   --cyan: #22D3EE;
   --green: #34D399;
   --amber: #FBBF24;
-  --gradient: linear-gradient(135deg, #A78BFA 0%, #EC4899 55%, #FB923C 100%);
-  --gradient-soft: linear-gradient(135deg, rgba(167,139,250,0.18), rgba(236,72,153,0.10));
+  --gradient: linear-gradient(135deg, #fb0f05 0%, #0027fe 100%);
+  --gradient-soft: linear-gradient(135deg, rgba(251,15,5,0.18), rgba(0,39,254,0.10));
   --wa-panel-bg: #F1F7F2;
   --wa-bubble-in: #E9F1ED;
   --wa-text-in: #0F3A2A;
@@ -96,7 +96,7 @@
 }
 
 /* ── Selection ── */
-::selection { background: rgba(167,139,250,0.35); color: var(--fg); }
+::selection { background: rgba(0,39,254,0.25); color: var(--fg); }
 
 /* ── Links & buttons base ── */
 a { color: inherit; text-decoration: none; }

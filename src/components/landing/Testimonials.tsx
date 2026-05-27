@@ -24,7 +24,7 @@ export default function Testimonials() {
       biz: "Black Fade Barbershop",
       city: "Bogotá",
       icon: <IconScissors size={18} />,
-      color: "#A78BFA",
+      color: "#fb0f05",
       metric: "+70% asistencia",
     },
     {
@@ -34,7 +34,7 @@ export default function Testimonials() {
       biz: "Estudio Hair",
       city: "Bucaramanga",
       icon: <IconBrush size={18} />,
-      color: "#EC4899",
+      color: "#0027fe",
       metric: "12 clientes recuperados",
     },
     {
