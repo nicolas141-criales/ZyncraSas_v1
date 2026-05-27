@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import ZyncraMark from "./ZyncraMark";
+import Image from "next/image";
 
 const ArrowIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
@@ -56,7 +56,7 @@ export default function Nav() {
       <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <ZyncraMark size={30} />
+            <Image src="/zyncra-icon.png" alt="Zyncra" width={32} height={32} style={{ borderRadius: 9 }} priority />
             <span style={{ fontSize: 19, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--fg)", fontFamily: "var(--font-sans)" }}>Zyncra</span>
           </Link>
 

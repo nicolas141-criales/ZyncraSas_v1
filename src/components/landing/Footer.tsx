@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import ZyncraMark from "./ZyncraMark";
+import Image from "next/image";
 
 export default function Footer() {
   return (
@@ -17,7 +17,7 @@ export default function Footer() {
         >
           <div>
             <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <ZyncraMark size={32} />
+              <Image src="/zyncra-icon.png" alt="Zyncra" width={32} height={32} style={{ borderRadius: 9 }} />
               <span style={{ fontSize: 20, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--fg)" }}>Zyncra</span>
             </Link>
             <p style={{ fontSize: 13.5, color: "var(--fg-dim)", lineHeight: 1.55, maxWidth: 320, margin: 0, marginBottom: 16 }}>
