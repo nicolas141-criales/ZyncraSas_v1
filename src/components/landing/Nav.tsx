@@ -1,0 +1,185 @@
+"use client";
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import ZyncraMark from "./ZyncraMark";
+
+const ArrowIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 12h14M13 5l7 7-7 7" />
+  </svg>
+);
+
+const MenuIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </svg>
+);
+
+const XIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={20} height={20} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.6} strokeLinecap="round">
+    <path d="M6 6l12 12M18 6L6 18" />
+  </svg>
+);
+
+const links = [
+  { label: "Funciones", href: "/features" },
+  { label: "Precios", href: "/pricing" },
+  { label: "Reseñas", href: "/reviews" },
+  { label: "Blog", href: "/blog" },
+];
+
+export default function Nav() {
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  return (
+    <header
+      style={{
+        position: "fixed",
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 50,
+        padding: "14px 0",
+        transition: "all .3s ease",
+        backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "blur(0px)",
+        background: scrolled ? "rgba(247,244,238,0.85)" : "transparent",
+        borderBottom: scrolled ? "1px solid var(--line)" : "1px solid transparent",
+      }}
+    >
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Link href="/" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <ZyncraMark size={30} />
+            <span style={{ fontSize: 19, fontWeight: 600, letterSpacing: "-0.02em", color: "var(--fg)", fontFamily: "var(--font-sans)" }}>Zyncra</span>
+          </Link>
+
+          <nav className="zn-desktop-nav" style={{ display: "flex", alignItems: "center", gap: 30 }}>
+            {links.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                style={{ fontSize: 14.5, color: "var(--fg-dim)", fontWeight: 400, transition: "color .15s ease", fontFamily: "var(--font-sans)" }}
+                onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--fg)")}
+                onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--fg-dim)")}
+              >
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Link
+              href="/login"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                fontSize: 13.5, padding: "8px 14px", borderRadius: 10,
+                background: "transparent", color: "var(--fg-dim)", border: "none",
+                cursor: "pointer", fontFamily: "var(--font-sans)", fontWeight: 500,
+                transition: "color .15s ease",
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--fg)")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "var(--fg-dim)")}
+            >
+              Iniciar sesión
+            </Link>
+            <Link
+              href="/register"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                fontSize: 13.5, padding: "8px 14px", borderRadius: 10,
+                background: "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                color: "white", border: "none", cursor: "pointer",
+                fontFamily: "var(--font-sans)", fontWeight: 500,
+                boxShadow: "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                textDecoration: "none",
+              }}
+            >
+              <span>Empezar gratis</span>
+              <ArrowIcon />
+            </Link>
+            <button
+              style={{
+                display: "none",
+                background: "none",
+                border: "none",
+                cursor: "pointer",
+                color: "var(--fg)",
+                padding: 4,
+              }}
+              className="zn-mobile-menu-btn"
+              onClick={() => setOpen((o) => !o)}
+              aria-label="Menu"
+            >
+              {open ? <XIcon /> : <MenuIcon />}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile menu */}
+      {open && (
+        <div
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            background: "rgba(247,244,238,0.97)",
+            backdropFilter: "blur(20px)",
+            borderBottom: "1px solid var(--line)",
+            padding: "20px 28px 24px",
+            display: "flex",
+            flexDirection: "column",
+            gap: 4,
+          }}
+        >
+          {links.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              onClick={() => setOpen(false)}
+              style={{
+                fontSize: 16,
+                color: "var(--fg-dim)",
+                padding: "10px 0",
+                borderBottom: "1px solid var(--line)",
+                fontFamily: "var(--font-sans)",
+              }}
+            >
+              {l.label}
+            </Link>
+          ))}
+          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+            <Link href="/login" onClick={() => setOpen(false)} style={{ flex: 1, textAlign: "center", padding: "10px", borderRadius: 10, border: "1px solid var(--line-strong)", fontSize: 14, fontFamily: "var(--font-sans)", color: "var(--fg-dim)" }}>
+              Iniciar sesión
+            </Link>
+            <Link
+              href="/register"
+              onClick={() => setOpen(false)}
+              style={{
+                flex: 1, textAlign: "center", padding: "10px", borderRadius: 10,
+                background: "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                color: "white", fontSize: 14, fontFamily: "var(--font-sans)", fontWeight: 500,
+              }}
+            >
+              Empezar gratis
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @media (max-width: 760px) {
+          .zn-mobile-menu-btn { display: flex !important; }
+        }
+      `}</style>
+    </header>
+  );
+}

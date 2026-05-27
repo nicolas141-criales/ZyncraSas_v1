@@ -1,402 +1,273 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import ZyncraNav from "../ZyncraNav";
-import ZyncraFooter from "../ZyncraFooter";
-import ZyncraReveal from "../ZyncraReveal";
 
-// ── Types ────────────────────────────────────────────────────────────────────
+const Icon = ({ children, size = 20, style = {}, strokeWidth = 1.6 }: {
+  children: React.ReactNode; size?: number; style?: React.CSSProperties; strokeWidth?: number;
+}) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
+    {children}
+  </svg>
+);
 
-type CellVal = boolean | string;
-interface TableRow  { name: string; e: CellVal; p: CellVal; c: CellVal; }
-interface TableGroup { section: string; items: TableRow[]; }
+const IconCheck = (p: { size?: number; style?: React.CSSProperties }) => <Icon {...p}><path d="M4 12.5l5 5L20 6.5" /></Icon>;
+const IconArrow = (p: { size?: number; style?: React.CSSProperties }) => <Icon {...p}><path d="M5 12h14M13 5l7 7-7 7" /></Icon>;
 
-// ── Data ─────────────────────────────────────────────────────────────────────
+function RoiSection() {
+  const [clientsWeek, setClientsWeek] = useState(50);
+  const [avgTicket, setAvgTicket] = useState(45000);
+  const [team, setTeam] = useState(3);
+  const [shownCurrent, setShownCurrent] = useState(0);
+  const [shownZyncra, setShownZyncra] = useState(0);
 
-const faqs = [
-  { q: "¿Puedo cambiar de plan después?", a: "Sí, puedes subir o bajar de plan en cualquier momento desde tu panel. El cambio aplica al siguiente ciclo de facturación." },
-  { q: "¿Necesito tarjeta de crédito para el período de prueba?", a: "No. Los 14 días son completamente gratis y no requieren tarjeta. Solo necesitas tu correo electrónico." },
-  { q: "¿Qué pasa si cancelo mi suscripción?", a: "Puedes cancelar cuando quieras sin penalización. Tendrás acceso hasta el final del período pagado y podrás exportar todos tus datos." },
-  { q: "¿El precio incluye IVA?", a: "Los precios mostrados no incluyen IVA. Para empresas puede aplicar deducción de impuestos — consulta con tu contador." },
-  { q: "¿Cómo funciona la facturación electrónica DIAN?", a: "Está integrada directamente. Al cerrar una venta, la factura se genera y envía automáticamente al cliente. Incluye CUFE, XML y habilitación DIAN." },
-  { q: "¿Funciona para negocios distintos a barberías?", a: "Sí. Zyncra está diseñado para cualquier negocio de citas: spas, salones, estéticas, manicuristas, clínicas de bienestar, tatuadores y más." },
-];
+  const currentMonthly = clientsWeek * avgTicket * 4.33;
+  const zyncraMonthly = currentMonthly * 1.38;
+  const lift = zyncraMonthly - currentMonthly;
+  const annualLift = lift * 12;
 
-const tableData: TableGroup[] = [
-  {
-    section: "Equipo",
-    items: [
-      { name: "Colaboradores incluidos", e: "Hasta 3",     p: "Ilimitados",  c: "Ilimitados" },
-      { name: "Servicios configurables", e: "Ilimitados",  p: "Ilimitados",  c: "Ilimitados" },
-      { name: "Agenda personalizada",    e: true,           p: true,          c: true },
-    ],
-  },
-  {
-    section: "Agenda & Clientes",
-    items: [
-      { name: "Agendamiento online 24/7",       e: true,  p: true,  c: true },
-      { name: "Recordatorios por WhatsApp",      e: true,  p: true,  c: true },
-      { name: "Confirmación automática de citas",e: true,  p: true,  c: true },
-      { name: "Reprogramación de citas",         e: true,  p: true,  c: true },
-      { name: "Dashboard de rendimiento",        e: true,  p: true,  c: true },
-    ],
-  },
-  {
-    section: "POS & Pagos",
-    items: [
-      { name: "Sistema POS completo",         e: false, p: true, c: true },
-      { name: "Cierre de caja y reportes",    e: false, p: true, c: true },
-      { name: "Facturación electrónica DIAN", e: false, p: true, c: true },
-      { name: "Comisiones por colaborador",   e: false, p: true, c: true },
-    ],
-  },
-  {
-    section: "Marketing & Crecimiento",
-    items: [
-      { name: "Campañas por WhatsApp",          e: false, p: true, c: true },
-      { name: "Solicitud de reseñas Google",    e: false, p: true, c: true },
-      { name: "Segmentación de clientes",       e: false, p: true, c: true },
-      { name: "Campos personalizados",          e: false, p: true, c: true },
-    ],
-  },
-  {
-    section: "Avanzado",
-    items: [
-      { name: "Gestión de comisiones",     e: false,   p: true,    c: true },
-      { name: "Chat Bot IA",               e: false,   p: "add",   c: true },
-      { name: "Múltiples sedes",           e: false,   p: false,   c: true },
-      { name: "API e integraciones",       e: false,   p: false,   c: true },
-      { name: "Soporte prioritario 24/7",  e: false,   p: false,   c: true },
-      { name: "Onboarding personalizado",  e: false,   p: false,   c: true },
-    ],
-  },
-];
+  useEffect(() => {
+    const steps = 24;
+    const dur = 600;
+    const stepDur = Math.max(16, Math.floor(dur / steps));
+    const startC = shownCurrent;
+    const startZ = shownZyncra;
+    let i = 0;
+    const id = setInterval(() => {
+      i++;
+      const k = Math.min(i / steps, 1);
+      const eased = 1 - Math.pow(1 - k, 3);
+      setShownCurrent(startC + (currentMonthly - startC) * eased);
+      setShownZyncra(startZ + (zyncraMonthly - startZ) * eased);
+      if (k >= 1) clearInterval(id);
+    }, stepDur);
+    return () => clearInterval(id);
+  }, [currentMonthly, zyncraMonthly]);
 
-// ── Components ────────────────────────────────────────────────────────────────
+  const fmtMoney = (n: number) => {
+    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+    if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+    return `$${Math.round(n)}`;
+  };
 
-function Cell({ val }: { val: CellVal }) {
-  if (val === true)  return <span style={{ display:"inline-flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:"50%",background:"#edfff5",color:"#1a9e55",fontSize:11,fontWeight:700 }}>✓</span>;
-  if (val === false) return <span style={{ color:"#d0d0e0",fontSize:18,lineHeight:1 }}>—</span>;
-  if (val === "add") return <span title="Disponible como complemento" style={{ display:"inline-flex",alignItems:"center",justifyContent:"center",width:22,height:22,borderRadius:"50%",background:"#f0f0ff",color:"#5a50d6",fontSize:12,fontWeight:700 }}>+</span>;
-  return <span style={{ fontSize:13,fontWeight:600,color:"#3a3a48" }}>{val as string}</span>;
-}
+  interface SliderProps {
+    label: string;
+    value: number;
+    onChange: (v: number) => void;
+    min: number;
+    max: number;
+    step?: number;
+    format?: (v: number) => string;
+    accent?: string;
+  }
 
-function FaqItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className={`z-faq-item${open ? " open" : ""}`}>
-      <div className="z-faq-q" onClick={() => setOpen(o => !o)}>
-        {q} <span className="z-faq-icon">▼</span>
+  const Slider = ({ label, value, onChange, min, max, step = 1, format, accent = "#A78BFA" }: SliderProps) => {
+    const pct = ((value - min) / (max - min)) * 100;
+    return (
+      <div style={{ marginBottom: 22 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+          <span style={{ fontSize: 13, color: "var(--fg-dim)", fontWeight: 500 }}>{label}</span>
+          <span style={{ fontSize: 18, fontWeight: 500, color: "var(--fg)", letterSpacing: "-0.01em", fontFamily: "var(--font-mono)" }}>
+            {format ? format(value) : value}
+          </span>
+        </div>
+        <div style={{ position: "relative", height: 28, display: "flex", alignItems: "center" }}>
+          <div style={{ position: "absolute", left: 0, right: 0, height: 6, borderRadius: 999, background: "rgba(20,15,30,0.06)", border: "1px solid var(--line)" }}>
+            <div style={{ position: "absolute", left: 0, top: -1, bottom: -1, width: `${pct}%`, background: `linear-gradient(90deg, ${accent}aa, ${accent})`, borderRadius: 999, boxShadow: `0 0 16px ${accent}66` }} />
+          </div>
+          <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} style={{ position: "absolute", inset: 0, width: "100%", opacity: 0, cursor: "pointer", margin: 0 }} />
+          <div style={{ position: "absolute", left: `calc(${pct}% - 9px)`, width: 18, height: 18, borderRadius: "50%", background: "white", border: `2px solid ${accent}`, boxShadow: `0 0 0 4px ${accent}33, 0 4px 12px ${accent}44`, pointerEvents: "none" }} />
+        </div>
       </div>
-      <div className="z-faq-a">{a}</div>
-    </div>
+    );
+  };
+
+  return (
+    <section style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}>
+      <div aria-hidden style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, #FB923C 0%, transparent 65%)", filter: "blur(120px)", opacity: 0.10, left: "80%", top: "20%", pointerEvents: "none" }} />
+      <div aria-hidden style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, #EC4899 0%, transparent 65%)", filter: "blur(120px)", opacity: 0.10, left: "-15%", top: "60%", pointerEvents: "none" }} />
+      <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px" }}>
+        <div style={{ textAlign: "center", marginBottom: 56 }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 18 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 999, border: "1px solid var(--line-strong)", background: "rgba(167,139,250,0.08)", fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, color: "var(--violet-2)", fontFamily: "var(--font-mono)" }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--violet-2)", boxShadow: "0 0 10px var(--violet-2)", animation: "pulseGlow 1.8s ease-in-out infinite" }} />
+              Calculadora de impacto
+            </div>
+          </div>
+          <h2 style={{ fontSize: "clamp(34px, 4.6vw, 56px)", lineHeight: 1.04, letterSpacing: "-0.035em", margin: "0 0 18px", fontWeight: 500 }}>
+            Cuánta plata estás{" "}
+            <span style={{ fontFamily: "var(--font-serif)", fontStyle: "italic", background: "var(--gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>dejando en la mesa.</span>
+          </h2>
+          <p style={{ fontSize: "clamp(15px, 1.4vw, 18px)", lineHeight: 1.55, color: "var(--fg-dim)", margin: 0, maxWidth: 620, marginLeft: "auto", marginRight: "auto" }}>
+            Mueve los controles. Te decimos exactamente cuánto deja de crecer tu negocio sin Zyncra.
+          </p>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1.1fr", gap: 28, alignItems: "stretch" }} className="roi-grid">
+          {/* Inputs */}
+          <div style={{ padding: 32, background: "linear-gradient(180deg, rgba(20,15,30,0.03), rgba(20,15,30,0.01))", border: "1px solid var(--line)", borderRadius: 22 }}>
+            <div style={{ fontSize: 12, color: "var(--fg-mute)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 24 }}>Tu negocio hoy</div>
+            <Slider label="Clientes por semana" value={clientsWeek} onChange={setClientsWeek} min={10} max={300} step={5} accent="#A78BFA" />
+            <Slider label="Ticket promedio (COP)" value={avgTicket} onChange={setAvgTicket} min={15000} max={200000} step={5000} format={(v) => `$${(v / 1000).toFixed(0)}.000`} accent="#EC4899" />
+            <Slider label="Profesionales en tu equipo" value={team} onChange={setTeam} min={1} max={20} step={1} accent="#FB923C" />
+            <div style={{ marginTop: 24, padding: 14, background: "rgba(20,15,30,0.02)", border: "1px dashed var(--line)", borderRadius: 12, fontSize: 12, color: "var(--fg-mute)", lineHeight: 1.5 }}>
+              Cálculo basado en datos reales de 500+ negocios en Zyncra: reducción de no-shows (−60%), reactivación (+18%) y nuevos clientes por reseñas (+8%).
+            </div>
+          </div>
+
+          {/* Output */}
+          <div style={{ padding: 32, background: "linear-gradient(180deg, rgba(167,139,250,0.10), rgba(236,72,153,0.04))", border: "1px solid rgba(167,139,250,0.3)", borderRadius: 22, boxShadow: "0 30px 80px -30px rgba(167,139,250,0.4)", display: "flex", flexDirection: "column" }}>
+            <div style={{ fontSize: 12, color: "var(--violet-2)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 24 }}>Proyección con Zyncra</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 28 }}>
+              <div>
+                <div style={{ fontSize: 11.5, color: "var(--fg-mute)", marginBottom: 6 }}>Hoy / mes</div>
+                <div style={{ fontSize: 28, fontWeight: 500, letterSpacing: "-0.02em", color: "var(--fg-dim)", fontFamily: "var(--font-mono)" }}>{fmtMoney(shownCurrent)}</div>
+              </div>
+              <div>
+                <div style={{ fontSize: 11.5, color: "var(--violet-2)", marginBottom: 6 }}>Con Zyncra / mes</div>
+                <div style={{ fontSize: 36, fontWeight: 500, letterSpacing: "-0.03em", lineHeight: 1, background: "var(--gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent", fontFamily: "var(--font-mono)" }}>{fmtMoney(shownZyncra)}</div>
+              </div>
+            </div>
+            <div style={{ marginBottom: 28 }}>
+              <div style={{ position: "relative", height: 14, background: "rgba(20,15,30,0.04)", border: "1px solid var(--line)", borderRadius: 999, overflow: "hidden", marginBottom: 6 }}>
+                <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: `${(currentMonthly / zyncraMonthly) * 100}%`, background: "rgba(20,15,30,0.18)", transition: "width .6s ease" }} />
+                <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "100%", background: "linear-gradient(90deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)", opacity: 0.85, clipPath: `inset(0 0 0 ${(currentMonthly / zyncraMonthly) * 100}%)`, transition: "clip-path .6s ease" }} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: "var(--fg-mute)", fontFamily: "var(--font-mono)" }}>
+                <span>0</span><span>{fmtMoney(zyncraMonthly)}</span>
+              </div>
+            </div>
+            <div style={{ padding: 22, background: "linear-gradient(135deg, #A78BFA22, #EC489922)", border: "1px solid rgba(167,139,250,0.4)", borderRadius: 14, marginBottom: 22 }}>
+              <div style={{ fontSize: 11.5, color: "var(--violet-2)", fontFamily: "var(--font-mono)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>Plata extra al año</div>
+              <div style={{ fontSize: "clamp(38px, 4.5vw, 56px)", fontWeight: 500, letterSpacing: "-0.04em", lineHeight: 1, fontFamily: "var(--font-mono)" }}>+{fmtMoney(annualLift)}</div>
+              <div style={{ fontSize: 12.5, color: "var(--fg-dim)", marginTop: 8 }}>ROI proyectado · 12 meses</div>
+            </div>
+            <Link href="/register" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 16, padding: "14px 22px", borderRadius: 14, background: "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)", color: "white", fontFamily: "var(--font-sans)", fontWeight: 500, boxShadow: "0 8px 30px -10px rgba(167,139,250,0.55)", textDecoration: "none" }}>
+              Quiero esa plata extra <IconArrow size={16} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
-
-// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function PricingPage() {
-  const [annual, setAnnual] = useState(false);
+  const [yearly, setYearly] = useState(true);
 
-  const prices = {
-    esencial: annual ? "79.900" : "99.900",
-    pro:      annual ? "159.900" : "199.900",
-  };
+  const plans = [
+    {
+      name: "Starter", sub: "Para empezar tu negocio", monthly: 49000, yearly: 39000, accent: "#22D3EE",
+      features: ["Agenda online ilimitada", "1 profesional", "Recordatorios WhatsApp", "POS básico", "Link público de reservas"],
+      cta: "Empezar gratis",
+    },
+    {
+      name: "Pro", sub: "Lo más vendido en Colombia", monthly: 89000, yearly: 69000, accent: "#EC4899", featured: true,
+      features: ["Todo lo de Starter +", "Hasta 5 profesionales", "Marketing WhatsApp (campañas)", "POS + Factura DIAN", "Reseñas Google automáticas", "Comisiones automatizadas", "Soporte prioritario"],
+      cta: "Probar Pro 14 días gratis",
+    },
+    {
+      name: "Business", sub: "Para cadenas y multi-sede", monthly: 189000, yearly: 149000, accent: "#FB923C",
+      features: ["Todo lo de Pro +", "Profesionales ilimitados", "Multi-sede", "API + integraciones", "Gerente de cuenta dedicado", "SLA 99.9%"],
+      cta: "Hablar con ventas",
+    },
+  ];
 
-  const btnBase: React.CSSProperties = {
-    padding: "9px 22px", borderRadius: 10, border: "none",
-    cursor: "pointer", fontFamily: "'Plus Jakarta Sans',sans-serif",
-    fontWeight: 600, fontSize: 14, transition: "all .2s",
-  };
+  const fmt = (n: number) => `$${(n / 1000).toFixed(0)}.000`;
 
   return (
-    <div className="zyncra">
-      <ZyncraReveal />
-      <ZyncraNav active="precios" />
-
-      {/* ── HERO ── */}
-      <div className="z-page-hero" style={{ paddingBottom: 56 }}>
-        <div className="z-page-hero-blob" />
-        <div style={{ position: "relative", zIndex: 1 }}>
-
-          <div className="z-label z-fadein" style={{ justifyContent: "center" }}>Precios</div>
-          <h1 className="z-section-title z-fadeup z-d1" style={{ fontSize: "clamp(36px,5vw,58px)" }}>
-            Precio justo.<br />Sin letra pequeña.
+    <>
+      {/* Page Hero */}
+      <section style={{ position: "relative", paddingTop: 150, paddingBottom: 60, overflow: "hidden", textAlign: "center" }}>
+        <div aria-hidden style={{ position: "absolute", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, #EC4899 0%, transparent 65%)", filter: "blur(120px)", opacity: 0.25, left: "-10%", top: "-30%", pointerEvents: "none" }} />
+        <div aria-hidden style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, #A78BFA 0%, transparent 65%)", filter: "blur(120px)", opacity: 0.18, left: "75%", top: "-10%", pointerEvents: "none" }} />
+        <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(20,15,30,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20,15,30,0.04) 1px, transparent 1px)", backgroundSize: "64px 64px", maskImage: "radial-gradient(ellipse at center, black 30%, transparent 70%)", WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 70%)", pointerEvents: "none", opacity: 0.5 } as React.CSSProperties} />
+        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 28px", position: "relative", zIndex: 2 }}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 999, border: "1px solid var(--line-strong)", background: "rgba(167,139,250,0.08)", fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, color: "var(--violet-2)", fontFamily: "var(--font-mono)" }}>
+              <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--violet-2)", boxShadow: "0 0 10px var(--violet-2)", animation: "pulseGlow 1.8s ease-in-out infinite" }} />
+              Precios
+            </div>
+          </div>
+          <h1 style={{ fontSize: "clamp(42px, 6.4vw, 88px)", lineHeight: 0.96, letterSpacing: "-0.045em", fontWeight: 500, margin: 0, marginBottom: 22, textWrap: "balance" }}>
+            Económico,{" "}
+            <span style={{ background: "var(--gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>honesto.</span>
           </h1>
-          <p className="z-section-sub z-fadeup z-d2" style={{ maxWidth: 440, margin: "0 auto 28px" }}>
-            Sin contratos de permanencia. Cancela o cambia de plan cuando quieras.
+          <p style={{ fontSize: "clamp(15px, 1.3vw, 18px)", lineHeight: 1.55, color: "var(--fg-dim)", margin: "0 auto", maxWidth: 600 }}>
+            Más barato que la competencia gringa. Sin trucos, sin precios en dólares, sin sorpresas.
           </p>
-
-          {/* Billing toggle */}
-          <div className="z-fadeup z-d3" style={{ display: "flex", justifyContent: "center", marginBottom: 28 }}>
-            <div style={{ display: "inline-flex", background: "white", border: "1.5px solid #e8e6e2", borderRadius: 13, padding: 4, gap: 4, boxShadow: "0 2px 10px rgba(0,0,0,.06)" }}>
-              <button onClick={() => setAnnual(false)} style={{ ...btnBase, background: !annual ? "#111118" : "transparent", color: !annual ? "white" : "#6b6b80" }}>
-                Mensual
-              </button>
-              <button onClick={() => setAnnual(true)} style={{ ...btnBase, background: annual ? "#111118" : "transparent", color: annual ? "white" : "#6b6b80", display: "flex", alignItems: "center", gap: 8 }}>
-                Anual
-                <span style={{ background: "linear-gradient(135deg,#22c55e,#16a34a)", color: "white", fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20 }}>
-                  2 meses gratis
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Trust strip */}
-          <div className="z-fadeup z-d4" style={{ display: "flex", gap: 24, justifyContent: "center", flexWrap: "wrap" }}>
-            {["✓  Sin tarjeta requerida", "✓  14 días de prueba", "✓  Cancela cuando quieras", "✓  Soporte en español"].map((t, i) => (
-              <span key={i} style={{ fontSize: 13, fontWeight: 500, color: "#6b6b80" }}>{t}</span>
-            ))}
-          </div>
         </div>
-      </div>
-
-      {/* ── PLANS ── */}
-      <section style={{ background: "var(--z-cream)" }}>
-        <div className="z-plans-grid-3">
-
-          {/* Esencial */}
-          <div className="z-reveal" style={{ background: "white", border: "1.5px solid #e8e6e2", borderRadius: 24, padding: "36px 32px", display: "flex", flexDirection: "column", position: "relative" }}>
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#111118", marginBottom: 5 }}>Esencial</div>
-              <div style={{ fontSize: 13, color: "#6b6b80" }}>Para digitalizar tu negocio</div>
-            </div>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 2, marginBottom: 4 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "#a0a0b0", paddingTop: 10 }}>$</span>
-              <span style={{ fontSize: 44, fontWeight: 800, letterSpacing: "-2px", color: "#111118", lineHeight: 1 }}>{prices.esencial}</span>
-            </div>
-            <div style={{ fontSize: 13, color: "#a0a0b0", marginBottom: annual ? 6 : 24 }}>/ mes · hasta 3 colaboradores</div>
-            {annual && <div style={{ fontSize: 12, color: "#16a34a", fontWeight: 700, marginBottom: 20, display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#dcfce7", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>✓</span>
-              Ahorras $240.000/año
-            </div>}
-            <hr style={{ border: "none", borderTop: "1px solid #f0eeeb", margin: "0 0 20px" }} />
-            <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: 10, marginBottom: 28, flex: 1 }}>
-              {([
-                [true,  "3 colaboradores"],
-                [true,  "Sitio de agendamiento"],
-                [true,  "Recordatorios WA + email"],
-                [true,  "Confirmación automática"],
-                [true,  "Dashboard personalizado"],
-                [false, "Sistema POS"],
-                [false, "Facturación DIAN"],
-                [false, "Marketing WhatsApp"],
-              ] as [boolean, string][]).map(([ok, label], i) => (
-                <li key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: ok ? "#111118" : "#c0c0cc" }}>
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, background: ok ? "#edfff5" : "#f5f5f7", color: ok ? "#1a9e55" : "#c0c0cc" }}>{ok ? "✓" : "—"}</span>
-                  {label}
-                </li>
-              ))}
-            </ul>
-            <Link href="/register" style={{ display: "block", textAlign: "center", padding: "12px 0", borderRadius: 11, fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 15, fontWeight: 700, textDecoration: "none", color: "#111118", border: "1.5px solid #e8e6e2", background: "transparent", transition: "border-color .2s" }}>
-              Empezar gratis →
-            </Link>
-          </div>
-
-          {/* Pro — Featured */}
-          <div className="z-plan-card featured z-reveal z-d1" style={{ borderRadius: 24, padding: "36px 32px", display: "flex", flexDirection: "column" }}>
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ display: "inline-block", marginBottom: 12, fontSize: 11, fontWeight: 700, letterSpacing: ".5px", padding: "5px 13px", background: "var(--z-gradient)", color: "white", borderRadius: 20 }}>
-                ⭐ Más popular
-              </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#111118", marginBottom: 5 }}>Plan Pro</div>
-              <div style={{ fontSize: 13, color: "#6b6b80" }}>Para negocios que quieren escalar</div>
-            </div>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 2, marginBottom: 4 }}>
-              <span style={{ fontSize: 14, fontWeight: 600, color: "#a0a0b0", paddingTop: 10 }}>$</span>
-              <span style={{ fontSize: 44, fontWeight: 800, letterSpacing: "-2px", color: "#111118", lineHeight: 1 }}>{prices.pro}</span>
-            </div>
-            <div style={{ fontSize: 13, color: "#a0a0b0", marginBottom: annual ? 6 : 24 }}>/ mes · colaboradores ilimitados</div>
-            {annual && <div style={{ fontSize: 12, color: "#16a34a", fontWeight: 700, marginBottom: 20, display: "flex", alignItems: "center", gap: 5 }}>
-              <span style={{ width: 16, height: 16, borderRadius: "50%", background: "#dcfce7", display: "inline-flex", alignItems: "center", justifyContent: "center", fontSize: 9 }}>✓</span>
-              Ahorras $480.000/año
-            </div>}
-            <hr style={{ border: "none", borderTop: "1px solid #f0eeeb", margin: "0 0 20px" }} />
-            <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: 10, marginBottom: 28, flex: 1 }}>
-              {([
-                [true,    "Colaboradores ilimitados"],
-                [true,    "Sitio de agendamiento"],
-                [true,    "Recordatorios WA + email"],
-                [true,    "Confirmación automática"],
-                [true,    "Dashboard personalizado"],
-                [true,    "Sistema POS completo"],
-                [true,    "Facturación electrónica DIAN"],
-                [true,    "Marketing por WhatsApp"],
-                [true,    "Reseñas Google Maps"],
-                [true,    "Comisiones automáticas"],
-                [true,    "Campos personalizados"],
-                ["add",   "Chat Bot IA (adicional)"],
-              ] as ([boolean, string] | [string, string])[]).map(([type, label], i) => (
-                <li key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: type === false ? "#c0c0cc" : "#111118" }}>
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: type === "add" ? 11 : 9, fontWeight: 700, background: type === true ? "#edfff5" : type === "add" ? "#f0f0ff" : "#f5f5f7", color: type === true ? "#1a9e55" : type === "add" ? "#5a50d6" : "#c0c0cc" }}>
-                    {type === true ? "✓" : type === "add" ? "+" : "—"}
-                  </span>
-                  {label}
-                </li>
-              ))}
-            </ul>
-            <Link href="/register" className="z-btn-xl" style={{ justifyContent: "center", padding: "13px 0", fontSize: 15, width: "100%", boxSizing: "border-box" }}>
-              Empezar con Pro →
-            </Link>
-          </div>
-
-          {/* Personalizado */}
-          <div className="z-reveal z-d2" style={{ background: "linear-gradient(160deg,#f8f7ff 0%,#f0ebff 100%)", border: "1.5px solid #e0d9ff", borderRadius: 24, padding: "36px 32px", display: "flex", flexDirection: "column" }}>
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ display: "inline-block", marginBottom: 12, fontSize: 11, fontWeight: 700, letterSpacing: ".5px", padding: "5px 13px", background: "rgba(124,58,237,.1)", color: "#7c3aed", borderRadius: 20 }}>
-                🏢 Empresas
-              </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#111118", marginBottom: 5 }}>Personalizado</div>
-              <div style={{ fontSize: 13, color: "#6b6b80" }}>Múltiples sedes y equipos grandes</div>
-            </div>
-            <div style={{ marginBottom: 4 }}>
-              <span style={{ fontSize: 32, fontWeight: 800, letterSpacing: "-1px", color: "#111118" }}>A medida</span>
-            </div>
-            <div style={{ fontSize: 13, color: "#a0a0b0", marginBottom: 24 }}>Precio según tu equipo y sedes</div>
-            <hr style={{ border: "none", borderTop: "1px solid #e0d9ff", margin: "0 0 20px" }} />
-            <ul style={{ listStyle: "none", padding: 0, display: "flex", flexDirection: "column", gap: 10, marginBottom: 28, flex: 1 }}>
-              {[
-                "Todo lo del Plan Pro",
-                "Múltiples sedes",
-                "API e integraciones propias",
-                "Onboarding personalizado",
-                "Soporte prioritario 24/7",
-                "Reportes avanzados a medida",
-                "Usuarios administradores",
-              ].map((f, i) => (
-                <li key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "#111118" }}>
-                  <span style={{ width: 18, height: 18, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, background: "rgba(124,58,237,.12)", color: "#7c3aed" }}>✓</span>
-                  {f}
-                </li>
-              ))}
-            </ul>
-            <a
-              href="https://wa.me/573000000000?text=Hola%2C+quiero+info+sobre+un+plan+personalizado+para+mi+empresa"
-              target="_blank" rel="noopener noreferrer"
-              style={{ display: "block", textAlign: "center", padding: "12px 0", borderRadius: 11, fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 15, fontWeight: 700, textDecoration: "none", color: "#7c3aed", border: "1.5px solid #c4b5fd", background: "white", transition: "all .2s" }}
-            >
-              Contactar ventas →
-            </a>
-          </div>
-        </div>
-
-        <p style={{ textAlign: "center", marginTop: 24, fontSize: 13, color: "#a0a0b0" }}>
-          ¿Tienes dudas sobre cuál elegir?{" "}
-          <a href="https://wa.me/573000000000?text=Hola%2C+quisiera+ayuda+para+elegir+un+plan+de+Zyncra" target="_blank" rel="noopener noreferrer" style={{ color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Escríbenos y te orientamos →</a>
-        </p>
       </section>
 
-      {/* ── COMPARISON TABLE ── */}
-      <section style={{ background: "white" }}>
-        <div style={{ textAlign: "center", marginBottom: 48 }} className="z-reveal">
-          <div className="z-label" style={{ justifyContent: "center" }}>Comparativa</div>
-          <h2 className="z-section-title">Mira todo en detalle</h2>
-          <p className="z-section-sub" style={{ maxWidth: 440, margin: "0 auto" }}>Cada función que incluye cada plan, sin sorpresas.</p>
-        </div>
-
-        {/* Table — scrollable on mobile */}
-        <div style={{ overflowX: "auto" }}>
-          <div className="z-reveal" style={{ minWidth: 620, maxWidth: 900, margin: "0 auto", border: "1.5px solid #e8e6e2", borderRadius: 20, overflow: "hidden" }}>
-
-            {/* Header */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", background: "#f7f5f2", padding: "16px 24px", borderBottom: "1px solid #e8e6e2" }}>
-              <div style={thStyle}>Función</div>
-              <div style={{ ...thStyle, textAlign: "center" }}>Esencial</div>
-              <div style={{ ...thStyle, textAlign: "center", color: "#fb0f05" }}>Pro</div>
-              <div style={{ ...thStyle, textAlign: "center", color: "#7c3aed" }}>Personalizado</div>
+      {/* Pricing Plans */}
+      <section style={{ padding: "60px 0 80px" }}>
+        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px" }}>
+          {/* Toggle */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 40 }}>
+            <div style={{ display: "inline-flex", padding: 5, background: "rgba(20,15,30,0.04)", border: "1px solid var(--line)", borderRadius: 12, gap: 4 }}>
+              {([["Mensual", false], ["Anual · ahorra 20%", true]] as [string, boolean][]).map(([l, v], i) => (
+                <button key={i} onClick={() => setYearly(v)} style={{ padding: "8px 16px", background: yearly === v ? "linear-gradient(135deg, rgba(167,139,250,0.2), rgba(236,72,153,0.15))" : "transparent", border: yearly === v ? "1px solid var(--line-strong)" : "1px solid transparent", borderRadius: 8, color: yearly === v ? "var(--fg)" : "var(--fg-dim)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-sans)" }}>
+                  {l}
+                </button>
+              ))}
             </div>
+          </div>
 
-            {/* Rows */}
-            {tableData.map((group, gi) => (
-              <div key={gi}>
-                <div style={{ padding: "9px 24px", background: "#faf9f7", borderTop: gi > 0 ? "1px solid #f0eeeb" : "none", borderBottom: "1px solid #ebebeb" }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "1.5px", color: "#b0b0c0" }}>{group.section}</span>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }} className="pricing-grid">
+            {plans.map((p, i) => (
+              <div key={p.name} style={{ padding: 28, borderRadius: 22, position: "relative", background: (p as { featured?: boolean }).featured ? "linear-gradient(180deg, rgba(167,139,250,0.10) 0%, rgba(236,72,153,0.03) 100%)" : "rgba(255,255,255,0.02)", border: (p as { featured?: boolean }).featured ? "1px solid rgba(167,139,250,0.4)" : "1px solid var(--line)", height: "100%", display: "flex", flexDirection: "column", boxShadow: (p as { featured?: boolean }).featured ? "0 30px 80px -30px rgba(167,139,250,0.4)" : "none" }}>
+                {(p as { featured?: boolean }).featured && (
+                  <div style={{ position: "absolute", top: -12, right: 24, padding: "5px 12px", background: "linear-gradient(135deg, #A78BFA, #EC4899)", color: "white", fontSize: 11, fontFamily: "var(--font-mono)", fontWeight: 500, letterSpacing: "0.06em", borderRadius: 999, textTransform: "uppercase", boxShadow: "0 8px 20px -4px rgba(236,72,153,0.5)" }}>Más popular</div>
+                )}
+                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: 999, background: p.accent, boxShadow: `0 0 12px ${p.accent}` }} />
+                  <span style={{ fontSize: 14, color: "var(--fg-dim)", fontFamily: "var(--font-mono)", letterSpacing: "0.04em" }}>{p.name.toUpperCase()}</span>
                 </div>
-                {group.items.map((row, ri) => (
-                  <div key={ri} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "13px 24px", borderBottom: "1px solid #f5f4f2", background: ri % 2 === 0 ? "white" : "#fdfcfa", alignItems: "center" }}>
-                    <span style={{ fontSize: 14, color: "#3a3a48" }}>{row.name}</span>
-                    <div style={{ textAlign: "center" }}><Cell val={row.e} /></div>
-                    <div style={{ textAlign: "center" }}><Cell val={row.p} /></div>
-                    <div style={{ textAlign: "center" }}><Cell val={row.c} /></div>
-                  </div>
-                ))}
+                <div style={{ fontSize: 15, color: "var(--fg-mute)", marginBottom: 20 }}>{p.sub}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
+                  <span style={{ fontSize: 42, fontWeight: 500, letterSpacing: "-0.03em", fontFamily: "var(--font-mono)" }}>{fmt(yearly ? p.yearly : p.monthly)}</span>
+                  <span style={{ color: "var(--fg-mute)", fontSize: 14 }}>/ mes</span>
+                </div>
+                <div style={{ fontSize: 12, color: "var(--fg-mute)", marginBottom: 24, fontFamily: "var(--font-mono)" }}>
+                  {yearly ? `Facturado anual · ${fmt(p.yearly * 12)} COP` : "Facturado mensual"}
+                </div>
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10, marginBottom: 24 }}>
+                  {p.features.map((f, j) => (
+                    <div key={j} style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: 13.5 }}>
+                      <IconCheck size={14} style={{ color: p.accent, marginTop: 3, flexShrink: 0 }} />
+                      <span style={{ color: "var(--fg-dim)" }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+                <Link href="/register" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, fontSize: 14.5, padding: "11px 18px", borderRadius: 12, background: (p as { featured?: boolean }).featured ? "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)" : "rgba(20,15,30,0.06)", color: (p as { featured?: boolean }).featured ? "white" : "var(--fg)", border: (p as { featured?: boolean }).featured ? "none" : "1px solid var(--line-strong)", fontFamily: "var(--font-sans)", fontWeight: 500, textDecoration: "none", boxShadow: (p as { featured?: boolean }).featured ? "0 8px 30px -10px rgba(167,139,250,0.55)" : "none" }}>
+                  {p.cta} <IconArrow size={14} />
+                </Link>
               </div>
             ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 32, color: "var(--fg-mute)", fontSize: 13 }}>
+            14 días gratis · Sin tarjeta · Cancela cuando quieras · Soporte 100% en español
+          </div>
+        </div>
+      </section>
 
-            {/* Footer CTAs */}
-            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", padding: "18px 24px", background: "#f7f5f2", borderTop: "1px solid #e8e6e2", gap: 10, alignItems: "center" }}>
-              <div style={{ fontSize: 13, fontWeight: 500, color: "#6b6b80" }}>
-                + disponible como complemento
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <Link href="/register" style={{ fontSize: 13, fontWeight: 700, color: "#111118", textDecoration: "none", padding: "8px 16px", border: "1.5px solid #e8e6e2", borderRadius: 9, background: "white", display: "inline-block" }}>Empezar</Link>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <Link href="/register" style={{ fontSize: 13, fontWeight: 700, color: "white", textDecoration: "none", padding: "8px 16px", borderRadius: 9, background: "#fb0f05", display: "inline-block" }}>Empezar</Link>
-              </div>
-              <div style={{ textAlign: "center" }}>
-                <a href="https://wa.me/573000000000?text=Hola%2C+info+plan+personalizado" target="_blank" rel="noopener noreferrer" style={{ fontSize: 13, fontWeight: 700, color: "#7c3aed", textDecoration: "none", padding: "8px 16px", border: "1.5px solid #c4b5fd", borderRadius: 9, background: "white", display: "inline-block" }}>Contactar</a>
-              </div>
+      {/* ROI Calculator */}
+      <RoiSection />
+
+      {/* CTA */}
+      <section style={{ padding: "0 0 120px" }}>
+        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px" }}>
+          <div style={{ position: "relative", padding: "80px 60px", borderRadius: 28, background: "linear-gradient(135deg, rgba(167,139,250,0.18) 0%, rgba(236,72,153,0.12) 50%, rgba(251,146,60,0.08) 100%)", border: "1px solid rgba(167,139,250,0.3)", overflow: "hidden", textAlign: "center" }} className="cta-wrap">
+            <div aria-hidden style={{ position: "absolute", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, #A78BFA 0%, transparent 65%)", filter: "blur(80px)", opacity: 0.4, left: "-10%", top: "-30%", pointerEvents: "none" }} />
+            <div style={{ position: "relative" }}>
+              <h2 style={{ fontSize: "clamp(36px, 5vw, 56px)", lineHeight: 1.02, letterSpacing: "-0.04em", fontWeight: 500, margin: "0 0 18px" }}>Empieza gratis hoy.</h2>
+              <p style={{ fontSize: 17, color: "var(--fg-dim)", margin: "0 auto 32px", maxWidth: 480, lineHeight: 1.55 }}>14 días con todas las funciones. Sin tarjeta, sin compromisos. Cancela cuando quieras.</p>
+              <Link href="/register" style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 16, padding: "14px 22px", borderRadius: 14, background: "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)", color: "white", fontFamily: "var(--font-sans)", fontWeight: 500, boxShadow: "0 8px 30px -10px rgba(167,139,250,0.55)", textDecoration: "none" }}>
+                Empezar gratis <IconArrow size={16} />
+              </Link>
             </div>
           </div>
         </div>
       </section>
-
-      {/* ── GUARANTEE ── */}
-      <section style={{ background: "var(--z-cream-2)" }}>
-        <div style={{ maxWidth: 840, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 40 }} className="z-reveal">
-            <div className="z-label" style={{ justifyContent: "center" }}>Sin riesgos</div>
-            <h2 className="z-section-title">Prueba 14 días sin comprometerte</h2>
-            <p className="z-section-sub">Acceso completo a todos los módulos. Sin tarjeta. Sin presión.</p>
-          </div>
-          <div className="z-guarantee-grid">
-            {[
-              { emoji: "🔒", title: "Sin tarjeta de crédito", desc: "Empieza tu prueba sin ingresar datos de pago." },
-              { emoji: "↩️", title: "Cancela cuando quieras", desc: "Sin permanencia ni penalización. Tú decides." },
-              { emoji: "💬", title: "Soporte en español", desc: "Te ayudamos a configurar todo desde el primer día." },
-            ].map((item, i) => (
-              <div key={i} className={`z-reveal z-d${i + 1}`} style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: 18, padding: "28px 24px", textAlign: "center" }}>
-                <div style={{ fontSize: 38, marginBottom: 14 }}>{item.emoji}</div>
-                <div style={{ fontWeight: 700, fontSize: 15, color: "#111118", marginBottom: 6 }}>{item.title}</div>
-                <div style={{ fontSize: 13, color: "#6b6b80", lineHeight: 1.65 }}>{item.desc}</div>
-              </div>
-            ))}
-          </div>
-          <div className="z-reveal" style={{ textAlign: "center", marginTop: 36 }}>
-            <Link href="/register" className="z-btn-xl">Empezar gratis — sin tarjeta →</Link>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FAQ ── */}
-      <section style={{ background: "white" }}>
-        <div style={{ textAlign: "center", marginBottom: 52 }} className="z-reveal">
-          <div className="z-label" style={{ justifyContent: "center" }}>Preguntas frecuentes</div>
-          <h2 className="z-section-title">Resolvemos tus dudas</h2>
-        </div>
-        <div className="z-faq-list z-reveal">
-          {faqs.map((f, i) => <FaqItem key={i} q={f.q} a={f.a} />)}
-        </div>
-      </section>
-
-      {/* ── CTA ── */}
-      <div className="z-cta-banner z-reveal">
-        <h2 className="z-cta-title">Empieza gratis hoy</h2>
-        <p className="z-cta-sub">14 días con acceso completo. Sin tarjeta de crédito.</p>
-        <div className="z-cta-actions">
-          <Link href="/register" className="z-btn-white">Crear cuenta gratis →</Link>
-          <a href="https://wa.me/573000000000?text=Hola%2C+quisiera+hablar+con+ventas+sobre+Zyncra" target="_blank" rel="noopener noreferrer" className="z-btn-outline-white">Hablar con ventas</a>
-        </div>
-        <p className="z-cta-note">✓ Sin permanencia &nbsp;·&nbsp; ✓ Soporte en español &nbsp;·&nbsp; ✓ Cancela cuando quieras</p>
-      </div>
-
-      <ZyncraFooter />
-    </div>
+    </>
   );
 }
-
-const thStyle: React.CSSProperties = {
-  fontSize: 11, fontWeight: 700, color: "#a0a0b0",
-  textTransform: "uppercase", letterSpacing: "1px",
-};
