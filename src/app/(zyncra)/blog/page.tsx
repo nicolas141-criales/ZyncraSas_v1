@@ -274,9 +274,9 @@ export default function BlogPage() {
                 style={{
                   position: "relative",
                   fontSize: "clamp(96px, 12vw, 180px)",
-                  color: "rgba(20,15,30,0.85)",
+                  color: "var(--fg)",
+                  opacity: 0.85,
                   lineHeight: 0.9,
-                  textShadow: "0 4px 40px rgba(20,15,30,0.07)",
                 }}
               >
                 −60%
@@ -467,7 +467,8 @@ export default function BlogPage() {
                     style={{
                       position: "relative",
                       fontSize: "clamp(60px, 8vw, 96px)",
-                      color: "rgba(20,15,30,0.85)",
+                      color: "var(--fg)",
+                      opacity: 0.85,
                       lineHeight: 0.9,
                     }}
                   >

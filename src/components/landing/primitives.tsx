@@ -77,7 +77,7 @@ export const Button = ({
         "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
     },
     secondary: {
-      background: "rgba(20,15,30,0.06)",
+      background: "var(--bg-card)",
       color: "var(--fg)",
       border: "1px solid var(--line-strong)",
       boxShadow: "inset 0 1px 0 rgba(255,255,255,0.05)",
@@ -95,7 +95,7 @@ export const Button = ({
       e.currentTarget.style.boxShadow =
         "0 14px 40px -10px rgba(236,72,153,0.6), inset 0 1px 0 rgba(255,255,255,0.3)";
     } else if (variant === "secondary") {
-      e.currentTarget.style.background = "rgba(20,15,30,0.10)";
+      e.currentTarget.style.background = "var(--bg-elev)";
     } else {
       e.currentTarget.style.color = "var(--fg)";
     }
@@ -106,7 +106,7 @@ export const Button = ({
       e.currentTarget.style.boxShadow =
         "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)";
     } else if (variant === "secondary") {
-      e.currentTarget.style.background = "rgba(20,15,30,0.06)";
+      e.currentTarget.style.background = "var(--bg-card)";
     } else {
       e.currentTarget.style.color = "var(--fg-dim)";
     }
@@ -288,7 +288,7 @@ export const GridBackdrop = ({ style = {} }: { style?: CSSProperties }) => (
       position: "absolute",
       inset: 0,
       backgroundImage:
-        "linear-gradient(rgba(20,15,30,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20,15,30,0.04) 1px, transparent 1px)",
+        "linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px)",
       backgroundSize: "64px 64px",
       maskImage:
         "radial-gradient(ellipse at center, black 30%, transparent 70%)",
@@ -321,8 +321,7 @@ export const Card = ({
       onMouseEnter={() => hover && setH(true)}
       onMouseLeave={() => hover && setH(false)}
       style={{
-        background:
-          "linear-gradient(180deg, rgba(20,15,30,0.04) 0%, rgba(20,15,30,0.015) 100%)",
+        background: "var(--bg-card)",
         border: "1px solid var(--line)",
         borderRadius: "var(--radius-lg)",
         backdropFilter: "blur(10px)",

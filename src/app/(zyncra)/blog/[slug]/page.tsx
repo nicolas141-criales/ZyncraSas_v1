@@ -29,7 +29,7 @@ const ARTICLES: Record<string, {
 
         <blockquote className="z-blog-pullquote">
           "Desde que activamos los recordatorios automáticos, los no-shows bajaron del 28% al 8% en el primer mes. Fue el cambio más impactante que hemos hecho en 4 años."
-          <div style={{ marginTop: 12, fontSize: 14, fontWeight: 500, fontStyle: "normal", color: "#6b6b80" }}>— Alejandro Ruiz, Black Fade Barbershop · Bogotá</div>
+          <div style={{ marginTop: 12, fontSize: 14, fontWeight: 500, fontStyle: "normal", color: "var(--fg-dim)" }}>— Alejandro Ruiz, Black Fade Barbershop · Bogotá</div>
         </blockquote>
 
         <h2>1. El recordatorio es lo más importante</h2>
@@ -79,11 +79,11 @@ export default function ArticlePage({ params }: { params: Promise<{ slug: string
       <ZyncraNav active="blog" />
 
       {/* ── ARTICLE HEADER ── */}
-      <div style={{ background: "white", paddingTop: 110, paddingBottom: 0, borderBottom: "1px solid #f0eeeb" }}>
+      <div style={{ background: "var(--bg)", paddingTop: 110, paddingBottom: 0, borderBottom: "1px solid var(--line)" }}>
         <div style={{ maxWidth: 760, margin: "0 auto", padding: "0 24px 52px" }}>
 
           {/* Back link */}
-          <Link href="/blog" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "#a0a0b0", textDecoration: "none", marginBottom: 32, transition: "color .2s" }}>
+          <Link href="/blog" style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 600, color: "var(--fg-mute)", textDecoration: "none", marginBottom: 32, transition: "color .2s" }}>
             ← Volver al Blog
           </Link>
 
@@ -92,31 +92,31 @@ export default function ArticlePage({ params }: { params: Promise<{ slug: string
             <span style={{ background: cat.bg, color: cat.text, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", padding: "5px 12px", borderRadius: 20 }}>
               {article.category}
             </span>
-            <span style={{ fontSize: 13, color: "#a0a0b0", fontWeight: 500 }}>{article.readTime} min lectura</span>
+            <span style={{ fontSize: 13, color: "var(--fg-mute)", fontWeight: 500 }}>{article.readTime} min lectura</span>
             <span style={{ width: 3, height: 3, borderRadius: "50%", background: "#d0d0e0", display: "inline-block" }} />
-            <span style={{ fontSize: 13, color: "#a0a0b0", fontWeight: 500 }}>{article.date}</span>
+            <span style={{ fontSize: 13, color: "var(--fg-mute)", fontWeight: 500 }}>{article.date}</span>
           </div>
 
           {/* Title */}
-          <h1 style={{ fontSize: "clamp(28px,4.5vw,48px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-1.5px", color: "#111118", marginBottom: 20 }}>
+          <h1 style={{ fontSize: "clamp(28px,4.5vw,48px)", fontWeight: 900, lineHeight: 1.1, letterSpacing: "-1.5px", color: "var(--fg)", marginBottom: 20 }}>
             {article.title}
           </h1>
 
           {/* Lead */}
-          <p style={{ fontSize: 18, color: "#6b6b80", lineHeight: 1.75, marginBottom: 36, fontWeight: 400 }}>
+          <p style={{ fontSize: 18, color: "var(--fg-dim)", lineHeight: 1.75, marginBottom: 36, fontWeight: 400 }}>
             {article.lead}
           </p>
 
           {/* Author row */}
-          <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 24, borderTop: "1px solid #f0eeeb" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, paddingTop: 24, borderTop: "1px solid var(--line)" }}>
             <div style={{ width: 42, height: 42, borderRadius: "50%", background: "var(--z-gradient)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "white", flexShrink: 0 }}>Z</div>
             <div>
-              <div style={{ fontSize: 14, fontWeight: 700, color: "#111118" }}>{article.author}</div>
-              <div style={{ fontSize: 12, color: "#a0a0b0" }}>Zyncra · {article.date}</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: "var(--fg)" }}>{article.author}</div>
+              <div style={{ fontSize: 12, color: "var(--fg-mute)" }}>Zyncra · {article.date}</div>
             </div>
             <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
               {["WhatsApp", "Copiar enlace"].map((s, i) => (
-                <button key={i} style={{ padding: "7px 14px", borderRadius: 9, border: "1.5px solid #e8e6e2", background: "white", fontFamily: "'Plus Jakarta Sans',sans-serif", fontSize: 12, fontWeight: 600, color: "#6b6b80", cursor: "pointer" }}>
+                <button key={i} style={{ padding: "7px 14px", borderRadius: 9, border: "1.5px solid var(--line-strong)", background: "var(--bg-card)", fontFamily: "var(--font-sans)", fontSize: 12, fontWeight: 600, color: "var(--fg-dim)", cursor: "pointer" }}>
                   {s}
                 </button>
               ))}
@@ -133,7 +133,7 @@ export default function ArticlePage({ params }: { params: Promise<{ slug: string
       </section>
 
       {/* ── INLINE CTA ── */}
-      <section style={{ background: "white", padding: "0 48px 80px" }}>
+      <section style={{ background: "var(--bg)", padding: "0 48px 80px" }}>
         <div style={{ maxWidth: 680, margin: "0 auto", background: "linear-gradient(135deg,#fb0f05,#9B3FC8,#0027fe)", backgroundSize: "200%", borderRadius: 22, padding: "44px 40px", textAlign: "center", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: -40, right: -40, width: 180, height: 180, borderRadius: "50%", background: "rgba(255,255,255,.06)", pointerEvents: "none" }} />
           <div style={{ position: "relative", zIndex: 1 }}>
