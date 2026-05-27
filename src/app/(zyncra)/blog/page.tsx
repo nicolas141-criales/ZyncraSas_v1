@@ -1,180 +1,655 @@
-"use client";
-import { useState } from "react";
-import Link from "next/link";
+import type { ReactNode } from "react";
+import {
+  Container,
+  Eyebrow,
+  GradientOrb,
+  GridBackdrop,
+} from "@/components/landing/primitives";
 
-const Icon = ({ children, size = 20, style = {}, strokeWidth = 1.6 }: {
-  children: React.ReactNode; size?: number; style?: React.CSSProperties; strokeWidth?: number;
-}) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" style={style}>
-    {children}
-  </svg>
-);
+type Article = {
+  cat: string;
+  title: string;
+  excerpt: string;
+  read: string;
+  glyph: string;
+  cover: "violet" | "magenta" | "orange" | "green" | "cyan" | "amber";
+};
 
-const IconArrow = (p: { size?: number; style?: React.CSSProperties }) => <Icon {...p}><path d="M5 12h14M13 5l7 7-7 7" /></Icon>;
-const IconCalendar = (p: { size?: number; style?: React.CSSProperties }) => <Icon {...p}><rect x="3" y="5" width="18" height="16" rx="2" /><path d="M3 9h18M8 3v4M16 3v4" /></Icon>;
-const IconClock = (p: { size?: number; style?: React.CSSProperties }) => <Icon {...p}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></Icon>;
-
-const CATEGORIES = ["Todos", "Negocio", "Marketing", "Tecnología", "Casos de éxito", "Tutoriales"];
-
-const ARTICLES = [
-  { slug: "reducir-no-shows-60-porciento", title: "Cómo reducir los no-shows un 60% con recordatorios automáticos por WhatsApp", category: "Negocio", date: "22 mayo 2026", readTime: "5 min", gradient: "linear-gradient(135deg, #A78BFA, #EC4899)", featured: true, excerpt: "Descubre la estrategia exacta que usan 500+ negocios en Colombia para eliminar las ausencias de clientes y recuperar miles de pesos al mes." },
-  { slug: "campanas-whatsapp-reactivacion", title: "WhatsApp marketing para barberías: guía completa 2026", category: "Marketing", date: "18 mayo 2026", readTime: "8 min", gradient: "linear-gradient(135deg, #34D399, #22D3EE)" },
-  { slug: "pos-facturacion-dian-colombia", title: "POS + Factura DIAN: todo lo que necesitas saber en 2026", category: "Tecnología", date: "14 mayo 2026", readTime: "6 min", gradient: "linear-gradient(135deg, #EC4899, #FB923C)" },
-  { slug: "studio-v-caso-exito", title: "Studio V aumentó sus reseñas de 4.1 a 4.8 en 2 meses", category: "Casos de éxito", date: "10 mayo 2026", readTime: "4 min", gradient: "linear-gradient(135deg, #FBBF24, #FB923C)" },
-  { slug: "configurar-agenda-5-minutos", title: "Configura tu agenda en 5 minutos: paso a paso", category: "Tutoriales", date: "6 mayo 2026", readTime: "3 min", gradient: "linear-gradient(135deg, #A78BFA, #22D3EE)" },
-  { slug: "comisiones-equipo-automaticas", title: "Adiós al Excel: liquida comisiones automáticamente", category: "Negocio", date: "2 mayo 2026", readTime: "5 min", gradient: "linear-gradient(135deg, #34D399, #A78BFA)" },
-  { slug: "google-reviews-ranking-local", title: "Cómo subir tu ranking en Google Maps en 30 días", category: "Marketing", date: "28 abril 2026", readTime: "7 min", gradient: "linear-gradient(135deg, #EC4899, #A78BFA)" },
-  { slug: "black-fade-barbershop-historia", title: "Black Fade: de Excel a facturar $8M mensuales con Zyncra", category: "Casos de éxito", date: "24 abril 2026", readTime: "6 min", gradient: "linear-gradient(135deg, #FB923C, #FBBF24)" },
-  { slug: "integraciones-nequi-daviplata", title: "Acepta Nequi, Daviplata y Bancolombia en tu negocio hoy", category: "Tecnología", date: "20 abril 2026", readTime: "4 min", gradient: "linear-gradient(135deg, #22D3EE, #34D399)" },
+const CATEGORIES = [
+  "Todos",
+  "Agenda",
+  "WhatsApp",
+  "POS & Caja",
+  "Reseñas Google",
+  "Operación",
+  "Casos de éxito",
 ];
 
+const ARTICLES: Article[] = [
+  {
+    cat: "Agenda",
+    glyph: "Aa",
+    cover: "violet",
+    read: "5 min",
+    title: "El truco psicológico para que el cliente confirme su cita por WhatsApp",
+    excerpt:
+      "No es lo que pides. Es cómo lo pides. La diferencia entre 60% y 95% de confirmaciones está en una sola palabra.",
+  },
+  {
+    cat: "POS & Caja",
+    glyph: "$",
+    cover: "magenta",
+    read: "6 min",
+    title: "Por qué tu caja nunca cuadra (y cómo arreglarlo esta semana)",
+    excerpt:
+      "El 80% de los descuadres no son robos. Son errores humanos en flujos manuales. Te mostramos los 4 más comunes y la fórmula para eliminarlos.",
+  },
+  {
+    cat: "Reseñas Google",
+    glyph: "★",
+    cover: "orange",
+    read: "4 min",
+    title: "De 4.1 a 4.8 estrellas en 8 semanas: la fórmula exacta",
+    excerpt:
+      "Diana Vásquez nos cuenta el script que usa después de cada cita. Lo puedes copiar literal. Funciona.",
+  },
+  {
+    cat: "WhatsApp",
+    glyph: "Wa",
+    cover: "green",
+    read: "7 min",
+    title:
+      "Campañas de reactivación: cómo recuperar clientes que no vienen hace 60 días",
+    excerpt:
+      "Una plantilla, un horario y un descuento. María recuperó 12 clientes en su primera campaña. Te enseñamos cómo.",
+  },
+  {
+    cat: "Operación",
+    glyph: "%",
+    cover: "cyan",
+    read: "5 min",
+    title: "Comisiones justas: la fórmula que tu equipo va a entender (y aceptar)",
+    excerpt:
+      "Olvídate del Excel. Olvídate de los reclamos. Una estructura clara, transparente y automática. Plantilla incluida.",
+  },
+  {
+    cat: "Operación",
+    glyph: "DIAN",
+    cover: "amber",
+    read: "9 min",
+    title:
+      "Factura electrónica DIAN para barberías: la guía que te ahorra 2 horas/día",
+    excerpt:
+      "CUFE, XML, resolución, soportes. Todo el papeleo desarmado en un solo flujo. Sin tecnicismos, sin contadores caros.",
+  },
+  {
+    cat: "Casos de éxito",
+    glyph: "∞",
+    cover: "violet",
+    read: "6 min",
+    title: "Studio V en Manizales: de 12 a 84 clientes nuevos al mes",
+    excerpt:
+      "Tres cambios pequeños en su flujo cambiaron todo. El segundo es el que nadie hace y es el más importante.",
+  },
+  {
+    cat: "Agenda",
+    glyph: "UX",
+    cover: "magenta",
+    read: "4 min",
+    title:
+      "Tu link de reservas: 7 errores que están alejando clientes (y cómo arreglarlos hoy)",
+    excerpt:
+      "La mayoría de negocios pierde el 40% de sus reservas en el formulario. Te mostramos qué quitar para que cierre la cita.",
+  },
+  {
+    cat: "Reseñas Google",
+    glyph: "★★",
+    cover: "green",
+    read: "5 min",
+    title:
+      "El cliente difícil: cómo manejar una reseña negativa sin perder la cabeza (ni la calle)",
+    excerpt:
+      "Una mala reseña no es el fin del mundo — es una oportunidad. Una plantilla profesional para responder, paso a paso.",
+  },
+];
+
+const COVER_BG: Record<Article["cover"], string> = {
+  violet:
+    "linear-gradient(135deg, rgba(167,139,250,0.30), rgba(167,139,250,0.05))",
+  magenta:
+    "linear-gradient(135deg, rgba(236,72,153,0.30), rgba(236,72,153,0.05))",
+  orange:
+    "linear-gradient(135deg, rgba(251,146,60,0.30), rgba(251,146,60,0.05))",
+  green:
+    "linear-gradient(135deg, rgba(52,211,153,0.30), rgba(52,211,153,0.05))",
+  cyan: "linear-gradient(135deg, rgba(34,211,238,0.30), rgba(34,211,238,0.05))",
+  amber:
+    "linear-gradient(135deg, rgba(251,191,36,0.30), rgba(251,191,36,0.05))",
+};
+
+const Chip = ({ children, active = false }: { children: ReactNode; active?: boolean }) => (
+  <span
+    style={{
+      padding: "8px 14px",
+      border: active
+        ? "1px solid rgba(167,139,250,0.4)"
+        : "1px solid var(--line)",
+      background: active
+        ? "linear-gradient(135deg, rgba(167,139,250,0.12), rgba(236,72,153,0.06))"
+        : "rgba(20,15,30,0.025)",
+      borderRadius: 999,
+      fontSize: 13,
+      color: active ? "var(--fg)" : "var(--fg-dim)",
+      cursor: "pointer",
+      transition: "all .2s ease",
+      fontFamily: "var(--font-sans)",
+    }}
+  >
+    {children}
+  </span>
+);
+
 export default function BlogPage() {
-  const [activeCategory, setActiveCategory] = useState("Todos");
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-
-  const featured = ARTICLES.find((a) => a.featured);
-  const rest = ARTICLES.filter((a) => !a.featured);
-  const filtered = activeCategory === "Todos" ? rest : rest.filter((a) => a.category === activeCategory);
-
   return (
     <>
-      {/* Featured Hero */}
-      <section style={{ position: "relative", paddingTop: 140, paddingBottom: 80, overflow: "hidden" }}>
-        <div aria-hidden style={{ position: "absolute", width: 700, height: 700, borderRadius: "50%", background: "radial-gradient(circle, #A78BFA 0%, transparent 65%)", filter: "blur(120px)", opacity: 0.22, left: "-10%", top: "-30%", pointerEvents: "none" }} />
-        <div aria-hidden style={{ position: "absolute", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, #EC4899 0%, transparent 65%)", filter: "blur(120px)", opacity: 0.18, left: "75%", top: "-10%", pointerEvents: "none" }} />
-        <div aria-hidden style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(20,15,30,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(20,15,30,0.04) 1px, transparent 1px)", backgroundSize: "64px 64px", maskImage: "radial-gradient(ellipse at center, black 30%, transparent 70%)", WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 70%)", pointerEvents: "none", opacity: 0.5 } as React.CSSProperties} />
-
-        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px", position: "relative", zIndex: 2 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 48 }}>
-            <div>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 999, border: "1px solid var(--line-strong)", background: "rgba(167,139,250,0.08)", fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, color: "var(--violet-2)", fontFamily: "var(--font-mono)", marginBottom: 20 }}>
-                <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--violet-2)", boxShadow: "0 0 10px var(--violet-2)", animation: "pulseGlow 1.8s ease-in-out infinite" }} />
-                Blog · Zyncra
-              </div>
-              <h1 style={{ fontSize: "clamp(42px, 5.5vw, 72px)", lineHeight: 0.96, letterSpacing: "-0.045em", fontWeight: 500, margin: 0 }}>
-                Ideas para hacer<br />
-                <span style={{ background: "var(--gradient)", WebkitBackgroundClip: "text", backgroundClip: "text", color: "transparent" }}>crecer tu negocio.</span>
-              </h1>
-            </div>
+      {/* Hero */}
+      <section
+        style={{
+          position: "relative",
+          padding: "140px 0 80px",
+          overflow: "hidden",
+          textAlign: "center",
+        }}
+      >
+        <GradientOrb color="#8B5CF6" size={700} x="-10%" y="-20%" opacity={0.30} />
+        <GradientOrb color="#EC4899" size={600} x="75%" y="-10%" opacity={0.22} />
+        <GridBackdrop style={{ opacity: 0.6 }} />
+        <Container max={1240} style={{ position: "relative", zIndex: 2 }}>
+          <div style={{ marginBottom: 24, display: "flex", justifyContent: "center" }}>
+            <Eyebrow accent>Blog Zyncra</Eyebrow>
           </div>
-
-          {/* Featured article */}
-          {featured && (
-            <Link href={`/blog/${featured.slug}`} style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0, borderRadius: 24, overflow: "hidden", border: "1px solid var(--line-strong)", textDecoration: "none", color: "inherit", background: "var(--bg-card)" }}>
-              <div style={{ padding: "48px 44px", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 999, background: "rgba(167,139,250,0.12)", border: "1px solid rgba(167,139,250,0.3)", fontSize: 11, color: "var(--violet-2)", fontFamily: "var(--font-mono)", letterSpacing: "0.06em", marginBottom: 20 }}>
-                    DESTACADO
-                  </div>
-                  <h2 style={{ fontSize: "clamp(24px, 2.5vw, 34px)", lineHeight: 1.15, letterSpacing: "-0.025em", fontWeight: 500, margin: 0, marginBottom: 18 }}>{featured.title}</h2>
-                  <p style={{ fontSize: 15, lineHeight: 1.6, color: "var(--fg-dim)", margin: 0, marginBottom: 28 }}>{featured.excerpt}</p>
-                </div>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 16, fontSize: 12, color: "var(--fg-mute)", fontFamily: "var(--font-mono)", marginBottom: 20 }}>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4 }}><IconCalendar size={12} /> {featured.date}</span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 4 }}><IconClock size={12} /> {featured.readTime} lectura</span>
-                  </div>
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 14, fontWeight: 500, color: "var(--violet-2)" }}>
-                    Leer artículo <IconArrow size={14} />
-                  </div>
-                </div>
-              </div>
-              <div style={{ background: featured.gradient, position: "relative", minHeight: 320, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-                <div style={{ position: "relative", textAlign: "center", padding: 40 }}>
-                  <div style={{ fontSize: "clamp(56px, 6vw, 80px)", fontWeight: 700, color: "white", opacity: 0.15, fontFamily: "var(--font-mono)", lineHeight: 1 }}>−60%</div>
-                  <div style={{ fontSize: 16, color: "white", fontWeight: 500 }}>no-shows</div>
-                </div>
-              </div>
-            </Link>
-          )}
-        </div>
-      </section>
-
-      {/* Category chips */}
-      <section style={{ padding: "0 0 48px" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px" }}>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {CATEGORIES.map((cat) => (
-              <button key={cat} onClick={() => setActiveCategory(cat)} style={{ padding: "8px 16px", borderRadius: 999, border: activeCategory === cat ? "1px solid var(--violet-2)" : "1px solid var(--line)", background: activeCategory === cat ? "rgba(167,139,250,0.12)" : "rgba(20,15,30,0.025)", color: activeCategory === cat ? "var(--violet-2)" : "var(--fg-dim)", fontSize: 13, fontWeight: 500, cursor: "pointer", fontFamily: "var(--font-sans)", transition: "all .2s ease" }}>
-                {cat}
-              </button>
+          <h1
+            style={{
+              fontSize: "clamp(40px, 6vw, 80px)",
+              lineHeight: 0.98,
+              letterSpacing: "-0.045em",
+              fontWeight: 500,
+              margin: "24px auto 22px",
+              maxWidth: 900,
+            }}
+          >
+            Estrategias que{" "}
+            <span className="serif gradient-text">sí funcionan</span>
+            <br />
+            para tu negocio de servicios.
+          </h1>
+          <p
+            style={{
+              fontSize: "clamp(16px, 1.4vw, 19px)",
+              color: "var(--fg-dim)",
+              lineHeight: 1.55,
+              maxWidth: 560,
+              margin: "0 auto",
+            }}
+          >
+            Artículos cortos, prácticos, sin relleno. Escritos por dueños de
+            barberías, salones y spas que ya lo lograron.
+          </p>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              flexWrap: "wrap",
+              justifyContent: "center",
+              margin: "36px 0 0",
+            }}
+          >
+            {CATEGORIES.map((c, i) => (
+              <Chip key={c} active={i === 0}>
+                {c}
+              </Chip>
             ))}
           </div>
-        </div>
+        </Container>
       </section>
 
-      {/* Articles Grid */}
-      <section style={{ padding: "0 0 80px" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px" }}>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 20 }} className="blog-grid">
-            {filtered.map((a, i) => (
-              <Link key={i} href={`/blog/${a.slug}`} style={{ display: "block", textDecoration: "none", color: "inherit" }}>
-                <div style={{ borderRadius: 20, overflow: "hidden", border: "1px solid var(--line)", transition: "transform .25s ease, border-color .25s ease" }} onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--line-strong)"; }} onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.borderColor = "var(--line)"; }}>
-                  <div style={{ height: 160, background: a.gradient, position: "relative" }}>
-                    <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "30px 30px" }} />
-                    <div style={{ position: "absolute", bottom: 14, left: 16 }}>
-                      <span style={{ fontSize: 10.5, padding: "4px 10px", borderRadius: 999, background: "rgba(0,0,0,0.3)", color: "white", fontFamily: "var(--font-mono)", letterSpacing: "0.06em", backdropFilter: "blur(8px)" }}>{a.category.toUpperCase()}</span>
-                    </div>
+      {/* Featured */}
+      <section style={{ padding: "60px 0 40px" }}>
+        <Container max={1240}>
+          <div
+            style={{
+              fontSize: 12,
+              color: "var(--fg-mute)",
+              fontFamily: "var(--font-mono)",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+              marginBottom: 18,
+            }}
+          >
+            ★ Destacado de la semana
+          </div>
+          <a
+            href="#"
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1.1fr 1fr",
+              border: "1px solid var(--line-strong)",
+              borderRadius: 24,
+              overflow: "hidden",
+              background:
+                "linear-gradient(180deg, rgba(20,15,30,0.03), rgba(20,15,30,0.005))",
+              transition: "border-color .25s ease",
+              textDecoration: "none",
+              color: "inherit",
+            }}
+            className="blog-featured"
+          >
+            <div
+              style={{
+                background:
+                  "linear-gradient(135deg, rgba(167,139,250,0.25), rgba(236,72,153,0.15))",
+                position: "relative",
+                minHeight: 360,
+                display: "grid",
+                placeItems: "center",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                aria-hidden
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  backgroundImage:
+                    "linear-gradient(rgba(20,15,30,0.06) 1px, transparent 1px), linear-gradient(90deg, rgba(20,15,30,0.06) 1px, transparent 1px)",
+                  backgroundSize: "28px 28px",
+                  maskImage:
+                    "radial-gradient(ellipse at center, black 20%, transparent 75%)",
+                  WebkitMaskImage:
+                    "radial-gradient(ellipse at center, black 20%, transparent 75%)",
+                }}
+              />
+              <span
+                className="serif"
+                style={{
+                  position: "relative",
+                  fontSize: "clamp(96px, 12vw, 180px)",
+                  color: "rgba(20,15,30,0.85)",
+                  lineHeight: 0.9,
+                  textShadow: "0 4px 40px rgba(20,15,30,0.07)",
+                }}
+              >
+                −60%
+              </span>
+            </div>
+            <div
+              style={{
+                padding: 40,
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  gap: 14,
+                  alignItems: "center",
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  color: "var(--fg-mute)",
+                  marginBottom: 14,
+                }}
+              >
+                <span
+                  style={{
+                    padding: "4px 10px",
+                    borderRadius: 999,
+                    background: "rgba(167,139,250,0.12)",
+                    border: "1px solid rgba(167,139,250,0.3)",
+                    color: "var(--violet-2)",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.06em",
+                  }}
+                >
+                  CASO DE ÉXITO
+                </span>
+                <span>26 May 2026</span>
+                <span>·</span>
+                <span>8 min lectura</span>
+              </div>
+              <h2
+                style={{
+                  fontSize: "clamp(26px, 3vw, 38px)",
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.03em",
+                  margin: "0 0 14px",
+                  fontWeight: 500,
+                }}
+              >
+                Cómo Black Fade redujo sus no-shows un 70% en 90 días
+              </h2>
+              <p
+                style={{
+                  color: "var(--fg-dim)",
+                  lineHeight: 1.55,
+                  margin: "0 0 24px",
+                  fontSize: 15,
+                }}
+              >
+                Alejandro Ruiz tenía un problema clásico: 3 de cada 10 clientes
+                no aparecían. Esto es exactamente lo que cambió — paso a paso —
+                para recuperar más de $4M mensuales sin contratar a nadie.
+              </p>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  paddingTop: 20,
+                  borderTop: "1px solid var(--line)",
+                }}
+              >
+                <div
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "50%",
+                    background: "linear-gradient(135deg, #A78BFA, #EC4899)",
+                    display: "grid",
+                    placeItems: "center",
+                    fontFamily: "var(--font-mono)",
+                    fontSize: 13,
+                    fontWeight: 500,
+                    color: "white",
+                  }}
+                >
+                  AR
+                </div>
+                <div>
+                  <div style={{ fontSize: 13.5, fontWeight: 500 }}>
+                    Alejandro Ruiz · entrevistado
                   </div>
-                  <div style={{ padding: 20 }}>
-                    <h3 style={{ fontSize: 16, fontWeight: 500, letterSpacing: "-0.015em", lineHeight: 1.4, margin: 0, marginBottom: 14 }}>{a.title}</h3>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 11.5, color: "var(--fg-mute)", fontFamily: "var(--font-mono)" }}>
-                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}><IconCalendar size={11} /> {a.date}</span>
-                      <span style={{ display: "flex", alignItems: "center", gap: 4 }}><IconClock size={11} /> {a.readTime}</span>
-                    </div>
+                  <div style={{ fontSize: 11.5, color: "var(--fg-mute)" }}>
+                    Black Fade Barbershop · Bogotá
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-        <style>{`
-          @media (max-width: 880px) { .blog-grid { grid-template-columns: 1fr 1fr !important; } }
-          @media (max-width: 560px) { .blog-grid { grid-template-columns: 1fr !important; } }
-          @media (max-width: 760px) { .featured-article-grid { grid-template-columns: 1fr !important; } }
-        `}</style>
+              </div>
+            </div>
+          </a>
+        </Container>
       </section>
 
-      {/* Newsletter */}
-      <section style={{ padding: "80px 0 120px" }}>
-        <div style={{ maxWidth: 1240, margin: "0 auto", padding: "0 28px" }}>
-          <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center", padding: "56px 40px", background: "linear-gradient(180deg, rgba(167,139,250,0.08) 0%, rgba(236,72,153,0.04) 100%)", border: "1px solid rgba(167,139,250,0.3)", borderRadius: 24 }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 12px", borderRadius: 999, border: "1px solid var(--line-strong)", background: "rgba(167,139,250,0.08)", fontSize: 12, letterSpacing: "0.08em", textTransform: "uppercase", fontWeight: 500, color: "var(--violet-2)", fontFamily: "var(--font-mono)", marginBottom: 20 }}>
-              <span style={{ width: 6, height: 6, borderRadius: 999, background: "var(--violet-2)", boxShadow: "0 0 10px var(--violet-2)", animation: "pulseGlow 1.8s ease-in-out infinite" }} />
-              Newsletter
-            </div>
-            <h2 style={{ fontSize: "clamp(26px, 3.5vw, 40px)", lineHeight: 1.1, letterSpacing: "-0.03em", fontWeight: 500, margin: "0 0 14px" }}>
-              Consejos cada semana,{" "}
-              <span style={{ fontFamily: "var(--font-serif)", fontStyle: "italic" }}>gratis.</span>
+      {/* Article grid */}
+      <section style={{ padding: "40px 0 60px" }}>
+        <Container max={1240}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 24,
+            }}
+          >
+            <h2
+              style={{
+                fontSize: 28,
+                letterSpacing: "-0.02em",
+                fontWeight: 500,
+                margin: 0,
+              }}
+            >
+              Lo más reciente
             </h2>
-            <p style={{ fontSize: 15, color: "var(--fg-dim)", margin: "0 0 28px", lineHeight: 1.6 }}>
-              Cada martes, un tip para hacer crecer tu negocio. Sin spam, sin relleno.
-            </p>
-            {subscribed ? (
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "14px 22px", background: "rgba(52,211,153,0.12)", border: "1px solid rgba(52,211,153,0.3)", borderRadius: 14, fontSize: 14, color: "var(--green)", fontFamily: "var(--font-mono)" }}>
-                Estás suscrito — gracias!
+            <a
+              href="#"
+              style={{
+                color: "var(--violet-2)",
+                fontSize: 13,
+                fontFamily: "var(--font-mono)",
+                textDecoration: "none",
+              }}
+            >
+              VER TODO →
+            </a>
+          </div>
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: 20,
+            }}
+            className="article-grid"
+          >
+            {ARTICLES.map((a, i) => (
+              <a
+                key={i}
+                href="#"
+                style={{
+                  background:
+                    "linear-gradient(180deg, rgba(20,15,30,0.03), rgba(20,15,30,0.01))",
+                  border: "1px solid var(--line)",
+                  borderRadius: 18,
+                  overflow: "hidden",
+                  textDecoration: "none",
+                  color: "inherit",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "transform .25s ease, border-color .25s ease",
+                }}
+              >
+                <div
+                  style={{
+                    aspectRatio: "16 / 9",
+                    position: "relative",
+                    overflow: "hidden",
+                    display: "grid",
+                    placeItems: "center",
+                    background: COVER_BG[a.cover],
+                  }}
+                >
+                  <div
+                    aria-hidden
+                    style={{
+                      position: "absolute",
+                      inset: 0,
+                      backgroundImage:
+                        "linear-gradient(rgba(20,15,30,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(20,15,30,0.05) 1px, transparent 1px)",
+                      backgroundSize: "24px 24px",
+                      maskImage:
+                        "radial-gradient(ellipse at center, black 20%, transparent 75%)",
+                      WebkitMaskImage:
+                        "radial-gradient(ellipse at center, black 20%, transparent 75%)",
+                    }}
+                  />
+                  <span
+                    className="serif"
+                    style={{
+                      position: "relative",
+                      fontSize: "clamp(60px, 8vw, 96px)",
+                      color: "rgba(20,15,30,0.85)",
+                      lineHeight: 0.9,
+                    }}
+                  >
+                    {a.glyph}
+                  </span>
+                </div>
+                <div
+                  style={{
+                    padding: "20px 22px 22px",
+                    display: "flex",
+                    flexDirection: "column",
+                    flex: 1,
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      alignItems: "center",
+                      fontFamily: "var(--font-mono)",
+                      fontSize: 11,
+                      color: "var(--fg-mute)",
+                      marginBottom: 12,
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                    }}
+                  >
+                    <span>{a.cat}</span>
+                    <span
+                      style={{
+                        width: 3,
+                        height: 3,
+                        borderRadius: 999,
+                        background: "var(--fg-mute)",
+                      }}
+                    />
+                    <span>{a.read}</span>
+                  </div>
+                  <h3
+                    style={{
+                      fontSize: 19,
+                      lineHeight: 1.25,
+                      letterSpacing: "-0.02em",
+                      margin: "0 0 10px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {a.title}
+                  </h3>
+                  <p
+                    style={{
+                      color: "var(--fg-dim)",
+                      lineHeight: 1.5,
+                      margin: 0,
+                      fontSize: 13.5,
+                      flex: 1,
+                    }}
+                  >
+                    {a.excerpt}
+                  </p>
+                  <span
+                    style={{
+                      marginTop: 18,
+                      fontSize: 12.5,
+                      color: "var(--violet-2)",
+                      fontWeight: 500,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 6,
+                      fontFamily: "var(--font-mono)",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    LEER →
+                  </span>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {/* Newsletter */}
+          <div
+            style={{
+              margin: "60px auto 100px",
+              padding: "56px 40px",
+              borderRadius: 24,
+              background:
+                "linear-gradient(135deg, rgba(167,139,250,0.12) 0%, rgba(236,72,153,0.06) 100%)",
+              border: "1px solid rgba(167,139,250,0.3)",
+              textAlign: "center",
+              boxShadow: "0 30px 80px -30px rgba(167,139,250,0.4)",
+              position: "relative",
+              overflow: "hidden",
+            }}
+          >
+            <GradientOrb color="#A78BFA" size={400} x="-10%" y="-30%" opacity={0.4} blur={100} />
+            <GradientOrb color="#EC4899" size={400} x="80%" y="60%" opacity={0.35} blur={100} />
+            <div style={{ position: "relative" }}>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+                <Eyebrow accent>Newsletter semanal</Eyebrow>
               </div>
-            ) : (
-              <div style={{ display: "flex", gap: 8 }}>
+              <h3
+                style={{
+                  fontSize: "clamp(26px, 3vw, 38px)",
+                  margin: "16px 0 12px",
+                  letterSpacing: "-0.03em",
+                  fontWeight: 500,
+                }}
+              >
+                1 estrategia. Cada lunes.{" "}
+                <span className="serif gradient-text">7 minutos.</span>
+              </h3>
+              <p
+                style={{
+                  color: "var(--fg-dim)",
+                  margin: "0 auto 28px",
+                  maxWidth: 480,
+                  lineHeight: 1.5,
+                }}
+              >
+                Sin spam. Solo tácticas reales para dueños de negocio. Cancelas con 1 clic.
+              </p>
+              <form
+                style={{
+                  display: "flex",
+                  gap: 10,
+                  justifyContent: "center",
+                  flexWrap: "wrap",
+                  maxWidth: 500,
+                  margin: "0 auto",
+                }}
+              >
                 <input
                   type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="tu@correo.com"
-                  style={{ flex: 1, padding: "12px 16px", borderRadius: 12, border: "1px solid var(--line-strong)", background: "rgba(255,255,255,0.6)", fontSize: 14, fontFamily: "var(--font-sans)", color: "var(--fg)", outline: "none" }}
+                  placeholder="tu@email.com"
+                  required
+                  style={{
+                    flex: 1,
+                    minWidth: 240,
+                    padding: "12px 16px",
+                    background: "rgba(20,15,30,0.06)",
+                    border: "1px solid var(--line-strong)",
+                    borderRadius: 12,
+                    color: "var(--fg)",
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 14,
+                    outline: "none",
+                  }}
                 />
                 <button
-                  onClick={() => { if (email) setSubscribed(true); }}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 20px", borderRadius: 12, background: "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)", color: "white", border: "none", cursor: "pointer", fontSize: 14, fontWeight: 500, fontFamily: "var(--font-sans)", whiteSpace: "nowrap" }}
+                  type="submit"
+                  style={{
+                    padding: "11px 18px",
+                    background:
+                      "linear-gradient(135deg, #A78BFA 0%, #EC4899 60%, #FB923C 100%)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 12,
+                    fontFamily: "var(--font-sans)",
+                    fontSize: 14.5,
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    boxShadow:
+                      "0 8px 30px -10px rgba(167,139,250,0.55), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
                 >
-                  Suscribirme <IconArrow size={14} />
+                  Suscribirme →
                 </button>
+              </form>
+              <div
+                style={{
+                  fontSize: 12,
+                  color: "var(--fg-mute)",
+                  marginTop: 18,
+                  fontFamily: "var(--font-mono)",
+                }}
+              >
+                1.247 dueños de negocio ya leen Zyncra Weekly
               </div>
-            )}
+            </div>
           </div>
-        </div>
+        </Container>
       </section>
     </>
   );
