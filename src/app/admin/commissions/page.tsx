@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconChartBar, IconUsers, IconBanknotes, IconX, IconPercent } from "../ZyncraIcons";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Professional {
   id: string;
@@ -40,7 +40,7 @@ interface Payment {
   professionals: { name: string } | null;
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -53,7 +53,7 @@ function calcCommission(revenue: number, count: number, rule: CommissionRule | n
 
 function periodLabel(start: string, end: string) {
   const f = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("es-CO", { day: "numeric", month: "short" });
-  return `${f(start)} — ${f(end)}`;
+  return `${f(start)} â€” ${f(end)}`;
 }
 
 function getWeekRange() {
@@ -74,7 +74,7 @@ function getMonthRange() {
   return { start, end };
 }
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const card: React.CSSProperties = {
   background: "white",
@@ -106,13 +106,13 @@ const lbl: React.CSSProperties = {
   letterSpacing: "0.06em",
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function Avatar({ name }: { name: string }) {
   return (
     <div style={{
       width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
-      background: "linear-gradient(135deg, #fb0f05, #9B3FC8)",
+      background: "linear-gradient(135deg, #fb0f05, #0027fe)",
       display: "flex", alignItems: "center", justifyContent: "center",
       color: "#fff", fontWeight: 800, fontSize: 13,
     }}>
@@ -126,7 +126,7 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     <button onClick={onClick} style={{
       padding: "8px 18px", borderRadius: "10px", fontSize: "13px", fontWeight: 600,
       cursor: "pointer", border: "none", fontFamily: "'Plus Jakarta Sans', sans-serif",
-      background: active ? "linear-gradient(135deg, #fb0f05, #9B3FC8)" : "transparent",
+      background: active ? "linear-gradient(135deg, #fb0f05, #0027fe)" : "transparent",
       color: active ? "#fff" : "#6b6b80",
       boxShadow: active ? "0 2px 8px rgba(251,15,5,0.25)" : "none",
       transition: "all 0.15s",
@@ -166,7 +166,7 @@ function SectionHeader({ title, sub, icon }: { title: string; sub?: string; icon
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function CommissionsPage() {
   const { tenantId } = useAdmin();
@@ -200,7 +200,7 @@ export default function CommissionsPage() {
   const [liquidarSaving, setLiquidarSaving] = useState(false);
   const [liquidarMsg, setLiquidarMsg] = useState("");
 
-  // ── Fetch summary ──
+  // â”€â”€ Fetch summary â”€â”€
   const fetchSummary = useCallback(async (tid: string, p: "semana" | "mes" | "custom", cStart?: string, cEnd?: string) => {
     setLoadingSummary(true);
     const range = p === "semana" ? getWeekRange() : p === "mes" ? getMonthRange() : { start: cStart || "", end: cEnd || "" };
@@ -232,7 +232,7 @@ export default function CommissionsPage() {
     setLoadingSummary(false);
   }, []);
 
-  // ── Fetch rules ──
+  // â”€â”€ Fetch rules â”€â”€
   const fetchRules = useCallback(async (tid: string) => {
     setLoadingRules(true);
     const [{ data: profs }, { data: rulesData }] = await Promise.all([
@@ -244,7 +244,7 @@ export default function CommissionsPage() {
     setLoadingRules(false);
   }, []);
 
-  // ── Fetch payments ──
+  // â”€â”€ Fetch payments â”€â”€
   const fetchPayments = useCallback(async (tid: string) => {
     setLoadingPayments(true);
     const { data } = await supabase
@@ -264,11 +264,11 @@ export default function CommissionsPage() {
     if (tab === "historial") fetchPayments(tenantId);
   }, [tenantId, tab, period, fetchSummary, fetchRules, fetchPayments]);
 
-  // ── Save rule ──
+  // â”€â”€ Save rule â”€â”€
   const handleSaveRule = async () => {
     if (!tenantId || !editingProf) return;
     const v = parseFloat(editForm.value);
-    if (isNaN(v) || v < 0) { setRuleMsg("Ingresa un valor válido."); return; }
+    if (isNaN(v) || v < 0) { setRuleMsg("Ingresa un valor vÃ¡lido."); return; }
     if (editForm.type === "percentage" && v > 100) { setRuleMsg("El porcentaje no puede superar 100%."); return; }
     setSavingRule(true); setRuleMsg("");
     const { error } = await supabase.from("commission_rules").upsert({
@@ -285,7 +285,7 @@ export default function CommissionsPage() {
     setTimeout(() => { setEditingProf(null); setRuleMsg(""); }, 1000);
   };
 
-  // ── Liquidar ──
+  // â”€â”€ Liquidar â”€â”€
   const handleLiquidar = async () => {
     if (!tenantId || !liquidarTarget) return;
     setLiquidarSaving(true); setLiquidarMsg("");
@@ -301,7 +301,7 @@ export default function CommissionsPage() {
     });
     setLiquidarSaving(false);
     if (error) { setLiquidarMsg("Error: " + error.message); return; }
-    setLiquidarMsg("Comisión liquidada con éxito.");
+    setLiquidarMsg("ComisiÃ³n liquidada con Ã©xito.");
     setTimeout(() => { setLiquidarTarget(null); setLiquidarNote(""); setLiquidarMsg(""); }, 1200);
   };
 
@@ -312,12 +312,12 @@ export default function CommissionsPage() {
     setEditingProf(prof);
   };
 
-  // ─── Totals ───────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Totals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const totalRevenue = summaries.reduce((s, p) => s + p.revenue, 0);
   const totalCommission = summaries.reduce((s, p) => s + p.commission, 0);
   const totalApts = summaries.reduce((s, p) => s + p.count, 0);
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -330,7 +330,7 @@ export default function CommissionsPage() {
             Comisiones
           </h1>
           <p style={{ color: "#a0a0b0", fontSize: 13, marginTop: 3 }}>
-            Liquida las comisiones de tu equipo automáticamente.
+            Liquida las comisiones de tu equipo automÃ¡ticamente.
           </p>
         </div>
         <div style={{ display: "flex", gap: 4, background: "#f0eeeb", padding: 4, borderRadius: 14 }}>
@@ -340,7 +340,7 @@ export default function CommissionsPage() {
         </div>
       </div>
 
-      {/* ── TAB: Resumen ── */}
+      {/* â”€â”€ TAB: Resumen â”€â”€ */}
       {tab === "resumen" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {/* Period filter */}
@@ -351,7 +351,7 @@ export default function CommissionsPage() {
             {period === "custom" && (
               <>
                 <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ ...inp, width: "auto", padding: "6px 10px", fontSize: 12 }} />
-                <span style={{ color: "#a0a0b0", fontSize: 12 }}>—</span>
+                <span style={{ color: "#a0a0b0", fontSize: 12 }}>â€”</span>
                 <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} style={{ ...inp, width: "auto", padding: "6px 10px", fontSize: 12 }} />
                 <button onClick={() => { if (tenantId) fetchSummary(tenantId, "custom", customStart, customEnd); }}
                   disabled={!customStart || !customEnd}
@@ -373,7 +373,7 @@ export default function CommissionsPage() {
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", marginBottom: 10 }}>
                   {m.icon}
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   {m.value}
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 600, color: "#a0a0b0", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4 }}>{m.label}</div>
@@ -400,7 +400,7 @@ export default function CommissionsPage() {
                   <span>Profesional</span>
                   <span style={{ textAlign: "center" }}>Citas</span>
                   <span style={{ textAlign: "right" }}>Revenue</span>
-                  <span style={{ textAlign: "right" }}>Comisión</span>
+                  <span style={{ textAlign: "right" }}>ComisiÃ³n</span>
                   <span />
                 </div>
                 {summaries.map((s, i) => (
@@ -424,7 +424,7 @@ export default function CommissionsPage() {
                     <div style={{ textAlign: "right", fontWeight: 600, fontSize: 13, color: "#3a3a48" }}>{fmt(s.revenue)}</div>
                     <div style={{ textAlign: "right" }}>
                       {s.rule ? (
-                        <span style={{ fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                        <span style={{ fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                           {fmt(s.commission)}
                         </span>
                       ) : (
@@ -453,17 +453,17 @@ export default function CommissionsPage() {
         </div>
       )}
 
-      {/* ── TAB: Reglas ── */}
+      {/* â”€â”€ TAB: Reglas â”€â”€ */}
       {tab === "reglas" && (
         <div style={card}>
-          <SectionHeader title="Reglas de comisión" sub="Una regla por profesional activo" icon={<IconPercent size={16} />} />
+          <SectionHeader title="Reglas de comisiÃ³n" sub="Una regla por profesional activo" icon={<IconPercent size={16} />} />
           {loadingRules ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
               <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : professionals.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#a0a0b0", fontSize: 14 }}>
-              Sin profesionales activos. Agrédalos en la sección Equipo.
+              Sin profesionales activos. AgrÃ©dalos en la secciÃ³n Equipo.
             </div>
           ) : (
             professionals.map((prof, i) => {
@@ -504,25 +504,25 @@ export default function CommissionsPage() {
         </div>
       )}
 
-      {/* ── TAB: Historial ── */}
+      {/* â”€â”€ TAB: Historial â”€â”€ */}
       {tab === "historial" && (
         <div style={card}>
-          <SectionHeader title="Historial de liquidaciones" sub="Últimas 50 liquidaciones" icon={<IconBanknotes size={16} />} />
+          <SectionHeader title="Historial de liquidaciones" sub="Ãšltimas 50 liquidaciones" icon={<IconBanknotes size={16} />} />
           {loadingPayments ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
               <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : payments.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#a0a0b0", fontSize: 14 }}>
-              Sin liquidaciones registradas aún.
+              Sin liquidaciones registradas aÃºn.
             </div>
           ) : (
             <div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 60px 120px 130px", gap: 12, padding: "10px 20px", borderBottom: "1px solid #f0eeeb", fontSize: 11, fontWeight: 700, color: "#a0a0b0", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 <span>Profesional</span>
-                <span>Período</span>
+                <span>PerÃ­odo</span>
                 <span style={{ textAlign: "center" }}>Citas</span>
-                <span style={{ textAlign: "right" }}>Comisión</span>
+                <span style={{ textAlign: "right" }}>ComisiÃ³n</span>
                 <span style={{ textAlign: "right" }}>Fecha pago</span>
               </div>
               {payments.map((p, i) => (
@@ -532,12 +532,12 @@ export default function CommissionsPage() {
                   borderBottom: i < payments.length - 1 ? "1px solid #f0eeeb" : "none",
                 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: "#111118" }}>{p.professionals?.name || "—"}</div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "#111118" }}>{p.professionals?.name || "â€”"}</div>
                     {p.note && <div style={{ fontSize: 11, color: "#a0a0b0", marginTop: 2 }}>{p.note}</div>}
                   </div>
                   <div style={{ fontSize: 12, color: "#6b6b80" }}>{periodLabel(p.period_start, p.period_end)}</div>
                   <div style={{ textAlign: "center", fontWeight: 700, fontSize: 13, color: "#111118" }}>{p.appointments_count}</div>
-                  <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                     {fmt(p.commission_amount)}
                   </div>
                   <div style={{ textAlign: "right", fontSize: 12, color: "#a0a0b0" }}>
@@ -550,7 +550,7 @@ export default function CommissionsPage() {
         </div>
       )}
 
-      {/* ── Modal: Editar Regla ── */}
+      {/* â”€â”€ Modal: Editar Regla â”€â”€ */}
       {editingProf && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setEditingProf(null); }}>
@@ -559,7 +559,7 @@ export default function CommissionsPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Avatar name={editingProf.name} />
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 16, color: "#111118" }}>Regla de comisión</div>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: "#111118" }}>Regla de comisiÃ³n</div>
                   <div style={{ fontSize: 12, color: "#a0a0b0", marginTop: 2 }}>{editingProf.name}</div>
                 </div>
               </div>
@@ -569,7 +569,7 @@ export default function CommissionsPage() {
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={lbl}>Tipo de comisión</label>
+              <label style={lbl}>Tipo de comisiÃ³n</label>
               <select value={editForm.type} onChange={e => setEditForm({ ...editForm, type: e.target.value as "percentage" | "fixed" })} style={inp}>
                 <option value="percentage">Porcentaje del servicio (%)</option>
                 <option value="fixed">Monto fijo por cita (COP)</option>
@@ -577,7 +577,7 @@ export default function CommissionsPage() {
             </div>
 
             <div style={{ marginBottom: 22 }}>
-              <label style={lbl}>{editForm.type === "percentage" ? "Porcentaje (0–100)" : "Monto por cita (COP)"}</label>
+              <label style={lbl}>{editForm.type === "percentage" ? "Porcentaje (0â€“100)" : "Monto por cita (COP)"}</label>
               <input
                 type="number"
                 min={0}
@@ -606,13 +606,13 @@ export default function CommissionsPage() {
         </div>
       )}
 
-      {/* ── Modal: Liquidar ── */}
+      {/* â”€â”€ Modal: Liquidar â”€â”€ */}
       {liquidarTarget && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setLiquidarTarget(null); }}>
           <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 17, color: "#111118" }}>Confirmar liquidación</div>
+              <div style={{ fontWeight: 800, fontSize: 17, color: "#111118" }}>Confirmar liquidaciÃ³n</div>
               <button onClick={() => setLiquidarTarget(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0a0b0" }}>
                 <IconX size={18} />
               </button>
@@ -637,7 +637,7 @@ export default function CommissionsPage() {
               ))}
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, borderTop: "1px solid #e8e6e2", paddingTop: 10, marginTop: 4 }}>
                 <span style={{ fontWeight: 700, color: "#111118" }}>A pagar</span>
-                <span style={{ fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                <span style={{ fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   {fmt(liquidarTarget.commission)}
                 </span>
               </div>

@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconCreditCard, IconPlus, IconX, IconSearch } from "../ZyncraIcons";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Service {
   id: string;
@@ -42,7 +42,7 @@ interface Sale {
   pos_sale_items: { name: string; price: number; quantity: number }[];
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -53,11 +53,11 @@ const fmtDateTime = (iso: string) =>
 const PAYMENT_METHODS = [
   { key: "efectivo",  label: "Efectivo",  color: "#10b981" },
   { key: "tarjeta",   label: "Tarjeta",   color: "#6366f1" },
-  { key: "nequi",     label: "Nequi",     color: "#9B3FC8" },
+  { key: "nequi",     label: "Nequi",     color: "#0027fe" },
   { key: "daviplata", label: "Daviplata", color: "#f59e0b" },
 ];
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "10px 13px", border: "1.5px solid #e8e6e2",
@@ -70,7 +70,7 @@ const lbl: React.CSSProperties = {
   marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em",
 };
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function PosPage() {
   const { tenantId } = useAdmin();
@@ -106,7 +106,7 @@ export default function PosPage() {
 
   const clientRef = useRef<HTMLDivElement>(null);
 
-  // ── Load services ──
+  // â”€â”€ Load services â”€â”€
   useEffect(() => {
     if (!tenantId) return;
     supabase.from("services").select("id,name,price,duration_minutes")
@@ -114,7 +114,7 @@ export default function PosPage() {
       .then(({ data }) => { setServices(data || []); setLoadingServices(false); });
   }, [tenantId]);
 
-  // ── Load history ──
+  // â”€â”€ Load history â”€â”€
   const loadHistory = useCallback(async (tid: string) => {
     setLoadingHistory(true);
     const { data } = await supabase
@@ -131,7 +131,7 @@ export default function PosPage() {
     if (tenantId && tab === "historial") loadHistory(tenantId);
   }, [tenantId, tab, loadHistory]);
 
-  // ── Client search ──
+  // â”€â”€ Client search â”€â”€
   useEffect(() => {
     if (!tenantId || clientSearch.length < 2) { setClientResults([]); return; }
     const t = setTimeout(async () => {
@@ -145,7 +145,7 @@ export default function PosPage() {
     return () => clearTimeout(t);
   }, [clientSearch, tenantId]);
 
-  // ── Cart helpers ──
+  // â”€â”€ Cart helpers â”€â”€
   const addToCart = (svc: Service) => {
     setCart(prev => {
       const existing = prev.find(i => i.serviceId === svc.id);
@@ -170,7 +170,7 @@ export default function PosPage() {
 
   const removeItem = (key: string) => setCart(prev => prev.filter(i => i.key !== key));
 
-  // ── Totals ──
+  // â”€â”€ Totals â”€â”€
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const discountVal = parseFloat(discountValue) || 0;
   const discountAmount = discountType === "percentage"
@@ -178,7 +178,7 @@ export default function PosPage() {
     : Math.min(discountVal, subtotal);
   const total = Math.max(subtotal - discountAmount, 0);
 
-  // ── Charge ──
+  // â”€â”€ Charge â”€â”€
   const handleCharge = async () => {
     if (!tenantId || cart.length === 0) return;
     setCharging(true);
@@ -200,18 +200,18 @@ export default function PosPage() {
     );
 
     setCharging(false);
-    setSuccessMsg(`Venta de ${fmt(total)} registrada con éxito.`);
+    setSuccessMsg(`Venta de ${fmt(total)} registrada con Ã©xito.`);
     setCart([]); setClient(null); setClientSearch(""); setDiscountValue(""); setSaleNote("");
     setPaymentMethod("efectivo");
     setTimeout(() => setSuccessMsg(""), 3500);
   };
 
-  // ── Filtered services ──
+  // â”€â”€ Filtered services â”€â”€
   const filtered = services.filter(s =>
     !search || s.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -228,7 +228,7 @@ export default function PosPage() {
             <button key={t} onClick={() => setTab(t)} style={{
               padding: "8px 18px", borderRadius: 10, fontSize: 13, fontWeight: 600,
               cursor: "pointer", border: "none", fontFamily: "'Plus Jakarta Sans', sans-serif",
-              background: tab === t ? "linear-gradient(135deg, #fb0f05, #9B3FC8)" : "transparent",
+              background: tab === t ? "linear-gradient(135deg, #fb0f05, #0027fe)" : "transparent",
               color: tab === t ? "#fff" : "#6b6b80",
               boxShadow: tab === t ? "0 2px 8px rgba(251,15,5,0.25)" : "none",
               transition: "all 0.15s",
@@ -246,7 +246,7 @@ export default function PosPage() {
         </div>
       )}
 
-      {/* ── TAB: Cobrar ── */}
+      {/* â”€â”€ TAB: Cobrar â”€â”€ */}
       {tab === "cobrar" && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 20, alignItems: "start" }}>
 
@@ -266,7 +266,7 @@ export default function PosPage() {
               </div>
               <button onClick={() => { setFreeItemName(""); setFreeItemPrice(""); setShowFreeItem(true); }}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 10, border: "1.5px solid rgba(251,15,5,0.3)", background: "rgba(251,15,5,0.06)", color: "#fb0f05", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", whiteSpace: "nowrap" }}>
-                <IconPlus size={14} /> Ítem libre
+                <IconPlus size={14} /> Ãtem libre
               </button>
             </div>
 
@@ -292,13 +292,13 @@ export default function PosPage() {
                       fontFamily: "'Plus Jakarta Sans', sans-serif",
                     }}>
                       <div style={{ fontWeight: 700, fontSize: 13, color: "#111118", marginBottom: 6 }}>{svc.name}</div>
-                      <div style={{ fontSize: 18, fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                      <div style={{ fontSize: 18, fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                         {fmt(svc.price)}
                       </div>
                       <div style={{ fontSize: 11, color: "#a0a0b0", marginTop: 4 }}>{svc.duration_minutes} min</div>
                       {inCart && (
                         <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: "#fb0f05" }}>
-                          × {inCart.qty} en carrito
+                          Ã— {inCart.qty} en carrito
                         </div>
                       )}
                     </button>
@@ -339,7 +339,7 @@ export default function PosPage() {
                     <input type="text" value={clientSearch} onChange={e => { setClientSearch(e.target.value); setShowClientDrop(true); }}
                       onFocus={() => clientSearch.length >= 2 && setShowClientDrop(true)}
                       onBlur={() => setTimeout(() => setShowClientDrop(false), 200)}
-                      placeholder="Nombre o teléfono..." style={inp} />
+                      placeholder="Nombre o telÃ©fono..." style={inp} />
                     {showClientDrop && clientResults.length > 0 && (
                       <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "white", border: "1px solid #e8e6e2", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 50, overflow: "hidden", marginTop: 4 }}>
                         {clientResults.map(c => (
@@ -358,7 +358,7 @@ export default function PosPage() {
               {/* Cart items */}
               {cart.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "20px 0", color: "#a0a0b0", fontSize: 13 }}>
-                  Selecciona servicios del catálogo.
+                  Selecciona servicios del catÃ¡logo.
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -369,7 +369,7 @@ export default function PosPage() {
                         <div style={{ fontSize: 11, color: "#a0a0b0" }}>{fmt(item.price)} c/u</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#6b6b80", display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#6b6b80", display: "flex", alignItems: "center", justifyContent: "center" }}>âˆ’</button>
                         <span style={{ fontSize: 13, fontWeight: 700, color: "#111118", minWidth: 18, textAlign: "center" }}>{item.qty}</span>
                         <button onClick={() => updateQty(item.key, 1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#6b6b80", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                         <button onClick={() => removeItem(item.key)} style={{ width: 26, height: 26, borderRadius: 7, border: "none", background: "rgba(239,68,68,0.08)", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -417,12 +417,12 @@ export default function PosPage() {
                   {discountAmount > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
                       <span style={{ color: "#6b6b80" }}>Descuento</span>
-                      <span style={{ fontWeight: 600, color: "#ef4444" }}>−{fmt(discountAmount)}</span>
+                      <span style={{ fontWeight: 600, color: "#ef4444" }}>âˆ’{fmt(discountAmount)}</span>
                     </div>
                   )}
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, fontWeight: 800, marginTop: 4 }}>
                     <span style={{ color: "#111118" }}>Total</span>
-                    <span style={{ background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    <span style={{ background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                       {fmt(total)}
                     </span>
                   </div>
@@ -432,7 +432,7 @@ export default function PosPage() {
               {/* Payment method */}
               {cart.length > 0 && (
                 <div>
-                  <label style={lbl}>Método de pago</label>
+                  <label style={lbl}>MÃ©todo de pago</label>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     {PAYMENT_METHODS.map(pm => (
                       <button key={pm.key} onClick={() => setPaymentMethod(pm.key)} style={{
@@ -464,20 +464,20 @@ export default function PosPage() {
                 style={{
                   width: "100%", padding: 14, borderRadius: 12, border: "none", fontSize: 15, fontWeight: 800,
                   cursor: (cart.length === 0 || charging) ? "not-allowed" : "pointer",
-                  background: (cart.length === 0 || charging) ? "#e8e6e2" : "linear-gradient(135deg, #fb0f05, #9B3FC8)",
+                  background: (cart.length === 0 || charging) ? "#e8e6e2" : "linear-gradient(135deg, #fb0f05, #0027fe)",
                   color: (cart.length === 0 || charging) ? "#a0a0b0" : "#fff",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                   boxShadow: (cart.length === 0 || charging) ? "none" : "0 4px 16px rgba(251,15,5,0.3)",
                   transition: "all 0.15s",
                 }}>
-                {charging ? "Procesando..." : cart.length === 0 ? "Agrega ítems al carrito" : `Cobrar ${fmt(total)}`}
+                {charging ? "Procesando..." : cart.length === 0 ? "Agrega Ã­tems al carrito" : `Cobrar ${fmt(total)}`}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── TAB: Historial ── */}
+      {/* â”€â”€ TAB: Historial â”€â”€ */}
       {tab === "historial" && (
         <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
@@ -492,12 +492,12 @@ export default function PosPage() {
             </div>
           ) : sales.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#a0a0b0", fontSize: 14 }}>
-              Sin ventas registradas aún.
+              Sin ventas registradas aÃºn.
             </div>
           ) : (
             <div>
               <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 90px 80px 110px", gap: 12, padding: "10px 20px", borderBottom: "1px solid #f0eeeb", fontSize: 11, fontWeight: 700, color: "#a0a0b0", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                <span>Fecha</span><span>Cliente</span><span>Método</span><span style={{ textAlign: "center" }}>Ítems</span><span style={{ textAlign: "right" }}>Total</span>
+                <span>Fecha</span><span>Cliente</span><span>MÃ©todo</span><span style={{ textAlign: "center" }}>Ãtems</span><span style={{ textAlign: "right" }}>Total</span>
               </div>
               {sales.map((s, i) => (
                 <div key={s.id}>
@@ -525,7 +525,7 @@ export default function PosPage() {
                     <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: "#111118" }}>
                       {s.pos_sale_items?.length || 0}
                     </div>
-                    <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                       {fmt(s.total)}
                     </div>
                   </div>
@@ -533,14 +533,14 @@ export default function PosPage() {
                     <div style={{ padding: "10px 20px 16px 52px", borderBottom: i < sales.length - 1 ? "1px solid #f0eeeb" : "none", background: "#fafafa" }}>
                       {s.pos_sale_items?.map((item, j) => (
                         <div key={j} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#6b6b80", marginBottom: 4 }}>
-                          <span>{item.name} × {item.quantity}</span>
+                          <span>{item.name} Ã— {item.quantity}</span>
                           <span style={{ fontWeight: 600, color: "#3a3a48" }}>{fmt(item.price * item.quantity)}</span>
                         </div>
                       ))}
                       {s.discount_value > 0 && (
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#ef4444", marginTop: 6 }}>
                           <span>Descuento</span>
-                          <span style={{ fontWeight: 600 }}>−{fmt(s.subtotal - s.total)}</span>
+                          <span style={{ fontWeight: 600 }}>âˆ’{fmt(s.subtotal - s.total)}</span>
                         </div>
                       )}
                       {s.note && <div style={{ fontSize: 11, color: "#a0a0b0", marginTop: 6 }}>Nota: {s.note}</div>}
@@ -553,13 +553,13 @@ export default function PosPage() {
         </div>
       )}
 
-      {/* ── Modal: Ítem libre ── */}
+      {/* â”€â”€ Modal: Ãtem libre â”€â”€ */}
       {showFreeItem && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setShowFreeItem(false); }}>
           <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: "#111118" }}>Ítem libre</div>
+              <div style={{ fontWeight: 800, fontSize: 16, color: "#111118" }}>Ãtem libre</div>
               <button onClick={() => setShowFreeItem(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0a0b0" }}><IconX size={18} /></button>
             </div>
             <div style={{ marginBottom: 14 }}>
@@ -573,7 +573,7 @@ export default function PosPage() {
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
               <button onClick={() => setShowFreeItem(false)} className="btn-secondary">Cancelar</button>
               <button onClick={addFreeItem} disabled={!freeItemName.trim() || !freeItemPrice}
-                style={{ padding: "10px 22px", borderRadius: 11, border: "none", fontSize: 14, fontWeight: 700, cursor: (!freeItemName.trim() || !freeItemPrice) ? "not-allowed" : "pointer", background: (!freeItemName.trim() || !freeItemPrice) ? "#e8e6e2" : "linear-gradient(135deg, #fb0f05, #9B3FC8)", color: (!freeItemName.trim() || !freeItemPrice) ? "#a0a0b0" : "#fff", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                style={{ padding: "10px 22px", borderRadius: 11, border: "none", fontSize: 14, fontWeight: 700, cursor: (!freeItemName.trim() || !freeItemPrice) ? "not-allowed" : "pointer", background: (!freeItemName.trim() || !freeItemPrice) ? "#e8e6e2" : "linear-gradient(135deg, #fb0f05, #0027fe)", color: (!freeItemName.trim() || !freeItemPrice) ? "#a0a0b0" : "#fff", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
                 Agregar al carrito
               </button>
             </div>

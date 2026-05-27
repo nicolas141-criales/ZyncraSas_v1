@@ -2,8 +2,8 @@
 .adminLayout {
   display: flex;
   min-height: 100dvh;
-  background: #f7f5f2;
-  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+  background: #F5F5F8;
+  font-family: var(--font-space-grotesk), 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -69,7 +69,7 @@
 }
 
 .navItem.active {
-  background: linear-gradient(135deg, rgba(251,15,5,.85) 0%, rgba(155,63,200,.85) 50%, rgba(0,39,254,.85) 100%);
+  background: linear-gradient(135deg, rgba(251,15,5,.9) 0%, rgba(0,39,254,.9) 100%);
   color: white;
   font-weight: 600;
 }
@@ -133,15 +133,15 @@
 }
 
 .header {
-  height: 62px;
+  height: 60px;
   background: white;
-  border-bottom: 1px solid #e8e6e2;
+  border-bottom: 1px solid rgba(20,15,30,0.08);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 28px;
+  padding: 0 24px;
   flex-shrink: 0;
   gap: 12px;
+  box-shadow: 0 1px 0 rgba(20,15,30,0.04);
 }
 
 .menuToggle {
@@ -160,15 +160,16 @@
 .headerTitle {
   font-size: 15px;
   font-weight: 700;
-  color: #111118;
-  letter-spacing: -.3px;
+  color: #14111C;
+  letter-spacing: -0.02em;
+  flex: 1;
 }
 
 .headerRight {
   display: flex;
   gap: 10px;
   align-items: center;
-  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .tenantBadge {
@@ -197,8 +198,17 @@
 }
 
 .contentArea {
-  padding: 28px;
   overflow-y: auto;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.contentWrap {
+  width: 100%;
+  max-width: 1480px;
+  margin: 0 auto;
+  padding: 28px 28px;
   flex: 1;
 }
 
@@ -315,8 +325,8 @@
   .overlay.open { opacity: 1; pointer-events: auto; }
 
   .menuToggle { display: flex; }
-  .header { padding: 0 16px; height: 58px; }
-  .contentArea { padding: 16px; }
+  .header { padding: 0 16px; height: 56px; }
+  .contentWrap { padding: 16px; }
   .tenantBadge { display: none; }
 
   .statsGrid {
@@ -359,7 +369,7 @@
   align-items: center;
   gap: 6px;
   padding: 5px 14px;
-  background: linear-gradient(135deg, #fb0f05 0%, #9B3FC8 50%, #0027fe 100%);
+  background: linear-gradient(135deg, #fb0f05 0%, #0027fe 100%);
   color: white;
   border-radius: 20px;
   font-size: 11px;

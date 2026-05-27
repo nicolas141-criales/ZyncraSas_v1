@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
@@ -46,7 +46,7 @@ export default function ProfessionalsPage() {
   }, [tenantId, fetchProfessionals]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar este profesional?")) return;
+    if (!confirm("Â¿Eliminar este profesional?")) return;
     const { error } = await supabase.from("professionals").delete().eq("id", id);
     if (!error) setProfessionals(prev => prev.filter(p => p.id !== id));
   };
@@ -72,7 +72,7 @@ export default function ProfessionalsPage() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantId) { setError("No se encontró el negocio. Recarga la página."); return; }
+    if (!tenantId) { setError("No se encontrÃ³ el negocio. Recarga la pÃ¡gina."); return; }
     if (!form.name.trim() || !form.role.trim()) { setError("El nombre y el rol son obligatorios."); return; }
     setSaving(true); setError(null);
     let avatarUrl: string | null = null;
@@ -99,13 +99,13 @@ export default function ProfessionalsPage() {
           <div>
             <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#111118", letterSpacing: "-0.5px", margin: 0 }}>Equipo</h1>
             <p style={{ color: "#a0a0b0", fontSize: "13px", marginTop: "2px" }}>
-              {professionals.length} miembro{professionals.length !== 1 ? "s" : ""} · {active} activo{active !== 1 ? "s" : ""}
+              {professionals.length} miembro{professionals.length !== 1 ? "s" : ""} Â· {active} activo{active !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
         <button className="btn-primary" onClick={() => { setForm(EMPTY_FORM); setAvatarFile(null); setAvatarPreview(""); setError(null); setShowModal(true); }}
           style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-          <IconPlus size={15} color="white" /> Añadir profesional
+          <IconPlus size={15} color="white" /> AÃ±adir profesional
         </button>
       </div>
 
@@ -117,10 +117,10 @@ export default function ProfessionalsPage() {
           <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "rgba(251,15,5,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", margin: "0 auto 16px" }}>
             <IconUserGroup size={26} />
           </div>
-          <div style={{ fontWeight: 700, fontSize: "16px", color: "#111118", marginBottom: "6px" }}>Aún no hay profesionales</div>
+          <div style={{ fontWeight: 700, fontSize: "16px", color: "#111118", marginBottom: "6px" }}>AÃºn no hay profesionales</div>
           <p style={{ color: "#a0a0b0", fontSize: "14px", marginBottom: "24px" }}>Agrega a tu equipo para asignar citas y gestionar comisiones.</p>
           <button className="btn-primary" onClick={() => { setForm(EMPTY_FORM); setAvatarFile(null); setAvatarPreview(""); setError(null); setShowModal(true); }}>
-            Añadir primer profesional
+            AÃ±adir primer profesional
           </button>
         </div>
       ) : (
@@ -135,7 +135,7 @@ export default function ProfessionalsPage() {
                 {prof.avatar_url ? (
                   <img src={prof.avatar_url} alt={prof.name} style={{ width: "56px", height: "56px", borderRadius: "50%", objectFit: "cover", border: "2px solid #e8e6e2" }} />
                 ) : (
-                  <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "18px", flexShrink: 0 }}>
+                  <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "linear-gradient(135deg, #fb0f05, #0027fe)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "18px", flexShrink: 0 }}>
                     {initials(prof.name)}
                   </div>
                 )}
@@ -181,7 +181,7 @@ export default function ProfessionalsPage() {
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconUserGroup size={17} />
                 </div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#111118" }}>Añadir profesional</h2>
+                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#111118" }}>AÃ±adir profesional</h2>
               </div>
               <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0a0b0" }}>
                 <IconX size={20} />
@@ -194,18 +194,18 @@ export default function ProfessionalsPage() {
                 <label style={lbl}>Foto de perfil (opcional)</label>
                 <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
                   <div style={{ width: "60px", height: "60px", borderRadius: "50%", flexShrink: 0, backgroundImage: avatarPreview ? `url(${avatarPreview})` : undefined, backgroundSize: "cover", backgroundPosition: "center", background: avatarPreview ? undefined : "linear-gradient(135deg, rgba(251,15,5,0.1), rgba(0,39,254,0.1))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", color: "#a0a0b0", border: "2px solid #e8e6e2" }}>
-                    {!avatarPreview && "·"}
+                    {!avatarPreview && "Â·"}
                   </div>
                   <div style={{ flex: 1 }}>
                     <input type="file" accept="image/*" onChange={handleFileChange} style={{ ...inp, padding: "9px", fontSize: "13px" }} />
-                    <p style={{ fontSize: "11px", color: "#a0a0b0", marginTop: "5px" }}>Máx. 2MB · PNG, JPG o WebP</p>
+                    <p style={{ fontSize: "11px", color: "#a0a0b0", marginTop: "5px" }}>MÃ¡x. 2MB Â· PNG, JPG o WebP</p>
                   </div>
                 </div>
               </div>
 
               <div style={{ marginBottom: "16px" }}>
                 <label style={lbl}>Nombre completo *</label>
-                <input type="text" required autoFocus value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ej. Ana García" style={inp} />
+                <input type="text" required autoFocus value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ej. Ana GarcÃ­a" style={inp} />
               </div>
               <div style={{ marginBottom: "22px" }}>
                 <label style={lbl}>Rol / Especialidad *</label>
@@ -220,7 +220,7 @@ export default function ProfessionalsPage() {
 
               <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)} disabled={saving}>Cancelar</button>
-                <button type="submit" className="btn-primary" disabled={saving}>{saving ? "Guardando..." : "Añadir al equipo"}</button>
+                <button type="submit" className="btn-primary" disabled={saving}>{saving ? "Guardando..." : "AÃ±adir al equipo"}</button>
               </div>
             </form>
           </div>

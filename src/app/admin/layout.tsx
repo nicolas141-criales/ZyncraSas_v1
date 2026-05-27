@@ -98,6 +98,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push("/login"); };
 
+  const currentPageLabel = (() => {
+    for (const group of NAV_GROUPS) {
+      for (const item of group.items) {
+        if (item.href === pathname) return item.label;
+      }
+    }
+    return "Panel";
+  })();
+
   if (loadingAuth) {
     return (
       <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 14, background: "#f7f5f2" }}>
@@ -179,7 +188,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </svg>
             </button>
 
-            <div className={styles.headerTitle}>Panel de Control</div>
+            <div className={styles.headerTitle}>{currentPageLabel}</div>
 
             <div className={styles.headerRight}>
               <span className={`${styles.tenantBadge} ${styles.hideMobile}`}>{tenantInfo.name}</span>
@@ -193,7 +202,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
           </header>
 
-          <main className={styles.contentArea}>{children}</main>
+          <main className={styles.contentArea}>
+            <div className={styles.contentWrap}>{children}</div>
+          </main>
         </div>
       </div>
     </AdminContext.Provider>

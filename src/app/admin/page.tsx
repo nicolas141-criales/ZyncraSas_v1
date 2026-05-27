@@ -46,7 +46,7 @@ function Sparkline({ data, color = "#fb0f05" }: { data: number[]; color?: string
       <defs>
         <linearGradient id={`sg-${color.replace("#","")}`} x1="0" y1="0" x2="1" y2="0">
           <stop offset="0%" stopColor={color} />
-          <stop offset="100%" stopColor="#9B3FC8" />
+          <stop offset="100%" stopColor="#0027fe" />
         </linearGradient>
       </defs>
       <polyline points={pts} fill="none"
@@ -66,7 +66,7 @@ function BarChart({ data }: { data: { label: string; value: number; color?: stri
           <div style={{
             width: "100%", borderRadius: "5px 5px 0 0",
             height: `${Math.max((d.value / max) * 60, 3)}px`,
-            background: d.color || "linear-gradient(to top, #fb0f05, #9B3FC8)",
+            background: d.color || "linear-gradient(to top, #fb0f05, #0027fe)",
             transition: "height 0.5s ease",
           }} />
           <span style={{ fontSize: "9px", color: "#a0a0b0", textAlign: "center", lineHeight: 1 }}>{d.label}</span>
@@ -128,7 +128,7 @@ function MetricCard({ label, value, sub, icon, iconColor = "#fb0f05", trend, tre
       {/* Value */}
       <div style={gradient ? {
         fontSize: "28px", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-1px",
-        background: alert ? "#ef4444" : "linear-gradient(135deg, #fb0f05 0%, #9B3FC8 60%)",
+        background: alert ? "#ef4444" : "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
         WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
       } : {
         fontSize: "28px", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-1px",
@@ -470,7 +470,7 @@ export default function AdminOverview() {
                         <span style={{ color: "#a0a0b0", fontWeight: 500 }}>{s.count}</span>
                       </div>
                       <div style={{ height: "5px", borderRadius: "3px", background: "#f0eeeb", overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${(s.count / maxCount) * 100}%`, background: "linear-gradient(90deg, #fb0f05, #9B3FC8)", borderRadius: "3px", transition: "width 0.6s ease" }} />
+                        <div style={{ height: "100%", width: `${(s.count / maxCount) * 100}%`, background: "linear-gradient(90deg, #fb0f05, #0027fe)", borderRadius: "3px", transition: "width 0.6s ease" }} />
                       </div>
                     </div>
                   );
@@ -525,7 +525,7 @@ export default function AdminOverview() {
                 <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
                   <div style={{
                     width: "34px", height: "34px", borderRadius: "50%",
-                    background: "linear-gradient(135deg, #fb0f05, #9B3FC8)",
+                    background: "linear-gradient(135deg, #fb0f05, #0027fe)",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     color: "#fff", fontWeight: 800, fontSize: "11px", flexShrink: 0,
                   }}>

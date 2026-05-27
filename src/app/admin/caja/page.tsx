@@ -1,11 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconBanknotes, IconPlus, IconX, IconClock } from "../ZyncraIcons";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface CashSession {
   id: string;
@@ -28,12 +28,12 @@ interface CashMovement {
   created_at: string;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const INGRESO_CATS = ["Servicio", "Producto", "Propina", "Otro"];
-const EGRESO_CATS  = ["Arriendo", "Nómina", "Insumos", "Servicios públicos", "Otro"];
+const EGRESO_CATS  = ["Arriendo", "NÃ³mina", "Insumos", "Servicios pÃºblicos", "Otro"];
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const fmt = (n: number) =>
   new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -44,7 +44,7 @@ const fmtTime = (iso: string) =>
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString("es-CO", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 
-// ─── Styles ──────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const card: React.CSSProperties = {
   background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden",
@@ -61,14 +61,14 @@ const lbl: React.CSSProperties = {
   marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em",
 };
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
     <button onClick={onClick} style={{
       padding: "8px 18px", borderRadius: 10, fontSize: 13, fontWeight: 600,
       cursor: "pointer", border: "none", fontFamily: "'Plus Jakarta Sans', sans-serif",
-      background: active ? "linear-gradient(135deg, #fb0f05, #9B3FC8)" : "transparent",
+      background: active ? "linear-gradient(135deg, #fb0f05, #0027fe)" : "transparent",
       color: active ? "#fff" : "#6b6b80",
       boxShadow: active ? "0 2px 8px rgba(251,15,5,0.25)" : "none",
       transition: "all 0.15s",
@@ -86,7 +86,7 @@ function MetricCard({ label, value, color = "#fb0f05", gradient = false }: {
       <div style={{
         fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 4,
         ...(gradient
-          ? { background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }
+          ? { background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }
           : { color }),
       }}>
         {value}
@@ -112,7 +112,7 @@ function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function CajaPage() {
   const { tenantId } = useAdmin();
@@ -146,7 +146,7 @@ export default function CajaPage() {
   const [cierreSaving, setCierreSaving] = useState(false);
   const [cierreMsg, setCierreMsg] = useState("");
 
-  // ── Load open session ──
+  // â”€â”€ Load open session â”€â”€
   const loadSession = useCallback(async (tid: string) => {
     setLoadingSession(true);
     const { data: sess } = await supabase
@@ -173,7 +173,7 @@ export default function CajaPage() {
     setLoadingSession(false);
   }, []);
 
-  // ── Load history ──
+  // â”€â”€ Load history â”€â”€
   const loadHistory = useCallback(async (tid: string) => {
     setLoadingHistory(true);
     const { data: sessList } = await supabase
@@ -207,11 +207,11 @@ export default function CajaPage() {
     if (tab === "historial") loadHistory(tenantId);
   }, [tenantId, tab, loadSession, loadHistory]);
 
-  // ── Abrir caja ──
+  // â”€â”€ Abrir caja â”€â”€
   const handleOpen = async () => {
     if (!tenantId) return;
     const amount = parseFloat(openAmount.replace(/[^0-9.]/g, ""));
-    if (isNaN(amount) || amount < 0) { setOpeningMsg("Ingresa un fondo inicial válido."); return; }
+    if (isNaN(amount) || amount < 0) { setOpeningMsg("Ingresa un fondo inicial vÃ¡lido."); return; }
     setOpeningSaving(true); setOpeningMsg("");
     const { data, error } = await supabase.from("cash_sessions").insert({
       tenant_id: tenantId,
@@ -224,12 +224,12 @@ export default function CajaPage() {
     setOpenAmount(""); setOpenNote("");
   };
 
-  // ── Registrar movimiento ──
+  // â”€â”€ Registrar movimiento â”€â”€
   const handleMovimiento = async () => {
     if (!tenantId || !session) return;
     const amount = parseFloat(movForm.amount.replace(/[^0-9.]/g, ""));
-    if (isNaN(amount) || amount <= 0) { setMovMsg("Ingresa un monto válido."); return; }
-    if (!movForm.description.trim()) { setMovMsg("La descripción es obligatoria."); return; }
+    if (isNaN(amount) || amount <= 0) { setMovMsg("Ingresa un monto vÃ¡lido."); return; }
+    if (!movForm.description.trim()) { setMovMsg("La descripciÃ³n es obligatoria."); return; }
     setMovSaving(true); setMovMsg("");
     const { data, error } = await supabase.from("cash_movements").insert({
       session_id: session.id,
@@ -246,7 +246,7 @@ export default function CajaPage() {
     setTimeout(() => { setShowMov(false); setMovForm({ type: "ingreso", amount: "", description: "", category: "" }); setMovMsg(""); }, 800);
   };
 
-  // ── Cerrar caja ──
+  // â”€â”€ Cerrar caja â”€â”€
   const handleCierre = async () => {
     if (!tenantId || !session) return;
     const amount = parseFloat(cierreAmount.replace(/[^0-9.]/g, ""));
@@ -259,21 +259,21 @@ export default function CajaPage() {
     }).eq("id", session.id);
     setCierreSaving(false);
     if (error) { setCierreMsg("Error: " + error.message); return; }
-    setCierreMsg("Caja cerrada con éxito.");
+    setCierreMsg("Caja cerrada con Ã©xito.");
     setTimeout(() => {
       setShowCierre(false); setSession(null); setMovements([]);
       setCierreAmount(""); setCierreNote(""); setCierreMsg("");
     }, 900);
   };
 
-  // ── Derived totals ──
+  // â”€â”€ Derived totals â”€â”€
   const totalIngresos = movements.filter(m => m.type === "ingreso").reduce((s, m) => s + Number(m.amount), 0);
   const totalEgresos  = movements.filter(m => m.type === "egreso").reduce((s, m) => s + Number(m.amount), 0);
   const balance = session ? Number(session.opening_amount) + totalIngresos - totalEgresos : 0;
 
   const cats = movForm.type === "ingreso" ? INGRESO_CATS : EGRESO_CATS;
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
@@ -283,7 +283,7 @@ export default function CajaPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 800, margin: 0, letterSpacing: "-0.5px", color: "#111118" }}>Sistema de Caja</h1>
-          <p style={{ color: "#a0a0b0", fontSize: 13, marginTop: 3 }}>Control de ingresos y egresos del día.</p>
+          <p style={{ color: "#a0a0b0", fontSize: 13, marginTop: 3 }}>Control de ingresos y egresos del dÃ­a.</p>
         </div>
         <div style={{ display: "flex", gap: 4, background: "#f0eeeb", padding: 4, borderRadius: 14 }}>
           <TabBtn active={tab === "caja"} onClick={() => setTab("caja")}>Caja</TabBtn>
@@ -291,14 +291,14 @@ export default function CajaPage() {
         </div>
       </div>
 
-      {/* ── TAB: Caja ── */}
+      {/* â”€â”€ TAB: Caja â”€â”€ */}
       {tab === "caja" && (
         loadingSession ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "40vh" }}>
             <div style={{ width: 36, height: 36, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
           </div>
         ) : !session ? (
-          /* ── CAJA CERRADA ── */
+          /* â”€â”€ CAJA CERRADA â”€â”€ */
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
             <div style={{ background: "white", borderRadius: 24, border: "1px solid #e8e6e2", padding: "40px 36px", maxWidth: 420, width: "100%", textAlign: "center" }}>
               <div style={{ width: 64, height: 64, borderRadius: 20, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", color: "#fb0f05" }}>
@@ -319,7 +319,7 @@ export default function CajaPage() {
                 <label style={lbl}>Nota de apertura (opcional)</label>
                 <input
                   type="text" value={openNote} onChange={e => setOpenNote(e.target.value)}
-                  placeholder="Ej. Turno mañana" style={inp}
+                  placeholder="Ej. Turno maÃ±ana" style={inp}
                 />
               </div>
 
@@ -328,7 +328,7 @@ export default function CajaPage() {
               <button onClick={handleOpen} disabled={openingSaving || !openAmount}
                 style={{
                   width: "100%", padding: "13px", borderRadius: 12, border: "none",
-                  background: (!openAmount || openingSaving) ? "#e8e6e2" : "linear-gradient(135deg, #fb0f05, #9B3FC8)",
+                  background: (!openAmount || openingSaving) ? "#e8e6e2" : "linear-gradient(135deg, #fb0f05, #0027fe)",
                   color: (!openAmount || openingSaving) ? "#a0a0b0" : "#fff",
                   fontSize: 15, fontWeight: 700, cursor: (!openAmount || openingSaving) ? "not-allowed" : "pointer",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
@@ -338,14 +338,14 @@ export default function CajaPage() {
             </div>
           </div>
         ) : (
-          /* ── CAJA ABIERTA ── */
+          /* â”€â”€ CAJA ABIERTA â”€â”€ */
           <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
             {/* Status banner */}
             <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 18px", background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.2)", borderRadius: 12 }}>
               <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#10b981", flexShrink: 0, boxShadow: "0 0 0 3px rgba(16,185,129,0.2)" }} />
               <span style={{ fontSize: 13, fontWeight: 700, color: "#10b981" }}>Caja abierta</span>
               <span style={{ fontSize: 12, color: "#a0a0b0", marginLeft: 4 }}>desde las {fmtTime(session.opened_at)}</span>
-              {session.opening_note && <span style={{ fontSize: 12, color: "#6b6b80", marginLeft: 4 }}>· {session.opening_note}</span>}
+              {session.opening_note && <span style={{ fontSize: 12, color: "#6b6b80", marginLeft: 4 }}>Â· {session.opening_note}</span>}
             </div>
 
             {/* Metrics */}
@@ -370,10 +370,10 @@ export default function CajaPage() {
 
             {/* Movements list */}
             <div style={card}>
-              <SectionHeader title="Movimientos del día" sub={`${movements.length} registros`} />
+              <SectionHeader title="Movimientos del dÃ­a" sub={`${movements.length} registros`} />
               {movements.length === 0 ? (
                 <div style={{ padding: "36px 20px", textAlign: "center", color: "#a0a0b0", fontSize: 14 }}>
-                  Sin movimientos aún. Registra el primero.
+                  Sin movimientos aÃºn. Registra el primero.
                 </div>
               ) : (
                 movements.map((m, i) => (
@@ -389,7 +389,7 @@ export default function CajaPage() {
                         color: m.type === "ingreso" ? "#10b981" : "#ef4444",
                         fontSize: 16, fontWeight: 800,
                       }}>
-                        {m.type === "ingreso" ? "+" : "−"}
+                        {m.type === "ingreso" ? "+" : "âˆ’"}
                       </div>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: 13, color: "#111118" }}>{m.description}</div>
@@ -402,7 +402,7 @@ export default function CajaPage() {
                       </div>
                     </div>
                     <div style={{ fontWeight: 800, fontSize: 15, color: m.type === "ingreso" ? "#10b981" : "#ef4444" }}>
-                      {m.type === "ingreso" ? "+" : "−"}{fmt(Number(m.amount))}
+                      {m.type === "ingreso" ? "+" : "âˆ’"}{fmt(Number(m.amount))}
                     </div>
                   </div>
                 ))
@@ -412,17 +412,17 @@ export default function CajaPage() {
         )
       )}
 
-      {/* ── TAB: Historial ── */}
+      {/* â”€â”€ TAB: Historial â”€â”€ */}
       {tab === "historial" && (
         <div style={card}>
-          <SectionHeader title="Sesiones anteriores" sub="Últimas 30 sesiones cerradas" />
+          <SectionHeader title="Sesiones anteriores" sub="Ãšltimas 30 sesiones cerradas" />
           {loadingHistory ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
               <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : sessions.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#a0a0b0", fontSize: 14 }}>
-              Sin sesiones cerradas aún.
+              Sin sesiones cerradas aÃºn.
             </div>
           ) : (
             <div>
@@ -444,14 +444,14 @@ export default function CajaPage() {
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 13, color: "#111118" }}>{fmtDate(s.opened_at)}</div>
                       <div style={{ fontSize: 11, color: "#a0a0b0", marginTop: 2 }}>
-                        {fmtTime(s.opened_at)} → {s.closed_at ? fmtTime(s.closed_at) : "—"}
-                        {s.opening_note && ` · ${s.opening_note}`}
+                        {fmtTime(s.opened_at)} â†’ {s.closed_at ? fmtTime(s.closed_at) : "â€”"}
+                        {s.opening_note && ` Â· ${s.opening_note}`}
                       </div>
                     </div>
                     <div style={{ textAlign: "right", fontSize: 13, color: "#6b6b80", fontWeight: 600 }}>{fmt(s.opening_amount)}</div>
                     <div style={{ textAlign: "right", fontSize: 13, color: "#10b981", fontWeight: 700 }}>+{fmt(s.ingresos)}</div>
-                    <div style={{ textAlign: "right", fontSize: 13, color: "#ef4444", fontWeight: 700 }}>−{fmt(s.egresos)}</div>
-                    <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    <div style={{ textAlign: "right", fontSize: 13, color: "#ef4444", fontWeight: 700 }}>âˆ’{fmt(s.egresos)}</div>
+                    <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                       {fmt(bal)}
                     </div>
                   </div>
@@ -462,7 +462,7 @@ export default function CajaPage() {
         </div>
       )}
 
-      {/* ── Modal: Registrar Movimiento ── */}
+      {/* â”€â”€ Modal: Registrar Movimiento â”€â”€ */}
       {showMov && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setShowMov(false); }}>
@@ -492,13 +492,13 @@ export default function CajaPage() {
               <input type="number" min={0} step={1000} value={movForm.amount} onChange={e => setMovForm({ ...movForm, amount: e.target.value })} placeholder="Ej. 50000" style={inp} />
             </div>
             <div style={{ marginBottom: 14 }}>
-              <label style={lbl}>Descripción *</label>
+              <label style={lbl}>DescripciÃ³n *</label>
               <input type="text" value={movForm.description} onChange={e => setMovForm({ ...movForm, description: e.target.value })} placeholder={movForm.type === "ingreso" ? "Ej. Corte de cabello" : "Ej. Pago de arriendo"} style={inp} />
             </div>
             <div style={{ marginBottom: 22 }}>
-              <label style={lbl}>Categoría</label>
+              <label style={lbl}>CategorÃ­a</label>
               <select value={movForm.category} onChange={e => setMovForm({ ...movForm, category: e.target.value })} style={inp}>
-                <option value="">— Sin categoría —</option>
+                <option value="">â€” Sin categorÃ­a â€”</option>
                 {cats.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
@@ -522,7 +522,7 @@ export default function CajaPage() {
         </div>
       )}
 
-      {/* ── Modal: Cerrar Caja ── */}
+      {/* â”€â”€ Modal: Cerrar Caja â”€â”€ */}
       {showCierre && session && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setShowCierre(false); }}>
@@ -546,7 +546,7 @@ export default function CajaPage() {
               ))}
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, borderTop: "1px solid #e8e6e2", paddingTop: 10, marginTop: 4 }}>
                 <span style={{ fontWeight: 700, color: "#111118" }}>Balance esperado</span>
-                <span style={{ fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #9B3FC8)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                <span style={{ fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   {fmt(balance)}
                 </span>
               </div>
@@ -554,7 +554,7 @@ export default function CajaPage() {
 
             <div style={{ marginBottom: 14 }}>
               <label style={lbl}>Efectivo contado (COP) *</label>
-              <input type="number" min={0} step={1000} value={cierreAmount} onChange={e => setCierreAmount(e.target.value)} placeholder="Lo que hay físicamente en caja" style={inp} />
+              <input type="number" min={0} step={1000} value={cierreAmount} onChange={e => setCierreAmount(e.target.value)} placeholder="Lo que hay fÃ­sicamente en caja" style={inp} />
             </div>
             <div style={{ marginBottom: 22 }}>
               <label style={lbl}>Nota de cierre (opcional)</label>
@@ -582,7 +582,7 @@ export default function CajaPage() {
                 style={{
                   padding: "10px 22px", borderRadius: 11, border: "none", fontSize: 14, fontWeight: 700,
                   cursor: (cierreSaving || !cierreAmount) ? "not-allowed" : "pointer",
-                  background: (cierreSaving || !cierreAmount) ? "#e8e6e2" : "linear-gradient(135deg, #fb0f05, #9B3FC8)",
+                  background: (cierreSaving || !cierreAmount) ? "#e8e6e2" : "linear-gradient(135deg, #fb0f05, #0027fe)",
                   color: (cierreSaving || !cierreAmount) ? "#a0a0b0" : "#fff",
                   fontFamily: "'Plus Jakarta Sans', sans-serif",
                 }}>
