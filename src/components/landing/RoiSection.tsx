@@ -163,7 +163,7 @@ export default function RoiSection() {
   };
 
   return (
-    <section style={{ padding: "120px 0", position: "relative", overflowX: "clip" }}>
+    <section style={{ padding: "72px 0", position: "relative", overflowX: "clip" }}>
       <GradientOrb color="#fb0f05" size={500} x="80%" y="20%" opacity={0.10} />
       <GradientOrb color="#0027fe" size={500} x="-15%" y="60%" opacity={0.10} />
       <Container max={1240}>

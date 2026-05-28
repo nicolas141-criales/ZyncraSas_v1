@@ -676,8 +676,8 @@ export default function BentoHero() {
       id="top"
       style={{
         position: "relative",
-        paddingTop: 120,
-        paddingBottom: 80,
+        paddingTop: 96,
+        paddingBottom: 56,
         overflowX: "clip",
         minHeight: 900,
       }}

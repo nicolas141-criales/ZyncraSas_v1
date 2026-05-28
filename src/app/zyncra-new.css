@@ -159,7 +159,7 @@ button { font-family: inherit; }
   .zn-desktop-nav { display: none !important; }
 }
 @media (max-width: 700px) {
-  .cta-wrap { padding: 50px 28px !important; }
+  .cta-wrap { padding: 36px 24px !important; }
 }
 @media (max-width: 560px) {
   .feat-grid { grid-template-columns: 1fr !important; }

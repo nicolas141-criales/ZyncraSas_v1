@@ -70,7 +70,7 @@ export default function Pricing() {
   const fmt = (n: number) => `$${(n / 1000).toFixed(0)}.000`;
 
   return (
-    <section id="precios" style={{ padding: "120px 0", position: "relative", overflowX: "clip" }}>
+    <section id="precios" style={{ padding: "72px 0", position: "relative", overflowX: "clip" }}>
       <GradientOrb color="#0027fe" size={500} x="70%" y="30%" opacity={0.10} />
       <GradientOrb color="#fb0f05" size={500} x="-10%" y="50%" opacity={0.10} />
       <Container max={1240}>

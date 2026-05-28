@@ -207,7 +207,7 @@ export const SectionTitle = ({
   <div
     style={{
       textAlign: align,
-      marginBottom: 56,
+      marginBottom: 40,
       display: "flex",
       flexDirection: "column",
       alignItems: align === "center" ? "center" : "flex-start",
@@ -395,8 +395,8 @@ export const PageHero = ({
   <section
     style={{
       position: "relative",
-      paddingTop: 150,
-      paddingBottom: 60,
+      paddingTop: 110,
+      paddingBottom: 40,
       overflowX: "clip",
       textAlign: "center",
     }}

@@ -69,7 +69,7 @@ export function StatsBar() {
     },
   ];
   return (
-    <section style={{ padding: "60px 0 100px", position: "relative" }}>
+    <section style={{ padding: "40px 0 64px", position: "relative" }}>
       <Container max={1240}>
         <div
           style={{
@@ -151,7 +151,7 @@ export function IndustriesMarquee() {
   ];
   const row = [...items, ...items];
   return (
-    <section id="industrias" style={{ padding: "80px 0", position: "relative" }}>
+    <section id="industrias" style={{ padding: "56px 0", position: "relative" }}>
       <Container max={1240}>
         <SectionTitle
           eyebrow="Diseñado para tí"
@@ -249,13 +249,13 @@ export function CtaSection() {
   return (
     <section
       id="cta"
-      style={{ padding: "120px 0", position: "relative", overflowX: "clip" }}
+      style={{ padding: "72px 0", position: "relative", overflowX: "clip" }}
     >
       <Container max={1240}>
         <div
           style={{
             position: "relative",
-            padding: "80px 60px",
+            padding: "56px 52px",
             borderRadius: 28,
             background:
               "linear-gradient(135deg, rgba(251,15,5,0.18) 0%, rgba(0,39,254,0.12) 100%)",
@@ -434,7 +434,7 @@ const compactFeatures = [
 
 export function FeaturesGrid() {
   return (
-    <section id="funciones" style={{ padding: "120px 0", position: "relative" }}>
+    <section id="funciones" style={{ padding: "72px 0", position: "relative" }}>
       <Container max={1240}>
         <SectionTitle
           eyebrow="Funcionalidades"
@@ -694,7 +694,7 @@ export function ProcessSteps() {
   ];
   return (
     <section
-      style={{ padding: "120px 0", position: "relative", overflowX: "clip" }}
+      style={{ padding: "72px 0", position: "relative", overflowX: "clip" }}
     >
       <GradientOrb color="#fb0f05" size={500} x="60%" y="20%" opacity={0.12} />
       <Container max={1240}>
