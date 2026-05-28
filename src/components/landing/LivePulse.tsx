@@ -193,7 +193,7 @@ export default function LivePulseSection() {
 
   return (
     <section
-      style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}
+      style={{ padding: "120px 0", position: "relative", overflowX: "clip" }}
     >
       <GradientOrb color="#fb0f05" size={600} x="-20%" y="20%" opacity={0.12} />
       <GradientOrb color="#0027fe" size={500} x="80%" y="60%" opacity={0.10} />

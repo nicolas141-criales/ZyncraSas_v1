@@ -80,7 +80,7 @@ export default function Testimonials() {
   ];
 
   return (
-    <section id="resenas" style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}>
+    <section id="resenas" style={{ padding: "120px 0", position: "relative", overflowX: "clip" }}>
       <Container max={1240}>
         <SectionTitle
           eyebrow="Reseñas verificadas"

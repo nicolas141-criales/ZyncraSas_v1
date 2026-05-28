@@ -693,7 +693,7 @@ export default function DemosSection() {
   const [active, setActive] = useState(0);
 
   return (
-    <section id="demo" style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}>
+    <section id="demo" style={{ padding: "120px 0", position: "relative", overflowX: "clip" }}>
       <GradientOrb color="#0027fe" size={700} x="-15%" y="40%" opacity={0.16} />
       <GradientOrb color="#fb0f05" size={600} x="80%" y="10%" opacity={0.14} />
 

@@ -249,7 +249,7 @@ export function CtaSection() {
   return (
     <section
       id="cta"
-      style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}
+      style={{ padding: "120px 0", position: "relative", overflowX: "clip" }}
     >
       <Container max={1240}>
         <div
@@ -694,7 +694,7 @@ export function ProcessSteps() {
   ];
   return (
     <section
-      style={{ padding: "120px 0", position: "relative", overflow: "hidden" }}
+      style={{ padding: "120px 0", position: "relative", overflowX: "clip" }}
     >
       <GradientOrb color="#fb0f05" size={500} x="60%" y="20%" opacity={0.12} />
       <Container max={1240}>

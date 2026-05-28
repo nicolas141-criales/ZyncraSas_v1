@@ -678,7 +678,7 @@ export default function BentoHero() {
         position: "relative",
         paddingTop: 120,
         paddingBottom: 80,
-        overflow: "hidden",
+        overflowX: "clip",
         minHeight: 900,
       }}
     >
@@ -729,8 +729,8 @@ export default function BentoHero() {
 
           <h1
             style={{
-              fontSize: "clamp(48px, 7.2vw, 104px)",
-              lineHeight: 0.94,
+              fontSize: "clamp(44px, 7.2vw, 104px)",
+              lineHeight: 1.0,
               letterSpacing: "-0.05em",
               fontWeight: 500,
               margin: 0,

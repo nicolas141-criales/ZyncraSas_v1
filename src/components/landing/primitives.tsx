@@ -217,9 +217,9 @@ export const SectionTitle = ({
     {eyebrow && <Eyebrow accent={accent}>{eyebrow}</Eyebrow>}
     <h2
       style={{
-        fontSize: "clamp(34px, 4.6vw, 56px)",
-        lineHeight: 1.04,
-        letterSpacing: "-0.035em",
+        fontSize: "clamp(32px, 4.6vw, 56px)",
+        lineHeight: 1.1,
+        letterSpacing: "-0.03em",
         margin: 0,
         fontWeight: 500,
         maxWidth: 820,
@@ -397,7 +397,7 @@ export const PageHero = ({
       position: "relative",
       paddingTop: 150,
       paddingBottom: 60,
-      overflow: "hidden",
+      overflowX: "clip",
       textAlign: "center",
     }}
   >
@@ -419,9 +419,9 @@ export const PageHero = ({
         )}
         <h1
           style={{
-            fontSize: "clamp(42px, 6.4vw, 88px)",
-            lineHeight: 0.96,
-            letterSpacing: "-0.045em",
+            fontSize: "clamp(40px, 6.4vw, 88px)",
+            lineHeight: 1.05,
+            letterSpacing: "-0.04em",
             fontWeight: 500,
             margin: 0,
             marginBottom: 22,
