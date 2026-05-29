@@ -21,13 +21,13 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "11px 14px", border: "1.5px solid #e8e6e2",
-  borderRadius: "11px", fontSize: "14px", background: "#f7f5f2",
-  color: "#111118", boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif", outline: "none",
+  borderRadius: "11px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
+  color: "#14111C", boxSizing: "border-box",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
 };
 const lbl: React.CSSProperties = {
   display: "block", fontWeight: 600, fontSize: "11px",
-  color: "#6b6b80", marginBottom: "7px",
+  color: "#564E66", marginBottom: "7px",
   textTransform: "uppercase", letterSpacing: "0.06em",
 };
 
@@ -85,13 +85,13 @@ export default function BrandingPage() {
   const handleCopyLink = () => { navigator.clipboard.writeText(bookingLink); setCopied(true); setTimeout(() => setCopied(false), 2000); };
 
   if (loading) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "40vh", color: "#a0a0b0", fontSize: "14px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "40vh", color: "#8E879B", fontSize: "14px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
       Cargando configuración...
     </div>
   );
 
   return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
 
       {/* Header */}
       <div style={{ display: "flex", gap: "12px", alignItems: "center", marginBottom: "24px" }}>
@@ -99,8 +99,8 @@ export default function BrandingPage() {
           <IconPalette size={20} />
         </div>
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#111118", letterSpacing: "-0.5px", margin: 0 }}>Mi Marca</h1>
-          <p style={{ color: "#a0a0b0", fontSize: "13px", marginTop: "2px" }}>Personaliza la apariencia de tu página de reservas</p>
+          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Mi Marca</h1>
+          <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>Personaliza la apariencia de tu página de reservas</p>
         </div>
       </div>
 
@@ -111,11 +111,11 @@ export default function BrandingPage() {
             <IconStorefront size={17} />
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: "13px", color: "#111118", marginBottom: "3px" }}>Link de reservas para clientes</div>
+            <div style={{ fontWeight: 700, fontSize: "13px", color: "#14111C", marginBottom: "3px" }}>Link de reservas para clientes</div>
             <div style={{ fontFamily: "monospace", fontSize: "12px", color: "#fb0f05", wordBreak: "break-all" }}>{bookingLink}</div>
           </div>
         </div>
-        <button onClick={handleCopyLink} style={{ display: "flex", alignItems: "center", gap: "7px", padding: "9px 18px", borderRadius: "10px", border: "1.5px solid #e8e6e2", background: copied ? "rgba(16,185,129,0.08)" : "white", color: copied ? "#10b981" : "#3a3a48", fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "all 0.2s", flexShrink: 0 }}>
+        <button onClick={handleCopyLink} style={{ display: "flex", alignItems: "center", gap: "7px", padding: "9px 18px", borderRadius: "10px", border: "1.5px solid #e8e6e2", background: copied ? "rgba(16,185,129,0.08)" : "white", color: copied ? "#10b981" : "#3a3548", fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.2s", flexShrink: 0 }}>
           {copied ? <><IconCheck size={14} color="#10b981" /> Copiado</> : "Copiar link"}
         </button>
       </div>
@@ -126,8 +126,8 @@ export default function BrandingPage() {
         {/* Form */}
         <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden" }}>
           <div style={{ padding: "18px 22px", borderBottom: "1px solid #e8e6e2" }}>
-            <div style={{ fontWeight: 700, fontSize: "14px", color: "#111118" }}>Identidad visual</div>
-            <div style={{ fontSize: "12px", color: "#a0a0b0", marginTop: "2px" }}>Estos datos aparecen en tu página pública de citas</div>
+            <div style={{ fontWeight: 700, fontSize: "14px", color: "#14111C" }}>Identidad visual</div>
+            <div style={{ fontSize: "12px", color: "#8E879B", marginTop: "2px" }}>Estos datos aparecen en tu página pública de citas</div>
           </div>
           <form onSubmit={handleSave} style={{ padding: "22px" }}>
             <div style={{ marginBottom: "18px" }}>
@@ -140,10 +140,10 @@ export default function BrandingPage() {
             </div>
 
             {/* Logo */}
-            <div style={{ marginBottom: "20px", background: "#f7f5f2", padding: "16px", borderRadius: "14px", border: "1px solid #e8e6e2" }}>
+            <div style={{ marginBottom: "20px", background: "rgba(20,15,30,0.025)", padding: "16px", borderRadius: "14px", border: "1px solid #e8e6e2" }}>
               <label style={lbl}>Logo del negocio</label>
               <input type="file" accept="image/*" onChange={handleLogoFileChange} style={{ ...inp, padding: "9px", marginBottom: "8px" }} />
-              <p style={{ fontSize: "11px", color: "#a0a0b0", margin: "0 0 12px" }}>Máx. 2MB · PNG con fondo transparente recomendado</p>
+              <p style={{ fontSize: "11px", color: "#8E879B", margin: "0 0 12px" }}>Máx. 2MB · PNG con fondo transparente recomendado</p>
               {logoPreview && (
                 <div style={{ borderTop: "1px solid #e8e6e2", paddingTop: "14px", display: "flex", gap: "14px", flexWrap: "wrap" }}>
                   <div style={{ flex: 1, minWidth: "180px" }}>
@@ -200,7 +200,7 @@ export default function BrandingPage() {
 
         {/* Live Preview */}
         <div>
-          <div style={{ fontWeight: 700, fontSize: "13px", color: "#6b6b80", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>Vista previa en vivo</div>
+          <div style={{ fontWeight: 700, fontSize: "13px", color: "#564E66", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>Vista previa en vivo</div>
           <div style={{ border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
 
             {/* Browser bar mockup */}
@@ -208,13 +208,13 @@ export default function BrandingPage() {
               <div style={{ display: "flex", gap: "5px" }}>
                 {["#ff5f57","#ffbd2e","#28c840"].map(c => <div key={c} style={{ width: "9px", height: "9px", borderRadius: "50%", background: c }} />)}
               </div>
-              <div style={{ flex: 1, background: "white", border: "1px solid #e8e6e2", borderRadius: "5px", padding: "3px 9px", fontSize: "10px", color: "#a0a0b0", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ flex: 1, background: "white", border: "1px solid #e8e6e2", borderRadius: "5px", padding: "3px 9px", fontSize: "10px", color: "#8E879B", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 zyncra.app/book/{tenantSlug}
               </div>
             </div>
 
             {/* Page background */}
-            <div style={{ background: "#f7f5f2", padding: "20px 16px", minHeight: "380px" }}>
+            <div style={{ background: "rgba(20,15,30,0.025)", padding: "20px 16px", minHeight: "380px" }}>
 
               {/* Header */}
               <div style={{ textAlign: "center", marginBottom: "16px" }}>
@@ -228,9 +228,9 @@ export default function BrandingPage() {
                   </div>
                 )}
                 {logoPreview && (
-                  <div style={{ fontSize: "13px", fontWeight: 800, color: "#111118", marginBottom: "2px" }}>{config.business_name}</div>
+                  <div style={{ fontSize: "13px", fontWeight: 800, color: "#14111C", marginBottom: "2px" }}>{config.business_name}</div>
                 )}
-                <div style={{ fontSize: "11px", color: "#6b6b80" }}>{config.welcome_message}</div>
+                <div style={{ fontSize: "11px", color: "#564E66" }}>{config.welcome_message}</div>
               </div>
 
               {/* Progress bar preview */}
@@ -241,12 +241,12 @@ export default function BrandingPage() {
                   { label: "Datos", active: false },
                 ].map((s, idx) => (
                   <div key={idx} style={{ display: "flex", alignItems: "center", flex: 1 }}>
-                    {idx > 0 && <div style={{ flex: 1, height: "2px", background: "#e8e6e2", margin: "0 4px", marginBottom: "14px" }} />}
+                    {idx > 0 && <div style={{ flex: 1, height: "2px", background: "rgba(20,15,30,0.08)", margin: "0 4px", marginBottom: "14px" }} />}
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", flexShrink: 0 }}>
-                      <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: s.active ? `linear-gradient(135deg,${config.primary_color},${config.secondary_color})` : "white", border: `1.5px solid ${s.active ? config.primary_color : "#e8e6e2"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 700, color: s.active ? "white" : "#a0a0b0" }}>
+                      <div style={{ width: "24px", height: "24px", borderRadius: "50%", background: s.active ? `linear-gradient(135deg,${config.primary_color},${config.secondary_color})` : "white", border: `1.5px solid ${s.active ? config.primary_color : "rgba(20,15,30,0.08)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "10px", fontWeight: 700, color: s.active ? "white" : "#8E879B" }}>
                         {idx + 1}
                       </div>
-                      <span style={{ fontSize: "9px", fontWeight: 600, color: s.active ? "#111118" : "#a0a0b0", whiteSpace: "nowrap" }}>{s.label}</span>
+                      <span style={{ fontSize: "9px", fontWeight: 600, color: s.active ? "#14111C" : "#8E879B", whiteSpace: "nowrap" }}>{s.label}</span>
                     </div>
                   </div>
                 ))}
@@ -254,22 +254,22 @@ export default function BrandingPage() {
 
               {/* Card preview */}
               <div style={{ background: "white", borderRadius: "16px", border: "1px solid #e8e6e2", padding: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
-                <div style={{ fontSize: "12px", fontWeight: 800, color: "#111118", marginBottom: "12px" }}>¿Qué servicio necesitas?</div>
+                <div style={{ fontSize: "12px", fontWeight: 800, color: "#14111C", marginBottom: "12px" }}>¿Qué servicio necesitas?</div>
 
                 {/* Service row examples */}
                 {[
                   { name: "Servicio de ejemplo", dur: "45 min", price: "$50", selected: false },
                   { name: "Servicio destacado", dur: "60 min", price: "$80", selected: true },
                 ].map((svc, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "11px", border: `1.5px solid ${svc.selected ? config.primary_color : "#e8e6e2"}`, background: svc.selected ? config.primary_color + "12" : "white", marginBottom: i === 0 ? "8px" : 0 }}>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 12px", borderRadius: "11px", border: `1.5px solid ${svc.selected ? config.primary_color : "rgba(20,15,30,0.08)"}`, background: svc.selected ? config.primary_color + "12" : "white", marginBottom: i === 0 ? "8px" : 0 }}>
                     <div style={{ width: "36px", height: "36px", borderRadius: "9px", background: config.primary_color + "14", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={config.primary_color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                       </svg>
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: "11px", fontWeight: 700, color: "#111118" }}>{svc.name}</div>
-                      <div style={{ fontSize: "10px", color: "#6b6b80", marginTop: "2px" }}>{svc.dur}</div>
+                      <div style={{ fontSize: "11px", fontWeight: 700, color: "#14111C" }}>{svc.name}</div>
+                      <div style={{ fontSize: "10px", color: "#564E66", marginTop: "2px" }}>{svc.dur}</div>
                     </div>
                     <div style={{ fontSize: "13px", fontWeight: 800, color: config.primary_color, flexShrink: 0 }}>{svc.price}</div>
                     {svc.selected && (
@@ -289,7 +289,7 @@ export default function BrandingPage() {
               </div>
             </div>
           </div>
-          <p style={{ fontSize: "11px", color: "#a0a0b0", marginTop: "8px", textAlign: "center" }}>Los cambios se aplican al guardar</p>
+          <p style={{ fontSize: "11px", color: "#8E879B", marginTop: "8px", textAlign: "center" }}>Los cambios se aplican al guardar</p>
         </div>
       </div>
     </div>

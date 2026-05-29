@@ -290,7 +290,7 @@ export default function ReviewsGooglePage() {
                   style={{
                     display: "flex", flexDirection: "column", alignItems: "flex-start",
                     padding: "10px 14px", borderRadius: 10, border: "2px solid",
-                    borderColor: selectedClient?.id === c.id ? "#fb0f05" : "#e8e6e2",
+                    borderColor: selectedClient?.id === c.id ? "#fb0f05" : "rgba(20,15,30,0.08)",
                     background: selectedClient?.id === c.id ? "#fff5f5" : "white",
                     cursor: "pointer", textAlign: "left", width: "100%",
                   }}>
@@ -395,7 +395,7 @@ const labelStyle: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
   fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
 const btnPrimary: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 6,

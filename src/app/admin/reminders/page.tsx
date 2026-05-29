@@ -354,7 +354,7 @@ const codeStyle: React.CSSProperties = { background: "#f0f0f5", padding: "1px 5p
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
   fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
 const btnPrimary: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 6,

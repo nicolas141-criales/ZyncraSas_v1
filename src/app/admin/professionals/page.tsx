@@ -15,13 +15,13 @@ const EMPTY_FORM = { name: "", role: "" };
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "11px 14px", border: "1.5px solid #e8e6e2",
-  borderRadius: "11px", fontSize: "14px", background: "#f7f5f2",
-  color: "#111118", boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif", outline: "none",
+  borderRadius: "11px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
+  color: "#14111C", boxSizing: "border-box",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
 };
 const lbl: React.CSSProperties = {
   display: "block", fontWeight: 600, fontSize: "11px",
-  color: "#6b6b80", marginBottom: "6px",
+  color: "#564E66", marginBottom: "6px",
   textTransform: "uppercase", letterSpacing: "0.06em",
 };
 
@@ -88,7 +88,7 @@ export default function ProfessionalsPage() {
   const initials = (name: string) => name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 
   return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px", flexWrap: "wrap", gap: "14px" }}>
@@ -97,8 +97,8 @@ export default function ProfessionalsPage() {
             <IconUserGroup size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#111118", letterSpacing: "-0.5px", margin: 0 }}>Equipo</h1>
-            <p style={{ color: "#a0a0b0", fontSize: "13px", marginTop: "2px" }}>
+            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Equipo</h1>
+            <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>
               {professionals.length} miembro{professionals.length !== 1 ? "s" : ""} Â· {active} activo{active !== 1 ? "s" : ""}
             </p>
           </div>
@@ -111,14 +111,14 @@ export default function ProfessionalsPage() {
 
       {/* Content */}
       {loading ? (
-        <div style={{ padding: "60px", textAlign: "center", color: "#a0a0b0", fontSize: "14px" }}>Cargando equipo...</div>
+        <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando equipo...</div>
       ) : professionals.length === 0 ? (
         <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "22px", padding: "64px 32px", textAlign: "center" }}>
           <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "rgba(251,15,5,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", margin: "0 auto 16px" }}>
             <IconUserGroup size={26} />
           </div>
-          <div style={{ fontWeight: 700, fontSize: "16px", color: "#111118", marginBottom: "6px" }}>AÃºn no hay profesionales</div>
-          <p style={{ color: "#a0a0b0", fontSize: "14px", marginBottom: "24px" }}>Agrega a tu equipo para asignar citas y gestionar comisiones.</p>
+          <div style={{ fontWeight: 700, fontSize: "16px", color: "#14111C", marginBottom: "6px" }}>AÃºn no hay profesionales</div>
+          <p style={{ color: "#8E879B", fontSize: "14px", marginBottom: "24px" }}>Agrega a tu equipo para asignar citas y gestionar comisiones.</p>
           <button className="btn-primary" onClick={() => { setForm(EMPTY_FORM); setAvatarFile(null); setAvatarPreview(""); setError(null); setShowModal(true); }}>
             AÃ±adir primer profesional
           </button>
@@ -146,20 +146,20 @@ export default function ProfessionalsPage() {
 
               {/* Info */}
               <div>
-                <div style={{ fontWeight: 700, fontSize: "15px", color: "#111118" }}>{prof.name}</div>
-                <div style={{ fontSize: "13px", color: "#6b6b80", marginTop: "3px" }}>{prof.role}</div>
+                <div style={{ fontWeight: 700, fontSize: "15px", color: "#14111C" }}>{prof.name}</div>
+                <div style={{ fontSize: "13px", color: "#564E66", marginTop: "3px" }}>{prof.role}</div>
               </div>
 
               {/* Actions */}
               <div style={{ display: "flex", gap: "8px", borderTop: "1px solid #f0eeeb", paddingTop: "14px" }}>
                 <button onClick={() => handleToggleActive(prof)}
-                  style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3a48", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "all 0.15s" }}
+                  style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
                   onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3a48"; }}>
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(20,15,30,0.08)"; e.currentTarget.style.color = "#3a3548"; }}>
                   {prof.is_active ? "Desactivar" : "Activar"}
                 </button>
                 <button onClick={() => handleDelete(prof.id)}
-                  style={{ padding: "8px 14px", borderRadius: "9px", border: "none", background: "rgba(239,68,68,0.07)", color: "#ef4444", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "background 0.15s" }}
+                  style={{ padding: "8px 14px", borderRadius: "9px", border: "none", background: "rgba(239,68,68,0.07)", color: "#ef4444", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "background 0.15s" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.14)")}
                   onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.07)")}>
                   Eliminar
@@ -181,9 +181,9 @@ export default function ProfessionalsPage() {
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconUserGroup size={17} />
                 </div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#111118" }}>AÃ±adir profesional</h2>
+                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>AÃ±adir profesional</h2>
               </div>
-              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0a0b0" }}>
+              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}>
                 <IconX size={20} />
               </button>
             </div>
@@ -193,12 +193,12 @@ export default function ProfessionalsPage() {
               <div style={{ marginBottom: "20px" }}>
                 <label style={lbl}>Foto de perfil (opcional)</label>
                 <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
-                  <div style={{ width: "60px", height: "60px", borderRadius: "50%", flexShrink: 0, backgroundImage: avatarPreview ? `url(${avatarPreview})` : undefined, backgroundSize: "cover", backgroundPosition: "center", background: avatarPreview ? undefined : "linear-gradient(135deg, rgba(251,15,5,0.1), rgba(0,39,254,0.1))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", color: "#a0a0b0", border: "2px solid #e8e6e2" }}>
+                  <div style={{ width: "60px", height: "60px", borderRadius: "50%", flexShrink: 0, backgroundImage: avatarPreview ? `url(${avatarPreview})` : undefined, backgroundSize: "cover", backgroundPosition: "center", background: avatarPreview ? undefined : "linear-gradient(135deg, rgba(251,15,5,0.1), rgba(0,39,254,0.1))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", color: "#8E879B", border: "2px solid #e8e6e2" }}>
                     {!avatarPreview && "Â·"}
                   </div>
                   <div style={{ flex: 1 }}>
                     <input type="file" accept="image/*" onChange={handleFileChange} style={{ ...inp, padding: "9px", fontSize: "13px" }} />
-                    <p style={{ fontSize: "11px", color: "#a0a0b0", marginTop: "5px" }}>MÃ¡x. 2MB Â· PNG, JPG o WebP</p>
+                    <p style={{ fontSize: "11px", color: "#8E879B", marginTop: "5px" }}>MÃ¡x. 2MB Â· PNG, JPG o WebP</p>
                   </div>
                 </div>
               </div>

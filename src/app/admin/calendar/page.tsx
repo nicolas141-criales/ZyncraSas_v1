@@ -45,8 +45,8 @@ const STATUS_MAP: Record<string, { label: string; bg: string; color: string; bor
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "10px 13px", border: "1.5px solid #e8e6e2",
-  borderRadius: "10px", fontSize: "14px", background: "#f7f5f2",
-  color: "#111118", fontFamily: "'Plus Jakarta Sans', sans-serif", outline: "none",
+  borderRadius: "10px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
+  color: "#14111C", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
   boxSizing: "border-box",
 };
 
@@ -107,7 +107,7 @@ export default function CalendarPage() {
   const totalWeek = appointments.length;
 
   return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", height: "100%", display: "flex", flexDirection: "column" }}>
+    <div style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", height: "100%", display: "flex", flexDirection: "column" }}>
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", flexWrap: "wrap", gap: "14px" }}>
@@ -116,17 +116,17 @@ export default function CalendarPage() {
             <IconCalendar size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#111118", letterSpacing: "-0.5px", margin: 0 }}>Calendario</h1>
-            <p style={{ color: "#a0a0b0", fontSize: "13px", marginTop: "2px", textTransform: "capitalize" }}>
+            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Calendario</h1>
+            <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px", textTransform: "capitalize" }}>
               {monthLabel} · {totalWeek} cita{totalWeek !== 1 ? "s" : ""} esta semana
             </p>
           </div>
         </div>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-          <button onClick={prevWeek} style={{ width: "36px", height: "36px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", color: "#3a3a48" }}>‹</button>
-          <button onClick={() => setWeekRef(new Date())} style={{ height: "36px", padding: "0 16px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "#3a3a48", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Hoy</button>
-          <button onClick={nextWeek} style={{ width: "36px", height: "36px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", color: "#3a3a48" }}>›</button>
+          <button onClick={prevWeek} style={{ width: "36px", height: "36px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", color: "#3a3548" }}>‹</button>
+          <button onClick={() => setWeekRef(new Date())} style={{ height: "36px", padding: "0 16px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "#3a3548", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>Hoy</button>
+          <button onClick={nextWeek} style={{ width: "36px", height: "36px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", color: "#3a3548" }}>›</button>
         </div>
       </div>
 
@@ -142,8 +142,8 @@ export default function CalendarPage() {
                 const isToday = toISO(day) === todayStr;
                 return (
                   <div key={i} style={{ padding: "12px 8px", textAlign: "center", borderRight: "1px solid #f0eeeb", background: isToday ? "rgba(251,15,5,0.04)" : undefined }}>
-                    <div style={{ fontSize: "11px", fontWeight: 700, color: isToday ? "#fb0f05" : "#a0a0b0", letterSpacing: "0.05em" }}>{DAYS_SHORT[i]}</div>
-                    <div style={{ fontSize: "20px", fontWeight: 800, color: isToday ? "#fb0f05" : "#111118", lineHeight: 1.2, marginTop: "2px" }}>{day.getDate()}</div>
+                    <div style={{ fontSize: "11px", fontWeight: 700, color: isToday ? "#fb0f05" : "#8E879B", letterSpacing: "0.05em" }}>{DAYS_SHORT[i]}</div>
+                    <div style={{ fontSize: "20px", fontWeight: 800, color: isToday ? "#fb0f05" : "#14111C", lineHeight: 1.2, marginTop: "2px" }}>{day.getDate()}</div>
                     {isToday && <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#fb0f05", margin: "4px auto 0" }} />}
                   </div>
                 );
@@ -153,7 +153,7 @@ export default function CalendarPage() {
             {/* Time rows */}
             <div style={{ flex: 1, overflowY: "auto" }}>
               {loading ? (
-                <div style={{ padding: "60px", textAlign: "center", color: "#a0a0b0", fontSize: "14px" }}>Cargando citas…</div>
+                <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando citas…</div>
               ) : (
                 HOURS.map(hour => (
                   <div key={hour} style={{ display: "grid", gridTemplateColumns: "56px repeat(7, 1fr)", borderBottom: "1px solid #f7f5f2", minHeight: "72px" }}>
@@ -172,7 +172,7 @@ export default function CalendarPage() {
                                 <div style={{ fontWeight: 700, color: s.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                                   {fmt12(apt.appointment_time)} · {(apt.clients as any)?.name || "Cliente"}
                                 </div>
-                                <div style={{ color: "#6b6b80", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: "1px" }}>
+                                <div style={{ color: "#564E66", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: "1px" }}>
                                   {(apt.services as any)?.name || "Servicio"}
                                 </div>
                               </div>
@@ -197,32 +197,32 @@ export default function CalendarPage() {
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#111118", margin: 0 }}>Gestionar cita</h2>
-                <p style={{ fontSize: "13px", color: "#a0a0b0", marginTop: "3px" }}>
+                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C", margin: 0 }}>Gestionar cita</h2>
+                <p style={{ fontSize: "13px", color: "#8E879B", marginTop: "3px" }}>
                   {(selectedApt.clients as any)?.name} · {(selectedApt.services as any)?.name}
                 </p>
               </div>
-              <button onClick={() => setSelectedApt(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0a0b0" }}><IconX size={20} /></button>
+              <button onClick={() => setSelectedApt(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}><IconX size={20} /></button>
             </div>
 
             {/* Info row */}
-            <div style={{ background: "#f7f5f2", border: "1px solid #e8e6e2", borderRadius: "12px", padding: "12px 16px", marginBottom: "20px", fontSize: "13px", color: "#6b6b80", display: "flex", flexDirection: "column", gap: "4px" }}>
-              <span><strong style={{ color: "#111118" }}>Cliente:</strong> {(selectedApt.clients as any)?.name || "—"}</span>
-              <span><strong style={{ color: "#111118" }}>Servicio:</strong> {(selectedApt.services as any)?.name || "—"}</span>
-              <span><strong style={{ color: "#111118" }}>Profesional:</strong> {(selectedApt.professionals as any)?.name || "—"}</span>
+            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid #e8e6e2", borderRadius: "12px", padding: "12px 16px", marginBottom: "20px", fontSize: "13px", color: "#564E66", display: "flex", flexDirection: "column", gap: "4px" }}>
+              <span><strong style={{ color: "#14111C" }}>Cliente:</strong> {(selectedApt.clients as any)?.name || "—"}</span>
+              <span><strong style={{ color: "#14111C" }}>Servicio:</strong> {(selectedApt.services as any)?.name || "—"}</span>
+              <span><strong style={{ color: "#14111C" }}>Profesional:</strong> {(selectedApt.professionals as any)?.name || "—"}</span>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "24px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#6b6b80", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "7px" }}>Fecha</label>
+                <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#564E66", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "7px" }}>Fecha</label>
                 <input type="date" value={editForm.date} onChange={e => setEditForm({ ...editForm, date: e.target.value })} style={inp} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#6b6b80", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "7px" }}>Hora</label>
+                <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#564E66", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "7px" }}>Hora</label>
                 <input type="time" value={editForm.time} onChange={e => setEditForm({ ...editForm, time: e.target.value })} style={inp} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#6b6b80", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "7px" }}>Estado</label>
+                <label style={{ display: "block", fontSize: "11px", fontWeight: 700, color: "#564E66", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "7px" }}>Estado</label>
                 <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} style={{ ...inp }}>
                   <option value="pending">Pendiente</option>
                   <option value="confirmed">Confirmada</option>

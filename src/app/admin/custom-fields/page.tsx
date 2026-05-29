@@ -462,7 +462,7 @@ const lbl: React.CSSProperties = {
 const inp: React.CSSProperties = {
   width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #e2e8f0",
   background: "#f8fafc", color: "#1e293b", fontSize: 14, boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif", outline: "none",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
 };
 const btnPrimary: React.CSSProperties = {
   padding: "9px 20px", borderRadius: 10, border: "none",

@@ -26,12 +26,12 @@ const avatarColor = (id: string) => AVATAR_COLORS[id.charCodeAt(0) % AVATAR_COLO
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "11px 14px", border: "1.5px solid #e8e6e2",
-  borderRadius: "11px", fontSize: "14px", background: "#f7f5f2",
-  color: "#111118", boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif", outline: "none",
+  borderRadius: "11px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
+  color: "#14111C", boxSizing: "border-box",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
 };
 const lbl: React.CSSProperties = {
-  display: "block", fontWeight: 600, fontSize: "11px", color: "#6b6b80",
+  display: "block", fontWeight: 600, fontSize: "11px", color: "#564E66",
   marginBottom: "7px", textTransform: "uppercase", letterSpacing: "0.06em",
 };
 
@@ -89,7 +89,7 @@ export default function ClientsPage() {
   );
 
   return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px", flexWrap: "wrap", gap: "14px" }}>
@@ -98,15 +98,15 @@ export default function ClientsPage() {
             <IconUserGroup size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#111118", letterSpacing: "-0.5px", margin: 0 }}>Clientes</h1>
-            <p style={{ color: "#a0a0b0", fontSize: "13px", marginTop: "2px" }}>
+            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Clientes</h1>
+            <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>
               {clients.length} cliente{clients.length !== 1 ? "s" : ""} registrados
             </p>
           </div>
         </div>
         <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
           <div style={{ position: "relative" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#a0a0b0" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8E879B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }}>
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
             <input
@@ -123,16 +123,16 @@ export default function ClientsPage() {
       {/* List */}
       <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden" }}>
         {loading ? (
-          <div style={{ padding: "60px", textAlign: "center", color: "#a0a0b0", fontSize: "14px" }}>Cargando clientesâ€¦</div>
+          <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando clientesâ€¦</div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: "64px 32px", textAlign: "center" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "rgba(251,15,5,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", margin: "0 auto 16px" }}>
               <IconUserGroup size={26} />
             </div>
-            <div style={{ fontWeight: 700, fontSize: "16px", color: "#111118", marginBottom: "6px" }}>
+            <div style={{ fontWeight: 700, fontSize: "16px", color: "#14111C", marginBottom: "6px" }}>
               {search ? "Sin resultados" : "AÃºn no hay clientes"}
             </div>
-            <p style={{ color: "#a0a0b0", fontSize: "14px", marginBottom: "24px" }}>
+            <p style={{ color: "#8E879B", fontSize: "14px", marginBottom: "24px" }}>
               {search ? `No encontramos clientes para "${search}"` : "Los clientes aparecen aquÃ­ cuando agendan citas o los agregas manualmente."}
             </p>
             {!search && (
@@ -144,7 +144,7 @@ export default function ClientsPage() {
             {/* Table header */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", padding: "12px 20px", borderBottom: "1px solid #f0eeeb", background: "#fafaf8" }}>
               {["Cliente","TelÃ©fono","Correo","Acciones"].map(h => (
-                <div key={h} style={{ fontSize: "11px", fontWeight: 700, color: "#a0a0b0", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</div>
+                <div key={h} style={{ fontSize: "11px", fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</div>
               ))}
             </div>
 
@@ -159,12 +159,12 @@ export default function ClientsPage() {
                   <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.id)}, ${avatarColor(c.id)}aa)`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "12px", flexShrink: 0 }}>
                     {initials(c.name)}
                   </div>
-                  <span style={{ fontWeight: 600, fontSize: "14px", color: "#111118" }}>{c.name}</span>
+                  <span style={{ fontWeight: 600, fontSize: "14px", color: "#14111C" }}>{c.name}</span>
                 </div>
 
                 {/* Phone + WhatsApp link */}
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                  <span style={{ fontSize: "13px", color: "#6b6b80" }}>{c.phone}</span>
+                  <span style={{ fontSize: "13px", color: "#564E66" }}>{c.phone}</span>
                   <a href={`https://wa.me/${c.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
                     style={{ display: "flex", alignItems: "center", padding: "3px 7px", borderRadius: "6px", background: "rgba(37,211,102,0.1)", color: "#25D366", fontSize: "11px", fontWeight: 700, textDecoration: "none" }}>
                     WA
@@ -172,18 +172,18 @@ export default function ClientsPage() {
                 </div>
 
                 {/* Email */}
-                <span style={{ fontSize: "13px", color: "#6b6b80" }}>{c.email || <span style={{ color: "#d0ceca" }}>â€”</span>}</span>
+                <span style={{ fontSize: "13px", color: "#564E66" }}>{c.email || <span style={{ color: "#d0ceca" }}>â€”</span>}</span>
 
                 {/* Actions */}
                 <div style={{ display: "flex", gap: "6px" }}>
                   <button onClick={() => openEdit(c)}
-                    style={{ padding: "6px 12px", borderRadius: "8px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3a48", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "all 0.15s" }}
+                    style={{ padding: "6px 12px", borderRadius: "8px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3a48"; }}>
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(20,15,30,0.08)"; e.currentTarget.style.color = "#3a3548"; }}>
                     Editar
                   </button>
                   <button onClick={() => handleDelete(c.id)}
-                    style={{ padding: "6px 12px", borderRadius: "8px", border: "none", background: "rgba(239,68,68,0.07)", color: "#ef4444", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "background 0.15s" }}
+                    style={{ padding: "6px 12px", borderRadius: "8px", border: "none", background: "rgba(239,68,68,0.07)", color: "#ef4444", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "background 0.15s" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.14)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.07)")}>
                     Eliminar
@@ -206,11 +206,11 @@ export default function ClientsPage() {
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconUserGroup size={17} />
                 </div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#111118" }}>
+                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>
                   {editing ? "Editar cliente" : "Nuevo cliente"}
                 </h2>
               </div>
-              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0a0b0" }}>
+              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}>
                 <IconX size={20} />
               </button>
             </div>

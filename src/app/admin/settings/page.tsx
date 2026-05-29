@@ -10,7 +10,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   return (
     <button type="button" onClick={() => onChange(!checked)} style={{
       width: "48px", height: "26px", borderRadius: "13px", border: "none", cursor: "pointer", padding: "3px",
-      background: checked ? "#fb0f05" : "#e8e6e2",
+      background: checked ? "#fb0f05" : "rgba(20,15,30,0.08)",
       display: "flex", alignItems: "center",
       justifyContent: checked ? "flex-end" : "flex-start",
       transition: "background 0.2s", flexShrink: 0,
@@ -24,8 +24,8 @@ function SettingRow({ title, description, children }: { title: string; descripti
   return (
     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "24px", padding: "18px 0", borderBottom: "1px solid #f0eeeb" }}>
       <div style={{ flex: 1 }}>
-        <div style={{ fontWeight: 600, fontSize: "14px", color: "#111118" }}>{title}</div>
-        {description && <div style={{ fontSize: "13px", color: "#a0a0b0", marginTop: "3px", lineHeight: 1.5 }}>{description}</div>}
+        <div style={{ fontWeight: 600, fontSize: "14px", color: "#14111C" }}>{title}</div>
+        {description && <div style={{ fontSize: "13px", color: "#8E879B", marginTop: "3px", lineHeight: 1.5 }}>{description}</div>}
       </div>
       <div style={{ flexShrink: 0 }}>{children}</div>
     </div>
@@ -40,8 +40,8 @@ function SectionCard({ icon, title, subtitle, children }: { icon: React.ReactNod
           {icon}
         </div>
         <div>
-          <div style={{ fontWeight: 700, fontSize: "14px", color: "#111118" }}>{title}</div>
-          {subtitle && <div style={{ fontSize: "12px", color: "#a0a0b0", marginTop: "2px" }}>{subtitle}</div>}
+          <div style={{ fontWeight: 700, fontSize: "14px", color: "#14111C" }}>{title}</div>
+          {subtitle && <div style={{ fontSize: "12px", color: "#8E879B", marginTop: "2px" }}>{subtitle}</div>}
         </div>
       </div>
       <div style={{ padding: "4px 22px 6px" }}>{children}</div>
@@ -99,7 +99,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", display: "flex", flexDirection: "column", gap: "20px" }}>
 
       {/* Header */}
       <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
@@ -107,8 +107,8 @@ export default function SettingsPage() {
           <IconCog size={20} />
         </div>
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#111118", letterSpacing: "-0.5px", margin: 0 }}>Configuración</h1>
-          <p style={{ color: "#a0a0b0", fontSize: "13px", marginTop: "2px" }}>Ajusta el comportamiento de tu negocio</p>
+          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Configuración</h1>
+          <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>Ajusta el comportamiento de tu negocio</p>
         </div>
       </div>
 
@@ -132,10 +132,10 @@ export default function SettingsPage() {
         </SettingRow>
         {requireDeposit && (
           <div style={{ paddingBottom: "16px" }}>
-            <div style={{ background: "#f7f5f2", border: "1px solid #e8e6e2", borderRadius: "12px", padding: "16px", display: "flex", gap: "14px", alignItems: "center" }}>
-              <label style={{ fontWeight: 600, fontSize: "13px", color: "#3a3a48", whiteSpace: "nowrap" }}>Monto del depósito ($)</label>
+            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid #e8e6e2", borderRadius: "12px", padding: "16px", display: "flex", gap: "14px", alignItems: "center" }}>
+              <label style={{ fontWeight: 600, fontSize: "13px", color: "#3a3548", whiteSpace: "nowrap" }}>Monto del depósito ($)</label>
               <input type="number" value={depositAmount} onChange={e => setDepositAmount(e.target.value)}
-                style={{ flex: 1, maxWidth: "120px", padding: "9px 12px", border: "1.5px solid #e8e6e2", borderRadius: "10px", fontSize: "14px", fontFamily: "'Plus Jakarta Sans', sans-serif", background: "white", color: "#111118", outline: "none" }} />
+                style={{ flex: 1, maxWidth: "120px", padding: "9px 12px", border: "1.5px solid #e8e6e2", borderRadius: "10px", fontSize: "14px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", background: "white", color: "#14111C", outline: "none" }} />
             </div>
           </div>
         )}
@@ -148,12 +148,12 @@ export default function SettingsPage() {
             <IconPalette size={17} />
           </div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: "14px", color: "#111118" }}>Identidad visual</div>
-            <div style={{ fontSize: "12px", color: "#a0a0b0", marginTop: "2px" }}>Logo, colores y mensaje de tu página de citas</div>
+            <div style={{ fontWeight: 700, fontSize: "14px", color: "#14111C" }}>Identidad visual</div>
+            <div style={{ fontSize: "12px", color: "#8E879B", marginTop: "2px" }}>Logo, colores y mensaje de tu página de citas</div>
           </div>
         </div>
         <div style={{ padding: "16px 22px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <p style={{ fontSize: "13px", color: "#6b6b80", lineHeight: 1.6, margin: 0, maxWidth: "480px" }}>
+          <p style={{ fontSize: "13px", color: "#564E66", lineHeight: 1.6, margin: 0, maxWidth: "480px" }}>
             Personaliza cómo ven tu negocio tus clientes cuando llegan a reservar. Cambia el logo, los colores de marca y el mensaje de bienvenida.
           </p>
           <Link href="/admin/branding" style={{ display: "flex", alignItems: "center", gap: "6px", padding: "9px 18px", borderRadius: "10px", border: "1.5px solid #e8e6e2", background: "white", color: "#fb0f05", fontWeight: 700, fontSize: "13px", textDecoration: "none", whiteSpace: "nowrap", marginLeft: "20px", flexShrink: 0, transition: "all 0.15s" }}>

@@ -1,8 +1,8 @@
-/* ── Zyncra Admin Design System ── */
+/* ── Zyncra Admin — Landing Design System ── */
 .adminLayout {
   display: flex;
   min-height: 100dvh;
-  background: #F5F5F8;
+  background: #F4F4F9;
   font-family: var(--font-space-grotesk), 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
 }
@@ -10,13 +10,14 @@
 /* ─── SIDEBAR ─── */
 .sidebar {
   width: 252px;
-  background: #111118;
+  background: #0C0C14;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
   transition: transform 0.3s ease;
   overflow-y: auto;
   overflow-x: hidden;
+  border-right: 1px solid rgba(255,255,255,0.05);
 }
 
 .sidebarInner {
@@ -27,58 +28,59 @@
 }
 
 .brand {
-  padding: 0 18px 24px;
-  border-bottom: 1px solid rgba(255,255,255,.07);
-  margin-bottom: 8px;
+  padding: 0 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 10px;
 }
 
 /* ─── Nav groups ─── */
 .navGroup {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .navGroupLabel {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: rgba(255,255,255,.3);
-  padding: 14px 18px 6px;
+  letter-spacing: 1.4px;
+  color: rgba(255,255,255,0.28);
+  padding: 14px 18px 5px;
 }
 
 .navItem {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 18px;
-  color: rgba(255,255,255,.55);
-  font-size: 13.5px;
+  gap: 9px;
+  padding: 8.5px 16px;
+  color: rgba(255,255,255,0.5);
+  font-size: 13px;
   font-weight: 500;
   transition: all .15s;
   cursor: pointer;
   text-decoration: none;
-  border-radius: 0;
   position: relative;
   margin: 1px 10px;
   border-radius: 9px;
+  letter-spacing: -0.01em;
 }
 
 .navItem:hover {
-  background: rgba(255,255,255,.07);
-  color: rgba(255,255,255,.9);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.88);
 }
 
 .navItem.active {
-  background: linear-gradient(135deg, rgba(251,15,5,.9) 0%, rgba(0,39,254,.9) 100%);
+  background: linear-gradient(135deg, rgba(251,15,5,0.88) 0%, rgba(0,39,254,0.88) 100%);
   color: white;
   font-weight: 600;
+  box-shadow: 0 4px 16px rgba(0,39,254,0.25);
 }
 
-.navItem.active .navIcon { color: white; }
+.navItem.active .navIcon { color: white; opacity: 1; }
 
 .navIcon {
   flex-shrink: 0;
-  opacity: .7;
+  opacity: 0.6;
   transition: opacity .15s;
 }
 
@@ -88,10 +90,10 @@
 .navComingSoon {
   font-size: 9px;
   font-weight: 700;
-  background: rgba(251,15,5,.2);
-  color: #fb7a74;
+  background: rgba(251,15,5,0.18);
+  color: rgba(251,100,80,0.9);
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 5px;
   margin-left: auto;
   letter-spacing: .3px;
   flex-shrink: 0;
@@ -101,10 +103,10 @@
 .navLogout {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 18px;
-  color: rgba(239,68,68,.7);
-  font-size: 13.5px;
+  gap: 9px;
+  padding: 8.5px 16px;
+  color: rgba(239,68,68,0.65);
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   margin: 1px 10px;
@@ -113,14 +115,14 @@
 }
 
 .navLogout:hover {
-  background: rgba(239,68,68,.12);
+  background: rgba(239,68,68,0.10);
   color: #ef4444;
 }
 
 .sidebarBottom {
   margin-top: auto;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255,255,255,.07);
+  padding-top: 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 
 /* ─── MAIN CONTENT ─── */
@@ -135,13 +137,12 @@
 .header {
   height: 60px;
   background: white;
-  border-bottom: 1px solid rgba(20,15,30,0.08);
+  border-bottom: 1px solid rgba(20,15,30,0.07);
   display: flex;
   align-items: center;
   padding: 0 24px;
   flex-shrink: 0;
   gap: 12px;
-  box-shadow: 0 1px 0 rgba(20,15,30,0.04);
 }
 
 .menuToggle {
@@ -150,18 +151,18 @@
   border: none;
   cursor: pointer;
   padding: 6px;
-  color: #111118;
+  color: #14111C;
   border-radius: 8px;
   transition: background .15s;
 }
 
-.menuToggle:hover { background: #f0eeeb; }
+.menuToggle:hover { background: rgba(20,15,30,0.05); }
 
 .headerTitle {
   font-size: 15px;
   font-weight: 700;
   color: #14111C;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
   flex: 1;
 }
 
@@ -173,12 +174,12 @@
 }
 
 .tenantBadge {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: #6b6b80;
+  color: #564E66;
   padding: 5px 12px;
-  background: #f7f5f2;
-  border: 1px solid #e8e6e2;
+  background: rgba(20,15,30,0.04);
+  border: 1px solid rgba(20,15,30,0.08);
   border-radius: 20px;
 }
 
@@ -194,7 +195,7 @@
   font-weight: 700;
   font-size: 12px;
   flex-shrink: 0;
-  border: 2px solid #e8e6e2;
+  border: 2px solid rgba(20,15,30,0.08);
 }
 
 .contentArea {
@@ -208,7 +209,7 @@
   width: 100%;
   max-width: 1480px;
   margin: 0 auto;
-  padding: 28px 28px;
+  padding: 28px;
   flex: 1;
 }
 
@@ -216,26 +217,24 @@
 .listCard {
   background: white;
   border-radius: 16px;
-  border: 1px solid #e8e6e2;
-  box-shadow: 0 1px 4px rgba(0,0,0,.04);
+  border: 1px solid rgba(20,15,30,0.08);
 }
 
 .statsGrid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 16px;
+  gap: 14px;
 }
 
 .statCard {
   background: white;
   border-radius: 16px;
-  border: 1px solid #e8e6e2;
+  border: 1px solid rgba(20,15,30,0.08);
   padding: 20px 22px;
-  box-shadow: 0 1px 4px rgba(0,0,0,.04);
 }
 
 .statLabel {
-  color: #a0a0b0;
+  color: #8E879B;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -246,7 +245,7 @@
 .statValue {
   font-size: 30px;
   font-weight: 800;
-  color: #111118;
+  color: #14111C;
   letter-spacing: -1px;
   line-height: 1;
 }
@@ -257,13 +256,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 16px 22px;
-  border-bottom: 1px solid #e8e6e2;
+  border-bottom: 1px solid rgba(20,15,30,0.07);
 }
 
 .listTitle {
-  font-size: 14px;
+  font-size: 13.5px;
   font-weight: 700;
-  color: #111118;
+  color: #14111C;
+  letter-spacing: -0.01em;
 }
 
 .listItem {
@@ -271,20 +271,20 @@
   justify-content: space-between;
   align-items: center;
   padding: 12px 22px;
-  border-bottom: 1px solid #e8e6e2;
+  border-bottom: 1px solid rgba(20,15,30,0.06);
 }
 
 .listItem:last-child { border-bottom: none; }
 
 .itemMain {
   font-weight: 600;
-  color: #111118;
+  color: #14111C;
   font-size: 14px;
 }
 
 .itemSub {
   font-size: 12px;
-  color: #a0a0b0;
+  color: #8E879B;
 }
 
 .itemBadge {
@@ -292,7 +292,7 @@
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 20px;
-  background: rgba(251,15,5,.08);
+  background: rgba(251,15,5,0.07);
   color: #fb0f05;
 }
 
@@ -315,7 +315,7 @@
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,.45);
+    background: rgba(0,0,0,0.4);
     z-index: 199;
     opacity: 0;
     pointer-events: none;
@@ -355,8 +355,8 @@
   width: 72px;
   height: 72px;
   border-radius: 20px;
-  background: linear-gradient(135deg, rgba(251,15,5,.08) 0%, rgba(0,39,254,.08) 100%);
-  border: 1.5px solid rgba(251,15,5,.15);
+  background: linear-gradient(135deg, rgba(251,15,5,0.06) 0%, rgba(0,39,254,0.06) 100%);
+  border: 1px solid rgba(20,15,30,0.10);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -381,14 +381,14 @@
 .comingSoonTitle {
   font-size: 26px;
   font-weight: 800;
-  color: #111118;
+  color: #14111C;
   letter-spacing: -.5px;
   margin: 0;
 }
 
 .comingSoonSub {
   font-size: 15px;
-  color: #6b6b80;
+  color: #564E66;
   max-width: 420px;
   line-height: 1.65;
   margin: 0;
@@ -409,10 +409,10 @@
   align-items: center;
   gap: 9px;
   font-size: 13px;
-  color: #3a3a48;
+  color: #3a3548;
   font-weight: 500;
   background: white;
-  border: 1px solid #e8e6e2;
+  border: 1px solid rgba(20,15,30,0.08);
   border-radius: 10px;
   padding: 10px 14px;
 }

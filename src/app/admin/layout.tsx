@@ -109,10 +109,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loadingAuth) {
     return (
-      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 14, background: "#f7f5f2" }}>
-        <div style={{ width: 40, height: 40, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 14, background: "#F4F4F9" }}>
+        <div style={{ width: 40, height: 40, border: "3px solid rgba(20,15,30,0.10)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-        <p style={{ color: "#a0a0b0", fontSize: 13, fontFamily: "'Plus Jakarta Sans',sans-serif" }}>Cargando...</p>
+        <p style={{ color: "#8E879B", fontSize: 13 }}>Cargando...</p>
       </div>
     );
   }
@@ -137,7 +137,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Logo */}
             <div className={styles.brand}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ background: "white", borderRadius: 10, padding: "6px 12px", display: "inline-flex" }}>
+                <div style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 10, padding: "6px 14px", display: "inline-flex" }}>
                   <Image src="/zyncra-logo.png" alt="Zyncra" height={26} width={80}
                     style={{ height: 26, width: "auto" }} />
                 </div>

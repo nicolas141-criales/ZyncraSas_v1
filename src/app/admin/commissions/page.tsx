@@ -89,9 +89,9 @@ const inp: React.CSSProperties = {
   border: "1.5px solid #e8e6e2",
   borderRadius: "10px",
   fontSize: "14px",
-  background: "#f7f5f2",
-  color: "#111118",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  background: "rgba(20,15,30,0.025)",
+  color: "#14111C",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
   outline: "none",
   boxSizing: "border-box",
 };
@@ -100,7 +100,7 @@ const lbl: React.CSSProperties = {
   display: "block",
   fontWeight: 600,
   fontSize: "11px",
-  color: "#6b6b80",
+  color: "#564E66",
   marginBottom: "6px",
   textTransform: "uppercase",
   letterSpacing: "0.06em",
@@ -125,9 +125,9 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
   return (
     <button onClick={onClick} style={{
       padding: "8px 18px", borderRadius: "10px", fontSize: "13px", fontWeight: 600,
-      cursor: "pointer", border: "none", fontFamily: "'Plus Jakarta Sans', sans-serif",
+      cursor: "pointer", border: "none", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
       background: active ? "linear-gradient(135deg, #fb0f05, #0027fe)" : "transparent",
-      color: active ? "#fff" : "#6b6b80",
+      color: active ? "#fff" : "#564E66",
       boxShadow: active ? "0 2px 8px rgba(251,15,5,0.25)" : "none",
       transition: "all 0.15s",
     }}>
@@ -142,8 +142,8 @@ function PeriodBtn({ active, onClick, children }: { active: boolean; onClick: ()
       padding: "7px 16px", borderRadius: "9px", fontSize: "12px", fontWeight: 600,
       cursor: "pointer", border: active ? "1.5px solid rgba(251,15,5,0.4)" : "1.5px solid #e8e6e2",
       background: active ? "rgba(251,15,5,0.06)" : "white",
-      color: active ? "#fb0f05" : "#6b6b80",
-      fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "all 0.15s",
+      color: active ? "#fb0f05" : "#564E66",
+      fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s",
     }}>
       {children}
     </button>
@@ -159,8 +159,8 @@ function SectionHeader({ title, sub, icon }: { title: string; sub?: string; icon
         </div>
       )}
       <div>
-        <div style={{ fontWeight: 700, fontSize: 13, color: "#111118" }}>{title}</div>
-        {sub && <div style={{ fontSize: 11, color: "#a0a0b0", marginTop: 1 }}>{sub}</div>}
+        <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{title}</div>
+        {sub && <div style={{ fontSize: 11, color: "#8E879B", marginTop: 1 }}>{sub}</div>}
       </div>
     </div>
   );
@@ -320,20 +320,20 @@ export default function CommissionsPage() {
   // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, margin: 0, letterSpacing: "-0.5px", color: "#111118" }}>
+          <h1 style={{ fontSize: 20, fontWeight: 800, margin: 0, letterSpacing: "-0.5px", color: "#14111C" }}>
             Comisiones
           </h1>
-          <p style={{ color: "#a0a0b0", fontSize: 13, marginTop: 3 }}>
+          <p style={{ color: "#8E879B", fontSize: 13, marginTop: 3 }}>
             Liquida las comisiones de tu equipo automÃ¡ticamente.
           </p>
         </div>
-        <div style={{ display: "flex", gap: 4, background: "#f0eeeb", padding: 4, borderRadius: 14 }}>
+        <div style={{ display: "flex", gap: 4, background: "rgba(20,15,30,0.04)", padding: 4, borderRadius: 14 }}>
           <TabBtn active={tab === "resumen"} onClick={() => setTab("resumen")}>Resumen</TabBtn>
           <TabBtn active={tab === "reglas"} onClick={() => setTab("reglas")}>Reglas</TabBtn>
           <TabBtn active={tab === "historial"} onClick={() => setTab("historial")}>Historial</TabBtn>
@@ -351,11 +351,11 @@ export default function CommissionsPage() {
             {period === "custom" && (
               <>
                 <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ ...inp, width: "auto", padding: "6px 10px", fontSize: 12 }} />
-                <span style={{ color: "#a0a0b0", fontSize: 12 }}>â€”</span>
+                <span style={{ color: "#8E879B", fontSize: 12 }}>â€”</span>
                 <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} style={{ ...inp, width: "auto", padding: "6px 10px", fontSize: 12 }} />
                 <button onClick={() => { if (tenantId) fetchSummary(tenantId, "custom", customStart, customEnd); }}
                   disabled={!customStart || !customEnd}
-                  style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: (!customStart || !customEnd) ? "#e8e6e2" : "#fb0f05", color: "#fff", cursor: (!customStart || !customEnd) ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 600, fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                  style={{ padding: "7px 14px", borderRadius: 9, border: "none", background: (!customStart || !customEnd) ? "rgba(20,15,30,0.08)" : "#fb0f05", color: "#fff", cursor: (!customStart || !customEnd) ? "not-allowed" : "pointer", fontSize: 13, fontWeight: 600, fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
                   Buscar
                 </button>
               </>
@@ -376,7 +376,7 @@ export default function CommissionsPage() {
                 <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   {m.value}
                 </div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "#a0a0b0", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4 }}>{m.label}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4 }}>{m.label}</div>
               </div>
             ))}
           </div>
@@ -393,10 +393,10 @@ export default function CommissionsPage() {
                 <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
               </div>
             ) : summaries.length === 0 ? (
-              <div style={{ padding: "40px 20px", textAlign: "center", color: "#a0a0b0", fontSize: 14 }}>Sin profesionales activos.</div>
+              <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>Sin profesionales activos.</div>
             ) : (
               <div>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 120px 120px 110px", gap: 12, padding: "10px 20px", borderBottom: "1px solid #f0eeeb", fontSize: 11, fontWeight: 700, color: "#a0a0b0", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 70px 120px 120px 110px", gap: 12, padding: "10px 20px", borderBottom: "1px solid #f0eeeb", fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                   <span>Profesional</span>
                   <span style={{ textAlign: "center" }}>Citas</span>
                   <span style={{ textAlign: "right" }}>Revenue</span>
@@ -412,16 +412,16 @@ export default function CommissionsPage() {
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                       <Avatar name={s.prof.name} />
                       <div>
-                        <div style={{ fontWeight: 700, fontSize: 13, color: "#111118" }}>{s.prof.name}</div>
-                        <div style={{ fontSize: 11, color: "#a0a0b0", marginTop: 2 }}>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{s.prof.name}</div>
+                        <div style={{ fontSize: 11, color: "#8E879B", marginTop: 2 }}>
                           {s.rule
                             ? s.rule.type === "percentage" ? `${s.rule.value}% del servicio` : `${fmt(s.rule.value)} por cita`
                             : "Sin regla"}
                         </div>
                       </div>
                     </div>
-                    <div style={{ textAlign: "center", fontWeight: 700, fontSize: 15, color: "#111118" }}>{s.count}</div>
-                    <div style={{ textAlign: "right", fontWeight: 600, fontSize: 13, color: "#3a3a48" }}>{fmt(s.revenue)}</div>
+                    <div style={{ textAlign: "center", fontWeight: 700, fontSize: 15, color: "#14111C" }}>{s.count}</div>
+                    <div style={{ textAlign: "right", fontWeight: 600, fontSize: 13, color: "#3a3548" }}>{fmt(s.revenue)}</div>
                     <div style={{ textAlign: "right" }}>
                       {s.rule ? (
                         <span style={{ fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -438,9 +438,9 @@ export default function CommissionsPage() {
                         style={{
                           padding: "7px 14px", borderRadius: 9, border: "none", fontSize: 12, fontWeight: 700,
                           cursor: (!s.rule || s.count === 0) ? "not-allowed" : "pointer",
-                          background: (!s.rule || s.count === 0) ? "#f0eeeb" : "rgba(251,15,5,0.08)",
+                          background: (!s.rule || s.count === 0) ? "rgba(20,15,30,0.04)" : "rgba(251,15,5,0.08)",
                           color: (!s.rule || s.count === 0) ? "#c0c0d0" : "#fb0f05",
-                          fontFamily: "'Plus Jakarta Sans', sans-serif",
+                          fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
                         }}>
                         Liquidar
                       </button>
@@ -462,7 +462,7 @@ export default function CommissionsPage() {
               <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : professionals.length === 0 ? (
-            <div style={{ padding: "40px 20px", textAlign: "center", color: "#a0a0b0", fontSize: 14 }}>
+            <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>
               Sin profesionales activos. AgrÃ©dalos en la secciÃ³n Equipo.
             </div>
           ) : (
@@ -477,13 +477,13 @@ export default function CommissionsPage() {
                   <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                     <Avatar name={prof.name} />
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: "#111118" }}>{prof.name}</div>
-                      <div style={{ fontSize: 11, color: "#a0a0b0", marginTop: 2 }}>{prof.role}</div>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{prof.name}</div>
+                      <div style={{ fontSize: 11, color: "#8E879B", marginTop: 2 }}>{prof.role}</div>
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
                     {rule ? (
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#3a3a48" }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#3a3548" }}>
                         {rule.type === "percentage" ? `${rule.value}%` : `${fmt(rule.value)} / cita`}
                       </span>
                     ) : (
@@ -492,7 +492,7 @@ export default function CommissionsPage() {
                     <button onClick={() => openEdit(prof)} style={{
                       padding: "7px 16px", borderRadius: 9, border: "1.5px solid rgba(251,15,5,0.3)",
                       background: "rgba(251,15,5,0.06)", color: "#fb0f05", fontSize: 12, fontWeight: 700,
-                      cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif",
+                      cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
                     }}>
                       {rule ? "Editar" : "Configurar"}
                     </button>
@@ -513,12 +513,12 @@ export default function CommissionsPage() {
               <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : payments.length === 0 ? (
-            <div style={{ padding: "40px 20px", textAlign: "center", color: "#a0a0b0", fontSize: 14 }}>
+            <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>
               Sin liquidaciones registradas aÃºn.
             </div>
           ) : (
             <div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 60px 120px 130px", gap: 12, padding: "10px 20px", borderBottom: "1px solid #f0eeeb", fontSize: 11, fontWeight: 700, color: "#a0a0b0", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 60px 120px 130px", gap: 12, padding: "10px 20px", borderBottom: "1px solid #f0eeeb", fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 <span>Profesional</span>
                 <span>PerÃ­odo</span>
                 <span style={{ textAlign: "center" }}>Citas</span>
@@ -532,15 +532,15 @@ export default function CommissionsPage() {
                   borderBottom: i < payments.length - 1 ? "1px solid #f0eeeb" : "none",
                 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: "#111118" }}>{p.professionals?.name || "â€”"}</div>
-                    {p.note && <div style={{ fontSize: 11, color: "#a0a0b0", marginTop: 2 }}>{p.note}</div>}
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{p.professionals?.name || "â€”"}</div>
+                    {p.note && <div style={{ fontSize: 11, color: "#8E879B", marginTop: 2 }}>{p.note}</div>}
                   </div>
-                  <div style={{ fontSize: 12, color: "#6b6b80" }}>{periodLabel(p.period_start, p.period_end)}</div>
-                  <div style={{ textAlign: "center", fontWeight: 700, fontSize: 13, color: "#111118" }}>{p.appointments_count}</div>
+                  <div style={{ fontSize: 12, color: "#564E66" }}>{periodLabel(p.period_start, p.period_end)}</div>
+                  <div style={{ textAlign: "center", fontWeight: 700, fontSize: 13, color: "#14111C" }}>{p.appointments_count}</div>
                   <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                     {fmt(p.commission_amount)}
                   </div>
-                  <div style={{ textAlign: "right", fontSize: 12, color: "#a0a0b0" }}>
+                  <div style={{ textAlign: "right", fontSize: 12, color: "#8E879B" }}>
                     {new Date(p.paid_at).toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" })}
                   </div>
                 </div>
@@ -559,11 +559,11 @@ export default function CommissionsPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Avatar name={editingProf.name} />
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 16, color: "#111118" }}>Regla de comisiÃ³n</div>
-                  <div style={{ fontSize: 12, color: "#a0a0b0", marginTop: 2 }}>{editingProf.name}</div>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: "#14111C" }}>Regla de comisiÃ³n</div>
+                  <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>{editingProf.name}</div>
                 </div>
               </div>
-              <button onClick={() => setEditingProf(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0a0b0", padding: 4 }}>
+              <button onClick={() => setEditingProf(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B", padding: 4 }}>
                 <IconX size={18} />
               </button>
             </div>
@@ -612,18 +612,18 @@ export default function CommissionsPage() {
           onClick={e => { if (e.target === e.currentTarget) setLiquidarTarget(null); }}>
           <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 17, color: "#111118" }}>Confirmar liquidaciÃ³n</div>
-              <button onClick={() => setLiquidarTarget(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0a0b0" }}>
+              <div style={{ fontWeight: 800, fontSize: 17, color: "#14111C" }}>Confirmar liquidaciÃ³n</div>
+              <button onClick={() => setLiquidarTarget(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}>
                 <IconX size={18} />
               </button>
             </div>
 
-            <div style={{ background: "#f7f5f2", border: "1px solid #e8e6e2", borderRadius: 14, padding: "16px 18px", marginBottom: 18 }}>
+            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid #e8e6e2", borderRadius: 14, padding: "16px 18px", marginBottom: 18 }}>
               <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 14 }}>
                 <Avatar name={liquidarTarget.prof.name} />
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: "#111118" }}>{liquidarTarget.prof.name}</div>
-                  <div style={{ fontSize: 11, color: "#a0a0b0" }}>{currentRange.start && periodLabel(currentRange.start, currentRange.end)}</div>
+                  <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>{liquidarTarget.prof.name}</div>
+                  <div style={{ fontSize: 11, color: "#8E879B" }}>{currentRange.start && periodLabel(currentRange.start, currentRange.end)}</div>
                 </div>
               </div>
               {[
@@ -631,12 +631,12 @@ export default function CommissionsPage() {
                 ["Revenue generado", fmt(liquidarTarget.revenue)],
               ].map(([k, v]) => (
                 <div key={k} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 8 }}>
-                  <span style={{ color: "#6b6b80" }}>{k}</span>
-                  <span style={{ fontWeight: 600, color: "#111118" }}>{v}</span>
+                  <span style={{ color: "#564E66" }}>{k}</span>
+                  <span style={{ fontWeight: 600, color: "#14111C" }}>{v}</span>
                 </div>
               ))}
               <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, borderTop: "1px solid #e8e6e2", paddingTop: 10, marginTop: 4 }}>
-                <span style={{ fontWeight: 700, color: "#111118" }}>A pagar</span>
+                <span style={{ fontWeight: 700, color: "#14111C" }}>A pagar</span>
                 <span style={{ fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                   {fmt(liquidarTarget.commission)}
                 </span>

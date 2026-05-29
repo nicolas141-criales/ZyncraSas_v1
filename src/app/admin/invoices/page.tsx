@@ -367,7 +367,7 @@ export default function InvoicesPage() {
                     <button key={env} onClick={() => setSettings(s => ({ ...s, environment: env }))}
                       style={{
                         flex: 1, padding: "8px 0", borderRadius: 8, border: "2px solid",
-                        borderColor: settings.environment === env ? "#fb0f05" : "#e8e6e2",
+                        borderColor: settings.environment === env ? "#fb0f05" : "rgba(20,15,30,0.08)",
                         background: settings.environment === env ? "#fff5f5" : "white",
                         color: settings.environment === env ? "#fb0f05" : "#6b7280",
                         fontWeight: 600, fontSize: 13, cursor: "pointer",
@@ -681,7 +681,7 @@ const labelStyle: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
   fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box", outline: "none",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
 
 const btnPrimary: React.CSSProperties = {

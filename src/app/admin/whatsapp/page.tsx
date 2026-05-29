@@ -255,7 +255,7 @@ export default function WhatsappPage() {
               <label style={labelStyle}>Segmento de clientes</label>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {(["all", "active", "inactive"] as Segment[]).map(s => (
-                  <label key={s} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 14px", borderRadius: 10, border: "2px solid", borderColor: segment === s ? "#fb0f05" : "#e8e6e2", background: segment === s ? "#fff5f5" : "white", transition: "all .15s" }}>
+                  <label key={s} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 14px", borderRadius: 10, border: "2px solid", borderColor: segment === s ? "#fb0f05" : "rgba(20,15,30,0.08)", background: segment === s ? "#fff5f5" : "white", transition: "all .15s" }}>
                     <input type="radio" name="segment" value={s} checked={segment === s} onChange={() => setSegment(s)} style={{ accentColor: "#fb0f05" }} />
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>
@@ -510,7 +510,7 @@ const labelStyle: React.CSSProperties = {
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
   fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
 const btnPrimary: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 6,

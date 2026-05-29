@@ -350,7 +350,7 @@ function KpiCard({ label, value, sub, children, highlight }: {
   label: string; value: string; sub: string; children?: React.ReactNode; highlight?: boolean;
 }) {
   return (
-    <div style={{ background: highlight ? "#fffbeb" : "white", borderRadius: 14, padding: "20px 22px", border: `1px solid ${highlight ? "#fcd34d" : "#e8e6e2"}` }}>
+    <div style={{ background: highlight ? "#fffbeb" : "white", borderRadius: 14, padding: "20px 22px", border: `1px solid ${highlight ? "#fcd34d" : "rgba(20,15,30,0.08)"}` }}>
       <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
       <div style={{ fontSize: 28, fontWeight: 800, color: "#1a1a2e", lineHeight: 1 }}>{value}</div>
       {children && <div style={{ marginTop: 4 }}>{children}</div>}
@@ -377,7 +377,7 @@ function ReviewCard({ review }: { review: SiteReview }) {
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
   fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
 const btnPrimary: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 6,

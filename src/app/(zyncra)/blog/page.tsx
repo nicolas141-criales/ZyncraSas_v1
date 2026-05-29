@@ -156,12 +156,12 @@ export default function BlogPage() {
       <section
         style={{
           position: "relative",
-          padding: "140px 0 80px",
-          overflow: "hidden",
+          padding: "110px 0 56px",
+          overflowX: "clip",
           textAlign: "center",
         }}
       >
-        <GradientOrb color="#8B5CF6" size={700} x="-10%" y="-20%" opacity={0.30} />
+        <GradientOrb color="#fb0f05" size={700} x="-10%" y="-20%" opacity={0.18} />
         <GradientOrb color="#0027fe" size={600} x="75%" y="-10%" opacity={0.22} />
         <GridBackdrop style={{ opacity: 0.6 }} />
         <Container max={1240} style={{ position: "relative", zIndex: 2 }}>
@@ -171,8 +171,8 @@ export default function BlogPage() {
           <h1
             style={{
               fontSize: "clamp(40px, 6vw, 80px)",
-              lineHeight: 0.98,
-              letterSpacing: "-0.045em",
+              lineHeight: 1.05,
+              letterSpacing: "-0.04em",
               fontWeight: 500,
               margin: "24px auto 22px",
               maxWidth: 900,

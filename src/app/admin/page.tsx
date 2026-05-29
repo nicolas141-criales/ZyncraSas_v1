@@ -69,7 +69,7 @@ function BarChart({ data }: { data: { label: string; value: number; color?: stri
             background: d.color || "linear-gradient(to top, #fb0f05, #0027fe)",
             transition: "height 0.5s ease",
           }} />
-          <span style={{ fontSize: "9px", color: "#a0a0b0", textAlign: "center", lineHeight: 1 }}>{d.label}</span>
+          <span style={{ fontSize: "9px", color: "#8E879B", textAlign: "center", lineHeight: 1 }}>{d.label}</span>
         </div>
       ))}
     </div>
@@ -132,13 +132,13 @@ function MetricCard({ label, value, sub, icon, iconColor = "#fb0f05", trend, tre
         WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
       } : {
         fontSize: "28px", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-1px",
-        color: alert ? "var(--error)" : "#111118",
+        color: alert ? "var(--error)" : "#14111C",
       }}>
         {value}
       </div>
 
       {/* Label */}
-      <div style={{ fontSize: "12px", fontWeight: 600, color: "#a0a0b0", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+      <div style={{ fontSize: "12px", fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>
         {label}
       </div>
 
@@ -148,14 +148,14 @@ function MetricCard({ label, value, sub, icon, iconColor = "#fb0f05", trend, tre
           {trendVal && trend && (
             <span style={{
               display: "inline-flex", alignItems: "center", gap: "3px",
-              color: trend === "up" ? "#10b981" : trend === "down" ? "#ef4444" : "#a0a0b0",
+              color: trend === "up" ? "#10b981" : trend === "down" ? "#ef4444" : "#8E879B",
               fontWeight: 700,
             }}>
               {trend === "up" ? <IconTrendUp size={13} color="#10b981" /> : trend === "down" ? <IconTrendDown size={13} color="#ef4444" /> : "—"}
               {trendVal}
             </span>
           )}
-          {sub && <span style={{ color: "#a0a0b0" }}>{sub}</span>}
+          {sub && <span style={{ color: "#8E879B" }}>{sub}</span>}
         </div>
       )}
     </div>
@@ -172,8 +172,8 @@ function SectionHeader({ title, sub, icon }: { title: string; sub?: string; icon
         </div>
       )}
       <div>
-        <div style={{ fontWeight: 700, fontSize: "13px", color: "#111118" }}>{title}</div>
-        {sub && <div style={{ fontSize: "11px", color: "#a0a0b0", marginTop: "1px" }}>{sub}</div>}
+        <div style={{ fontWeight: 700, fontSize: "13px", color: "#14111C" }}>{title}</div>
+        {sub && <div style={{ fontSize: "11px", color: "#8E879B", marginTop: "1px" }}>{sub}</div>}
       </div>
     </div>
   );
@@ -202,7 +202,7 @@ function FilterBtn({ active, onClick, children }: { active: boolean; onClick: ()
       padding: "7px 16px", borderRadius: "9px", fontSize: "13px", fontWeight: 600, cursor: "pointer",
       border: active ? "1.5px solid rgba(251,15,5,0.4)" : "1.5px solid #e8e6e2",
       background: active ? "rgba(251,15,5,0.06)" : "white",
-      color: active ? "#fb0f05" : "#6b6b80",
+      color: active ? "#fb0f05" : "#564E66",
       transition: "all 0.15s",
     }}>
       {children}
@@ -336,29 +336,29 @@ export default function AdminOverview() {
   const revTrend = revDiff > 0 ? "up" : revDiff < 0 ? "down" : "neutral";
   const fmt = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
-  const inputSt: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e8e6e2", borderRadius: "10px", fontSize: "14px", background: "#f7f5f2", color: "#111118", boxSizing: "border-box", fontFamily: "'Plus Jakarta Sans', sans-serif" };
+  const inputSt: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e8e6e2", borderRadius: "10px", fontSize: "14px", background: "rgba(20,15,30,0.025)", color: "#14111C", boxSizing: "border-box", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" };
 
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh", flexDirection: "column", gap: "16px" }}>
         <div style={{ width: "40px", height: "40px", border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        <p style={{ color: "#a0a0b0", fontSize: "13px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>Cargando panel...</p>
+        <p style={{ color: "#8E879B", fontSize: "13px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>Cargando panel...</p>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     );
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
 
       {/* ─── Header ─── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "14px" }}>
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: 800, margin: 0, letterSpacing: "-0.5px", color: "#111118" }}>
+          <h1 style={{ fontSize: "20px", fontWeight: 800, margin: 0, letterSpacing: "-0.5px", color: "#14111C" }}>
             Buen día 👋
           </h1>
-          <p style={{ color: "#a0a0b0", fontSize: "13px", marginTop: "3px", textTransform: "capitalize" }}>
+          <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "3px", textTransform: "capitalize" }}>
             {new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" })}
           </p>
         </div>
@@ -372,16 +372,16 @@ export default function AdminOverview() {
           {filter === "custom" && (
             <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
               <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ ...inputSt, width: "auto", padding: "6px 10px", fontSize: "12px" }} />
-              <span style={{ color: "#a0a0b0", fontSize: "12px" }}>—</span>
+              <span style={{ color: "#8E879B", fontSize: "12px" }}>—</span>
               <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} style={{ ...inputSt, width: "auto", padding: "6px 10px", fontSize: "12px" }} />
               <button onClick={() => fetchAll(tenantId!, "custom", customStart, customEnd)} disabled={!customStart || !customEnd}
-                style={{ padding: "7px 14px", borderRadius: "9px", border: "none", background: (!customStart || !customEnd) ? "#e8e6e2" : "#fb0f05", color: "#fff", cursor: (!customStart || !customEnd) ? "not-allowed" : "pointer", fontSize: "13px", fontWeight: 600 }}>
+                style={{ padding: "7px 14px", borderRadius: "9px", border: "none", background: (!customStart || !customEnd) ? "rgba(20,15,30,0.08)" : "#fb0f05", color: "#fff", cursor: (!customStart || !customEnd) ? "not-allowed" : "pointer", fontSize: "13px", fontWeight: 600 }}>
                 Buscar
               </button>
             </div>
           )}
           <button onClick={() => fetchAll(tenantId!, filter, customStart, customEnd)}
-            style={{ width: "34px", height: "34px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#6b6b80", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            style={{ width: "34px", height: "34px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#564E66", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <IconRefresh size={15} />
           </button>
         </div>
@@ -458,7 +458,7 @@ export default function AdminOverview() {
           <SectionHeader title="Top servicios" icon={<IconChartBar size={16} />} />
           <div style={{ padding: "16px 20px 20px" }}>
             {data.topServices.length === 0 ? (
-              <p style={{ color: "#a0a0b0", fontSize: "13px" }}>Sin datos aún.</p>
+              <p style={{ color: "#8E879B", fontSize: "13px" }}>Sin datos aún.</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                 {data.topServices.map((s, i) => {
@@ -466,10 +466,10 @@ export default function AdminOverview() {
                   return (
                     <div key={i}>
                       <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                        <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "130px", color: "#3a3a48" }}>{s.name}</span>
-                        <span style={{ color: "#a0a0b0", fontWeight: 500 }}>{s.count}</span>
+                        <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "130px", color: "#3a3548" }}>{s.name}</span>
+                        <span style={{ color: "#8E879B", fontWeight: 500 }}>{s.count}</span>
                       </div>
-                      <div style={{ height: "5px", borderRadius: "3px", background: "#f0eeeb", overflow: "hidden" }}>
+                      <div style={{ height: "5px", borderRadius: "3px", background: "rgba(20,15,30,0.04)", overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${(s.count / maxCount) * 100}%`, background: "linear-gradient(90deg, #fb0f05, #0027fe)", borderRadius: "3px", transition: "width 0.6s ease" }} />
                       </div>
                     </div>
@@ -489,7 +489,7 @@ export default function AdminOverview() {
           <SectionHeader title="Citas de hoy" sub={`${data.todayCount} agendadas`} icon={<IconCalendar size={16} />} />
           <div>
             {data.upcomingApts.length === 0 ? (
-              <div style={{ padding: "36px 20px", textAlign: "center", color: "#a0a0b0", fontSize: "14px" }}>
+              <div style={{ padding: "36px 20px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>
                 Sin citas para hoy.
               </div>
             ) : (
@@ -501,8 +501,8 @@ export default function AdminOverview() {
                       <div style={{ fontWeight: 800, fontSize: "12px", color: "#fb0f05", lineHeight: 1 }}>{apt.appointment_time}</div>
                     </div>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: "13px", color: "#111118" }}>{apt.clients?.name || "—"}</div>
-                      <div style={{ fontSize: "11px", color: "#a0a0b0", marginTop: "2px" }}>
+                      <div style={{ fontWeight: 700, fontSize: "13px", color: "#14111C" }}>{apt.clients?.name || "—"}</div>
+                      <div style={{ fontSize: "11px", color: "#8E879B", marginTop: "2px" }}>
                         {apt.services?.name || "—"} · {apt.professionals?.name || "Cualquiera"}
                       </div>
                     </div>
@@ -518,7 +518,7 @@ export default function AdminOverview() {
         <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
           <SectionHeader title="Rendimiento del equipo" icon={<IconUsers size={16} />} />
           {data.staffPerf.length === 0 ? (
-            <div style={{ padding: "36px 20px", textAlign: "center", color: "#a0a0b0", fontSize: "14px" }}>Sin datos aún.</div>
+            <div style={{ padding: "36px 20px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Sin datos aún.</div>
           ) : (
             data.staffPerf.map((s, i) => (
               <div key={i} style={{ padding: "12px 20px", borderBottom: i < data.staffPerf.length - 1 ? "1px solid #f0eeeb" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -532,8 +532,8 @@ export default function AdminOverview() {
                     {s.name.substring(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: "13px", color: "#111118" }}>{s.name}</div>
-                    <div style={{ fontSize: "11px", color: "#a0a0b0", marginTop: "1px" }}>{s.count} citas</div>
+                    <div style={{ fontWeight: 600, fontSize: "13px", color: "#14111C" }}>{s.name}</div>
+                    <div style={{ fontSize: "11px", color: "#8E879B", marginTop: "1px" }}>{s.count} citas</div>
                   </div>
                 </div>
                 <div style={{ fontWeight: 800, fontSize: "13px", color: "#fb0f05" }}>{fmt(s.revenue)}</div>
@@ -558,7 +558,7 @@ export default function AdminOverview() {
               padding: "9px 16px", borderRadius: "10px",
               border: `1.5px solid ${a.color}30`, background: a.bg,
               color: a.color, cursor: "pointer", fontSize: "13px", fontWeight: 600,
-              fontFamily: "'Plus Jakarta Sans', sans-serif",
+              fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
               transition: "all 0.15s",
             }}>
               {a.icon} {a.label}
@@ -576,11 +576,11 @@ export default function AdminOverview() {
               <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                 <IconPlus size={18} />
               </div>
-              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#111118" }}>Nueva Cita Manual</h2>
+              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>Nueva Cita Manual</h2>
             </div>
             <form onSubmit={handleCreateAppt}>
               <div style={{ marginBottom: "14px" }}>
-                <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#6b6b80", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cliente *</label>
+                <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cliente *</label>
                 <select required value={apptForm.client_id} onChange={e => setApptForm({ ...apptForm, client_id: e.target.value })} style={inputSt}>
                   <option value="">— Seleccionar cliente —</option>
                   {apptClients.map(c => <option key={c.id} value={c.id}>{c.name} · {c.phone}</option>)}
@@ -588,14 +588,14 @@ export default function AdminOverview() {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
                 <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#6b6b80", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Servicio</label>
+                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Servicio</label>
                   <select value={apptForm.service_id} onChange={e => setApptForm({ ...apptForm, service_id: e.target.value })} style={inputSt}>
                     <option value="">— Cualquiera —</option>
                     {apptServices.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#6b6b80", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Profesional</label>
+                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Profesional</label>
                   <select value={apptForm.professional_id} onChange={e => setApptForm({ ...apptForm, professional_id: e.target.value })} style={inputSt}>
                     <option value="">— Cualquiera —</option>
                     {apptProfs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
@@ -604,11 +604,11 @@ export default function AdminOverview() {
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "22px" }}>
                 <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#6b6b80", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Fecha *</label>
+                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Fecha *</label>
                   <input required type="date" value={apptForm.date} onChange={e => setApptForm({ ...apptForm, date: e.target.value })} style={inputSt} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#6b6b80", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Hora *</label>
+                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Hora *</label>
                   <input required type="time" value={apptForm.time} onChange={e => setApptForm({ ...apptForm, time: e.target.value })} style={inputSt} />
                 </div>
               </div>
@@ -632,27 +632,27 @@ export default function AdminOverview() {
                 <IconCalendar size={18} />
               </div>
               <div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#111118" }}>Bloquear Horario</h2>
-                <p style={{ color: "#a0a0b0", fontSize: "12px", marginTop: "2px" }}>El rango no estará disponible para reservas.</p>
+                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>Bloquear Horario</h2>
+                <p style={{ color: "#8E879B", fontSize: "12px", marginTop: "2px" }}>El rango no estará disponible para reservas.</p>
               </div>
             </div>
             <form onSubmit={handleBlockSlot}>
               <div style={{ marginBottom: "14px" }}>
-                <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#6b6b80", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Fecha *</label>
+                <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Fecha *</label>
                 <input required type="date" value={blockForm.date} onChange={e => setBlockForm({ ...blockForm, date: e.target.value })} style={inputSt} />
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
                 <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#6b6b80", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Desde *</label>
+                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Desde *</label>
                   <input required type="time" value={blockForm.start} onChange={e => setBlockForm({ ...blockForm, start: e.target.value })} style={inputSt} />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#6b6b80", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Hasta *</label>
+                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Hasta *</label>
                   <input required type="time" value={blockForm.end} onChange={e => setBlockForm({ ...blockForm, end: e.target.value })} style={inputSt} />
                 </div>
               </div>
               <div style={{ marginBottom: "22px" }}>
-                <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#6b6b80", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Motivo (opcional)</label>
+                <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Motivo (opcional)</label>
                 <input type="text" value={blockForm.reason} onChange={e => setBlockForm({ ...blockForm, reason: e.target.value })} placeholder="Ej. Reunión, descanso..." style={inputSt} />
               </div>
               {blockMsg && <p style={{ fontSize: "13px", marginBottom: "12px", color: blockMsg.startsWith("Error") ? "#ef4444" : "#10b981", fontWeight: 600 }}>{blockMsg}</p>}
@@ -674,16 +674,16 @@ export default function AdminOverview() {
               <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(37,211,102,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <IconChat size={18} color="#25D366" />
               </div>
-              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#111118" }}>Recordatorio WhatsApp</h2>
+              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>Recordatorio WhatsApp</h2>
             </div>
-            <p style={{ color: "#6b6b80", fontSize: "13px", marginBottom: "16px", lineHeight: 1.6 }}>Envía un recordatorio manual a un cliente desde WhatsApp Web.</p>
-            <div style={{ background: "#f7f5f2", border: "1px solid #e8e6e2", borderRadius: "12px", padding: "16px", marginBottom: "20px" }}>
-              <p style={{ fontSize: "12px", marginBottom: "8px", fontWeight: 700, color: "#3a3a48", textTransform: "uppercase", letterSpacing: "0.05em" }}>Mensaje sugerido</p>
-              <p style={{ fontSize: "13px", color: "#6b6b80", lineHeight: 1.65, fontStyle: "italic" }}>"Hola [Nombre], te recordamos que tienes una cita mañana a las [Hora]. ¡Te esperamos!"</p>
+            <p style={{ color: "#564E66", fontSize: "13px", marginBottom: "16px", lineHeight: 1.6 }}>Envía un recordatorio manual a un cliente desde WhatsApp Web.</p>
+            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid #e8e6e2", borderRadius: "12px", padding: "16px", marginBottom: "20px" }}>
+              <p style={{ fontSize: "12px", marginBottom: "8px", fontWeight: 700, color: "#3a3548", textTransform: "uppercase", letterSpacing: "0.05em" }}>Mensaje sugerido</p>
+              <p style={{ fontSize: "13px", color: "#564E66", lineHeight: 1.65, fontStyle: "italic" }}>"Hola [Nombre], te recordamos que tienes una cita mañana a las [Hora]. ¡Te esperamos!"</p>
             </div>
             <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
               <button className="btn-secondary" onClick={() => setShowWA(false)}>Cerrar</button>
-              <button style={{ padding: "10px 20px", borderRadius: "10px", background: "#25D366", color: "#fff", border: "none", fontWeight: 700, cursor: "pointer", fontSize: "13px", fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+              <button style={{ padding: "10px 20px", borderRadius: "10px", background: "#25D366", color: "#fff", border: "none", fontWeight: 700, cursor: "pointer", fontSize: "13px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}
                 onClick={() => window.open("https://wa.me/?text=Hola%2C+te+recordamos+tu+cita+de+ma%C3%B1ana.", "_blank")}>
                 Abrir WhatsApp
               </button>

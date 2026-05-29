@@ -17,14 +17,14 @@ const fmt = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", c
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "11px 14px", border: "1.5px solid #e8e6e2",
-  borderRadius: "11px", fontSize: "14px", background: "#f7f5f2",
-  color: "#111118", boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif", outline: "none",
+  borderRadius: "11px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
+  color: "#14111C", boxSizing: "border-box",
+  fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
   transition: "border-color .2s",
 };
 const lbl: React.CSSProperties = {
   display: "block", fontWeight: 600, fontSize: "11px",
-  color: "#6b6b80", marginBottom: "6px",
+  color: "#564E66", marginBottom: "6px",
   textTransform: "uppercase", letterSpacing: "0.06em",
 };
 
@@ -96,7 +96,7 @@ export default function ServicesPage() {
   };
 
   return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+    <div style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
 
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px", flexWrap: "wrap", gap: "14px" }}>
@@ -105,8 +105,8 @@ export default function ServicesPage() {
             <IconScissors size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#111118", letterSpacing: "-0.5px", margin: 0 }}>Servicios</h1>
-            <p style={{ color: "#a0a0b0", fontSize: "13px", marginTop: "2px" }}>{services.length} servicio{services.length !== 1 ? "s" : ""} disponibles</p>
+            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Servicios</h1>
+            <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>{services.length} servicio{services.length !== 1 ? "s" : ""} disponibles</p>
           </div>
         </div>
         <button className="btn-primary" onClick={openCreate} style={{ display: "flex", alignItems: "center", gap: "7px" }}>
@@ -116,14 +116,14 @@ export default function ServicesPage() {
 
       {/* Grid de servicios */}
       {loading ? (
-        <div style={{ padding: "60px", textAlign: "center", color: "#a0a0b0", fontSize: "14px" }}>Cargando servicios...</div>
+        <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando servicios...</div>
       ) : services.length === 0 ? (
         <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "22px", padding: "64px 32px", textAlign: "center" }}>
           <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "rgba(251,15,5,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", margin: "0 auto 16px" }}>
             <IconScissors size={26} />
           </div>
-          <div style={{ fontWeight: 700, fontSize: "16px", color: "#111118", marginBottom: "6px" }}>Aún no hay servicios</div>
-          <p style={{ color: "#a0a0b0", fontSize: "14px", marginBottom: "24px" }}>Agrega tu primer servicio para que los clientes puedan reservar.</p>
+          <div style={{ fontWeight: 700, fontSize: "16px", color: "#14111C", marginBottom: "6px" }}>Aún no hay servicios</div>
+          <p style={{ color: "#8E879B", fontSize: "14px", marginBottom: "24px" }}>Agrega tu primer servicio para que los clientes puedan reservar.</p>
           <button className="btn-primary" onClick={openCreate}>Añadir primer servicio</button>
         </div>
       ) : (
@@ -146,16 +146,16 @@ export default function ServicesPage() {
 
               {/* Content */}
               <div style={{ padding: "16px" }}>
-                <div style={{ fontWeight: 700, fontSize: "15px", color: "#111118", marginBottom: "4px" }}>{s.name}</div>
+                <div style={{ fontWeight: 700, fontSize: "15px", color: "#14111C", marginBottom: "4px" }}>{s.name}</div>
                 {s.description && (
-                  <div style={{ fontSize: "12px", color: "#a0a0b0", marginBottom: "12px", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                  <div style={{ fontSize: "12px", color: "#8E879B", marginBottom: "12px", lineHeight: 1.5, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                     {s.description}
                   </div>
                 )}
 
                 {/* Chips */}
                 <div style={{ display: "flex", gap: "6px", marginBottom: "14px", flexWrap: "wrap" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600, background: "#f7f5f2", color: "#6b6b80", border: "1px solid #e8e6e2" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600, background: "rgba(20,15,30,0.025)", color: "#564E66", border: "1px solid #e8e6e2" }}>
                     <IconClock size={11} /> {s.duration_minutes} min
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, background: "rgba(251,15,5,0.08)", color: "#fb0f05" }}>
@@ -165,12 +165,12 @@ export default function ServicesPage() {
 
                 {/* Actions */}
                 <div style={{ display: "flex", gap: "8px", borderTop: "1px solid #f0eeeb", paddingTop: "12px" }}>
-                  <button onClick={() => openEdit(s)} style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3a48", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "all 0.15s" }}
+                  <button onClick={() => openEdit(s)} style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3a48"; }}>
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(20,15,30,0.08)"; e.currentTarget.style.color = "#3a3548"; }}>
                     Editar
                   </button>
-                  <button onClick={() => handleDelete(s.id)} style={{ padding: "8px 14px", borderRadius: "9px", border: "1.5px solid transparent", background: "rgba(239,68,68,0.07)", color: "#ef4444", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif", transition: "background 0.15s" }}
+                  <button onClick={() => handleDelete(s.id)} style={{ padding: "8px 14px", borderRadius: "9px", border: "1.5px solid transparent", background: "rgba(239,68,68,0.07)", color: "#ef4444", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "background 0.15s" }}
                     onMouseEnter={e => (e.currentTarget.style.background = "rgba(239,68,68,0.14)")}
                     onMouseLeave={e => (e.currentTarget.style.background = "rgba(239,68,68,0.07)")}>
                     Eliminar
@@ -194,9 +194,9 @@ export default function ServicesPage() {
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconScissors size={17} />
                 </div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#111118" }}>{editingService ? "Editar servicio" : "Nuevo servicio"}</h2>
+                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>{editingService ? "Editar servicio" : "Nuevo servicio"}</h2>
               </div>
-              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#a0a0b0", display: "flex", alignItems: "center" }}>
+              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B", display: "flex", alignItems: "center" }}>
                 <IconX size={20} />
               </button>
             </div>
@@ -209,7 +209,7 @@ export default function ServicesPage() {
                   <img src={imagePreview} alt="preview" style={{ width: "100%", height: "120px", objectFit: "cover", borderRadius: "12px", marginBottom: "10px" }} />
                 )}
                 <input type="file" accept="image/*" onChange={handleFileChange} style={{ ...inp, padding: "9px" }} />
-                <p style={{ fontSize: "11px", color: "#a0a0b0", marginTop: "5px" }}>Máx. 2MB · PNG, JPG o WebP</p>
+                <p style={{ fontSize: "11px", color: "#8E879B", marginTop: "5px" }}>Máx. 2MB · PNG, JPG o WebP</p>
               </div>
 
               <div style={{ marginBottom: "16px" }}>
