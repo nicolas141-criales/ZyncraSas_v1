@@ -169,14 +169,12 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
         { data: brandData },
         { data: fieldsData },
         { data: reviewData },
-        { data: settingsData },
       ] = await Promise.all([
         supabase.from("services").select("*").eq("tenant_id", tenantData.id).order("name"),
         supabase.from("professionals").select("*").eq("tenant_id", tenantData.id).eq("is_active", true),
         supabase.from("branding").select("*").eq("tenant_id", tenantData.id).limit(1),
         supabase.from("custom_fields").select("*").eq("tenant_id", tenantData.id).eq("applies_to", "client").eq("active", true).order("position"),
         supabase.from("google_review_settings").select("*").eq("tenant_id", tenantData.id).limit(1),
-        supabase.from("tenant_settings").select("business_hours").eq("tenant_id", tenantData.id).maybeSingle(),
       ]);
 
       if (svcData) setServices(svcData);
@@ -184,7 +182,8 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
       if (brandData && brandData.length > 0) setBranding(brandData[0]);
       if (fieldsData) setCustomFields(fieldsData.map((f: any) => ({ ...f, options: Array.isArray(f.options) ? f.options : [] })));
       if (reviewData && reviewData.length > 0) setReviewSettings(reviewData[0]);
-      if (settingsData?.business_hours) setBusinessHours(settingsData.business_hours);
+      // El horario viene de tenants.settings.schedule (mismo campo que la app mobile)
+      if (tenantData.settings?.schedule) setBusinessHours(tenantData.settings.schedule);
       setLoadingData(false);
     }
     load();
@@ -258,23 +257,21 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   const isSelected = (day: number) =>
     selectedDate === `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-  const BH_DAY_NAMES = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+  // businessHours usa claves "0"-"6" = Date.getDay() (mismo esquema que app mobile)
   const isDayClosed = (day: number) => {
     if (!businessHours) return false;
-    const d = new Date(calYear, calMonth, day);
-    const h = businessHours[BH_DAY_NAMES[d.getDay()]];
+    const h = businessHours[String(new Date(calYear, calMonth, day).getDay())];
     return h ? !h.open : false;
   };
   const timeToMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
   const availableSlots = (() => {
     if (!businessHours || !selectedDate) return TIME_SLOTS;
     const [y, mo, d] = selectedDate.split("-").map(Number);
-    const h = businessHours[BH_DAY_NAMES[new Date(y, mo - 1, d).getDay()]];
+    const h = businessHours[String(new Date(y, mo - 1, d).getDay())];
     if (!h || !h.open) return [];
     const start = timeToMin(h.start), end = timeToMin(h.end);
     return TIME_SLOTS.filter(slot => {
-      const t = convertTo24h(slot).slice(0, 5);
-      const m = timeToMin(t);
+      const m = timeToMin(convertTo24h(slot).slice(0, 5));
       return m >= start && m < end;
     });
   })();

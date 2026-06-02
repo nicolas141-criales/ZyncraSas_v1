@@ -5,20 +5,21 @@ import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconCog, IconBell, IconCreditCard, IconPalette, IconArrowRight, IconClock } from "../ZyncraIcons";
 
-const DAY_KEYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"] as const;
+// Claves numéricas "0"-"6" = Date.getDay() → igual que la app mobile
+const DAY_KEYS = ["1","2","3","4","5","6","0"] as const; // Lun→Dom
 type DayKey = typeof DAY_KEYS[number];
 const DAY_LABELS: Record<DayKey, string> = {
-  monday: "Lunes", tuesday: "Martes", wednesday: "Miércoles",
-  thursday: "Jueves", friday: "Viernes", saturday: "Sábado", sunday: "Domingo",
+  "1": "Lunes", "2": "Martes", "3": "Miércoles",
+  "4": "Jueves", "5": "Viernes", "6": "Sábado", "0": "Domingo",
 };
 const DEFAULT_HOURS: Record<DayKey, { open: boolean; start: string; end: string }> = {
-  monday:    { open: true,  start: "08:00", end: "18:00" },
-  tuesday:   { open: true,  start: "08:00", end: "18:00" },
-  wednesday: { open: true,  start: "08:00", end: "18:00" },
-  thursday:  { open: true,  start: "08:00", end: "18:00" },
-  friday:    { open: true,  start: "08:00", end: "18:00" },
-  saturday:  { open: false, start: "09:00", end: "14:00" },
-  sunday:    { open: false, start: "09:00", end: "14:00" },
+  "1": { open: true,  start: "09:00", end: "18:00" },
+  "2": { open: true,  start: "09:00", end: "18:00" },
+  "3": { open: true,  start: "09:00", end: "18:00" },
+  "4": { open: true,  start: "09:00", end: "18:00" },
+  "5": { open: true,  start: "09:00", end: "18:00" },
+  "6": { open: false, start: "09:00", end: "14:00" },
+  "0": { open: false, start: "09:00", end: "14:00" },
 };
 import Link from "next/link";
 
@@ -90,7 +91,11 @@ export default function SettingsPage() {
         setAutoConfirm(data.auto_confirm ?? false);
         setRequireDeposit(data.require_deposit ?? false);
         setDepositAmount(String(data.deposit_amount ?? 20));
-        if (data.business_hours) setBusinessHours({ ...DEFAULT_HOURS, ...data.business_hours });
+      }
+      const { data: tenantData } = await supabase
+        .from("tenants").select("settings").eq("id", tenantId).maybeSingle();
+      if (tenantData?.settings?.schedule) {
+        setBusinessHours({ ...DEFAULT_HOURS, ...tenantData.settings.schedule });
       }
     }
     load();
@@ -106,9 +111,15 @@ export default function SettingsPage() {
       auto_confirm: autoConfirm,
       require_deposit: requireDeposit,
       deposit_amount: parseFloat(depositAmount) || 0,
-      business_hours: businessHours,
       updated_at: new Date().toISOString(),
     }, { onConflict: "tenant_id" });
+
+    // Guarda el horario en tenants.settings.schedule (igual que la app mobile)
+    const { data: currentTenant } = await supabase
+      .from("tenants").select("settings").eq("id", tenantId).maybeSingle();
+    const newSettings = { ...(currentTenant?.settings ?? {}), schedule: businessHours };
+    await supabase.from("tenants").update({ settings: newSettings }).eq("id", tenantId);
+
     setSaving(false);
     setMsg(error
       ? { type: "err", text: error.message }
