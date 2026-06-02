@@ -118,6 +118,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   const [reviewSettings, setReviewSettings] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [businessHours, setBusinessHours] = useState<Record<string, { open: boolean; start: string; end: string }> | null>(null);
 
   // Calendar state
   const now = new Date();
@@ -168,12 +169,14 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
         { data: brandData },
         { data: fieldsData },
         { data: reviewData },
+        { data: settingsData },
       ] = await Promise.all([
         supabase.from("services").select("*").eq("tenant_id", tenantData.id).order("name"),
         supabase.from("professionals").select("*").eq("tenant_id", tenantData.id).eq("is_active", true),
         supabase.from("branding").select("*").eq("tenant_id", tenantData.id).limit(1),
         supabase.from("custom_fields").select("*").eq("tenant_id", tenantData.id).eq("applies_to", "client").eq("active", true).order("position"),
         supabase.from("google_review_settings").select("*").eq("tenant_id", tenantData.id).limit(1),
+        supabase.from("tenant_settings").select("business_hours").eq("tenant_id", tenantData.id).maybeSingle(),
       ]);
 
       if (svcData) setServices(svcData);
@@ -181,6 +184,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
       if (brandData && brandData.length > 0) setBranding(brandData[0]);
       if (fieldsData) setCustomFields(fieldsData.map((f: any) => ({ ...f, options: Array.isArray(f.options) ? f.options : [] })));
       if (reviewData && reviewData.length > 0) setReviewSettings(reviewData[0]);
+      if (settingsData?.business_hours) setBusinessHours(settingsData.business_hours);
       setLoadingData(false);
     }
     load();
@@ -253,6 +257,27 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
     calYear === now.getFullYear() && calMonth === now.getMonth() && day === now.getDate();
   const isSelected = (day: number) =>
     selectedDate === `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+
+  const BH_DAY_NAMES = ["sunday","monday","tuesday","wednesday","thursday","friday","saturday"];
+  const isDayClosed = (day: number) => {
+    if (!businessHours) return false;
+    const d = new Date(calYear, calMonth, day);
+    const h = businessHours[BH_DAY_NAMES[d.getDay()]];
+    return h ? !h.open : false;
+  };
+  const timeToMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+  const availableSlots = (() => {
+    if (!businessHours || !selectedDate) return TIME_SLOTS;
+    const [y, mo, d] = selectedDate.split("-").map(Number);
+    const h = businessHours[BH_DAY_NAMES[new Date(y, mo - 1, d).getDay()]];
+    if (!h || !h.open) return [];
+    const start = timeToMin(h.start), end = timeToMin(h.end);
+    return TIME_SLOTS.filter(slot => {
+      const t = convertTo24h(slot).slice(0, 5);
+      const m = timeToMin(t);
+      return m >= start && m < end;
+    });
+  })();
 
   const canGoPrev = !(calYear === now.getFullYear() && calMonth === now.getMonth());
   const prevMonth = () => {
@@ -685,21 +710,22 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                 ))}
                 {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
                   const past = isPast(day);
+                  const closed = !past && isDayClosed(day);
                   const today = isToday(day);
                   const sel = isSelected(day);
                   return (
                     <button
                       key={day}
-                      className={`${styles.calDay} ${past ? styles.calDayPast : ""} ${today && !sel ? styles.calDayToday : ""} ${sel ? styles.calDaySelected : ""}`}
+                      className={`${styles.calDay} ${past || closed ? styles.calDayPast : ""} ${today && !sel ? styles.calDayToday : ""} ${sel ? styles.calDaySelected : ""}`}
                       style={
                         sel
                           ? { background: primaryColor, borderColor: primaryColor, color: "white" }
-                          : today
+                          : today && !closed
                           ? { borderColor: primaryColor, color: primaryColor }
                           : {}
                       }
                       onClick={() => selectDay(day)}
-                      disabled={past}
+                      disabled={past || closed}
                     >
                       {day}
                     </button>
@@ -763,7 +789,12 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                     {loadingSlots && <span style={{ fontWeight: 400, color: "#a0a0b0", marginLeft: 8 }}>verificando...</span>}
                   </h3>
                   <div className={styles.timeGrid}>
-                    {TIME_SLOTS.map(time => {
+                    {availableSlots.length === 0 && (
+                      <p style={{ fontSize: 13, color: "#a0a0b0", gridColumn: "1/-1", textAlign: "center", padding: "12px 0" }}>
+                        Este día no hay atención disponible
+                      </p>
+                    )}
+                    {availableSlots.map(time => {
                       const sel = selectedTime === time;
                       const occupied = bookedSlots.has(time);
                       return (

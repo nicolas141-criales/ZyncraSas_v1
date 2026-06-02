@@ -3,7 +3,23 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
-import { IconCog, IconBell, IconCreditCard, IconPalette, IconArrowRight } from "../ZyncraIcons";
+import { IconCog, IconBell, IconCreditCard, IconPalette, IconArrowRight, IconClock } from "../ZyncraIcons";
+
+const DAY_KEYS = ["monday","tuesday","wednesday","thursday","friday","saturday","sunday"] as const;
+type DayKey = typeof DAY_KEYS[number];
+const DAY_LABELS: Record<DayKey, string> = {
+  monday: "Lunes", tuesday: "Martes", wednesday: "Miércoles",
+  thursday: "Jueves", friday: "Viernes", saturday: "Sábado", sunday: "Domingo",
+};
+const DEFAULT_HOURS: Record<DayKey, { open: boolean; start: string; end: string }> = {
+  monday:    { open: true,  start: "08:00", end: "18:00" },
+  tuesday:   { open: true,  start: "08:00", end: "18:00" },
+  wednesday: { open: true,  start: "08:00", end: "18:00" },
+  thursday:  { open: true,  start: "08:00", end: "18:00" },
+  friday:    { open: true,  start: "08:00", end: "18:00" },
+  saturday:  { open: false, start: "09:00", end: "14:00" },
+  sunday:    { open: false, start: "09:00", end: "14:00" },
+};
 import Link from "next/link";
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
@@ -57,6 +73,7 @@ export default function SettingsPage() {
   const [autoConfirm, setAutoConfirm] = useState(false);
   const [requireDeposit, setRequireDeposit] = useState(false);
   const [depositAmount, setDepositAmount] = useState("20");
+  const [businessHours, setBusinessHours] = useState<Record<DayKey, { open: boolean; start: string; end: string }>>(DEFAULT_HOURS);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -73,6 +90,7 @@ export default function SettingsPage() {
         setAutoConfirm(data.auto_confirm ?? false);
         setRequireDeposit(data.require_deposit ?? false);
         setDepositAmount(String(data.deposit_amount ?? 20));
+        if (data.business_hours) setBusinessHours({ ...DEFAULT_HOURS, ...data.business_hours });
       }
     }
     load();
@@ -88,6 +106,7 @@ export default function SettingsPage() {
       auto_confirm: autoConfirm,
       require_deposit: requireDeposit,
       deposit_amount: parseFloat(depositAmount) || 0,
+      business_hours: businessHours,
       updated_at: new Date().toISOString(),
     }, { onConflict: "tenant_id" });
     setSaving(false);
@@ -96,6 +115,10 @@ export default function SettingsPage() {
       : { type: "ok", text: "Configuración guardada." }
     );
     setTimeout(() => setMsg(null), 3000);
+  }
+
+  function setDay(day: DayKey, patch: Partial<{ open: boolean; start: string; end: string }>) {
+    setBusinessHours(prev => ({ ...prev, [day]: { ...prev[day], ...patch } }));
   }
 
   return (
@@ -139,6 +162,33 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
+      </SectionCard>
+
+      {/* Horarios de atención */}
+      <SectionCard icon={<IconClock size={17} />} title="Horarios de atención" subtitle="Días y horas en que recibes clientes">
+        {DAY_KEYS.map((day, idx) => {
+          const h = businessHours[day];
+          const isLast = idx === DAY_KEYS.length - 1;
+          return (
+            <div key={day} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "13px 0", borderBottom: isLast ? "none" : "1px solid #f0eeeb", flexWrap: "wrap" }}>
+              <span style={{ width: "88px", fontWeight: 600, fontSize: "13px", color: "#14111C", flexShrink: 0 }}>
+                {DAY_LABELS[day]}
+              </span>
+              <Toggle checked={h.open} onChange={v => setDay(day, { open: v })} />
+              {h.open ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
+                  <input type="time" value={h.start} onChange={e => setDay(day, { start: e.target.value })}
+                    style={{ padding: "6px 10px", border: "1.5px solid #e8e6e2", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "inherit", outline: "none" }} />
+                  <span style={{ fontSize: "12px", color: "#8E879B" }}>—</span>
+                  <input type="time" value={h.end} onChange={e => setDay(day, { end: e.target.value })}
+                    style={{ padding: "6px 10px", border: "1.5px solid #e8e6e2", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "inherit", outline: "none" }} />
+                </div>
+              ) : (
+                <span style={{ marginLeft: "auto", fontSize: "12px", color: "#8E879B", fontWeight: 500 }}>Cerrado</span>
+              )}
+            </div>
+          );
+        })}
       </SectionCard>
 
       {/* Enlace rápido a Mi Marca */}
