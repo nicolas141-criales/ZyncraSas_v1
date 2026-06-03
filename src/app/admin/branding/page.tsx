@@ -292,7 +292,6 @@ export default function BrandingPage() {
           <p style={{ fontSize: "11px", color: "#8E879B", marginTop: "8px", textAlign: "center" }}>Los cambios se aplican al guardar</p>
         </div>
       </div>
-      )}
     </div>
   );
 }
