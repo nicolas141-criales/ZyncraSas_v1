@@ -194,28 +194,53 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
     }
     async function fetchSlots() {
       setLoadingSlots(true);
-      let query = supabase
-        .from("appointments")
-        .select("appointment_time")
-        .eq("tenant_id", tenant.id)
-        .eq("appointment_date", selectedDate)
-        .in("status", ["pending", "confirmed"]);
 
-      if (selectedProfessional && selectedProfessional !== "any") {
-        query = query.eq("professional_id", selectedProfessional);
+      const toKey = (time: string) => {
+        const [h, m] = time.split(":");
+        const hr = parseInt(h);
+        const suffix = hr >= 12 ? "PM" : "AM";
+        const h12 = hr % 12 || 12;
+        return `${h12.toString().padStart(2, "0")}:${m} ${suffix}`;
+      };
+
+      if (selectedProfessional === "any") {
+        // Trae todas las citas del día con su profesional
+        const { data } = await supabase
+          .from("appointments")
+          .select("appointment_time, professional_id")
+          .eq("tenant_id", tenant.id)
+          .eq("appointment_date", selectedDate)
+          .in("status", ["pending", "confirmed"]);
+
+        const totalProfs = professionals.length;
+        const booked = new Set<string>();
+
+        if (totalProfs > 0 && data) {
+          // Agrupa por horario: cuántos profesionales distintos están ocupados
+          const slotBusy: Record<string, Set<string>> = {};
+          for (const a of data as any[]) {
+            const key = toKey(a.appointment_time);
+            if (!slotBusy[key]) slotBusy[key] = new Set();
+            if (a.professional_id) slotBusy[key].add(a.professional_id);
+          }
+          // Solo bloquea si TODOS los profesionales están ocupados en ese horario
+          for (const [key, busy] of Object.entries(slotBusy)) {
+            if (busy.size >= totalProfs) booked.add(key);
+          }
+        }
+        setBookedSlots(booked);
+      } else {
+        // Profesional específico: solo sus citas
+        const { data } = await supabase
+          .from("appointments")
+          .select("appointment_time")
+          .eq("tenant_id", tenant.id)
+          .eq("appointment_date", selectedDate)
+          .eq("professional_id", selectedProfessional!)
+          .in("status", ["pending", "confirmed"]);
+
+        setBookedSlots(new Set<string>((data ?? []).map((a: any) => toKey(a.appointment_time))));
       }
-
-      const { data } = await query;
-      const booked = new Set<string>(
-        (data ?? []).map((a: any) => {
-          const [h, m] = a.appointment_time.split(":");
-          const hr = parseInt(h);
-          const suffix = hr >= 12 ? "PM" : "AM";
-          const h12 = hr % 12 || 12;
-          return `${h12.toString().padStart(2, "0")}:${m} ${suffix}`;
-        })
-      );
-      setBookedSlots(booked);
       setLoadingSlots(false);
     }
     fetchSlots();
@@ -325,10 +350,55 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
       }
 
       if (clientId) {
-        // Pick a random professional if "any" was selected
-        let profId: string | null = selectedProfessional === "any"
-          ? (professionals[Math.floor(Math.random() * professionals.length)]?.id ?? null)
-          : selectedProfessional;
+        // Asigna el profesional: si eligió uno específico lo usa directamente;
+        // si eligió "sin preferencia", elige al libre con menos citas en la semana.
+        let profId: string | null = null;
+        if (selectedProfessional !== "any") {
+          profId = selectedProfessional;
+        } else if (professionals.length > 0) {
+          const timeStr = selectedTime ? convertTo24h(selectedTime) : "09:00:00";
+
+          // Cuáles profesionales están ocupados a esa hora exacta
+          const { data: busyNow } = await supabase
+            .from("appointments")
+            .select("professional_id")
+            .eq("tenant_id", tenant.id)
+            .eq("appointment_date", selectedDate!)
+            .eq("appointment_time", timeStr)
+            .in("status", ["pending", "confirmed"]);
+
+          const busyIds = new Set((busyNow ?? []).map((a: any) => a.professional_id).filter(Boolean));
+          const freeProfs = professionals.filter((p: any) => !busyIds.has(p.id));
+          const pool = freeProfs.length > 0 ? freeProfs : professionals;
+
+          if (pool.length === 1) {
+            profId = pool[0].id;
+          } else {
+            // Cuenta citas de la semana por profesional y elige el que menos tenga
+            const d = new Date(selectedDate!);
+            const dow = d.getDay();
+            const mondayOffset = dow === 0 ? -6 : 1 - dow;
+            const monday = new Date(d); monday.setDate(d.getDate() + mondayOffset);
+            const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+            const toISO = (dt: Date) => dt.toISOString().split("T")[0];
+
+            const { data: weekApts } = await supabase
+              .from("appointments")
+              .select("professional_id")
+              .eq("tenant_id", tenant.id)
+              .gte("appointment_date", toISO(monday))
+              .lte("appointment_date", toISO(sunday))
+              .in("status", ["pending", "confirmed"]);
+
+            const countMap: Record<string, number> = {};
+            for (const a of weekApts ?? []) {
+              if (a.professional_id) countMap[a.professional_id] = (countMap[a.professional_id] || 0) + 1;
+            }
+
+            const sorted = [...pool].sort((a: any, b: any) => (countMap[a.id] || 0) - (countMap[b.id] || 0));
+            profId = sorted[0].id;
+          }
+        }
 
         const { data: apptData } = await supabase.from("appointments").insert({
           tenant_id: tenant.id,
