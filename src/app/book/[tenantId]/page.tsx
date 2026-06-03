@@ -946,9 +946,9 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                     <div
                       className={`${styles.profCard} ${selectedProfessional === "any" ? styles.profCardSel : ""}`}
                       style={selectedProfessional === "any" ? { borderColor: primaryColor, background: primaryTint, boxShadow: `0 0 0 2px ${primaryColor}` } : {}}
-                      onClick={() => { setSelectedProfessional("any"); setSelectedDate(null); setSelectedTime(null); }}
+                      onClick={() => { setSelectedProfessional("any"); setSelectedTime(null); }}
                       role="button" tabIndex={0}
-                      onKeyDown={e => e.key === "Enter" && (setSelectedProfessional("any"), setSelectedDate(null), setSelectedTime(null))}
+                      onKeyDown={e => e.key === "Enter" && (setSelectedProfessional("any"), setSelectedTime(null))}
                     >
                       <div className={styles.profInitials}
                         style={{ background: "linear-gradient(135deg, #94a3b8, #64748b)", fontSize: 22 }}>
@@ -964,9 +964,9 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                           key={prof.id}
                           className={`${styles.profCard} ${sel ? styles.profCardSel : ""}`}
                           style={sel ? { borderColor: primaryColor, background: primaryTint, boxShadow: `0 0 0 2px ${primaryColor}` } : {}}
-                          onClick={() => { setSelectedProfessional(prof.id); setSelectedDate(null); setSelectedTime(null); }}
+                          onClick={() => { setSelectedProfessional(prof.id); setSelectedTime(null); }}
                           role="button" tabIndex={0}
-                          onKeyDown={e => e.key === "Enter" && (setSelectedProfessional(prof.id), setSelectedDate(null), setSelectedTime(null))}
+                          onKeyDown={e => e.key === "Enter" && (setSelectedProfessional(prof.id), setSelectedTime(null))}
                         >
                           {prof.avatar_url ? (
                             <img src={prof.avatar_url} alt={prof.name} className={styles.profAvatar} />
