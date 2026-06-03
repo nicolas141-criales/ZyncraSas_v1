@@ -3,14 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
-import { IconPalette, IconCheck, IconStorefront, IconSliders, IconPlus, IconX } from "../ZyncraIcons";
-
-type FieldType = "text" | "number" | "date" | "select" | "boolean";
-interface CustomField { id: string; name: string; field_key: string; field_type: FieldType; required: boolean; options: string[]; position: number; active: boolean; }
-const TYPE_LABELS: Record<FieldType, string> = { text: "Texto libre", number: "Número", date: "Fecha", select: "Lista desplegable", boolean: "Sí / No" };
-const TYPE_ICONS: Record<FieldType, string> = { text: "T", number: "#", date: "📅", select: "≡", boolean: "✓" };
-function slugify(s: string) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,""); }
-const EMPTY_FIELD = { name: "", field_type: "text" as FieldType, required: false, options: "" };
+import { IconPalette, IconCheck, IconStorefront } from "../ZyncraIcons";
 
 interface BrandingConfig {
   business_name: string; logo_url: string; logo_object_position: string;
@@ -49,37 +42,6 @@ export default function BrandingPage() {
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
-  // Custom fields (client type)
-  const [fields, setFields] = useState<CustomField[]>([]);
-  const [fieldModal, setFieldModal] = useState(false);
-  const [editingField, setEditingField] = useState<CustomField | null>(null);
-  const [fieldForm, setFieldForm] = useState(EMPTY_FIELD);
-  const [savingField, setSavingField] = useState(false);
-  const [fieldError, setFieldError] = useState<string | null>(null);
-
-  const loadFields = useCallback(async (tid: string) => {
-    const { data } = await supabase.from("custom_fields").select("*").eq("tenant_id", tid).eq("applies_to", "client").order("position");
-    setFields((data ?? []).map((f: any) => ({ ...f, options: Array.isArray(f.options) ? f.options : [] })));
-  }, []);
-
-  const openCreateField = () => { setEditingField(null); setFieldForm(EMPTY_FIELD); setFieldError(null); setFieldModal(true); };
-  const openEditField = (f: CustomField) => { setEditingField(f); setFieldForm({ name: f.name, field_type: f.field_type, required: f.required, options: f.options.join("\n") }); setFieldError(null); setFieldModal(true); };
-
-  const saveField = async () => {
-    if (!fieldForm.name.trim()) { setFieldError("El nombre es obligatorio."); return; }
-    setSavingField(true); setFieldError(null);
-    const payload = { tenant_id: tenantId, name: fieldForm.name.trim(), field_key: slugify(fieldForm.name), field_type: fieldForm.field_type, applies_to: "client", required: fieldForm.required, options: fieldForm.field_type === "select" ? fieldForm.options.split("\n").map(o => o.trim()).filter(Boolean) : [], active: true, position: editingField ? editingField.position : fields.length };
-    if (editingField) await supabase.from("custom_fields").update(payload).eq("id", editingField.id);
-    else await supabase.from("custom_fields").insert(payload);
-    setSavingField(false); setFieldModal(false); if (tenantId) loadFields(tenantId);
-  };
-
-  const deleteField = async (f: CustomField) => {
-    if (!confirm(`¿Eliminar el campo "${f.name}"?`)) return;
-    await supabase.from("custom_fields").delete().eq("id", f.id);
-    if (tenantId) loadFields(tenantId);
-  };
-
   const bookingLink = typeof window !== "undefined" ? `${window.location.origin}/book/${tenantSlug}` : `/book/${tenantSlug}`;
 
   const fetchBranding = useCallback(async (tid: string) => {
@@ -92,8 +54,8 @@ export default function BrandingPage() {
   }, []);
 
   useEffect(() => {
-    if (tenantId) { setLoading(true); fetchBranding(tenantId).then(() => setLoading(false)); loadFields(tenantId); }
-  }, [tenantId, fetchBranding, loadFields]);
+    if (tenantId) { setLoading(true); fetchBranding(tenantId).then(() => setLoading(false)); }
+  }, [tenantId, fetchBranding]);
 
   const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file) return;
@@ -330,81 +292,6 @@ export default function BrandingPage() {
           <p style={{ fontSize: "11px", color: "#8E879B", marginTop: "8px", textAlign: "center" }}>Los cambios se aplican al guardar</p>
         </div>
       </div>
-
-      {/* Campos del formulario de clientes */}
-      <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden", marginTop: "20px" }}>
-        <div style={{ padding: "16px 22px", borderBottom: "1px solid #e8e6e2", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", flexShrink: 0 }}>
-              <IconSliders size={17} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: "14px", color: "#14111C" }}>Campos del formulario de clientes</div>
-              <div style={{ fontSize: "12px", color: "#8E879B", marginTop: "2px" }}>Información extra que recolectas de tus clientes al reservar</div>
-            </div>
-          </div>
-          <button onClick={openCreateField} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px", borderRadius: "9px", border: "none", background: "rgba(251,15,5,0.08)", color: "#fb0f05", fontWeight: 700, fontSize: "12px", cursor: "pointer", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
-            <IconPlus size={13} color="#fb0f05" /> Agregar campo
-          </button>
-        </div>
-        <div style={{ padding: "4px 22px 8px" }}>
-          {fields.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "24px 0", color: "#8E879B", fontSize: "13px" }}>Sin campos aún — los campos que agregues aparecerán en el formulario de reserva</div>
-          ) : fields.map((f, i) => (
-            <div key={f.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 0", borderBottom: i < fields.length - 1 ? "1px solid #f0eeeb" : "none" }}>
-              <div style={{ width: "32px", height: "32px", borderRadius: "8px", background: "#f8fafc", border: "1px solid #e8e6e2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "13px", fontWeight: 700, color: "#fb0f05", flexShrink: 0 }}>{TYPE_ICONS[f.field_type]}</div>
-              <div style={{ flex: 1 }}>
-                <span style={{ fontWeight: 600, fontSize: "13px", color: "#14111C" }}>{f.name}</span>
-                <span style={{ fontSize: "11px", color: "#8E879B", marginLeft: "8px" }}>{TYPE_LABELS[f.field_type]}</span>
-                {f.required && <span style={{ fontSize: "10px", fontWeight: 700, marginLeft: "6px", padding: "2px 6px", borderRadius: "20px", background: "rgba(251,15,5,0.08)", color: "#fb0f05" }}>Obligatorio</span>}
-              </div>
-              <div style={{ display: "flex", gap: "4px" }}>
-                <button onClick={() => openEditField(f)} style={{ width: "30px", height: "30px", borderRadius: "7px", border: "1px solid #e8e6e2", background: "#f8fafc", cursor: "pointer", fontSize: "12px" }}>✏️</button>
-                <button onClick={() => deleteField(f)} style={{ width: "30px", height: "30px", borderRadius: "7px", border: "1px solid #e8e6e2", background: "#f8fafc", cursor: "pointer", fontSize: "12px" }}>🗑</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Modal campos */}
-      {fieldModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
-          onClick={e => { if (e.target === e.currentTarget) setFieldModal(false); }}>
-          <div style={{ background: "white", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "440px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "22px" }}>
-              <h2 style={{ fontSize: "16px", fontWeight: 800, color: "#14111C", margin: 0 }}>{editingField ? "Editar campo" : "Nuevo campo de cliente"}</h2>
-              <button onClick={() => setFieldModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}><IconX size={18} /></button>
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-              <div>
-                <label style={lbl}>Nombre del campo</label>
-                <input value={fieldForm.name} onChange={e => setFieldForm(f => ({ ...f, name: e.target.value }))} placeholder="Ej: Tipo de cabello, Alergia conocida..." style={inp} />
-              </div>
-              <div>
-                <label style={lbl}>Tipo de campo</label>
-                <select value={fieldForm.field_type} onChange={e => setFieldForm(f => ({ ...f, field_type: e.target.value as FieldType }))} style={inp}>
-                  {(Object.entries(TYPE_LABELS) as [FieldType, string][]).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
-              </div>
-              {fieldForm.field_type === "select" && (
-                <div>
-                  <label style={lbl}>Opciones (una por línea)</label>
-                  <textarea value={fieldForm.options} onChange={e => setFieldForm(f => ({ ...f, options: e.target.value }))} placeholder={"Liso\nRizado\nOndulado"} rows={3} style={{ ...inp, resize: "vertical" }} />
-                </div>
-              )}
-              <label style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }}>
-                <input type="checkbox" checked={fieldForm.required} onChange={e => setFieldForm(f => ({ ...f, required: e.target.checked }))} style={{ accentColor: "#fb0f05", width: 16, height: 16 }} />
-                <span style={{ fontSize: "13px", color: "#475569" }}>Campo obligatorio</span>
-              </label>
-            </div>
-            {fieldError && <div style={{ background: "#fff0f0", border: "1px solid rgba(251,15,5,0.2)", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#d90d04", marginTop: "14px" }}>{fieldError}</div>}
-            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "22px" }}>
-              <button type="button" className="btn-secondary" onClick={() => setFieldModal(false)}>Cancelar</button>
-              <button type="button" className="btn-primary" onClick={saveField} disabled={savingField}>{savingField ? "Guardando..." : editingField ? "Guardar cambios" : "Crear campo"}</button>
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );
