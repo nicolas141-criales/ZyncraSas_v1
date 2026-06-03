@@ -53,7 +53,6 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Clientes",
     items: [
       { href: "/admin/clients",       label: "Clientes (CRM)",      icon: <IconUsers size={17} /> },
-      { href: "/admin/custom-fields", label: "Campos Personalizados",icon: <IconSliders size={17} /> },
     ],
   },
   {
