@@ -107,7 +107,7 @@ export default function CalendarPage() {
       .select("id,client_id,service_id,professional_id,appointment_date,appointment_time,status,clients(name),services(name),professionals(name)")
       .eq("tenant_id", tid).gte("appointment_date", s).lte("appointment_date", e)
       .order("appointment_date").order("appointment_time");
-    const apts = (data ?? []) as Appointment[];
+    const apts = (data ?? []) as unknown as Appointment[];
     setAppointments(apts);
     await buildFieldsSet(apts);
     setLoading(false);
