@@ -454,7 +454,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
           appointment_date: selectedDate,
           appointment_time: selectedTime ? convertTo24h(selectedTime) : "09:00:00",
           status: "pending",
-        }).select("id").single();
+        }).select("id, manage_token").single();
 
         // Save service field values
         const allFields = [...serviceFields];
@@ -474,6 +474,30 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
         }
 
         setBookedClientId(clientId);
+
+        // Send confirmation email if the client provided their email
+        const manageToken = (apptData as any)?.manage_token;
+        if (details.email && manageToken) {
+          const profName = profId
+            ? (professionals.find((p: any) => p.id === profId) as any)?.name ?? "—"
+            : "—";
+          fetch("/api/send-confirmation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email:         details.email,
+              clientName:    details.name,
+              businessName,
+              service:       selectedSvc?.name ?? "—",
+              professional:  profName,
+              date:          selectedDate,
+              time:          selectedTime ? convertTo24h(selectedTime) : "09:00:00",
+              primaryColor,
+              secondaryColor,
+              manageToken,
+            }),
+          }).catch(() => {}); // fire-and-forget — booking succeeds even if email fails
+        }
       }
       setIsBooked(true);
     } catch (err) {
