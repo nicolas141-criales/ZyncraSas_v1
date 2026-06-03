@@ -11,7 +11,7 @@ import {
   IconGrid, IconCalendar, IconBell, IconChat, IconCreditCard,
   IconBanknotes, IconDocument, IconChartBar, IconStar, IconStorefront,
   IconSliders, IconUsers, IconUserGroup, IconPalette,
-  IconCog, IconLogout, IconX,
+  IconCog, IconLogout, IconX, IconServiceBell,
 } from "./ZyncraIcons";
 
 // Nav item types
@@ -58,7 +58,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Negocio",
     items: [
-      { href: "/admin/services",      label: "Servicios",    icon: <IconBell size={17} /> },
+      { href: "/admin/services",      label: "Servicios",    icon: <IconServiceBell size={17} /> },
       { href: "/admin/professionals", label: "Equipo",       icon: <IconUserGroup size={17} /> },
       { href: "/admin/branding",      label: "Mi Marca",     icon: <IconPalette size={17} /> },
       { href: "/admin/settings",      label: "Configuración",icon: <IconCog size={17} /> },

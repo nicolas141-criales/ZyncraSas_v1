@@ -255,16 +255,16 @@ export default function ProfessionalsPage() {
                 {/* Edit info + schedule */}
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button onClick={() => openEdit(prof)}
-                    style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3548"; }}>
-                    ✏️ Editar
+                    style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid rgba(0,39,254,0.22)", background: "rgba(0,39,254,0.07)", color: "#0027fe", fontSize: "12px", fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "rgba(0,39,254,0.13)"; e.currentTarget.style.borderColor = "rgba(0,39,254,0.4)"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,39,254,0.07)"; e.currentTarget.style.borderColor = "rgba(0,39,254,0.22)"; }}>
+                    Editar
                   </button>
                   <button onClick={() => openScheduleModal(prof)}
                     style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3548"; }}>
-                    ⏱ Horario
+                    Horario
                   </button>
                 </div>
                 {/* Activate / delete */}

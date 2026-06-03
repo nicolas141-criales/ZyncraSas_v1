@@ -60,3 +60,11 @@ export const IconPercent    = (p: P) => <I {...p}><path d="M9 14.25l6-6m4.5-.75a
 export const IconRefresh    = (p: P) => <I {...p}><path d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" /></I>;
 export const IconZap        = (p: P) => <I {...p}><path d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" /></I>;
 export const IconSearch     = (p: P) => <I {...p}><path d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></I>;
+export const IconServiceBell = (p: P) => (
+  <I {...p}>
+    <path d="M12 3v2" />
+    <path d="M5 12a7 7 0 0 1 14 0" />
+    <path d="M3 12h18" />
+    <path d="M7 16h10" />
+  </I>
+);
