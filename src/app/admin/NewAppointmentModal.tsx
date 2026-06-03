@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { IconPlus, IconX, IconClock } from "./ZyncraIcons";
 
@@ -46,8 +46,6 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
   const [clientId, setClientId] = useState("");
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClient, setSelectedClient] = useState<{ id: string; name: string; phone: string } | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
   const [serviceId, setServiceId] = useState("");
   const [profId, setProfId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
@@ -67,7 +65,7 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
   // Carga datos al abrir
   useEffect(() => {
     if (!open || !tenantId) return;
-    setClientId(""); setClientSearch(""); setSelectedClient(null); setShowSuggestions(false);
+    setClientId(""); setClientSearch(""); setSelectedClient(null);
     setServiceId(""); setProfId("");
     setSelectedDate(""); setSelectedTime(""); setError(null);
     setStep("form");
@@ -102,22 +100,12 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
       });
   }, [profId, selectedDate, tenantId]);
 
-  // Cierra sugerencias al hacer clic fuera
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, []);
-
-  // Clientes filtrados por búsqueda
-  const filteredClients = clientSearch.trim().length >= 1
+  // Filtrado derivado — sin estado extra
+  const searchQuery = clientSearch.trim().toLowerCase();
+  const filteredClients = searchQuery.length >= 1
     ? clients.filter(c =>
-        c.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
-        c.phone.includes(clientSearch.replace(/\D/g, ""))
+        c.name.toLowerCase().includes(searchQuery) ||
+        c.phone.replace(/\D/g, "").includes(searchQuery.replace(/\D/g, ""))
       ).slice(0, 8)
     : [];
 
@@ -125,7 +113,6 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
     setSelectedClient(c);
     setClientId(c.id);
     setClientSearch("");
-    setShowSuggestions(false);
   };
 
   // Slots disponibles según horario del negocio
@@ -214,51 +201,54 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
         {/* ── Paso 1: cliente, servicio, colaborador ── */}
         {step === "form" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div ref={searchRef} style={{ position: "relative" }}>
+            <div>
               <label style={lbl}>Cliente *</label>
 
               {/* Cliente seleccionado */}
               {selectedClient ? (
-                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 13px", border: "1.5px solid #10b981", borderRadius: "10px", background: "rgba(16,185,129,0.05)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", border: "1.5px solid #10b981", borderRadius: "11px", background: "rgba(16,185,129,0.05)" }}>
                   <div style={{ flex: 1 }}>
                     <div style={{ fontWeight: 700, fontSize: "14px", color: "#14111C" }}>{selectedClient.name}</div>
-                    <div style={{ fontSize: "12px", color: "#8E879B" }}>{selectedClient.phone}</div>
+                    <div style={{ fontSize: "12px", color: "#8E879B", marginTop: "2px" }}>{selectedClient.phone}</div>
                   </div>
                   <button type="button" onClick={() => { setSelectedClient(null); setClientId(""); setClientSearch(""); }}
-                    style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B", padding: "2px", display: "flex" }}>
-                    <IconX size={15} />
+                    style={{ background: "rgba(20,15,30,0.05)", border: "none", cursor: "pointer", color: "#564E66", borderRadius: "6px", padding: "4px 6px", display: "flex", alignItems: "center" }}>
+                    <IconX size={13} /> <span style={{ fontSize: "11px", marginLeft: "3px", fontWeight: 600 }}>Cambiar</span>
                   </button>
                 </div>
               ) : (
-                /* Campo de búsqueda */
+                /* Buscador */
                 <div>
                   <input
                     type="text"
                     autoComplete="off"
-                    placeholder="Buscar por nombre o teléfono..."
+                    placeholder="Escribe nombre o teléfono..."
                     value={clientSearch}
-                    onChange={e => { setClientSearch(e.target.value); setShowSuggestions(true); }}
-                    onFocus={() => { if (clientSearch.trim()) setShowSuggestions(true); }}
+                    onChange={e => setClientSearch(e.target.value)}
                     style={inp}
                   />
-                  {/* Dropdown de sugerencias */}
-                  {showSuggestions && (
-                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "white", border: "1.5px solid #e8e6e2", borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.10)", zIndex: 10, marginTop: "4px", overflow: "hidden" }}>
+
+                  {/* Resultados inline */}
+                  {searchQuery.length >= 1 && (
+                    <div style={{ marginTop: "6px", border: "1.5px solid #e8e6e2", borderRadius: "11px", overflow: "hidden", background: "white" }}>
                       {filteredClients.length > 0 ? (
-                        filteredClients.map(c => (
+                        filteredClients.map((c, i) => (
                           <button key={c.id} type="button" onMouseDown={() => selectClient(c)}
-                            style={{ width: "100%", padding: "11px 14px", border: "none", borderBottom: "1px solid #f0eeeb", background: "white", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: "2px", fontFamily: "inherit" }}
+                            style={{ width: "100%", padding: "11px 14px", border: "none", borderBottom: i < filteredClients.length - 1 ? "1px solid #f0eeeb" : "none", background: "transparent", cursor: "pointer", textAlign: "left", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px", fontFamily: "inherit" }}
                             onMouseEnter={e => (e.currentTarget.style.background = "rgba(20,15,30,0.03)")}
-                            onMouseLeave={e => (e.currentTarget.style.background = "white")}>
-                            <span style={{ fontWeight: 600, fontSize: "13px", color: "#14111C" }}>{c.name}</span>
-                            <span style={{ fontSize: "12px", color: "#8E879B" }}>{c.phone}</span>
+                            onMouseLeave={e => (e.currentTarget.style.background = "transparent")}>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: "13px", color: "#14111C" }}>{c.name}</div>
+                              <div style={{ fontSize: "12px", color: "#8E879B", marginTop: "1px" }}>{c.phone}</div>
+                            </div>
+                            <span style={{ fontSize: "10px", fontWeight: 700, padding: "3px 8px", borderRadius: "20px", background: "rgba(251,15,5,0.08)", color: "#fb0f05", whiteSpace: "nowrap" }}>Seleccionar</span>
                           </button>
                         ))
-                      ) : clientSearch.trim().length >= 1 ? (
-                        <div style={{ padding: "14px", fontSize: "13px", color: "#8E879B", textAlign: "center" }}>
-                          No se encontró ningún cliente con ese nombre o número
+                      ) : (
+                        <div style={{ padding: "16px 14px", fontSize: "13px", color: "#8E879B", textAlign: "center" }}>
+                          Sin resultados · Ve a <strong>Clientes</strong> para registrarlo primero
                         </div>
-                      ) : null}
+                      )}
                     </div>
                   )}
                 </div>
