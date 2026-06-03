@@ -68,6 +68,24 @@ function initials(name: string): string {
   return name.split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
+// Converts "YYYY-MM-DD" + "09:00 AM" → "20260601T090000" (floating local time for calendar)
+function toCalDT(date: string, time: string): string {
+  const [timePart, mod] = time.split(" ");
+  let [h, m] = timePart.split(":");
+  if (h === "12") h = "00";
+  if (mod === "PM") h = String(parseInt(h, 10) + 12);
+  const [y, mo, d] = date.split("-");
+  return `${y}${mo}${d}T${h.padStart(2, "0")}${m}00`;
+}
+
+function addCalMins(dtStr: string, mins: number): string {
+  const d = new Date(
+    parseInt(dtStr.slice(0, 4)), parseInt(dtStr.slice(4, 6)) - 1, parseInt(dtStr.slice(6, 8)),
+    parseInt(dtStr.slice(9, 11)), parseInt(dtStr.slice(11, 13)) + mins
+  );
+  return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}T${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}00`;
+}
+
 /* ─── SVG Icons ─── */
 const CheckIcon = ({ size = 12, stroke = "white", strokeWidth = 3 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
@@ -481,6 +499,60 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
     setReviewSubmitted(true);
   };
 
+  /* ─── Calendar export ─── */
+  const addToGoogleCalendar = () => {
+    if (!selectedDate || !selectedTime) return;
+    const start = toCalDT(selectedDate, selectedTime);
+    const end = addCalMins(start, selectedSvc?.duration_minutes ?? 60);
+    const profLabel = selectedProfessional === "any" ? "Por asignar" : (selectedProf?.name ?? "");
+    const title = encodeURIComponent(`Cita: ${selectedSvc?.name ?? "Servicio"} en ${businessName}`);
+    const desc  = encodeURIComponent(`Profesional: ${profLabel}\nReservado con Zyncra`);
+    window.open(
+      `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${start}/${end}&details=${desc}`,
+      "_blank"
+    );
+  };
+
+  const downloadICS = () => {
+    if (!selectedDate || !selectedTime) return;
+    const start = toCalDT(selectedDate, selectedTime);
+    const end = addCalMins(start, selectedSvc?.duration_minutes ?? 60);
+    const profLabel = selectedProfessional === "any" ? "Por asignar" : (selectedProf?.name ?? "");
+    const now = new Date();
+    const stamp = [
+      now.getUTCFullYear(),
+      String(now.getUTCMonth() + 1).padStart(2, "0"),
+      String(now.getUTCDate()).padStart(2, "0"),
+      "T",
+      String(now.getUTCHours()).padStart(2, "0"),
+      String(now.getUTCMinutes()).padStart(2, "0"),
+      String(now.getUTCSeconds()).padStart(2, "0"),
+      "Z",
+    ].join("");
+    const uid = `${selectedDate.replace(/-/g, "")}T${start.slice(9)}@zyncra.app`;
+    const ics = [
+      "BEGIN:VCALENDAR",
+      "VERSION:2.0",
+      "PRODID:-//Zyncra//Booking//ES",
+      "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      "BEGIN:VEVENT",
+      `UID:${uid}`,
+      `DTSTAMP:${stamp}`,
+      `DTSTART:${start}`,
+      `DTEND:${end}`,
+      `SUMMARY:Cita: ${selectedSvc?.name ?? "Servicio"} en ${businessName}`,
+      `DESCRIPTION:Profesional: ${profLabel}\\nReservado con Zyncra`,
+      "END:VEVENT",
+      "END:VCALENDAR",
+    ].join("\r\n");
+    const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "cita-zyncra.ics"; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   /* ─── Derived display values ─── */
   const selectedSvc = services.find(s => s.id === selectedService);
   const selectedProf = professionals.find(p => p.id === selectedProfessional);
@@ -589,6 +661,32 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                     style={capitalize ? { textTransform: "capitalize" } : {}}>{value}</span>
                 </div>
               ))}
+            </div>
+
+            {/* Add to calendar */}
+            <div style={{ background: "rgba(0,39,254,0.04)", border: "1px solid rgba(0,39,254,0.12)", borderRadius: 16, padding: "16px 18px", marginBottom: 20, textAlign: "left" }}>
+              <p style={{ fontSize: 13, fontWeight: 700, color: "#111118", marginBottom: 12 }}>
+                Agregar al calendario
+              </p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {/* Google Calendar */}
+                <button onClick={addToGoogleCalendar} style={{ flex: 1, minWidth: 130, padding: "10px 12px", borderRadius: 10, border: "1.5px solid #e8e6e2", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontSize: 12, fontWeight: 700, color: "#1a1a2e", fontFamily: "inherit" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  Google Calendar
+                </button>
+                {/* ICS — Apple, Outlook, Yahoo, etc. */}
+                <button onClick={downloadICS} style={{ flex: 1, minWidth: 130, padding: "10px 12px", borderRadius: 10, border: "1.5px solid #e8e6e2", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, fontSize: 12, fontWeight: 700, color: "#1a1a2e", fontFamily: "inherit" }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+                  </svg>
+                  Apple · Outlook · Otros
+                </button>
+              </div>
             </div>
 
             {/* Site review prompt */}
