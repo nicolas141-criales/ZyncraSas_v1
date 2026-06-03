@@ -102,12 +102,28 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
 
   // Filtrado derivado — sin estado extra
   const searchQuery = clientSearch.trim().toLowerCase();
-  const filteredClients = searchQuery.length >= 1
-    ? clients.filter(c =>
-        c.name.toLowerCase().includes(searchQuery) ||
-        c.phone.replace(/\D/g, "").includes(searchQuery.replace(/\D/g, ""))
-      ).slice(0, 8)
-    : [];
+  const filteredClients = (() => {
+    if (searchQuery.length < 1) return [];
+    const phoneQuery = searchQuery.replace(/\D/g, "");
+    const scored = clients
+      .map(c => {
+        const name = c.name.toLowerCase();
+        const phone = c.phone.replace(/\D/g, "");
+        let score = 0;
+        if (name === searchQuery) score = 4;                          // coincidencia exacta
+        else if (name.startsWith(searchQuery)) score = 3;            // empieza con la búsqueda
+        else if (name.split(" ").some((w: string) => w.startsWith(searchQuery))) score = 2; // una palabra empieza
+        else if (name.includes(searchQuery)) score = 1;              // contiene en cualquier posición
+        else if (phoneQuery && phone.startsWith(phoneQuery)) score = 2;
+        else if (phoneQuery && phone.includes(phoneQuery)) score = 1;
+        return { c, score };
+      })
+      .filter(({ score }) => score > 0)   // sin coincidencia = no aparece
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 8)
+      .map(({ c }) => c);
+    return scored;
+  })();
 
   const selectClient = (c: { id: string; name: string; phone: string }) => {
     setSelectedClient(c);
