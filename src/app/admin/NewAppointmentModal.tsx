@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { IconPlus, IconX, IconClock } from "./ZyncraIcons";
 
@@ -44,6 +44,10 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
   const [businessHours, setBusinessHours] = useState<any>(null);
 
   const [clientId, setClientId] = useState("");
+  const [clientSearch, setClientSearch] = useState("");
+  const [selectedClient, setSelectedClient] = useState<{ id: string; name: string; phone: string } | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
   const [serviceId, setServiceId] = useState("");
   const [profId, setProfId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
@@ -63,7 +67,8 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
   // Carga datos al abrir
   useEffect(() => {
     if (!open || !tenantId) return;
-    setClientId(""); setServiceId(""); setProfId("");
+    setClientId(""); setClientSearch(""); setSelectedClient(null); setShowSuggestions(false);
+    setServiceId(""); setProfId("");
     setSelectedDate(""); setSelectedTime(""); setError(null);
     setStep("form");
     setCalYear(now.getFullYear()); setCalMonth(now.getMonth());
@@ -96,6 +101,32 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
         setLoadingSlots(false);
       });
   }, [profId, selectedDate, tenantId]);
+
+  // Cierra sugerencias al hacer clic fuera
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Clientes filtrados por búsqueda
+  const filteredClients = clientSearch.trim().length >= 1
+    ? clients.filter(c =>
+        c.name.toLowerCase().includes(clientSearch.toLowerCase()) ||
+        c.phone.includes(clientSearch.replace(/\D/g, ""))
+      ).slice(0, 8)
+    : [];
+
+  const selectClient = (c: { id: string; name: string; phone: string }) => {
+    setSelectedClient(c);
+    setClientId(c.id);
+    setClientSearch("");
+    setShowSuggestions(false);
+  };
 
   // Slots disponibles según horario del negocio
   const availableSlots = (() => {
@@ -183,12 +214,55 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
         {/* ── Paso 1: cliente, servicio, colaborador ── */}
         {step === "form" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-            <div>
+            <div ref={searchRef} style={{ position: "relative" }}>
               <label style={lbl}>Cliente *</label>
-              <select value={clientId} onChange={e => setClientId(e.target.value)} style={inp}>
-                <option value="">— Seleccionar cliente —</option>
-                {clients.map(c => <option key={c.id} value={c.id}>{c.name} · {c.phone}</option>)}
-              </select>
+
+              {/* Cliente seleccionado */}
+              {selectedClient ? (
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 13px", border: "1.5px solid #10b981", borderRadius: "10px", background: "rgba(16,185,129,0.05)" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: "14px", color: "#14111C" }}>{selectedClient.name}</div>
+                    <div style={{ fontSize: "12px", color: "#8E879B" }}>{selectedClient.phone}</div>
+                  </div>
+                  <button type="button" onClick={() => { setSelectedClient(null); setClientId(""); setClientSearch(""); }}
+                    style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B", padding: "2px", display: "flex" }}>
+                    <IconX size={15} />
+                  </button>
+                </div>
+              ) : (
+                /* Campo de búsqueda */
+                <div>
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    placeholder="Buscar por nombre o teléfono..."
+                    value={clientSearch}
+                    onChange={e => { setClientSearch(e.target.value); setShowSuggestions(true); }}
+                    onFocus={() => { if (clientSearch.trim()) setShowSuggestions(true); }}
+                    style={inp}
+                  />
+                  {/* Dropdown de sugerencias */}
+                  {showSuggestions && (
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "white", border: "1.5px solid #e8e6e2", borderRadius: "10px", boxShadow: "0 8px 24px rgba(0,0,0,0.10)", zIndex: 10, marginTop: "4px", overflow: "hidden" }}>
+                      {filteredClients.length > 0 ? (
+                        filteredClients.map(c => (
+                          <button key={c.id} type="button" onMouseDown={() => selectClient(c)}
+                            style={{ width: "100%", padding: "11px 14px", border: "none", borderBottom: "1px solid #f0eeeb", background: "white", cursor: "pointer", textAlign: "left", display: "flex", flexDirection: "column", gap: "2px", fontFamily: "inherit" }}
+                            onMouseEnter={e => (e.currentTarget.style.background = "rgba(20,15,30,0.03)")}
+                            onMouseLeave={e => (e.currentTarget.style.background = "white")}>
+                            <span style={{ fontWeight: 600, fontSize: "13px", color: "#14111C" }}>{c.name}</span>
+                            <span style={{ fontSize: "12px", color: "#8E879B" }}>{c.phone}</span>
+                          </button>
+                        ))
+                      ) : clientSearch.trim().length >= 1 ? (
+                        <div style={{ padding: "14px", fontSize: "13px", color: "#8E879B", textAlign: "center" }}>
+                          No se encontró ningún cliente con ese nombre o número
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
             <div>
               <label style={lbl}>Servicio</label>
