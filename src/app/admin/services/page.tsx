@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
-import { IconScissors, IconPlus, IconClock, IconCreditCard, IconX, IconSliders } from "../ZyncraIcons";
+import { IconBell, IconPlus, IconClock, IconCreditCard, IconX, IconSliders } from "../ZyncraIcons";
 
 type FieldType = "text" | "number" | "date" | "select" | "boolean";
 interface CustomField { id: string; name: string; field_key: string; field_type: FieldType; required: boolean; options: string[]; position: number; }
@@ -162,7 +162,7 @@ export default function ServicesPage() {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px", flexWrap: "wrap", gap: "14px" }}>
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
           <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", flexShrink: 0 }}>
-            <IconScissors size={20} />
+            <IconBell size={20} />
           </div>
           <div>
             <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Servicios</h1>
@@ -180,7 +180,7 @@ export default function ServicesPage() {
       ) : services.length === 0 ? (
         <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "22px", padding: "64px 32px", textAlign: "center" }}>
           <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "rgba(251,15,5,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", margin: "0 auto 16px" }}>
-            <IconScissors size={26} />
+            <IconBell size={26} />
           </div>
           <div style={{ fontWeight: 700, fontSize: "16px", color: "#14111C", marginBottom: "6px" }}>Aún no hay servicios</div>
           <p style={{ color: "#8E879B", fontSize: "14px", marginBottom: "24px" }}>Agrega tu primer servicio para que los clientes puedan reservar.</p>
@@ -197,7 +197,7 @@ export default function ServicesPage() {
               ) : (
                 <div style={{ width: "100%", height: "140px", background: "linear-gradient(135deg, rgba(251,15,5,0.06) 0%, rgba(0,39,254,0.06) 100%)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                   <div style={{ width: "52px", height: "52px", borderRadius: "16px", background: "rgba(251,15,5,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
-                    <IconScissors size={24} />
+                    <IconBell size={24} />
                   </div>
                 </div>
               )}
@@ -244,7 +244,7 @@ export default function ServicesPage() {
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
-                  <IconScissors size={17} />
+                  <IconBell size={17} />
                 </div>
                 <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C", margin: 0 }}>{editingService ? "Editar servicio" : "Nuevo servicio"}</h2>
               </div>

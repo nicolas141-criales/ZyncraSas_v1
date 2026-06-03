@@ -10,7 +10,7 @@ import { AdminContext } from "./admin-context";
 import {
   IconGrid, IconCalendar, IconBell, IconChat, IconCreditCard,
   IconBanknotes, IconDocument, IconChartBar, IconStar, IconStorefront,
-  IconSliders, IconUsers, IconScissors, IconUserGroup, IconPalette,
+  IconSliders, IconUsers, IconUserGroup, IconPalette,
   IconCog, IconLogout, IconX,
 } from "./ZyncraIcons";
 
@@ -58,7 +58,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Negocio",
     items: [
-      { href: "/admin/services",      label: "Servicios",    icon: <IconScissors size={17} /> },
+      { href: "/admin/services",      label: "Servicios",    icon: <IconBell size={17} /> },
       { href: "/admin/professionals", label: "Equipo",       icon: <IconUserGroup size={17} /> },
       { href: "/admin/branding",      label: "Mi Marca",     icon: <IconPalette size={17} /> },
       { href: "/admin/settings",      label: "Configuración",icon: <IconCog size={17} /> },

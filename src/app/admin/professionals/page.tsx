@@ -50,14 +50,17 @@ export default function ProfessionalsPage() {
   const { tenantId } = useAdmin();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Add / Edit modal
   const [showModal, setShowModal] = useState(false);
+  const [editingProf, setEditingProf] = useState<Professional | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  // Schedule editing
+  // Schedule modal
   const [scheduleProf, setScheduleProf] = useState<Professional | null>(null);
   const [editSchedule, setEditSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
   const [savingSchedule, setSavingSchedule] = useState(false);
@@ -79,41 +82,23 @@ export default function ProfessionalsPage() {
     ]).then(() => setLoading(false));
   }, [tenantId, fetchProfessionals]);
 
-  const openScheduleModal = (prof: Professional) => {
-    const base: Schedule = businessDefaults ?? DEFAULT_SCHEDULE;
-    // Merge: professional's own overrides take precedence over business defaults
-    const merged: Schedule = prof.schedule ? { ...base, ...prof.schedule } : { ...base };
-    setEditSchedule(merged);
-    setScheduleProf(prof);
+  /* ── Add / Edit helpers ── */
+  const openAdd = () => {
+    setEditingProf(null);
+    setForm(EMPTY_FORM);
+    setAvatarFile(null);
+    setAvatarPreview("");
+    setError(null);
+    setShowModal(true);
   };
 
-  const setDayField = (key: DayKey, field: keyof DaySchedule, value: boolean | string) => {
-    setEditSchedule(prev => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
-  };
-
-  const handleSaveSchedule = async () => {
-    if (!scheduleProf) return;
-    setSavingSchedule(true);
-    const { error: err } = await supabase
-      .from("professionals")
-      .update({ schedule: editSchedule })
-      .eq("id", scheduleProf.id);
-    if (!err) {
-      setProfessionals(prev => prev.map(p => p.id === scheduleProf.id ? { ...p, schedule: editSchedule } : p));
-      setScheduleProf(null);
-    }
-    setSavingSchedule(false);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar este profesional?")) return;
-    const { error } = await supabase.from("professionals").delete().eq("id", id);
-    if (!error) setProfessionals(prev => prev.filter(p => p.id !== id));
-  };
-
-  const handleToggleActive = async (prof: Professional) => {
-    const { error } = await supabase.from("professionals").update({ is_active: !prof.is_active }).eq("id", prof.id);
-    if (!error) setProfessionals(prev => prev.map(p => p.id === prof.id ? { ...p, is_active: !p.is_active } : p));
+  const openEdit = (prof: Professional) => {
+    setEditingProf(prof);
+    setForm({ name: prof.name, role: prof.role });
+    setAvatarFile(null);
+    setAvatarPreview(prof.avatar_url ?? "");
+    setError(null);
+    setShowModal(true);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,20 +115,73 @@ export default function ProfessionalsPage() {
     return supabase.storage.from("avatars").getPublicUrl(path).data.publicUrl;
   };
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tenantId) { setError("No se encontró el negocio. Recarga la página."); return; }
     if (!form.name.trim() || !form.role.trim()) { setError("El nombre y el rol son obligatorios."); return; }
     setSaving(true); setError(null);
-    let avatarUrl: string | null = null;
-    if (avatarFile) { avatarUrl = await uploadAvatar(avatarFile); if (!avatarUrl) { setSaving(false); return; } }
-    const { data, error: insertErr } = await supabase.from("professionals").insert([
-      { tenant_id: tenantId, name: form.name.trim(), role: form.role.trim(), avatar_url: avatarUrl, is_active: true }
-    ]).select();
-    if (insertErr) { setError("Error al guardar: " + insertErr.message); setSaving(false); return; }
-    if (data && data.length > 0) setProfessionals(prev => [...prev, data[0] as Professional]);
-    else await fetchProfessionals(tenantId);
-    setForm(EMPTY_FORM); setAvatarFile(null); setAvatarPreview(""); setShowModal(false); setSaving(false);
+
+    let avatarUrl: string | null = editingProf?.avatar_url ?? null;
+    if (avatarFile) {
+      const uploaded = await uploadAvatar(avatarFile);
+      if (!uploaded) { setSaving(false); return; }
+      avatarUrl = uploaded;
+    }
+
+    if (editingProf) {
+      const { error: updateErr } = await supabase.from("professionals")
+        .update({ name: form.name.trim(), role: form.role.trim(), avatar_url: avatarUrl })
+        .eq("id", editingProf.id);
+      if (updateErr) { setError("Error al guardar: " + updateErr.message); setSaving(false); return; }
+      setProfessionals(prev => prev.map(p =>
+        p.id === editingProf.id ? { ...p, name: form.name.trim(), role: form.role.trim(), avatar_url: avatarUrl } : p
+      ));
+    } else {
+      const { data, error: insertErr } = await supabase.from("professionals").insert([
+        { tenant_id: tenantId, name: form.name.trim(), role: form.role.trim(), avatar_url: avatarUrl, is_active: true }
+      ]).select();
+      if (insertErr) { setError("Error al guardar: " + insertErr.message); setSaving(false); return; }
+      if (data && data.length > 0) setProfessionals(prev => [...prev, data[0] as Professional]);
+      else await fetchProfessionals(tenantId);
+    }
+
+    setForm(EMPTY_FORM); setAvatarFile(null); setAvatarPreview("");
+    setShowModal(false); setEditingProf(null); setSaving(false);
+  };
+
+  /* ── Other actions ── */
+  const handleDelete = async (id: string) => {
+    if (!confirm("¿Eliminar este profesional?")) return;
+    const { error } = await supabase.from("professionals").delete().eq("id", id);
+    if (!error) setProfessionals(prev => prev.filter(p => p.id !== id));
+  };
+
+  const handleToggleActive = async (prof: Professional) => {
+    const { error } = await supabase.from("professionals").update({ is_active: !prof.is_active }).eq("id", prof.id);
+    if (!error) setProfessionals(prev => prev.map(p => p.id === prof.id ? { ...p, is_active: !p.is_active } : p));
+  };
+
+  /* ── Schedule modal ── */
+  const openScheduleModal = (prof: Professional) => {
+    const base: Schedule = businessDefaults ?? DEFAULT_SCHEDULE;
+    const merged: Schedule = prof.schedule ? { ...base, ...prof.schedule } : { ...base };
+    setEditSchedule(merged);
+    setScheduleProf(prof);
+  };
+
+  const setDayField = (key: DayKey, field: keyof DaySchedule, value: boolean | string) => {
+    setEditSchedule(prev => ({ ...prev, [key]: { ...prev[key], [field]: value } }));
+  };
+
+  const handleSaveSchedule = async () => {
+    if (!scheduleProf) return;
+    setSavingSchedule(true);
+    const { error: err } = await supabase.from("professionals").update({ schedule: editSchedule }).eq("id", scheduleProf.id);
+    if (!err) {
+      setProfessionals(prev => prev.map(p => p.id === scheduleProf.id ? { ...p, schedule: editSchedule } : p));
+      setScheduleProf(null);
+    }
+    setSavingSchedule(false);
   };
 
   const active = professionals.filter(p => p.is_active).length;
@@ -165,8 +203,7 @@ export default function ProfessionalsPage() {
             </p>
           </div>
         </div>
-        <button className="btn-primary" onClick={() => { setForm(EMPTY_FORM); setAvatarFile(null); setAvatarPreview(""); setError(null); setShowModal(true); }}
-          style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+        <button className="btn-primary" onClick={openAdd} style={{ display: "flex", alignItems: "center", gap: "7px" }}>
           <IconPlus size={15} color="white" /> Añadir profesional
         </button>
       </div>
@@ -181,9 +218,7 @@ export default function ProfessionalsPage() {
           </div>
           <div style={{ fontWeight: 700, fontSize: "16px", color: "#14111C", marginBottom: "6px" }}>Aún no hay profesionales</div>
           <p style={{ color: "#8E879B", fontSize: "14px", marginBottom: "24px" }}>Agrega a tu equipo para asignar citas y gestionar comisiones.</p>
-          <button className="btn-primary" onClick={() => { setForm(EMPTY_FORM); setAvatarFile(null); setAvatarPreview(""); setError(null); setShowModal(true); }}>
-            Añadir primer profesional
-          </button>
+          <button className="btn-primary" onClick={openAdd}>Añadir primer profesional</button>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "14px" }}>
@@ -217,12 +252,22 @@ export default function ProfessionalsPage() {
 
               {/* Actions */}
               <div style={{ display: "flex", flexDirection: "column", gap: "8px", borderTop: "1px solid #f0eeeb", paddingTop: "14px" }}>
-                <button onClick={() => openScheduleModal(prof)}
-                  style={{ width: "100%", padding: "9px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
-                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3548"; }}>
-                  ⏱ Editar horario
-                </button>
+                {/* Edit info + schedule */}
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button onClick={() => openEdit(prof)}
+                    style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3548"; }}>
+                    ✏️ Editar
+                  </button>
+                  <button onClick={() => openScheduleModal(prof)}
+                    style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3548"; }}>
+                    ⏱ Horario
+                  </button>
+                </div>
+                {/* Activate / delete */}
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button onClick={() => handleToggleActive(prof)}
                     style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
@@ -243,10 +288,10 @@ export default function ProfessionalsPage() {
         </div>
       )}
 
-      {/* Add Modal */}
+      {/* ── Add / Edit Modal ── */}
       {showModal && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
-          onClick={e => { if (e.target === e.currentTarget) setShowModal(false); }}>
+          onClick={e => { if (e.target === e.currentTarget) { setShowModal(false); setEditingProf(null); } }}>
           <div style={{ background: "white", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "460px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
@@ -254,20 +299,30 @@ export default function ProfessionalsPage() {
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconUserGroup size={17} />
                 </div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>Añadir profesional</h2>
+                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>
+                  {editingProf ? "Editar profesional" : "Añadir profesional"}
+                </h2>
               </div>
-              <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}>
+              <button onClick={() => { setShowModal(false); setEditingProf(null); }} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}>
                 <IconX size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleAdd}>
+            <form onSubmit={handleSave}>
               {/* Avatar */}
               <div style={{ marginBottom: "20px" }}>
-                <label style={lbl}>Foto de perfil (opcional)</label>
+                <label style={lbl}>Foto de perfil {editingProf ? "(cambia si lo deseas)" : "(opcional)"}</label>
                 <div style={{ display: "flex", gap: "14px", alignItems: "center" }}>
-                  <div style={{ width: "60px", height: "60px", borderRadius: "50%", flexShrink: 0, backgroundImage: avatarPreview ? `url(${avatarPreview})` : undefined, backgroundSize: "cover", backgroundPosition: "center", background: avatarPreview ? undefined : "linear-gradient(135deg, rgba(251,15,5,0.1), rgba(0,39,254,0.1))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", color: "#8E879B", border: "2px solid #e8e6e2" }}>
-                    {!avatarPreview && "·"}
+                  <div style={{
+                    width: "60px", height: "60px", borderRadius: "50%", flexShrink: 0,
+                    backgroundImage: avatarPreview ? `url(${avatarPreview})` : undefined,
+                    backgroundSize: "cover", backgroundPosition: "center",
+                    background: avatarPreview ? undefined : "linear-gradient(135deg, rgba(251,15,5,0.1), rgba(0,39,254,0.1))",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: avatarPreview ? undefined : "18px", color: "white", fontWeight: 800,
+                    border: "2px solid #e8e6e2",
+                  }}>
+                    {!avatarPreview && (editingProf ? initials(editingProf.name) : "·")}
                   </div>
                   <div style={{ flex: 1 }}>
                     <input type="file" accept="image/*" onChange={handleFileChange} style={{ ...inp, padding: "9px", fontSize: "13px" }} />
@@ -292,15 +347,17 @@ export default function ProfessionalsPage() {
               )}
 
               <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                <button type="button" className="btn-secondary" onClick={() => setShowModal(false)} disabled={saving}>Cancelar</button>
-                <button type="submit" className="btn-primary" disabled={saving}>{saving ? "Guardando..." : "Añadir al equipo"}</button>
+                <button type="button" className="btn-secondary" onClick={() => { setShowModal(false); setEditingProf(null); }} disabled={saving}>Cancelar</button>
+                <button type="submit" className="btn-primary" disabled={saving}>
+                  {saving ? "Guardando..." : editingProf ? "Guardar cambios" : "Añadir al equipo"}
+                </button>
               </div>
             </form>
           </div>
         </div>
       )}
 
-      {/* Schedule Modal */}
+      {/* ── Schedule Modal ── */}
       {scheduleProf && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={e => { if (e.target === e.currentTarget) setScheduleProf(null); }}>
@@ -309,9 +366,7 @@ export default function ProfessionalsPage() {
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "22px" }}>
               <div>
                 <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C", margin: 0 }}>Horario de {scheduleProf.name}</h2>
-                <p style={{ fontSize: "13px", color: "#8E879B", marginTop: "4px", margin: 0 }}>
-                  Configura sus días y horas de disponibilidad
-                </p>
+                <p style={{ fontSize: "13px", color: "#8E879B", marginTop: "4px", margin: 0 }}>Configura sus días y horas de disponibilidad</p>
               </div>
               <button onClick={() => setScheduleProf(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B", flexShrink: 0 }}>
                 <IconX size={20} />
@@ -329,36 +384,23 @@ export default function ProfessionalsPage() {
                     border: `1px solid ${day.open ? "rgba(16,185,129,0.18)" : "#e8e6e2"}`,
                     transition: "all 0.15s",
                   }}>
-                    {/* Toggle */}
                     <button onClick={() => setDayField(key, "open", !day.open)}
                       style={{ width: "38px", height: "22px", borderRadius: "11px", background: day.open ? "#10b981" : "#d1cdd8", border: "none", cursor: "pointer", position: "relative", flexShrink: 0, transition: "background 0.2s" }}>
-                      <span style={{
-                        position: "absolute", top: "3px", left: day.open ? "18px" : "3px",
-                        width: "16px", height: "16px", borderRadius: "50%", background: "white",
-                        transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
-                      }} />
+                      <span style={{ position: "absolute", top: "3px", left: day.open ? "18px" : "3px", width: "16px", height: "16px", borderRadius: "50%", background: "white", transition: "left 0.2s", boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                     </button>
-
-                    {/* Day name */}
                     <span style={{ fontSize: "13px", fontWeight: 700, color: day.open ? "#14111C" : "#8E879B", width: "82px", flexShrink: 0 }}>
                       {DAY_LABELS[key]}
                     </span>
-
-                    {/* Time range or closed label */}
                     {day.open ? (
                       <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
-                        <input type="time" value={day.start}
-                          onChange={e => setDayField(key, "start", e.target.value)}
+                        <input type="time" value={day.start} onChange={e => setDayField(key, "start", e.target.value)}
                           style={{ padding: "5px 9px", border: "1.5px solid #e8e6e2", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "var(--font-space-grotesk), sans-serif", flex: 1 }} />
                         <span style={{ fontSize: "12px", color: "#8E879B", flexShrink: 0 }}>–</span>
-                        <input type="time" value={day.end}
-                          onChange={e => setDayField(key, "end", e.target.value)}
+                        <input type="time" value={day.end} onChange={e => setDayField(key, "end", e.target.value)}
                           style={{ padding: "5px 9px", border: "1.5px solid #e8e6e2", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "var(--font-space-grotesk), sans-serif", flex: 1 }} />
                       </div>
                     ) : (
-                      <span style={{ fontSize: "12px", color: "#8E879B", fontWeight: 600, flex: 1 }}>
-                        Libre / No disponible
-                      </span>
+                      <span style={{ fontSize: "12px", color: "#8E879B", fontWeight: 600, flex: 1 }}>Libre / No disponible</span>
                     )}
                   </div>
                 );
