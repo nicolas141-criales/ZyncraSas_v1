@@ -74,7 +74,7 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
     Promise.all([
       supabase.from("clients").select("id,name,phone").eq("tenant_id", tenantId).order("name"),
       supabase.from("services").select("id,name").eq("tenant_id", tenantId).order("name"),
-      supabase.from("professionals").select("id,name").eq("tenant_id", tenantId).eq("is_active", true).order("name"),
+      supabase.from("professionals").select("id,name,schedule").eq("tenant_id", tenantId).eq("is_active", true).order("name"),
       supabase.from("tenants").select("settings").eq("id", tenantId).maybeSingle(),
     ]).then(([{data: cls}, {data: svs}, {data: prs}, {data: tenant}]) => {
       setClients(cls ?? []);
@@ -131,11 +131,11 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
     setClientSearch("");
   };
 
-  // Slots disponibles según horario del negocio
+  // Slots disponibles según horario efectivo (personal del colaborador o del negocio)
   const availableSlots = (() => {
-    if (!selectedDate || !businessHours) return TIME_SLOTS;
+    if (!selectedDate) return TIME_SLOTS;
     const [y, mo, d] = selectedDate.split("-").map(Number);
-    const h = businessHours[String(new Date(y, mo - 1, d).getDay())];
+    const h = getEffectiveHours(new Date(y, mo - 1, d).getDay());
     if (!h || !h.open) return [];
     const start = timeToMin(h.start), end = timeToMin(h.end);
     return TIME_SLOTS.filter(slot => {
@@ -150,9 +150,19 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
   const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
   const todayMidnight = new Date(); todayMidnight.setHours(0, 0, 0, 0);
 
+  // Returns the effective schedule for a given day of week, respecting the pro's personal schedule
+  const getEffectiveHours = (dayOfWeek: number) => {
+    const key = String(dayOfWeek);
+    if (profId) {
+      const prof = profs.find((p: any) => p.id === profId);
+      const profDay = prof?.schedule?.[key];
+      if (profDay !== undefined) return profDay as { open: boolean; start: string; end: string };
+    }
+    return (businessHours?.[key] ?? null) as { open: boolean; start: string; end: string } | null;
+  };
+
   const isDayClosed = (day: number) => {
-    if (!businessHours) return false;
-    const h = businessHours[String(new Date(calYear, calMonth, day).getDay())];
+    const h = getEffectiveHours(new Date(calYear, calMonth, day).getDay());
     return h ? !h.open : false;
   };
 

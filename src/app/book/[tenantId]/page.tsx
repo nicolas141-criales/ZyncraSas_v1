@@ -292,18 +292,32 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   const isSelected = (day: number) =>
     selectedDate === `${calYear}-${String(calMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
+  const timeToMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+
+  // Returns the effective schedule for a given day of week.
+  // When a specific professional is selected and has their own schedule, that takes precedence.
+  const getEffectiveHours = (dayOfWeek: number) => {
+    const key = String(dayOfWeek);
+    if (selectedProfessional && selectedProfessional !== "any") {
+      const prof = professionals.find(p => p.id === selectedProfessional);
+      const profDay = (prof as any)?.schedule?.[key];
+      if (profDay !== undefined) return profDay as { open: boolean; start: string; end: string };
+    }
+    return (businessHours?.[key] ?? null) as { open: boolean; start: string; end: string } | null;
+  };
+
   // businessHours usa claves "0"-"6" = Date.getDay() (mismo esquema que app mobile)
   const isDayClosed = (day: number) => {
-    if (!businessHours) return false;
-    const h = businessHours[String(new Date(calYear, calMonth, day).getDay())];
+    const h = getEffectiveHours(new Date(calYear, calMonth, day).getDay());
     return h ? !h.open : false;
   };
-  const timeToMin = (t: string) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
+
   const availableSlots = (() => {
-    if (!businessHours || !selectedDate) return TIME_SLOTS;
+    if (!selectedDate) return TIME_SLOTS;
     const [y, mo, d] = selectedDate.split("-").map(Number);
-    const h = businessHours[String(new Date(y, mo - 1, d).getDay())];
-    if (!h || !h.open) return [];
+    const h = getEffectiveHours(new Date(y, mo - 1, d).getDay());
+    if (!h) return TIME_SLOTS; // sin horario configurado → mostrar todo
+    if (!h.open) return [];    // día explícitamente cerrado → sin slots
     const start = timeToMin(h.start), end = timeToMin(h.end);
     return TIME_SLOTS.filter(slot => {
       const m = timeToMin(convertTo24h(slot).slice(0, 5));
@@ -357,6 +371,20 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
           profId = selectedProfessional;
         } else if (professionals.length > 0) {
           const timeStr = selectedTime ? convertTo24h(selectedTime) : "09:00:00";
+          const [dy, dmo, dd] = selectedDate!.split("-").map(Number);
+          const dayOfWeek = new Date(dy, dmo - 1, dd).getDay();
+          const dayKey = String(dayOfWeek);
+          const slotMin = timeToMin(timeStr.slice(0, 5));
+
+          // Solo profesionales que trabajan ese día y hora según su horario personal (o el del negocio)
+          const workingProfs = professionals.filter((p: any) => {
+            const sched = p.schedule ?? businessHours;
+            if (!sched) return true;
+            const dayH = sched[dayKey];
+            if (!dayH || !dayH.open) return false;
+            return slotMin >= timeToMin(dayH.start) && slotMin < timeToMin(dayH.end);
+          });
+          const candidatePool = workingProfs.length > 0 ? workingProfs : professionals;
 
           // Cuáles profesionales están ocupados a esa hora exacta
           const { data: busyNow } = await supabase
@@ -368,8 +396,8 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
             .in("status", ["pending", "confirmed"]);
 
           const busyIds = new Set((busyNow ?? []).map((a: any) => a.professional_id).filter(Boolean));
-          const freeProfs = professionals.filter((p: any) => !busyIds.has(p.id));
-          const pool = freeProfs.length > 0 ? freeProfs : professionals;
+          const freeProfs = candidatePool.filter((p: any) => !busyIds.has(p.id));
+          const pool = freeProfs.length > 0 ? freeProfs : candidatePool;
 
           if (pool.length === 1) {
             profId = pool[0].id;
@@ -820,9 +848,9 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                     <div
                       className={`${styles.profCard} ${selectedProfessional === "any" ? styles.profCardSel : ""}`}
                       style={selectedProfessional === "any" ? { borderColor: primaryColor, background: primaryTint, boxShadow: `0 0 0 2px ${primaryColor}` } : {}}
-                      onClick={() => { setSelectedProfessional("any"); setSelectedTime(null); }}
+                      onClick={() => { setSelectedProfessional("any"); setSelectedDate(null); setSelectedTime(null); }}
                       role="button" tabIndex={0}
-                      onKeyDown={e => e.key === "Enter" && (setSelectedProfessional("any"), setSelectedTime(null))}
+                      onKeyDown={e => e.key === "Enter" && (setSelectedProfessional("any"), setSelectedDate(null), setSelectedTime(null))}
                     >
                       <div className={styles.profInitials}
                         style={{ background: "linear-gradient(135deg, #94a3b8, #64748b)", fontSize: 22 }}>
@@ -838,9 +866,9 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                           key={prof.id}
                           className={`${styles.profCard} ${sel ? styles.profCardSel : ""}`}
                           style={sel ? { borderColor: primaryColor, background: primaryTint, boxShadow: `0 0 0 2px ${primaryColor}` } : {}}
-                          onClick={() => { setSelectedProfessional(prof.id); setSelectedTime(null); }}
+                          onClick={() => { setSelectedProfessional(prof.id); setSelectedDate(null); setSelectedTime(null); }}
                           role="button" tabIndex={0}
-                          onKeyDown={e => e.key === "Enter" && (setSelectedProfessional(prof.id), setSelectedTime(null))}
+                          onKeyDown={e => e.key === "Enter" && (setSelectedProfessional(prof.id), setSelectedDate(null), setSelectedTime(null))}
                         >
                           {prof.avatar_url ? (
                             <img src={prof.avatar_url} alt={prof.name} className={styles.profAvatar} />
