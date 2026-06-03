@@ -114,7 +114,6 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   const [professionals, setProfessionals] = useState<any[]>([]);
   const [tenant, setTenant] = useState<any>(null);
   const [branding, setBranding] = useState<any>(null);
-  const [customFields, setCustomFields] = useState<CustomField[]>([]);
   const [serviceFields, setServiceFields] = useState<CustomField[]>([]);
   const [reviewSettings, setReviewSettings] = useState<any>(null);
   const [loadingData, setLoadingData] = useState(true);
@@ -168,20 +167,17 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
         { data: svcData },
         { data: profData },
         { data: brandData },
-        { data: fieldsData },
         { data: reviewData },
       ] = await Promise.all([
         supabase.from("services").select("*").eq("tenant_id", tenantData.id).order("name"),
         supabase.from("professionals").select("*").eq("tenant_id", tenantData.id).eq("is_active", true),
         supabase.from("branding").select("*").eq("tenant_id", tenantData.id).limit(1),
-        supabase.from("custom_fields").select("*").eq("tenant_id", tenantData.id).eq("applies_to", "client").eq("active", true).order("position"),
         supabase.from("google_review_settings").select("*").eq("tenant_id", tenantData.id).limit(1),
       ]);
 
       if (svcData) setServices(svcData);
       if (profData) setProfessionals(profData);
       if (brandData && brandData.length > 0) setBranding(brandData[0]);
-      if (fieldsData) setCustomFields(fieldsData.map((f: any) => ({ ...f, options: Array.isArray(f.options) ? f.options : [] })));
       if (reviewData && reviewData.length > 0) setReviewSettings(reviewData[0]);
       // El horario viene de tenants.settings.schedule (mismo campo que la app mobile)
       if (tenantData.settings?.schedule) setBusinessHours(tenantData.settings.schedule);
@@ -344,8 +340,8 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
           status: "pending",
         }).select("id").single();
 
-        // Save field values (cliente + servicio)
-        const allFields = [...customFields, ...serviceFields];
+        // Save service field values
+        const allFields = [...serviceFields];
         if (allFields.length > 0) {
           const upserts = allFields
             .filter(f => fieldValues[f.id] !== undefined && fieldValues[f.id] !== "")
@@ -921,50 +917,6 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                             className={styles.inputField}>
                             <option value="">— Seleccionar —</option>
                             {f.options.map((o: string) => <option key={o} value={o}>{o}</option>)}
-                          </select>
-                        ) : (
-                          <input
-                            type={f.field_type === "number" ? "number" : f.field_type === "date" ? "date" : "text"}
-                            required={f.required}
-                            value={fieldValues[f.id] ?? ""}
-                            onChange={e => setFieldValues(v => ({ ...v, [f.id]: e.target.value }))}
-                            className={styles.inputField}
-                          />
-                        )}
-                      </div>
-                    ))}
-                  </>
-                )}
-
-                {/* Custom fields (cliente) */}
-                {customFields.length > 0 && (
-                  <>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: "#a0a0b0", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14, marginTop: 4, borderTop: "1px solid #f0eeeb", paddingTop: 20 }}>
-                      Información adicional
-                    </div>
-                    {customFields.map(f => (
-                      <div key={f.id} className={styles.formGroup}>
-                        <label className={styles.formLabel}>
-                          {f.name}
-                          {f.required && <span style={{ color: "#f87171", marginLeft: 4 }}>*</span>}
-                        </label>
-                        {f.field_type === "boolean" ? (
-                          <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 0" }}>
-                            <input type="checkbox"
-                              checked={fieldValues[f.id] === "true"}
-                              onChange={e => setFieldValues(v => ({ ...v, [f.id]: e.target.checked ? "true" : "false" }))}
-                              style={{ accentColor: primaryColor, width: 18, height: 18 }} />
-                            <span style={{ fontSize: 14, color: "#3a3a48" }}>Sí</span>
-                          </label>
-                        ) : f.field_type === "select" ? (
-                          <select
-                            required={f.required}
-                            value={fieldValues[f.id] ?? ""}
-                            onChange={e => setFieldValues(v => ({ ...v, [f.id]: e.target.value }))}
-                            className={styles.inputField}
-                          >
-                            <option value="">— Seleccionar —</option>
-                            {f.options.map(o => <option key={o} value={o}>{o}</option>)}
                           </select>
                         ) : (
                           <input
