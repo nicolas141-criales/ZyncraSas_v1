@@ -7,6 +7,8 @@ import { IconCalendar, IconX } from "../ZyncraIcons";
 
 interface Appointment {
   id: string;
+  client_id: string;
+  service_id: string;
   appointment_date: string;
   appointment_time: string;
   status: string;
@@ -58,6 +60,7 @@ export default function CalendarPage() {
   const [selectedApt, setSelectedApt] = useState<Appointment | null>(null);
   const [editForm, setEditForm] = useState({ date: "", time: "", status: "" });
   const [isSaving, setIsSaving] = useState(false);
+  const [aptFields, setAptFields] = useState<{ name: string; value: string }[]>([]);
 
   const weekDays = getWeekDays(weekRef);
   const startDate = toISO(weekDays[0]);
@@ -67,7 +70,7 @@ export default function CalendarPage() {
     setLoading(true);
     const { data } = await supabase
       .from("appointments")
-      .select("id,appointment_date,appointment_time,status,clients(name),services(name),professionals(name)")
+      .select("id,client_id,service_id,appointment_date,appointment_time,status,clients(name),services(name),professionals(name)")
       .eq("tenant_id", tid).gte("appointment_date", s).lte("appointment_date", e)
       .order("appointment_date").order("appointment_time");
     if (data) setAppointments(data as any);
@@ -86,9 +89,24 @@ export default function CalendarPage() {
     return appointments.filter(a => a.appointment_date === ds && a.appointment_time.startsWith(hour.substring(0, 2)));
   };
 
-  const openEdit = (apt: Appointment) => {
+  const openEdit = async (apt: Appointment) => {
     setSelectedApt(apt);
     setEditForm({ date: apt.appointment_date, time: apt.appointment_time.substring(0, 5), status: apt.status });
+    setAptFields([]);
+
+    const [{ data: fields }, { data: values }] = await Promise.all([
+      supabase.from("custom_fields").select("id, name").eq("service_id", apt.service_id).eq("active", true).order("position"),
+      supabase.from("client_field_values").select("field_id, value").eq("client_id", apt.client_id),
+    ]);
+
+    if (fields && values) {
+      const valMap = Object.fromEntries((values as any[]).map(v => [v.field_id, v.value]));
+      setAptFields(
+        (fields as any[])
+          .filter(f => valMap[f.id] !== undefined && valMap[f.id] !== null && valMap[f.id] !== "")
+          .map(f => ({ name: f.name, value: valMap[f.id] === "true" ? "Sí" : valMap[f.id] === "false" ? "No" : valMap[f.id] }))
+      );
+    }
   };
 
   const saveApt = async () => {
@@ -210,6 +228,16 @@ export default function CalendarPage() {
               <span><strong style={{ color: "#14111C" }}>Cliente:</strong> {(selectedApt.clients as any)?.name || "—"}</span>
               <span><strong style={{ color: "#14111C" }}>Servicio:</strong> {(selectedApt.services as any)?.name || "—"}</span>
               <span><strong style={{ color: "#14111C" }}>Profesional:</strong> {(selectedApt.professionals as any)?.name || "—"}</span>
+              {aptFields.length > 0 && (
+                <>
+                  <div style={{ borderTop: "1px solid #e8e6e2", marginTop: "6px", paddingTop: "8px", fontSize: "10px", fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                    Información del servicio
+                  </div>
+                  {aptFields.map(f => (
+                    <span key={f.name}><strong style={{ color: "#14111C" }}>{f.name}:</strong> {f.value}</span>
+                  ))}
+                </>
+              )}
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "14px", marginBottom: "24px" }}>
