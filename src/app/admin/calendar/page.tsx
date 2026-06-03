@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
-import { IconCalendar, IconX } from "../ZyncraIcons";
+import { IconCalendar, IconX, IconPlus } from "../ZyncraIcons";
+import NewAppointmentModal from "../NewAppointmentModal";
 
 interface Appointment {
   id: string;
@@ -67,6 +68,7 @@ export default function CalendarPage() {
   const [editForm, setEditForm] = useState({ date: "", time: "", status: "" });
   const [isSaving, setIsSaving] = useState(false);
   const [aptFields, setAptFields] = useState<{ name: string; value: string }[]>([]);
+  const [showNewAppt, setShowNewAppt] = useState(false);
 
   const weekDays = getWeekDays(weekRef);
   const todayStr = toISO(new Date());
@@ -215,6 +217,11 @@ export default function CalendarPage() {
         </div>
 
         <div style={{ display: "flex", gap: "8px", alignItems: "center", flexWrap: "wrap" }}>
+          {/* Nueva cita */}
+          <button onClick={() => setShowNewAppt(true)} className="btn-primary" style={{ display: "flex", alignItems: "center", gap: "6px", padding: "8px 16px" }}>
+            <IconPlus size={14} color="white" /> Nueva cita
+          </button>
+
           {/* View selector */}
           <div style={{ display: "flex", border: "1.5px solid #e8e6e2", borderRadius: "10px", overflow: "hidden" }}>
             {([["week","Semana"],["day","Día"],["professional","Colaborador"]] as const).map(([v, label]) => (
@@ -317,7 +324,7 @@ export default function CalendarPage() {
             {view === "professional" && (
               <>
                 {/* Header with prof names */}
-                <div style={{ display: "grid", gridTemplateColumns: `56px repeat(${profs.length + 1}, minmax(130px, 1fr))`, borderBottom: "1px solid #f0eeeb", flexShrink: 0, background: "#fafaf8" }}>
+                <div style={{ display: "grid", gridTemplateColumns: `56px repeat(${profs.length}, minmax(130px, 1fr))`, borderBottom: "1px solid #f0eeeb", flexShrink: 0, background: "#fafaf8" }}>
                   <div style={{ borderRight: "1px solid #f0eeeb" }} />
                   {profs.map(p => (
                     <div key={p.id} style={{ padding: "12px 8px", textAlign: "center", borderRight: "1px solid #f0eeeb" }}>
@@ -327,24 +334,17 @@ export default function CalendarPage() {
                       <div style={{ fontSize: "11px", fontWeight: 700, color: "#14111C", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
                     </div>
                   ))}
-                  <div style={{ padding: "12px 8px", textAlign: "center" }}>
-                    <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(20,15,30,0.05)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 4px", fontSize: "12px", fontWeight: 800, color: "#8E879B" }}>?</div>
-                    <div style={{ fontSize: "11px", fontWeight: 700, color: "#8E879B" }}>Sin asignar</div>
-                  </div>
                 </div>
                 <div style={{ flex: 1, overflowY: "auto" }}>
                   {loading ? <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando citas…</div> : (
                     HOURS.map(hour => (
-                      <div key={hour} style={{ display: "grid", gridTemplateColumns: `56px repeat(${profs.length + 1}, minmax(130px, 1fr))`, borderBottom: "1px solid #f7f5f2", minHeight: "72px" }}>
+                      <div key={hour} style={{ display: "grid", gridTemplateColumns: `56px repeat(${profs.length}, minmax(130px, 1fr))`, borderBottom: "1px solid #f7f5f2", minHeight: "72px" }}>
                         <div style={{ padding: "10px 8px 0", textAlign: "right", color: "#c0bdb9", fontSize: "11px", fontWeight: 600, borderRight: "1px solid #f0eeeb" }}>{hour}</div>
                         {profs.map(p => (
                           <div key={p.id} style={{ borderRight: "1px solid #f0eeeb", padding: "4px" }}>
                             {getAptsByProf(p.id, hour).map(apt => aptCard(apt))}
                           </div>
                         ))}
-                        <div style={{ padding: "4px" }}>
-                          {getAptsByProf(null, hour).map(apt => aptCard(apt))}
-                        </div>
                       </div>
                     ))
                   )}
@@ -355,6 +355,14 @@ export default function CalendarPage() {
           </div>
         </div>
       </div>
+
+      {/* Nueva cita modal */}
+      <NewAppointmentModal
+        tenantId={tenantId ?? ""}
+        open={showNewAppt}
+        onClose={() => setShowNewAppt(false)}
+        onCreated={() => fetchAppointments(tenantId!, startDate, endDate)}
+      />
 
       {/* Edit modal */}
       {selectedApt && (

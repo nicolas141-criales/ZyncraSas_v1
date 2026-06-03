@@ -9,6 +9,7 @@ import {
   IconCreditCard, IconTrendUp, IconTrendDown, IconClock, IconPercent,
   IconRefresh, IconPlus, IconZap, IconChat,
 } from "./ZyncraIcons";
+import NewAppointmentModal from "./NewAppointmentModal";
 
 // ─── Types ───────────────────────────────────────────────
 interface DashboardData {
@@ -568,59 +569,12 @@ export default function AdminOverview() {
       </div>
 
       {/* ─── Modal: Nueva Cita ─── */}
-      {showNewAppt && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
-          onClick={e => { if (e.target === e.currentTarget) setShowNewAppt(false); }}>
-          <div style={{ background: "white", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "480px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "22px" }}>
-              <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
-                <IconPlus size={18} />
-              </div>
-              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>Nueva Cita Manual</h2>
-            </div>
-            <form onSubmit={handleCreateAppt}>
-              <div style={{ marginBottom: "14px" }}>
-                <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Cliente *</label>
-                <select required value={apptForm.client_id} onChange={e => setApptForm({ ...apptForm, client_id: e.target.value })} style={inputSt}>
-                  <option value="">— Seleccionar cliente —</option>
-                  {apptClients.map(c => <option key={c.id} value={c.id}>{c.name} · {c.phone}</option>)}
-                </select>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "14px" }}>
-                <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Servicio</label>
-                  <select value={apptForm.service_id} onChange={e => setApptForm({ ...apptForm, service_id: e.target.value })} style={inputSt}>
-                    <option value="">— Cualquiera —</option>
-                    {apptServices.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                  </select>
-                </div>
-                <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Profesional</label>
-                  <select value={apptForm.professional_id} onChange={e => setApptForm({ ...apptForm, professional_id: e.target.value })} style={inputSt}>
-                    <option value="">— Cualquiera —</option>
-                    {apptProfs.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                  </select>
-                </div>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "22px" }}>
-                <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Fecha *</label>
-                  <input required type="date" value={apptForm.date} onChange={e => setApptForm({ ...apptForm, date: e.target.value })} style={inputSt} />
-                </div>
-                <div>
-                  <label style={{ display: "block", fontWeight: 600, fontSize: "12px", color: "#564E66", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>Hora *</label>
-                  <input required type="time" value={apptForm.time} onChange={e => setApptForm({ ...apptForm, time: e.target.value })} style={inputSt} />
-                </div>
-              </div>
-              {apptMsg && <p style={{ fontSize: "13px", marginBottom: "12px", color: apptMsg.startsWith("Error") ? "#ef4444" : "#10b981", fontWeight: 600 }}>{apptMsg}</p>}
-              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                <button type="button" className="btn-secondary" onClick={() => setShowNewAppt(false)} disabled={apptSaving}>Cancelar</button>
-                <button type="submit" className="btn-primary" disabled={apptSaving}>{apptSaving ? "Guardando..." : "Confirmar Cita"}</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <NewAppointmentModal
+        tenantId={tenantId ?? ""}
+        open={showNewAppt}
+        onClose={() => setShowNewAppt(false)}
+        onCreated={() => fetchAll(tenantId!, filter)}
+      />
 
       {/* ─── Modal: Bloquear Horario ─── */}
       {showBlock && (
