@@ -886,10 +886,61 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
             </div>
           )}
 
-          {/* ═══════════ STEP 2 – DATE / PROF / TIME ═══════════ */}
+          {/* ═══════════ STEP 2 – PROF / DATE / TIME ═══════════ */}
           {step === 2 && (
             <div>
-              <h2 className={styles.stepTitle}>¿Cuándo te gustaría venir?</h2>
+              <h2 className={styles.stepTitle}>Elige tu profesional y fecha</h2>
+
+              {/* 1. Professional selection */}
+              {professionals.length > 0 && (
+                <div className={styles.subSection}>
+                  <h3 className={styles.subTitle}>¿Con quién te atiendes?</h3>
+                  <div className={styles.profGrid}>
+                    {/* "Any professional" option */}
+                    <div
+                      className={`${styles.profCard} ${selectedProfessional === "any" ? styles.profCardSel : ""}`}
+                      style={selectedProfessional === "any" ? { borderColor: primaryColor, background: primaryTint, boxShadow: `0 0 0 2px ${primaryColor}` } : {}}
+                      onClick={() => { setSelectedProfessional("any"); setSelectedTime(null); }}
+                      role="button" tabIndex={0}
+                      onKeyDown={e => e.key === "Enter" && (setSelectedProfessional("any"), setSelectedTime(null))}
+                    >
+                      <div className={styles.profInitials}
+                        style={{ background: "linear-gradient(135deg, #94a3b8, #64748b)", fontSize: 22 }}>
+                        ✦
+                      </div>
+                      <div className={styles.profName}>Sin preferencia</div>
+                      <div className={styles.profRole}>Cualquiera</div>
+                    </div>
+                    {professionals.map(prof => {
+                      const sel = selectedProfessional === prof.id;
+                      return (
+                        <div
+                          key={prof.id}
+                          className={`${styles.profCard} ${sel ? styles.profCardSel : ""}`}
+                          style={sel ? { borderColor: primaryColor, background: primaryTint, boxShadow: `0 0 0 2px ${primaryColor}` } : {}}
+                          onClick={() => { setSelectedProfessional(prof.id); setSelectedTime(null); }}
+                          role="button" tabIndex={0}
+                          onKeyDown={e => e.key === "Enter" && (setSelectedProfessional(prof.id), setSelectedTime(null))}
+                        >
+                          {prof.avatar_url ? (
+                            <img src={prof.avatar_url} alt={prof.name} className={styles.profAvatar} />
+                          ) : (
+                            <div className={styles.profInitials}
+                              style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
+                              {initials(prof.name)}
+                            </div>
+                          )}
+                          <div className={styles.profName}>{prof.name}</div>
+                          <div className={styles.profRole}>{prof.role}</div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* 2. Calendar — days blocked/enabled by the selected professional's schedule */}
+              <h3 className={styles.subTitle}>¿Qué día?</h3>
 
               {/* Calendar navigation */}
               <div className={styles.calNav}>
@@ -936,54 +987,6 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                   );
                 })}
               </div>
-
-              {/* Professional selection */}
-              {selectedDate && professionals.length > 0 && (
-                <div className={styles.subSection}>
-                  <h3 className={styles.subTitle}>¿Con quién te atiendes?</h3>
-                  <div className={styles.profGrid}>
-                    {/* "Any professional" option */}
-                    <div
-                      className={`${styles.profCard} ${selectedProfessional === "any" ? styles.profCardSel : ""}`}
-                      style={selectedProfessional === "any" ? { borderColor: primaryColor, background: primaryTint, boxShadow: `0 0 0 2px ${primaryColor}` } : {}}
-                      onClick={() => { setSelectedProfessional("any"); setSelectedTime(null); }}
-                      role="button" tabIndex={0}
-                      onKeyDown={e => e.key === "Enter" && (setSelectedProfessional("any"), setSelectedTime(null))}
-                    >
-                      <div className={styles.profInitials}
-                        style={{ background: "linear-gradient(135deg, #94a3b8, #64748b)", fontSize: 22 }}>
-                        ✦
-                      </div>
-                      <div className={styles.profName}>Sin preferencia</div>
-                      <div className={styles.profRole}>Cualquiera</div>
-                    </div>
-                    {professionals.map(prof => {
-                      const sel = selectedProfessional === prof.id;
-                      return (
-                        <div
-                          key={prof.id}
-                          className={`${styles.profCard} ${sel ? styles.profCardSel : ""}`}
-                          style={sel ? { borderColor: primaryColor, background: primaryTint, boxShadow: `0 0 0 2px ${primaryColor}` } : {}}
-                          onClick={() => { setSelectedProfessional(prof.id); setSelectedTime(null); }}
-                          role="button" tabIndex={0}
-                          onKeyDown={e => e.key === "Enter" && (setSelectedProfessional(prof.id), setSelectedTime(null))}
-                        >
-                          {prof.avatar_url ? (
-                            <img src={prof.avatar_url} alt={prof.name} className={styles.profAvatar} />
-                          ) : (
-                            <div className={styles.profInitials}
-                              style={{ background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})` }}>
-                              {initials(prof.name)}
-                            </div>
-                          )}
-                          <div className={styles.profName}>{prof.name}</div>
-                          <div className={styles.profRole}>{prof.role}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
 
               {/* Time slots */}
               {selectedDate && selectedProfessional && (
