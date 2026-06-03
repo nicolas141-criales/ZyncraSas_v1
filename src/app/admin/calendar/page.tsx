@@ -31,7 +31,9 @@ function getWeekDays(ref: Date): Date[] {
   });
 }
 
-function toISO(d: Date) { return d.toISOString().split("T")[0]; }
+function toISO(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
 function fmt12(time: string) {
   const [h, m] = time.split(":");
   const hr = parseInt(h); const ampm = hr >= 12 ? "PM" : "AM";

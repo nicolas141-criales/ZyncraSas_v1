@@ -380,7 +380,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
             const mondayOffset = dow === 0 ? -6 : 1 - dow;
             const monday = new Date(d); monday.setDate(d.getDate() + mondayOffset);
             const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-            const toISO = (dt: Date) => dt.toISOString().split("T")[0];
+            const toISO = (dt: Date) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
 
             const { data: weekApts } = await supabase
               .from("appointments")
