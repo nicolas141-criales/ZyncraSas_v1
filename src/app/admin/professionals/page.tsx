@@ -64,6 +64,7 @@ export default function ProfessionalsPage() {
   const [scheduleProf, setScheduleProf] = useState<Professional | null>(null);
   const [editSchedule, setEditSchedule] = useState<Schedule>(DEFAULT_SCHEDULE);
   const [savingSchedule, setSavingSchedule] = useState(false);
+  const [scheduleError, setScheduleError] = useState<string | null>(null);
   const [businessDefaults, setBusinessDefaults] = useState<Schedule | null>(null);
 
   const fetchProfessionals = useCallback(async (tid: string) => {
@@ -166,6 +167,7 @@ export default function ProfessionalsPage() {
     const base: Schedule = businessDefaults ?? DEFAULT_SCHEDULE;
     const merged: Schedule = prof.schedule ? { ...base, ...prof.schedule } : { ...base };
     setEditSchedule(merged);
+    setScheduleError(null);
     setScheduleProf(prof);
   };
 
@@ -176,11 +178,19 @@ export default function ProfessionalsPage() {
   const handleSaveSchedule = async () => {
     if (!scheduleProf) return;
     setSavingSchedule(true);
-    const { error: err } = await supabase.from("professionals").update({ schedule: editSchedule }).eq("id", scheduleProf.id);
-    if (!err) {
-      setProfessionals(prev => prev.map(p => p.id === scheduleProf.id ? { ...p, schedule: editSchedule } : p));
-      setScheduleProf(null);
+    setScheduleError(null);
+    const { error: err } = await supabase
+      .from("professionals")
+      .update({ schedule: editSchedule })
+      .eq("id", scheduleProf.id)
+      .eq("tenant_id", tenantId!);
+    if (err) {
+      setScheduleError(err.message);
+      setSavingSchedule(false);
+      return;
     }
+    setProfessionals(prev => prev.map(p => p.id === scheduleProf.id ? { ...p, schedule: editSchedule } : p));
+    setScheduleProf(null);
     setSavingSchedule(false);
   };
 
@@ -411,7 +421,15 @@ export default function ProfessionalsPage() {
               Este horario sobreescribe el horario general del negocio para este miembro
             </p>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "22px" }}>
+            {scheduleError && (
+              <div style={{ background: "#fff0f0", border: "1px solid rgba(251,15,5,0.2)", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#d90d04", marginTop: "14px", fontWeight: 500 }}>
+                {scheduleError.includes("column") || scheduleError.includes("schema")
+                  ? "La columna 'schedule' no existe aún en la base de datos. Corre este SQL en Supabase: ALTER TABLE professionals ADD COLUMN IF NOT EXISTS schedule JSONB;"
+                  : scheduleError}
+              </div>
+            )}
+
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "16px" }}>
               <button className="btn-secondary" onClick={() => setScheduleProf(null)} disabled={savingSchedule}>Cancelar</button>
               <button className="btn-primary" onClick={handleSaveSchedule} disabled={savingSchedule}>
                 {savingSchedule ? "Guardando..." : "Guardar horario"}
