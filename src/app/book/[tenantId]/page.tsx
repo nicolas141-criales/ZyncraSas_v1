@@ -940,52 +940,54 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
               )}
 
               {/* 2. Calendar — days blocked/enabled by the selected professional's schedule */}
-              <h3 className={styles.subTitle}>¿Qué día?</h3>
+              <div className={styles.subSection}>
+                <h3 className={styles.subTitle}>¿Qué día?</h3>
 
-              {/* Calendar navigation */}
-              <div className={styles.calNav}>
-                <button className={styles.calNavBtn} onClick={prevMonth} disabled={!canGoPrev} aria-label="Mes anterior">
-                  <ChevronLeft />
-                </button>
-                <span className={styles.calMonthLabel}>
-                  {MONTHS_ES[calMonth]} {calYear}
-                </span>
-                <button className={styles.calNavBtn} onClick={nextMonth} aria-label="Mes siguiente">
-                  <ChevronRight />
-                </button>
-              </div>
+                {/* Calendar navigation */}
+                <div className={styles.calNav}>
+                  <button className={styles.calNavBtn} onClick={prevMonth} disabled={!canGoPrev} aria-label="Mes anterior">
+                    <ChevronLeft />
+                  </button>
+                  <span className={styles.calMonthLabel}>
+                    {MONTHS_ES[calMonth]} {calYear}
+                  </span>
+                  <button className={styles.calNavBtn} onClick={nextMonth} aria-label="Mes siguiente">
+                    <ChevronRight />
+                  </button>
+                </div>
 
-              {/* Calendar grid */}
-              <div className={styles.calGrid}>
-                {DAYS_SHORT.map(d => (
-                  <div key={d} className={styles.calDayHeader}>{d}</div>
-                ))}
-                {Array.from({ length: firstDayOfMonth }).map((_, i) => (
-                  <div key={`e${i}`} />
-                ))}
-                {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
-                  const past = isPast(day);
-                  const closed = !past && isDayClosed(day);
-                  const today = isToday(day);
-                  const sel = isSelected(day);
-                  return (
-                    <button
-                      key={day}
-                      className={`${styles.calDay} ${past || closed ? styles.calDayPast : ""} ${today && !sel ? styles.calDayToday : ""} ${sel ? styles.calDaySelected : ""}`}
-                      style={
-                        sel
-                          ? { background: primaryColor, borderColor: primaryColor, color: "white" }
-                          : today && !closed
-                          ? { borderColor: primaryColor, color: primaryColor }
-                          : {}
-                      }
-                      onClick={() => selectDay(day)}
-                      disabled={past || closed}
-                    >
-                      {day}
-                    </button>
-                  );
-                })}
+                {/* Calendar grid */}
+                <div className={styles.calGrid}>
+                  {DAYS_SHORT.map(d => (
+                    <div key={d} className={styles.calDayHeader}>{d}</div>
+                  ))}
+                  {Array.from({ length: firstDayOfMonth }).map((_, i) => (
+                    <div key={`e${i}`} />
+                  ))}
+                  {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(day => {
+                    const past = isPast(day);
+                    const closed = !past && isDayClosed(day);
+                    const today = isToday(day);
+                    const sel = isSelected(day);
+                    return (
+                      <button
+                        key={day}
+                        className={`${styles.calDay} ${past || closed ? styles.calDayPast : ""} ${today && !sel ? styles.calDayToday : ""} ${sel ? styles.calDaySelected : ""}`}
+                        style={
+                          sel
+                            ? { background: primaryColor, borderColor: primaryColor, color: "white" }
+                            : today && !closed
+                            ? { borderColor: primaryColor, color: primaryColor }
+                            : {}
+                        }
+                        onClick={() => selectDay(day)}
+                        disabled={past || closed}
+                      >
+                        {day}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Time slots */}
