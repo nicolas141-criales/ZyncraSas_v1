@@ -131,19 +131,6 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
     setClientSearch("");
   };
 
-  // Slots disponibles según horario efectivo (personal del colaborador o del negocio)
-  const availableSlots = (() => {
-    if (!selectedDate) return TIME_SLOTS;
-    const [y, mo, d] = selectedDate.split("-").map(Number);
-    const h = getEffectiveHours(new Date(y, mo - 1, d).getDay());
-    if (!h || !h.open) return [];
-    const start = timeToMin(h.start), end = timeToMin(h.end);
-    return TIME_SLOTS.filter(slot => {
-      const m = timeToMin(to24h(slot).slice(0, 5));
-      return m >= start && m < end;
-    });
-  })();
-
   // Calendario
   const rawFirst = new Date(calYear, calMonth, 1).getDay();
   const firstDay = rawFirst === 0 ? 6 : rawFirst - 1; // Offset lunes-primero
@@ -165,6 +152,19 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
     const h = getEffectiveHours(new Date(calYear, calMonth, day).getDay());
     return h ? !h.open : false;
   };
+
+  // Slots disponibles según horario efectivo (personal del colaborador o del negocio)
+  const availableSlots = (() => {
+    if (!selectedDate) return TIME_SLOTS;
+    const [y, mo, d] = selectedDate.split("-").map(Number);
+    const h = getEffectiveHours(new Date(y, mo - 1, d).getDay());
+    if (!h || !h.open) return [];
+    const start = timeToMin(h.start), end = timeToMin(h.end);
+    return TIME_SLOTS.filter(slot => {
+      const m = timeToMin(to24h(slot).slice(0, 5));
+      return m >= start && m < end;
+    });
+  })();
 
   const selectDay = (day: number) => {
     const d = new Date(calYear, calMonth, day); d.setHours(0, 0, 0, 0);
