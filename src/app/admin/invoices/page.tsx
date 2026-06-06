@@ -133,13 +133,6 @@ const EMPTY_CUSTOMER: CustomerForm = {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-function fmt(n: number) {
-  return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
-}
-
-function fmtDate(iso: string) {
-  return new Date(iso).toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" });
-}
 
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; bg: string; color: string }> = {
@@ -159,7 +152,9 @@ function StatusBadge({ status }: { status: string }) {
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export default function InvoicesPage() {
-  const { tenantId } = useAdmin();
+  const { tenantId, currency, locale } = useAdmin();
+  const fmt     = (n: number) => new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(locale, { year: "numeric", month: "short", day: "numeric" });
   const [tab, setTab] = useState<"config" | "nueva" | "historial">("config");
 
   // Settings

@@ -1,11 +1,11 @@
-﻿"use client";
+-"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconChartBar, IconUsers, IconBanknotes, IconX, IconPercent } from "../ZyncraIcons";
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -"-"-"- Types -"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-
 
 interface Professional {
   id: string;
@@ -40,10 +40,8 @@ interface Payment {
   professionals: { name: string } | null;
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -"-"-"- Helpers -"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
 function calcCommission(revenue: number, count: number, rule: CommissionRule | null) {
   if (!rule) return 0;
@@ -51,9 +49,9 @@ function calcCommission(revenue: number, count: number, rule: CommissionRule | n
   return rule.value * count;
 }
 
-function periodLabel(start: string, end: string) {
-  const f = (d: string) => new Date(d + "T12:00:00").toLocaleDateString("es-CO", { day: "numeric", month: "short" });
-  return `${f(start)} â€” ${f(end)}`;
+function periodLabel(start: string, end: string, loc: string) {
+  const f = (d: string) => new Date(d + "T12:00:00").toLocaleDateString(loc, { day: "numeric", month: "short" });
+  return `${f(start)} - ${f(end)}`;
 }
 
 function getWeekRange() {
@@ -74,7 +72,7 @@ function getMonthRange() {
   return { start, end };
 }
 
-// â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -"-"-"- Styles -"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-
 
 const card: React.CSSProperties = {
   background: "white",
@@ -106,7 +104,7 @@ const lbl: React.CSSProperties = {
   letterSpacing: "0.06em",
 };
 
-// â”€â”€â”€ Sub-components â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -"-"-"- Sub-components -"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-
 
 function Avatar({ name }: { name: string }) {
   return (
@@ -166,10 +164,11 @@ function SectionHeader({ title, sub, icon }: { title: string; sub?: string; icon
   );
 }
 
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// -"-"-"- Main Component -"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-
 
 export default function CommissionsPage() {
-  const { tenantId } = useAdmin();
+  const { tenantId, currency, locale } = useAdmin();
+  const fmt = (n: number) => new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
   const [tab, setTab] = useState<"resumen" | "reglas" | "historial">("resumen");
 
@@ -200,7 +199,7 @@ export default function CommissionsPage() {
   const [liquidarSaving, setLiquidarSaving] = useState(false);
   const [liquidarMsg, setLiquidarMsg] = useState("");
 
-  // â”€â”€ Fetch summary â”€â”€
+  // -"-"- Fetch summary -"-"-
   const fetchSummary = useCallback(async (tid: string, p: "semana" | "mes" | "custom", cStart?: string, cEnd?: string) => {
     setLoadingSummary(true);
     const range = p === "semana" ? getWeekRange() : p === "mes" ? getMonthRange() : { start: cStart || "", end: cEnd || "" };
@@ -232,7 +231,7 @@ export default function CommissionsPage() {
     setLoadingSummary(false);
   }, []);
 
-  // â”€â”€ Fetch rules â”€â”€
+  // -"-"- Fetch rules -"-"-
   const fetchRules = useCallback(async (tid: string) => {
     setLoadingRules(true);
     const [{ data: profs }, { data: rulesData }] = await Promise.all([
@@ -244,7 +243,7 @@ export default function CommissionsPage() {
     setLoadingRules(false);
   }, []);
 
-  // â”€â”€ Fetch payments â”€â”€
+  // -"-"- Fetch payments -"-"-
   const fetchPayments = useCallback(async (tid: string) => {
     setLoadingPayments(true);
     const { data } = await supabase
@@ -264,11 +263,11 @@ export default function CommissionsPage() {
     if (tab === "historial") fetchPayments(tenantId);
   }, [tenantId, tab, period, fetchSummary, fetchRules, fetchPayments]);
 
-  // â”€â”€ Save rule â”€â”€
+  // -"-"- Save rule -"-"-
   const handleSaveRule = async () => {
     if (!tenantId || !editingProf) return;
     const v = parseFloat(editForm.value);
-    if (isNaN(v) || v < 0) { setRuleMsg("Ingresa un valor vÃ¡lido."); return; }
+    if (isNaN(v) || v < 0) { setRuleMsg("Ingresa un valor v-lido."); return; }
     if (editForm.type === "percentage" && v > 100) { setRuleMsg("El porcentaje no puede superar 100%."); return; }
     setSavingRule(true); setRuleMsg("");
     const { error } = await supabase.from("commission_rules").upsert({
@@ -285,7 +284,7 @@ export default function CommissionsPage() {
     setTimeout(() => { setEditingProf(null); setRuleMsg(""); }, 1000);
   };
 
-  // â”€â”€ Liquidar â”€â”€
+  // -"-"- Liquidar -"-"-
   const handleLiquidar = async () => {
     if (!tenantId || !liquidarTarget) return;
     setLiquidarSaving(true); setLiquidarMsg("");
@@ -301,7 +300,7 @@ export default function CommissionsPage() {
     });
     setLiquidarSaving(false);
     if (error) { setLiquidarMsg("Error: " + error.message); return; }
-    setLiquidarMsg("ComisiÃ³n liquidada con Ã©xito.");
+    setLiquidarMsg("Comisi-n liquidada con -xito.");
     setTimeout(() => { setLiquidarTarget(null); setLiquidarNote(""); setLiquidarMsg(""); }, 1200);
   };
 
@@ -312,12 +311,12 @@ export default function CommissionsPage() {
     setEditingProf(prof);
   };
 
-  // â”€â”€â”€ Totals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -"-"-"- Totals -"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-
   const totalRevenue = summaries.reduce((s, p) => s + p.revenue, 0);
   const totalCommission = summaries.reduce((s, p) => s + p.commission, 0);
   const totalApts = summaries.reduce((s, p) => s + p.count, 0);
 
-  // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // -"-"-"- Render -"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
@@ -330,7 +329,7 @@ export default function CommissionsPage() {
             Comisiones
           </h1>
           <p style={{ color: "#8E879B", fontSize: 13, marginTop: 3 }}>
-            Liquida las comisiones de tu equipo automÃ¡ticamente.
+            Liquida las comisiones de tu equipo autom-ticamente.
           </p>
         </div>
         <div style={{ display: "flex", gap: 4, background: "rgba(20,15,30,0.04)", padding: 4, borderRadius: 14 }}>
@@ -340,7 +339,7 @@ export default function CommissionsPage() {
         </div>
       </div>
 
-      {/* â”€â”€ TAB: Resumen â”€â”€ */}
+      {/* -"-"- TAB: Resumen -"-"- */}
       {tab === "resumen" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           {/* Period filter */}
@@ -351,7 +350,7 @@ export default function CommissionsPage() {
             {period === "custom" && (
               <>
                 <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ ...inp, width: "auto", padding: "6px 10px", fontSize: 12 }} />
-                <span style={{ color: "#8E879B", fontSize: 12 }}>â€”</span>
+                <span style={{ color: "#8E879B", fontSize: 12 }}>-"</span>
                 <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} style={{ ...inp, width: "auto", padding: "6px 10px", fontSize: 12 }} />
                 <button onClick={() => { if (tenantId) fetchSummary(tenantId, "custom", customStart, customEnd); }}
                   disabled={!customStart || !customEnd}
@@ -385,7 +384,7 @@ export default function CommissionsPage() {
           <div style={card}>
             <SectionHeader
               title="Por profesional"
-              sub={currentRange.start ? periodLabel(currentRange.start, currentRange.end) : ""}
+              sub={currentRange.start ? periodLabel(currentRange.start, currentRange.end, locale) : ""}
               icon={<IconUsers size={16} />}
             />
             {loadingSummary ? (
@@ -400,7 +399,7 @@ export default function CommissionsPage() {
                   <span>Profesional</span>
                   <span style={{ textAlign: "center" }}>Citas</span>
                   <span style={{ textAlign: "right" }}>Revenue</span>
-                  <span style={{ textAlign: "right" }}>ComisiÃ³n</span>
+                  <span style={{ textAlign: "right" }}>Comisi-n</span>
                   <span />
                 </div>
                 {summaries.map((s, i) => (
@@ -453,17 +452,17 @@ export default function CommissionsPage() {
         </div>
       )}
 
-      {/* â”€â”€ TAB: Reglas â”€â”€ */}
+      {/* -"-"- TAB: Reglas -"-"- */}
       {tab === "reglas" && (
         <div style={card}>
-          <SectionHeader title="Reglas de comisiÃ³n" sub="Una regla por profesional activo" icon={<IconPercent size={16} />} />
+          <SectionHeader title="Reglas de comisi-n" sub="Una regla por profesional activo" icon={<IconPercent size={16} />} />
           {loadingRules ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
               <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : professionals.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>
-              Sin profesionales activos. AgrÃ©dalos en la secciÃ³n Equipo.
+              Sin profesionales activos. Agr-dalos en la secci-n Equipo.
             </div>
           ) : (
             professionals.map((prof, i) => {
@@ -504,25 +503,25 @@ export default function CommissionsPage() {
         </div>
       )}
 
-      {/* â”€â”€ TAB: Historial â”€â”€ */}
+      {/* -"-"- TAB: Historial -"-"- */}
       {tab === "historial" && (
         <div style={card}>
-          <SectionHeader title="Historial de liquidaciones" sub="Ãšltimas 50 liquidaciones" icon={<IconBanknotes size={16} />} />
+          <SectionHeader title="Historial de liquidaciones" sub="-ltimas 50 liquidaciones" icon={<IconBanknotes size={16} />} />
           {loadingPayments ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
               <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : payments.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>
-              Sin liquidaciones registradas aÃºn.
+              Sin liquidaciones registradas a-n.
             </div>
           ) : (
             <div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 60px 120px 130px", gap: 12, padding: "10px 20px", borderBottom: "1px solid #f0eeeb", fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 <span>Profesional</span>
-                <span>PerÃ­odo</span>
+                <span>Per-odo</span>
                 <span style={{ textAlign: "center" }}>Citas</span>
-                <span style={{ textAlign: "right" }}>ComisiÃ³n</span>
+                <span style={{ textAlign: "right" }}>Comisi-n</span>
                 <span style={{ textAlign: "right" }}>Fecha pago</span>
               </div>
               {payments.map((p, i) => (
@@ -532,16 +531,16 @@ export default function CommissionsPage() {
                   borderBottom: i < payments.length - 1 ? "1px solid #f0eeeb" : "none",
                 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{p.professionals?.name || "â€”"}</div>
+                    <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{p.professionals?.name || "-"}</div>
                     {p.note && <div style={{ fontSize: 11, color: "#8E879B", marginTop: 2 }}>{p.note}</div>}
                   </div>
-                  <div style={{ fontSize: 12, color: "#564E66" }}>{periodLabel(p.period_start, p.period_end)}</div>
+                  <div style={{ fontSize: 12, color: "#564E66" }}>{periodLabel(p.period_start, p.period_end, locale)}</div>
                   <div style={{ textAlign: "center", fontWeight: 700, fontSize: 13, color: "#14111C" }}>{p.appointments_count}</div>
                   <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                     {fmt(p.commission_amount)}
                   </div>
                   <div style={{ textAlign: "right", fontSize: 12, color: "#8E879B" }}>
-                    {new Date(p.paid_at).toLocaleDateString("es-CO", { day: "numeric", month: "short", year: "numeric" })}
+                    {new Date(p.paid_at).toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" })}
                   </div>
                 </div>
               ))}
@@ -550,7 +549,7 @@ export default function CommissionsPage() {
         </div>
       )}
 
-      {/* â”€â”€ Modal: Editar Regla â”€â”€ */}
+      {/* -"-"- Modal: Editar Regla -"-"- */}
       {editingProf && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setEditingProf(null); }}>
@@ -559,7 +558,7 @@ export default function CommissionsPage() {
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Avatar name={editingProf.name} />
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 16, color: "#14111C" }}>Regla de comisiÃ³n</div>
+                  <div style={{ fontWeight: 800, fontSize: 16, color: "#14111C" }}>Regla de comisi-n</div>
                   <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>{editingProf.name}</div>
                 </div>
               </div>
@@ -569,15 +568,15 @@ export default function CommissionsPage() {
             </div>
 
             <div style={{ marginBottom: 16 }}>
-              <label style={lbl}>Tipo de comisiÃ³n</label>
+              <label style={lbl}>Tipo de comisi-n</label>
               <select value={editForm.type} onChange={e => setEditForm({ ...editForm, type: e.target.value as "percentage" | "fixed" })} style={inp}>
                 <option value="percentage">Porcentaje del servicio (%)</option>
-                <option value="fixed">Monto fijo por cita (COP)</option>
+                <option value="fixed">Monto fijo por cita ({currency})</option>
               </select>
             </div>
 
             <div style={{ marginBottom: 22 }}>
-              <label style={lbl}>{editForm.type === "percentage" ? "Porcentaje (0â€“100)" : "Monto por cita (COP)"}</label>
+              <label style={lbl}>{editForm.type === "percentage" ? "Porcentaje (0 - 100)" : `Monto por cita (${currency})`}</label>
               <input
                 type="number"
                 min={0}
@@ -606,13 +605,13 @@ export default function CommissionsPage() {
         </div>
       )}
 
-      {/* â”€â”€ Modal: Liquidar â”€â”€ */}
+      {/* -"-"- Modal: Liquidar -"-"- */}
       {liquidarTarget && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setLiquidarTarget(null); }}>
           <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 17, color: "#14111C" }}>Confirmar liquidaciÃ³n</div>
+              <div style={{ fontWeight: 800, fontSize: 17, color: "#14111C" }}>Confirmar liquidaci-n</div>
               <button onClick={() => setLiquidarTarget(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}>
                 <IconX size={18} />
               </button>
@@ -623,7 +622,7 @@ export default function CommissionsPage() {
                 <Avatar name={liquidarTarget.prof.name} />
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>{liquidarTarget.prof.name}</div>
-                  <div style={{ fontSize: 11, color: "#8E879B" }}>{currentRange.start && periodLabel(currentRange.start, currentRange.end)}</div>
+                  <div style={{ fontSize: 11, color: "#8E879B" }}>{currentRange.start && periodLabel(currentRange.start, currentRange.end, locale)}</div>
                 </div>
               </div>
               {[

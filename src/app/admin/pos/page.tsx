@@ -44,11 +44,6 @@ interface Sale {
 
 // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
-
-const fmtDateTime = (iso: string) =>
-  new Date(iso).toLocaleString("es-CO", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 
 const PAYMENT_METHODS = [
   { key: "efectivo",  label: "Efectivo",  color: "#10b981" },
@@ -73,7 +68,9 @@ const lbl: React.CSSProperties = {
 // â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function PosPage() {
-  const { tenantId } = useAdmin();
+  const { tenantId, currency, locale } = useAdmin();
+  const fmt         = (n: number) => new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+  const fmtDateTime = (iso: string) => new Date(iso).toLocaleString(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
   const [tab, setTab] = useState<"cobrar" | "historial">("cobrar");
 
   // Catalog
@@ -395,7 +392,7 @@ export default function PosPage() {
                           color: discountType === t ? "#fb0f05" : "#564E66",
                           boxShadow: discountType === t ? "0 1px 4px rgba(0,0,0,0.08)" : "none",
                         }}>
-                          {t === "percentage" ? "%" : "COP"}
+                          {t === "percentage" ? "%" : currency}
                         </button>
                       ))}
                     </div>
@@ -567,7 +564,7 @@ export default function PosPage() {
               <input type="text" value={freeItemName} onChange={e => setFreeItemName(e.target.value)} placeholder="Ej. Shampoo, cera, aceite..." style={inp} />
             </div>
             <div style={{ marginBottom: 22 }}>
-              <label style={lbl}>Precio (COP) *</label>
+              <label style={lbl}>Precio ({currency}) *</label>
               <input type="number" min={0} step={1000} value={freeItemPrice} onChange={e => setFreeItemPrice(e.target.value)} placeholder="Ej. 15000" style={inp} />
             </div>
             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>

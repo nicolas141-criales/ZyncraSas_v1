@@ -35,14 +35,6 @@ const EGRESO_CATS  = ["Arriendo", "NÃ³mina", "Insumos", "Servicios pÃºblicos
 
 // â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-const fmt = (n: number) =>
-  new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
-
-const fmtTime = (iso: string) =>
-  new Date(iso).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" });
-
-const fmtDate = (iso: string) =>
-  new Date(iso).toLocaleDateString("es-CO", { weekday: "short", day: "numeric", month: "short", year: "numeric" });
 
 // â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
@@ -115,7 +107,10 @@ function SectionHeader({ title, sub }: { title: string; sub?: string }) {
 // â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function CajaPage() {
-  const { tenantId } = useAdmin();
+  const { tenantId, currency, locale } = useAdmin();
+  const fmt     = (n: number) => new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+  const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+  const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
   const [tab, setTab] = useState<"caja" | "historial">("caja");
 
   // Session state
@@ -308,7 +303,7 @@ export default function CajaPage() {
               <div style={{ fontSize: 13, color: "#8E879B", marginBottom: 28 }}>Abre la caja para empezar a registrar movimientos.</div>
 
               <div style={{ textAlign: "left", marginBottom: 14 }}>
-                <label style={lbl}>Fondo inicial (COP) *</label>
+                <label style={lbl}>Fondo inicial ({currency}) *</label>
                 <input
                   type="number" min={0} step={1000}
                   value={openAmount} onChange={e => setOpenAmount(e.target.value)}
@@ -488,7 +483,7 @@ export default function CajaPage() {
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <label style={lbl}>Monto (COP) *</label>
+              <label style={lbl}>Monto ({currency}) *</label>
               <input type="number" min={0} step={1000} value={movForm.amount} onChange={e => setMovForm({ ...movForm, amount: e.target.value })} placeholder="Ej. 50000" style={inp} />
             </div>
             <div style={{ marginBottom: 14 }}>
@@ -553,7 +548,7 @@ export default function CajaPage() {
             </div>
 
             <div style={{ marginBottom: 14 }}>
-              <label style={lbl}>Efectivo contado (COP) *</label>
+              <label style={lbl}>Efectivo contado ({currency}) *</label>
               <input type="number" min={0} step={1000} value={cierreAmount} onChange={e => setCierreAmount(e.target.value)} placeholder="Lo que hay fÃ­sicamente en caja" style={inp} />
             </div>
             <div style={{ marginBottom: 22 }}>
