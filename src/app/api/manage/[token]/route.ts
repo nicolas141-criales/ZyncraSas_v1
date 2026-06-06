@@ -3,10 +3,14 @@ import { getSupabaseAdmin } from "@/lib/supabase-server";
 
 type Params = Promise<{ token: string }>;
 
+// Cast helper — Supabase infers `never` for update/select when no DB types
+// are provided, so we cast the client to `any` at the call site.
+const db = () => getSupabaseAdmin() as any;
+
 export async function GET(_req: NextRequest, { params }: { params: Params }) {
   const { token } = await params;
 
-  const { data: rawAppt, error } = await getSupabaseAdmin()
+  const { data: appt, error } = await db()
     .from("appointments")
     .select(`
       id, status, appointment_date, appointment_time, manage_token, tenant_id, professional_id,
@@ -17,15 +21,13 @@ export async function GET(_req: NextRequest, { params }: { params: Params }) {
     .eq("manage_token", token)
     .maybeSingle();
 
-  const appt = rawAppt as any;
-
   if (error || !appt) {
     return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 });
   }
 
   const [{ data: tenant }, { data: branding }] = await Promise.all([
-    getSupabaseAdmin().from("tenants").select("name, settings").eq("id", appt.tenant_id).maybeSingle(),
-    getSupabaseAdmin().from("branding").select("business_name, primary_color, secondary_color, logo_url").eq("tenant_id", appt.tenant_id).maybeSingle(),
+    db().from("tenants").select("name, settings").eq("id", appt.tenant_id).maybeSingle(),
+    db().from("branding").select("business_name, primary_color, secondary_color, logo_url").eq("tenant_id", appt.tenant_id).maybeSingle(),
   ]);
 
   return NextResponse.json({ appt, tenant, branding });
@@ -36,13 +38,11 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   const body = await req.json();
   const { action, date, time } = body;
 
-  const { data: rawAppt2, error } = await getSupabaseAdmin()
+  const { data: appt, error } = await db()
     .from("appointments")
     .select("id, status, tenant_id, professional_id, service_id, appointment_date, appointment_time, clients(name,email), services(name,duration_minutes), professionals(name)")
     .eq("manage_token", token)
     .maybeSingle();
-
-  const appt = rawAppt2 as any;
 
   if (error || !appt) {
     return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 });
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   }
 
   if (action === "cancel") {
-    const { error: updErr } = await getSupabaseAdmin()
+    const { error: updErr } = await db()
       .from("appointments")
       .update({ status: "cancelled" })
       .eq("id", appt.id);
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
       return NextResponse.json({ error: "Fecha y hora requeridas" }, { status: 400 });
     }
 
-    const { error: updErr } = await getSupabaseAdmin()
+    const { error: updErr } = await db()
       .from("appointments")
       .update({ appointment_date: date, appointment_time: time, status: "pending" })
       .eq("id", appt.id);
@@ -75,30 +75,28 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
     if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
 
     // Send updated confirmation email
-    const client = appt.clients as any;
-    const service = appt.services as any;
-    const professional = appt.professionals as any;
-
-    if (client?.email) {
-      const [{ data: branding }] = await Promise.all([
-        getSupabaseAdmin().from("branding").select("business_name,primary_color,secondary_color").eq("tenant_id", appt.tenant_id).maybeSingle(),
-      ]);
+    if (appt.clients?.email) {
+      const { data: branding } = await db()
+        .from("branding")
+        .select("business_name, primary_color, secondary_color")
+        .eq("tenant_id", appt.tenant_id)
+        .maybeSingle();
 
       const base = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
       await fetch(`${base}/api/send-confirmation`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email:         client.email,
-          clientName:    client.name,
-          businessName:  (branding as any)?.business_name ?? "Negocio",
-          service:       service?.name ?? "",
-          professional:  professional?.name ?? "",
+          email:          appt.clients.email,
+          clientName:     appt.clients.name,
+          businessName:   branding?.business_name  ?? "Negocio",
+          service:        appt.services?.name       ?? "",
+          professional:   appt.professionals?.name  ?? "",
           date,
           time,
-          primaryColor:  (branding as any)?.primary_color  ?? "#fb0f05",
-          secondaryColor:(branding as any)?.secondary_color ?? "#0027fe",
-          manageToken:   token,
+          primaryColor:   branding?.primary_color   ?? "#fb0f05",
+          secondaryColor: branding?.secondary_color  ?? "#0027fe",
+          manageToken:    token,
         }),
       }).catch(() => {});
     }
