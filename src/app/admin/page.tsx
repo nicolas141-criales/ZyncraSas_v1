@@ -203,87 +203,127 @@ function StatusPill({ status }: { status: string }) {
 // ─── Date Range Picker ────────────────────────────────────
 const MONTHS_CAL = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const DAYS_CAL   = ["Lu","Ma","Mi","Ju","Vi","Sá","Do"];
+const MONTHS_SHORT = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
 function DateRangePicker({ start, end, onApply }: {
   start: string; end: string; onApply: (s: string, e: string) => void;
 }) {
   const today = new Date();
-  const [ds, setDs]   = useState(start); // draft start
-  const [de, setDe]   = useState(end);   // draft end
+  const [ds, setDs] = useState(start);
+  const [de, setDe] = useState(end);
   const [hov, setHov] = useState("");
-  const [cy, setCy]   = useState(today.getFullYear());
-  const [cm, setCm]   = useState(today.getMonth());
+  const [cy, setCy] = useState(today.getFullYear());
+  const [cm, setCm] = useState(today.getMonth());
 
-  const local = (y: number, m: number, d: number) =>
+  const isoOf = (y: number, m: number, d: number) =>
     `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+  const fmtDisplay = (iso: string) => {
+    const [y, m, d] = iso.split("-");
+    return `${parseInt(d)} ${MONTHS_SHORT[parseInt(m) - 1]} ${y}`;
+  };
 
-  const rawFirst   = new Date(cy, cm, 1).getDay();
-  const firstDay   = rawFirst === 0 ? 6 : rawFirst - 1;
-  const daysInMon  = new Date(cy, cm + 1, 0).getDate();
-  const todayISO   = toISO(today);
+  const rawFirst  = new Date(cy, cm, 1).getDay();
+  const firstDay  = rawFirst === 0 ? 6 : rawFirst - 1;
+  const daysInMon = new Date(cy, cm + 1, 0).getDate();
+  const todayISO  = toISO(today);
 
   const handleClick = (iso: string) => {
     if (!ds || (ds && de)) { setDs(iso); setDe(""); }
-    else if (iso >= ds) { setDe(iso); }
-    else { setDs(iso); setDe(""); }
+    else if (iso >= ds)    { setDe(iso); }
+    else                   { setDs(iso); setDe(""); }
   };
 
-  const effectiveEnd = de || (hov > ds ? hov : "");
-  const inRange = (iso: string) => {
-    if (!ds) return false;
-    const lo = ds < effectiveEnd ? ds : effectiveEnd;
-    const hi = ds < effectiveEnd ? effectiveEnd : ds;
-    return iso > lo && iso < hi;
-  };
-  const isEdge = (iso: string) => iso === ds || (de && iso === de);
+  const effectiveEnd = de || (ds && hov >= ds ? hov : "");
+  const rangeStart = ds && effectiveEnd && ds <= effectiveEnd ? ds : effectiveEnd;
+  const rangeEnd   = ds && effectiveEnd && ds <= effectiveEnd ? effectiveEnd : ds;
+
+  const isStart  = (iso: string) => iso === ds && !!ds;
+  const isEnd    = (iso: string) => iso === de && !!de;
+  const inRange  = (iso: string) => !!rangeStart && !!rangeEnd && iso > rangeStart && iso < rangeEnd;
   const canApply = ds && de;
 
   const prevMo = () => { if (cm === 0) { setCy(y => y-1); setCm(11); } else setCm(m => m-1); };
   const nextMo = () => { if (cm === 11) { setCy(y => y+1); setCm(0); } else setCm(m => m+1); };
 
   return (
-    <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: 16, padding: 18, display: "inline-block", boxShadow: "0 8px 32px rgba(0,0,0,0.10)", marginTop: 10 }}>
+    <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: 18, padding: "20px 22px", display: "inline-block", boxShadow: "0 12px 40px rgba(0,0,0,0.12)", marginTop: 8 }}>
+
+      {/* Instruction chips */}
+      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <div style={{ flex: 1, padding: "9px 12px", borderRadius: 10, background: ds ? "rgba(251,15,5,0.07)" : "rgba(20,15,30,.04)", border: `1.5px solid ${ds ? "rgba(251,15,5,0.3)" : "#e8e6e2"}`, textAlign: "center" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Desde</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: ds ? "#fb0f05" : "#b0abc0" }}>{ds ? fmtDisplay(ds) : "— Elige inicio —"}</div>
+        </div>
+        <div style={{ flex: 1, padding: "9px 12px", borderRadius: 10, background: de ? "rgba(251,15,5,0.07)" : "rgba(20,15,30,.04)", border: `1.5px solid ${de ? "rgba(251,15,5,0.3)" : "#e8e6e2"}`, textAlign: "center" }}>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Hasta</div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: de ? "#fb0f05" : "#b0abc0" }}>{de ? fmtDisplay(de) : "— Elige fin —"}</div>
+        </div>
+      </div>
+
       {/* Month nav */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <button onClick={prevMo} style={{ background: "none", border: "1px solid #e8e6e2", borderRadius: 8, width: 28, height: 28, cursor: "pointer", fontSize: 13, color: "#3a3548" }}>‹</button>
-        <span style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{MONTHS_CAL[cm]} {cy}</span>
-        <button onClick={nextMo} style={{ background: "none", border: "1px solid #e8e6e2", borderRadius: 8, width: 28, height: 28, cursor: "pointer", fontSize: 13, color: "#3a3548" }}>›</button>
+        <button onClick={prevMo} style={{ background: "none", border: "1.5px solid #e8e6e2", borderRadius: 9, width: 32, height: 32, cursor: "pointer", fontSize: 16, color: "#3a3548", display:"flex",alignItems:"center",justifyContent:"center" }}>‹</button>
+        <span style={{ fontWeight: 800, fontSize: 14, color: "#14111C", letterSpacing: "-0.3px" }}>{MONTHS_CAL[cm]} {cy}</span>
+        <button onClick={nextMo} style={{ background: "none", border: "1.5px solid #e8e6e2", borderRadius: 9, width: 32, height: 32, cursor: "pointer", fontSize: 16, color: "#3a3548", display:"flex",alignItems:"center",justifyContent:"center" }}>›</button>
       </div>
-      {/* Header */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2, marginBottom: 3 }}>
-        {DAYS_CAL.map(d => <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#8E879B", padding: "2px 0" }}>{d}</div>)}
+
+      {/* Day headers */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", marginBottom: 4 }}>
+        {DAYS_CAL.map(d => (
+          <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#8E879B", padding: "2px 0" }}>{d}</div>
+        ))}
       </div>
-      {/* Days */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
+
+      {/* Day cells */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)" }}>
         {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
         {Array.from({ length: daysInMon }, (_, i) => i + 1).map(day => {
-          const iso   = local(cy, cm, day);
-          const edge  = isEdge(iso);
-          const range = !edge && inRange(iso);
+          const iso     = isoOf(cy, cm, day);
+          const start   = isStart(iso);
+          const end     = isEnd(iso);
+          const mid     = inRange(iso);
           const isToday = iso === todayISO;
+          const isEdge  = start || end;
+
           return (
-            <button key={day} onClick={() => handleClick(iso)}
-              onMouseEnter={() => !de && ds && setHov(iso)}
-              onMouseLeave={() => setHov("")}
+            <div key={day}
               style={{
-                padding: "5px 2px", borderRadius: edge ? 7 : 0, border: "none",
-                background: edge ? "#fb0f05" : range ? "rgba(251,15,5,0.10)" : "transparent",
-                color: edge ? "white" : isToday ? "#fb0f05" : "#14111C",
-                fontSize: 12, fontWeight: edge || isToday ? 700 : 400,
-                cursor: "pointer", outline: isToday && !edge ? "1.5px solid rgba(251,15,5,0.5)" : "none",
-                outlineOffset: -1,
-              }}>{day}</button>
+                background: mid ? "rgba(251,15,5,0.09)" : "transparent",
+                borderRadius: start ? "8px 0 0 8px" : end ? "0 8px 8px 0" : 0,
+              }}>
+              <button
+                onClick={() => handleClick(iso)}
+                onMouseEnter={() => !de && ds && setHov(iso)}
+                onMouseLeave={() => setHov("")}
+                style={{
+                  width: "100%", padding: "7px 0", border: "none",
+                  borderRadius: isEdge ? 8 : 0,
+                  background: isEdge ? "#fb0f05" : "transparent",
+                  color: isEdge ? "white" : isToday ? "#fb0f05" : "#14111C",
+                  fontSize: 13, fontWeight: isEdge ? 800 : isToday ? 700 : 400,
+                  cursor: "pointer",
+                  outline: isToday && !isEdge ? "2px solid rgba(251,15,5,0.35)" : "none",
+                  outlineOffset: -2,
+                  transition: "background 0.1s",
+                }}>
+                {day}
+              </button>
+            </div>
           );
         })}
       </div>
-      {/* Selected display */}
-      <div style={{ marginTop: 12, padding: "9px 12px", background: "rgba(20,15,30,.03)", borderRadius: 10, fontSize: 12, color: "#564E66", textAlign: "center" }}>
-        {ds ? <><strong>Desde:</strong> {ds}{de ? <> &nbsp;→&nbsp; <strong>Hasta:</strong> {de}</> : <span style={{ color: "#8E879B" }}> — elige fecha fin</span>}</> : "Selecciona la fecha de inicio"}
+
+      {/* Apply / Clear */}
+      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+        <button onClick={() => { setDs(""); setDe(""); setHov(""); }}
+          style={{ flex: "0 0 auto", padding: "9px 14px", borderRadius: 9, border: "1.5px solid #e8e6e2", background: "white", color: "#8E879B", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
+          Limpiar
+        </button>
+        <button onClick={() => canApply && onApply(ds, de)} disabled={!canApply}
+          style={{ flex: 1, padding: "10px", borderRadius: 9, border: "none", background: canApply ? "linear-gradient(135deg,#fb0f05,#0027fe)" : "rgba(20,15,30,.07)", color: canApply ? "white" : "#8E879B", fontWeight: 700, fontSize: 13, cursor: canApply ? "pointer" : "not-allowed", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
+          {canApply ? `Aplicar: ${fmtDisplay(ds)} → ${fmtDisplay(de)}` : "Aplica el rango"}
+        </button>
       </div>
-      <button onClick={() => canApply && onApply(ds, de)} disabled={!canApply}
-        style={{ marginTop: 10, width: "100%", padding: "9px", borderRadius: 9, border: "none", background: canApply ? "#fb0f05" : "rgba(20,15,30,.07)", color: canApply ? "white" : "#8E879B", fontWeight: 700, fontSize: 13, cursor: canApply ? "pointer" : "not-allowed", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
-        Aplicar filtro
-      </button>
     </div>
   );
 }
@@ -348,20 +388,28 @@ export default function AdminOverview() {
       .order("appointment_date").order("appointment_time");
 
     const apts = (weekApts || []) as any[];
-    const todayApts = apts.filter(a => f === "custom" ? true : a.appointment_date === todayStr);
-    const prevApts = apts.filter(a => f === "custom" ? false : a.appointment_date === prevStr);
+    // filteredApts: "hoy" = solo hoy; semana/mes/custom = todo el rango
+    const filteredApts = f === "hoy"
+      ? apts.filter(a => a.appointment_date === todayStr)
+      : apts;
+    const prevApts = f === "hoy"
+      ? apts.filter(a => a.appointment_date === prevStr)
+      : [];
     const calcRevenue = (list: any[]) => list.filter(a => a.status !== "cancelled").reduce((s, a) => s + Number(a.services?.price || 0), 0);
-    const todayRevenue = calcRevenue(todayApts);
+    const todayRevenue = calcRevenue(filteredApts);
     const prevDayRevenue = calcRevenue(prevApts);
-    const todayCount = todayApts.length;
-    const pending = todayApts.filter(a => a.status === "pending").length;
-    const noShows = apts.filter(a => a.clients?.no_shows > 0).length;
-    const noShowRate = apts.length > 0 ? (noShows / apts.length) * 100 : 0;
-    const paid = apts.filter(a => a.status !== "cancelled" && a.services?.price);
+    const todayCount = filteredApts.length;
+    const pending = filteredApts.filter(a => a.status === "pending").length;
+    const noShows = filteredApts.filter(a => a.clients?.no_shows > 0).length;
+    const noShowRate = filteredApts.length > 0 ? (noShows / filteredApts.length) * 100 : 0;
+    const paid = filteredApts.filter(a => a.status !== "cancelled" && a.services?.price);
     const avgTicket = paid.length > 0 ? paid.reduce((s, a) => s + Number(a.services.price), 0) / paid.length : 0;
-    const upcomingApts = todayApts.filter(a => a.status !== "cancelled").sort((a, b) => a.appointment_time.localeCompare(b.appointment_time)).slice(0, 8);
+    const upcomingApts = filteredApts
+      .filter(a => a.status !== "cancelled")
+      .sort((a, b) => a.appointment_date.localeCompare(b.appointment_date) || a.appointment_time.localeCompare(b.appointment_time))
+      .slice(0, 20);
     const staffMap: Record<string, { count: number; revenue: number }> = {};
-    apts.forEach(a => {
+    filteredApts.forEach(a => {
       const name = a.professionals?.name || "Sin asignar";
       if (!staffMap[name]) staffMap[name] = { count: 0, revenue: 0 };
       staffMap[name].count++;
@@ -369,8 +417,10 @@ export default function AdminOverview() {
     });
     const staffPerf = Object.entries(staffMap).map(([name, v]) => ({ name, ...v })).sort((a, b) => b.revenue - a.revenue);
     const svcMap: Record<string, number> = {};
-    apts.forEach(a => { const name = a.services?.name || "Sin servicio"; svcMap[name] = (svcMap[name] || 0) + 1; });
+    filteredApts.forEach(a => { const name = a.services?.name || "Sin servicio"; svcMap[name] = (svcMap[name] || 0) + 1; });
     const topServices = Object.entries(svcMap).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 5);
+    // Hourly chart always shows today's appointments (granularidad diaria no aplica para horas)
+    const todayApts = apts.filter(a => a.appointment_date === todayStr);
     const hours = ["09", "10", "11", "12", "13", "14", "15", "16", "17", "18"];
     const hourlyData = hours.map(h => ({ hour: `${h}:00`, count: todayApts.filter(a => a.appointment_time?.startsWith(h)).length }));
     const dayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
@@ -557,17 +607,17 @@ ${data.topServices.map((s: any) => `<tr><td>${s.name}</td><td>${s.count}</td></t
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "14px" }}>
         <MetricCard
           icon={<IconBanknotes size={20} />} iconColor="#fb0f05"
-          label="Ingresos de hoy"
+          label={filter === "hoy" ? "Ingresos de hoy" : "Ingresos del período"}
           value={fmt(data.todayRevenue)}
-          trendVal={`${Math.abs(revDiff) > 0 ? fmt(Math.abs(revDiff)) : "igual"} vs ayer`}
-          trend={revTrend}
+          trendVal={filter === "hoy" ? `${Math.abs(revDiff) > 0 ? fmt(Math.abs(revDiff)) : "igual"} vs ayer` : undefined}
+          trend={filter === "hoy" ? revTrend : undefined}
           spark={data.weeklyRevenue.map(d => d.revenue)}
         />
         <MetricCard
           icon={<IconCalendar size={20} />} iconColor="#fb0f05"
-          label="Citas hoy"
+          label={filter === "hoy" ? "Citas hoy" : "Total de citas"}
           value={String(data.todayCount)}
-          sub={`${data.occupancyRate.toFixed(0)}% ocupación`}
+          sub={filter === "hoy" ? `${data.occupancyRate.toFixed(0)}% ocupación` : periodLabel}
           trend={data.todayCount >= 5 ? "up" : "neutral"}
           trendVal={data.todayCount >= 5 ? "buen ritmo" : undefined}
           spark={data.hourlyData.map(h => h.count)}
@@ -650,21 +700,32 @@ ${data.topServices.map((s: any) => `<tr><td>${s.name}</td><td>${s.count}</td></t
       {/* ─── Appointments + Staff ─── */}
       <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "14px" }}>
 
-        {/* Citas de Hoy */}
+        {/* Citas del período */}
         <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader title="Citas de hoy" sub={`${data.todayCount} agendadas`} icon={<IconCalendar size={16} />} />
-          <div>
+          <SectionHeader
+            title={filter === "hoy" ? "Citas de hoy" : "Citas del período"}
+            sub={`${data.todayCount} agendada${data.todayCount !== 1 ? "s" : ""}`}
+            icon={<IconCalendar size={16} />}
+          />
+          <div style={{ maxHeight: 360, overflowY: "auto" }}>
             {data.upcomingApts.length === 0 ? (
               <div style={{ padding: "36px 20px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>
-                Sin citas para hoy.
+                Sin citas en este período.
               </div>
             ) : (
               data.upcomingApts.map((apt, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderBottom: i < data.upcomingApts.length - 1 ? "1px solid #f0eeeb" : "none" }}>
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 20px", borderBottom: i < data.upcomingApts.length - 1 ? "1px solid #f0eeeb" : "none" }}>
                   <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                    {/* Time badge */}
+                    {/* Date + time badge */}
                     <div style={{ background: "rgba(251,15,5,0.07)", borderRadius: "9px", padding: "6px 10px", minWidth: "52px", textAlign: "center" }}>
-                      <div style={{ fontWeight: 800, fontSize: "12px", color: "#fb0f05", lineHeight: 1 }}>{apt.appointment_time}</div>
+                      {filter !== "hoy" && (
+                        <div style={{ fontSize: "10px", color: "#8E879B", lineHeight: 1, marginBottom: "2px" }}>
+                          {apt.appointment_date?.slice(5).replace("-", "/")}
+                        </div>
+                      )}
+                      <div style={{ fontWeight: 800, fontSize: "12px", color: "#fb0f05", lineHeight: 1 }}>
+                        {apt.appointment_time?.slice(0, 5)}
+                      </div>
                     </div>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: "13px", color: "#14111C" }}>{apt.clients?.name || "—"}</div>
