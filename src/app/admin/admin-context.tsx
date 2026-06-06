@@ -7,6 +7,8 @@ interface AdminContextType {
   tenantSlug: string | null;
   businessName: string | null;
   logoUrl: string | null;
+  currency: string;
+  locale: string;
 }
 
 export const AdminContext = createContext<AdminContextType>({
@@ -14,6 +16,8 @@ export const AdminContext = createContext<AdminContextType>({
   tenantSlug: null,
   businessName: null,
   logoUrl: null,
+  currency: "COP",
+  locale: "es-CO",
 });
 
 export const useAdmin = () => useContext(AdminContext);

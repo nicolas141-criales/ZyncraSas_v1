@@ -369,7 +369,7 @@ function FilterBtn({ active, onClick, children }: { active: boolean; onClick: ()
 
 // ─── Main Dashboard ───────────────────────────────────────
 export default function AdminOverview() {
-  const { tenantId } = useAdmin();
+  const { tenantId, currency, locale } = useAdmin();
   const [data, setData] = useState<DashboardData>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"hoy" | "semana" | "mes" | "custom">("hoy");
@@ -572,7 +572,7 @@ export default function AdminOverview() {
 
   const revDiff = data.todayRevenue - data.prevDayRevenue;
   const revTrend = revDiff > 0 ? "up" : revDiff < 0 ? "down" : "neutral";
-  const fmt = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
+  const fmt = (n: number) => new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
   const periodLabel = filter === "hoy" ? "Hoy" : filter === "semana" ? "Últimos 7 días" : filter === "mes" ? "Últimos 30 días" : `${customStart} — ${customEnd}`;
 

@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(true);
-  const [tenantInfo, setTenantInfo] = useState<{ id: string; slug: string; name: string; logoUrl: string | null } | null>(null);
+  const [tenantInfo, setTenantInfo] = useState<{ id: string; slug: string; name: string; logoUrl: string | null; currency: string; locale: string } | null>(null);
 
   useEffect(() => {
     async function checkAuth() {
@@ -82,13 +82,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (!session) { router.push("/login"); return; }
 
       const { data: tenants } = await supabase
-        .from("tenants").select("id, slug, name").eq("owner_id", session.user.id).limit(1);
+        .from("tenants").select("id, slug, name, settings").eq("owner_id", session.user.id).limit(1);
 
       if (tenants && tenants.length > 0) {
-        const tenant = tenants[0];
+        const tenant = tenants[0] as any;
         const { data: brandingRows } = await supabase
           .from("branding").select("logo_url").eq("tenant_id", tenant.id).limit(1);
-        setTenantInfo({ ...tenant, logoUrl: brandingRows?.[0]?.logo_url ?? null });
+        const currency = tenant.settings?.currency ?? "COP";
+        const locale   = tenant.settings?.locale   ?? "es-CO";
+        setTenantInfo({ ...tenant, logoUrl: brandingRows?.[0]?.logo_url ?? null, currency, locale });
       }
       setLoadingAuth(false);
     }
@@ -123,7 +125,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const initials = tenantInfo.name.substring(0, 2).toUpperCase();
 
   return (
-    <AdminContext.Provider value={{ tenantId: tenantInfo.id, tenantSlug: tenantInfo.slug, businessName: tenantInfo.name, logoUrl: tenantInfo.logoUrl }}>
+    <AdminContext.Provider value={{ tenantId: tenantInfo.id, tenantSlug: tenantInfo.slug, businessName: tenantInfo.name, logoUrl: tenantInfo.logoUrl, currency: tenantInfo.currency, locale: tenantInfo.locale }}>
       <div className={styles.adminLayout}>
 
         {/* Mobile overlay */}
