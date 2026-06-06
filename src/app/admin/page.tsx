@@ -516,42 +516,51 @@ export default function AdminOverview() {
           (item.sub ? `<text x="${x + BW / 2}" y="${BH + 26}" text-anchor="middle" font-size="9" fill="#b0abc0" font-family="Segoe UI,sans-serif">${item.sub}</text>` : "")
         );
       }).join("");
+      // Cada ítem ocupa ~80px renderizados; max-width:100% evita overflow horizontal
+      const displayW = items.length * 80;
       return (
-        `<div style="padding:14px 16px">` +
-        `<svg width="100%" viewBox="0 0 ${TW} ${BH + 40}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">` +
+        `<div style="padding:14px 16px;overflow-x:auto">` +
+        `<svg style="display:block;max-width:100%" width="${displayW}" viewBox="0 0 ${TW} ${BH + 40}" xmlns="http://www.w3.org/2000/svg">` +
         `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">` +
         `<stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/>` +
         `</linearGradient></defs>${bars}</svg></div>`
       );
     }
 
-    // ── Heat map (horas × días) ────────────────────────────────────────────
+    // ── Heat map — acumulado por día de la semana (Lun–Dom) ──────────────
     const HRS = ["08","09","10","11","12","13","14","15","16","17","18","19"];
-    const hmDays = [...new Set(apts.map(a => a.appointment_date as string))].sort().slice(0, 31);
-    const hmMax = Math.max(
-      ...hmDays.flatMap(day => HRS.map(h => apts.filter(a => a.appointment_date === day && (a.appointment_time as string)?.startsWith(h)).length)),
-      1
-    );
-    const heatMapHTML = hmDays.length === 0
+    // DOW_ORDER: 1=Lun … 6=Sáb, 0=Dom  (getDay() returns 0=Sun…6=Sat)
+    const DOW_ORDER = [1, 2, 3, 4, 5, 6, 0];
+    const DOW_LABELS: Record<number, string> = { 1:"Lun", 2:"Mar", 3:"Mié", 4:"Jue", 5:"Vie", 6:"Sáb", 0:"Dom" };
+    // Accumulate counts: matrix[dayOfWeek][hour] = total citas
+    const hmMatrix: Record<number, Record<string, number>> = {};
+    DOW_ORDER.forEach(d => { hmMatrix[d] = {}; HRS.forEach(h => { hmMatrix[d][h] = 0; }); });
+    apts.forEach(a => {
+      if (!a.appointment_date || !a.appointment_time) return;
+      const dow = new Date(a.appointment_date + "T12:00:00").getDay();
+      const hr  = (a.appointment_time as string).slice(0, 2);
+      if (hmMatrix[dow] && hr in hmMatrix[dow]) hmMatrix[dow][hr]++;
+    });
+    const hmMax = Math.max(...DOW_ORDER.flatMap(d => HRS.map(h => hmMatrix[d][h])), 1);
+    const hasHmData = apts.length > 0;
+    const heatMapHTML = !hasHmData
       ? '<p style="color:#8E879B;font-size:12px;padding:14px 16px">Sin datos para este período.</p>'
       : (
         `<div style="overflow-x:auto;padding:14px 16px 12px">` +
-        `<div style="display:inline-grid;grid-template-columns:68px ${HRS.map(() => "26px").join(" ")};row-gap:4px;column-gap:3px;align-items:center">` +
-        `<div style="font-size:9px;color:#b0abc0;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Día</div>` +
+        `<div style="display:inline-grid;grid-template-columns:44px ${HRS.map(() => "30px").join(" ")};row-gap:5px;column-gap:4px;align-items:center">` +
+        `<div style="font-size:9px;color:#b0abc0;font-weight:700;text-transform:uppercase;letter-spacing:.06em"></div>` +
         HRS.map(h => `<div style="text-align:center;font-size:9px;color:#8E879B;font-weight:700">${h}h</div>`).join("") +
-        hmDays.map(day => {
-          const parts = day.split("-");
-          const lbl = parseInt(parts[2]) + " " + MONS[parseInt(parts[1]) - 1];
+        DOW_ORDER.map(dow => {
           return (
-            `<div style="font-size:9px;color:#64748b;font-weight:600;white-space:nowrap;padding-right:4px">${lbl}</div>` +
+            `<div style="font-size:10px;color:#64748b;font-weight:700;white-space:nowrap">${DOW_LABELS[dow]}</div>` +
             HRS.map(h => {
-              const cnt = apts.filter(a => a.appointment_date === day && (a.appointment_time as string)?.startsWith(h)).length;
+              const cnt = hmMatrix[dow][h];
               const op = cnt === 0 ? 0 : Math.max(0.08, (cnt / hmMax) * 0.92 + 0.08);
               const tc = op > 0.55 ? "white" : "#fb0f05";
               return (
-                `<div style="background:rgba(251,15,5,${op.toFixed(2)});border-radius:4px;height:26px;width:26px;` +
-                `display:flex;align-items:center;justify-content:center" title="${cnt} cita${cnt !== 1 ? "s" : ""}">` +
-                (cnt > 0 ? `<span style="font-size:9px;font-weight:700;color:${tc}">${cnt}</span>` : "") +
+                `<div style="background:rgba(251,15,5,${op.toFixed(2)});border-radius:5px;height:30px;width:30px;` +
+                `display:flex;align-items:center;justify-content:center" title="${DOW_LABELS[dow]} ${h}h: ${cnt} cita${cnt !== 1 ? "s" : ""}">` +
+                (cnt > 0 ? `<span style="font-size:10px;font-weight:700;color:${tc}">${cnt}</span>` : "") +
                 `</div>`
               );
             }).join("")
@@ -564,7 +573,8 @@ export default function AdminOverview() {
         ["0.08","0.25","0.45","0.65","0.85","1.0"].map(op =>
           `<div style="width:14px;height:14px;border-radius:3px;background:rgba(251,15,5,${op})"></div>`
         ).join("") +
-        `</div><span style="font-size:9px;color:#b0abc0">Máx. ocupación</span></div></div>`
+        `</div><span style="font-size:9px;color:#b0abc0">Máx. ocupación</span></div>` +
+        `</div>`
       );
 
     // ── Donut de estados ──────────────────────────────────────────────────
