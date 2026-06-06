@@ -344,6 +344,8 @@ export default function AdminOverview() {
   const [showBlock, setShowBlock] = useState(false);
   const [showWA, setShowWA] = useState(false);
   const [showRangePicker, setShowRangePicker] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const hasLoadedOnce = useRef(false);
   const rangePickerRef = useRef<HTMLDivElement>(null);
   const [apptClients, setApptClients] = useState<any[]>([]);
   const [apptServices, setApptServices] = useState<any[]>([]);
@@ -356,7 +358,8 @@ export default function AdminOverview() {
   const [blockMsg, setBlockMsg] = useState("");
 
   const fetchAll = useCallback(async (tid: string, f: "hoy" | "semana" | "mes" | "custom" = "hoy", cStart?: string, cEnd?: string) => {
-    setLoading(true);
+    if (!hasLoadedOnce.current) setLoading(true);
+    else setRefreshing(true);
     const now = new Date();
     const todayStr = toISO(now);
     const prevDate = new Date(now); prevDate.setDate(prevDate.getDate() - 1);
@@ -410,10 +413,8 @@ export default function AdminOverview() {
     const svcMap: Record<string, number> = {};
     filteredApts.forEach(a => { const name = a.services?.name || "Sin servicio"; svcMap[name] = (svcMap[name] || 0) + 1; });
     const topServices = Object.entries(svcMap).map(([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count).slice(0, 5);
-    // Hourly chart always shows today's appointments (granularidad diaria no aplica para horas)
-    const todayApts = apts.filter(a => a.appointment_date === todayStr);
-    const hours = ["09", "10", "11", "12", "13", "14", "15", "16", "17", "18"];
-    const hourlyData = hours.map(h => ({ hour: `${h}:00`, count: todayApts.filter(a => a.appointment_time?.startsWith(h)).length }));
+    const hours = ["08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"];
+    const hourlyData = hours.map(h => ({ hour: `${h}:00`, count: filteredApts.filter(a => a.appointment_time?.startsWith(h)).length }));
     const dayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
     const weeklyRevenue = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
@@ -421,13 +422,15 @@ export default function AdminOverview() {
       const rev = apts.filter(a => a.appointment_date === ds && a.status !== "cancelled").reduce((s, a) => s + Number(a.services?.price || 0), 0);
       return { day: dayNames[d.getDay() === 0 ? 6 : d.getDay() - 1], revenue: rev };
     });
-    const { count: newClientsToday } = await supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tid).gte("created_at", todayStr).lte("created_at", todayStr + "T23:59:59");
+    const { count: newClientsToday } = await supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tid).gte("created_at", weekStartStr).lte("created_at", rangeEndStr + "T23:59:59");
     const uniqueClients = new Set(apts.map(a => a.client_id)).size;
     const multiVisit = apts.filter((a, _, arr) => arr.filter(b => b.client_id === a.client_id).length > 1);
     const returningPct = uniqueClients > 0 ? (new Set(multiVisit.map(a => a.client_id)).size / uniqueClients) * 100 : 0;
     const occupancyRate = Math.min((todayCount / 10) * 100, 100);
     setData({ todayRevenue, prevDayRevenue, todayCount, pending, noShowRate, avgTicket, returningPct, newClientsToday: newClientsToday || 0, occupancyRate, upcomingApts, staffPerf, topServices, hourlyData, weeklyRevenue });
+    hasLoadedOnce.current = true;
     setLoading(false);
+    setRefreshing(false);
   }, []);
 
   const openNewAppt = useCallback(async () => {
@@ -769,8 +772,17 @@ export default function AdminOverview() {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", position: "relative" }}>
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes progress { 0%{width:0%} 80%{width:85%} 100%{width:100%} }
+      `}</style>
+      {/* Barra de progreso sutil al refrescar — no borra el contenido */}
+      {refreshing && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: "3px", zIndex: 9999, overflow: "hidden" }}>
+          <div style={{ height: "100%", background: "linear-gradient(90deg,#fb0f05,#0027fe)", animation: "progress 1.2s ease-out forwards" }} />
+        </div>
+      )}
 
       {/* ─── Header ─── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "14px" }}>
@@ -864,7 +876,7 @@ export default function AdminOverview() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "14px" }}>
         <MetricCard icon={<IconCreditCard size={18} />} iconColor="#fb0f05" label="Ticket promedio" value={fmt(data.avgTicket)} sub="por servicio" />
         <MetricCard icon={<IconRefresh size={18} />} iconColor="#fb0f05" label="Clientes recurrentes" value={`${data.returningPct.toFixed(0)}%`} sub="de la semana" trend={data.returningPct > 50 ? "up" : "neutral"} />
-        <MetricCard icon={<IconUsers size={18} />} iconColor="#10b981" label="Nuevos hoy" value={String(data.newClientsToday)} sub="registrados hoy" />
+        <MetricCard icon={<IconUsers size={18} />} iconColor="#10b981" label={filter === "hoy" ? "Nuevos hoy" : "Nuevos clientes"} value={String(data.newClientsToday)} sub={filter === "hoy" ? "registrados hoy" : "en el período"} />
         <MetricCard icon={<IconChartBar size={18} />} iconColor="#fb0f05" label="Ocupación del día" value={`${data.occupancyRate.toFixed(0)}%`} sub="slots usados" trend={data.occupancyRate > 70 ? "up" : "neutral"} />
       </div>
 
@@ -878,7 +890,7 @@ export default function AdminOverview() {
         </div>
 
         <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader title="Citas por hora — hoy" icon={<IconClock size={16} />} />
+          <SectionHeader title={filter === "hoy" ? "Citas por hora — hoy" : "Citas por hora del período"} icon={<IconClock size={16} />} />
           <div style={{ padding: "16px 20px 20px" }}>
             <BarChart data={data.hourlyData.map(h => ({
               label: h.hour.replace(":00", "h"),
