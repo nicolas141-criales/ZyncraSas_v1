@@ -39,25 +39,27 @@ interface Professional {
   name: string;
 }
 
-// ── Defaults (emojis as Unicode escapes to avoid file-encoding issues) ────────
+// ── Defaults — all emoji as \u{XXXX} escapes so the source is pure ASCII ─────
+// \u{1F44B} = hand wave, \u{1F4C5} = calendar, \u{23F0} = alarm,
+// \u{2702}  = scissors,  \u{1F514} = bell,     \u{1F64F} = praying hands
 
 const DEFAULT_24H = [
-  "Hola {{nombre}} 👋",
+  "Hola {{nombre}} \u{1F44B}",
   "",
   "Te recordamos que tienes una cita agendada:",
   "",
-  "📅 {{fecha}}",
-  "⏰ {{hora}}",
-  "💮 {{servicio}}",
+  "\u{1F4C5} {{fecha}}",
+  "\u{23F0} {{hora}}",
+  "\u{2702} {{servicio}}",
   "",
-  "¡Te esperamos! Si necesitas cambiar la hora, eschíbenos.",
+  "\u{1FAF6} Te esperamos. Si necesitas cambiar la hora, escríbenos.",
 ].join("\n");
 
 const DEFAULT_2H =
-  "Hola {{nombre}} 👋 Tu cita de {{servicio}} es en 2 horas ({{hora}}). ¡Ya casi! 🔔";
+  "Hola {{nombre}} \u{1F44B} Tu cita de {{servicio}} es en 2 horas ({{hora}}). ¡Ya casi! \u{1F514}";
 
 const DEFAULT_POST = [
-  "Hola {{nombre}}, gracias por visitarnos hoy 🙏",
+  "Hola {{nombre}}, gracias por visitarnos hoy \u{1F64F}",
   "",
   "¿Cómo estuvo tu servicio de {{servicio}}? Tu opinión nos ayuda a mejorar. ¡Esperamos verte pronto!",
 ].join("\n");
@@ -78,8 +80,7 @@ const DAYS_ES   = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","S
 const MONTHS_ES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
 function isCorrupted(s: string): boolean {
-  // Detects replacement character or common Latin-1 mojibake of emoji bytes
-  return s.includes("�") || /ð[-¿]{3}/.test(s) || /Ã[ -¿]/.test(s);
+  return s.includes("�");
 }
 
 function safeTemplate(raw: string | null | undefined, fallback: string): string {
@@ -201,10 +202,10 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 type TemplateKey = "24h" | "2h" | "post";
 
-const TEMPLATE_TABS: { key: TemplateKey; label: string; icon: string; desc: string }[] = [
-  { key: "24h",  label: "Principal",    icon: "🔔", desc: "24 horas antes de la cita" },
-  { key: "2h",   label: "Urgente",      icon: "⚡",       desc: "2 horas antes de la cita" },
-  { key: "post", label: "Post-visita",  icon: "✨",       desc: "Tras finalizar el servicio" },
+const TEMPLATE_TABS: { key: TemplateKey; icon: string; label: string; desc: string }[] = [
+  { key: "24h",  icon: "\u{1F514}", label: "Principal",   desc: "24 horas antes" },
+  { key: "2h",   icon: "⚡",    label: "Urgente",     desc: "2 horas antes" },
+  { key: "post", icon: "✨",    label: "Post-visita", desc: "Tras el servicio" },
 ];
 
 export default function RemindersPage() {
@@ -212,7 +213,6 @@ export default function RemindersPage() {
   const [tab, setTab] = useState<"proximas" | "config" | "historial">("proximas");
   const [activeTemplate, setActiveTemplate] = useState<TemplateKey>("24h");
 
-  // Appointments
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
   const [sentSet, setSentSet] = useState<Set<string>>(new Set());
@@ -221,16 +221,13 @@ export default function RemindersPage() {
   const [profFilter, setProfFilter] = useState("all");
   const [professionals, setProfessionals] = useState<Professional[]>([]);
 
-  // Bulk send modal
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkIndex, setBulkIndex] = useState(0);
 
-  // Settings
   const [settings, setSettings] = useState<ReminderSettings>(DEFAULT_SETTINGS);
   const [savingSettings, setSavingSettings] = useState(false);
   const [settingsMsg, setSettingsMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
-  // History
   const [logs, setLogs] = useState<ReminderLog[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [histSearch, setHistSearch] = useState("");
@@ -257,12 +254,12 @@ export default function RemindersPage() {
     if (data) {
       setSettings({
         message_template: safeTemplate(data.message_template, DEFAULT_24H),
-        hours_before:     data.hours_before  ?? 24,
-        enabled_24h:      data.enabled_24h   ?? true,
+        hours_before:     data.hours_before ?? 24,
+        enabled_24h:      data.enabled_24h  ?? true,
         template_2h:      safeTemplate(data.template_2h,   DEFAULT_2H),
-        enabled_2h:       data.enabled_2h    ?? false,
+        enabled_2h:       data.enabled_2h   ?? false,
         template_post:    safeTemplate(data.template_post, DEFAULT_POST),
-        enabled_post:     data.enabled_post  ?? false,
+        enabled_post:     data.enabled_post ?? false,
       });
     }
   }, [tenantId]);
@@ -273,7 +270,6 @@ export default function RemindersPage() {
     const future = new Date();
     future.setDate(future.getDate() + daysAhead);
     const futureStr = future.toISOString().split("T")[0];
-
     const { data } = await supabase
       .from("appointments")
       .select("id, appointment_date, appointment_time, status, clients(id, name, phone), services(name), professionals(id, name)")
@@ -283,7 +279,6 @@ export default function RemindersPage() {
       .in("status", ["pending", "confirmed"])
       .order("appointment_date")
       .order("appointment_time");
-
     setAppointments((data as unknown as Appointment[]) ?? []);
     setLoading(false);
   }, [tenantId, daysAhead]);
@@ -387,12 +382,13 @@ export default function RemindersPage() {
 
   const bulkCurrent = bulkQueue[bulkIndex];
 
-  // ── Active template bindings ───────────────────────────────────────────────
-
-  const tplMeta: Record<TemplateKey, { value: string; enabled: boolean; default: string; enabledKey: keyof ReminderSettings; valueKey: keyof ReminderSettings }> = {
-    "24h": { value: settings.message_template, enabled: settings.enabled_24h, default: DEFAULT_24H, enabledKey: "enabled_24h", valueKey: "message_template" },
-    "2h":  { value: settings.template_2h,      enabled: settings.enabled_2h,  default: DEFAULT_2H,  enabledKey: "enabled_2h",  valueKey: "template_2h" },
-    "post":{ value: settings.template_post,    enabled: settings.enabled_post, default: DEFAULT_POST, enabledKey: "enabled_post", valueKey: "template_post" },
+  const tplMeta: Record<TemplateKey, {
+    value: string; enabled: boolean; defaultVal: string;
+    enabledKey: keyof ReminderSettings; valueKey: keyof ReminderSettings;
+  }> = {
+    "24h": { value: settings.message_template, enabled: settings.enabled_24h, defaultVal: DEFAULT_24H, enabledKey: "enabled_24h", valueKey: "message_template" },
+    "2h":  { value: settings.template_2h,      enabled: settings.enabled_2h,  defaultVal: DEFAULT_2H,  enabledKey: "enabled_2h",  valueKey: "template_2h" },
+    "post":{ value: settings.template_post,    enabled: settings.enabled_post, defaultVal: DEFAULT_POST, enabledKey: "enabled_post", valueKey: "template_post" },
   };
 
   const current = tplMeta[activeTemplate];
@@ -403,14 +399,14 @@ export default function RemindersPage() {
     <div style={{ padding: "0 0 48px" }}>
       <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
-        {/* Page header */}
+        {/* Header */}
         <div style={{ marginBottom: 28, textAlign: "center" }}>
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 8,
             background: "rgba(251,15,5,0.07)", borderRadius: 20,
             padding: "4px 14px", marginBottom: 12,
           }}>
-            <span style={{ fontSize: 15 }}>{"🔔"}</span>
+            <span style={{ fontSize: 15 }}>{"\u{1F4AC}"}</span>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#fb0f05", letterSpacing: ".04em", textTransform: "uppercase" }}>
               WhatsApp
             </span>
@@ -419,7 +415,7 @@ export default function RemindersPage() {
             Recordatorios
           </h1>
           <p style={{ color: "#6b7280", fontSize: 14, margin: 0 }}>
-            {`Envía recordatorios de cita a tus clientes por WhatsApp`}
+            {"Envía recordatorios de cita a tus clientes por WhatsApp"}
           </p>
         </div>
 
@@ -437,12 +433,16 @@ export default function RemindersPage() {
               color:      tab === t ? "#1a1a2e" : "#6b7280",
               boxShadow:  tab === t ? "0 1px 4px rgba(0,0,0,.1)" : "none",
             }}>
-              {t === "proximas" ? "📅 Próximas citas" : t === "config" ? "⚙️ Configuración" : "📋 Historial"}
+              {t === "proximas"
+                ? `\u{1F4C5} Próximas citas`
+                : t === "config"
+                ? `⚙️ Configuración`
+                : `\u{1F4CB} Historial`}
             </button>
           ))}
         </div>
 
-        {/* ── Próximas citas ─────────────────────────────────────────────── */}
+        {/* ── Proximas citas ─────────────────────────────────────────────── */}
         {tab === "proximas" && (
           <div>
             <div style={{
@@ -452,7 +452,7 @@ export default function RemindersPage() {
               border: "1px solid #e8e6e2",
             }}>
               <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>
-                Período
+                {"Período"}
               </span>
               <div style={{ display: "flex", gap: 6 }}>
                 {[1, 3, 7].map(d => (
@@ -477,7 +477,7 @@ export default function RemindersPage() {
                     color: profFilter === "all" ? "#6b7280" : "#1a1a2e",
                   }}
                 >
-                  <option value="all">Todos los profesionales</option>
+                  <option value="all">{"Todos los profesionales"}</option>
                   {professionals.map(p => (
                     <option key={p.id} value={p.id}>{p.name}</option>
                   ))}
@@ -489,18 +489,18 @@ export default function RemindersPage() {
                   onClick={() => { setBulkIndex(0); setBulkOpen(true); }}
                   style={{ ...btnPrimary, marginLeft: "auto", fontSize: 12, padding: "6px 14px" }}
                 >
-                  {`📤 Enviar a todos (${bulkQueue.length})`}
+                  {`\u{1F4E4} Enviar a todos (${bulkQueue.length})`}
                 </button>
               )}
             </div>
 
             {loading ? (
-              <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>Cargando citas...</div>
+              <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>{"Cargando citas..."}</div>
             ) : filteredAppts.length === 0 ? (
               <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
-                <div style={{ fontSize: 44, marginBottom: 12 }}>{"📅"}</div>
-                <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>Sin citas próximas</div>
-                <div style={{ fontSize: 13, marginTop: 4 }}>No hay citas en el período seleccionado</div>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>{"\u{1F4C5}"}</div>
+                <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>{"Sin citas próximas"}</div>
+                <div style={{ fontSize: 13, marginTop: 4 }}>{"No hay citas en el período seleccionado"}</div>
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
@@ -546,7 +546,9 @@ export default function RemindersPage() {
                                 {appt.professionals?.name ? ` · ${appt.professionals.name}` : ""}
                               </div>
                               {!hasPhone && (
-                                <div style={{ fontSize: 12, color: "#f59e0b", marginTop: 3 }}>{"⚠ Sin teléfono"}</div>
+                                <div style={{ fontSize: 12, color: "#f59e0b", marginTop: 3 }}>
+                                  {"⚠ Sin teléfono"}
+                                </div>
                               )}
                             </div>
 
@@ -557,7 +559,9 @@ export default function RemindersPage() {
                                 </button>
                               )}
                               {wasSent ? (
-                                <span style={{ fontSize: 13, fontWeight: 700, color: "#25D366" }}>{"✓ Enviado"}</span>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: "#25D366" }}>
+                                  {"✓ Enviado"}
+                                </span>
                               ) : hasPhone ? (
                                 <a
                                   href={waLink(appt.clients!.phone!, msg)}
@@ -573,7 +577,7 @@ export default function RemindersPage() {
                                   WhatsApp
                                 </a>
                               ) : (
-                                <span style={{ fontSize: 12, color: "#d1d5db" }}>Sin teléfono</span>
+                                <span style={{ fontSize: 12, color: "#d1d5db" }}>{"Sin teléfono"}</span>
                               )}
                             </div>
                           </div>
@@ -587,17 +591,16 @@ export default function RemindersPage() {
           </div>
         )}
 
-        {/* ── Configuración ─────────────────────────────────────────────── */}
+        {/* ── Configuracion ──────────────────────────────────────────────── */}
         {tab === "config" && (
           <div>
-
-            {/* Anticipación */}
+            {/* Anticipacion */}
             <div style={{ ...card, marginBottom: 16 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-                <div>
-                  <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>Anticipación del recordatorio</div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>Cuántas horas antes se envía</div>
-                </div>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e", marginBottom: 4 }}>
+                {"Anticipación del recordatorio"}
+              </div>
+              <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
+                {"Cuántas horas antes se envía"}
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {[1, 2, 4, 12, 24, 48].map(h => (
@@ -616,7 +619,7 @@ export default function RemindersPage() {
             {/* Variables */}
             <div style={{ background: "#f8f7ff", borderRadius: 10, padding: "10px 14px", marginBottom: 16, border: "1px solid #e8e6f0" }}>
               <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>
-                Variables disponibles
+                {"Variables disponibles"}
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {["{{nombre}}", "{{servicio}}", "{{fecha}}", "{{hora}}", "{{profesional}}"].map(v => (
@@ -659,9 +662,8 @@ export default function RemindersPage() {
               })}
             </div>
 
-            {/* Single template editor */}
+            {/* Single editor */}
             <div style={{ ...card, marginBottom: 16 }}>
-              {/* Header */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid #f0f0f5" }}>
                 <div>
                   <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>
@@ -672,7 +674,7 @@ export default function RemindersPage() {
                   </div>
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 12, color: current.enabled ? "#388e3c" : "#9b9bb0", fontWeight: 600 }}>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: current.enabled ? "#388e3c" : "#9b9bb0" }}>
                     {current.enabled ? "Activo" : "Inactivo"}
                   </span>
                   <Toggle
@@ -682,35 +684,28 @@ export default function RemindersPage() {
                 </div>
               </div>
 
-              {/* Textarea */}
               <textarea
                 value={current.value}
                 onChange={e => setSettings(s => ({ ...s, [current.valueKey]: e.target.value }))}
                 disabled={!current.enabled}
                 rows={6}
-                style={{
-                  ...inputStyle,
-                  resize: "vertical",
-                  opacity: current.enabled ? 1 : 0.5,
-                  lineHeight: 1.6,
-                }}
+                style={{ ...inputStyle, resize: "vertical", opacity: current.enabled ? 1 : 0.5, lineHeight: 1.6 }}
               />
               <button
-                onClick={() => setSettings(s => ({ ...s, [current.valueKey]: current.default }))}
+                onClick={() => setSettings(s => ({ ...s, [current.valueKey]: current.defaultVal }))}
                 style={{ background: "none", border: "none", color: "#9b9bb0", fontSize: 12, cursor: "pointer", padding: "4px 0", marginTop: 4 }}
               >
-                Restaurar por defecto
+                {"Restaurar por defecto"}
               </button>
 
-              {/* Preview */}
               {current.enabled && (
                 <div style={{ marginTop: 16, background: "#f0fdf4", borderRadius: 10, padding: "12px 16px", border: "1px solid #bbf7d0" }}>
                   <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", marginBottom: 8, textTransform: "uppercase", letterSpacing: ".05em" }}>
-                    Vista previa
+                    {"Vista previa"}
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                     <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#25D366", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ color: "white", fontSize: 14 }}>{"📞"}</span>
+                      <span style={{ color: "white", fontSize: 13 }}>{"\u{1F4F1}"}</span>
                     </div>
                     <div style={{ background: "#dcfce7", borderRadius: "4px 12px 12px 12px", padding: "10px 14px", fontSize: 13, color: "#1a1a2e", whiteSpace: "pre-wrap", lineHeight: 1.65, maxWidth: 300, wordBreak: "break-word" }}>
                       {previewMsg(current.value)}
@@ -725,11 +720,8 @@ export default function RemindersPage() {
               <button onClick={saveSettings} disabled={savingSettings} style={btnPrimary}>
                 {savingSettings ? "Guardando..." : "Guardar configuración"}
               </button>
-              <button
-                onClick={restoreAllDefaults}
-                style={{ ...btnGhost, color: "#9b9bb0" }}
-              >
-                Restaurar todas las plantillas
+              <button onClick={restoreAllDefaults} style={{ ...btnGhost, color: "#9b9bb0" }}>
+                {"Restaurar todas las plantillas"}
               </button>
               {settingsMsg && (
                 <span style={{ fontSize: 13, fontWeight: 600, color: settingsMsg.type === "ok" ? "#388e3c" : "#c62828" }}>
@@ -740,7 +732,7 @@ export default function RemindersPage() {
           </div>
         )}
 
-        {/* ── Historial ─────────────────────────────────────────────────── */}
+        {/* ── Historial ──────────────────────────────────────────────────── */}
         {tab === "historial" && (
           <div>
             <div style={{
@@ -751,7 +743,7 @@ export default function RemindersPage() {
             }}>
               <input
                 type="text"
-                placeholder="Buscar cliente o teléfono..."
+                placeholder={"Buscar cliente o teléfono..."}
                 value={histSearch}
                 onChange={e => setHistSearch(e.target.value)}
                 style={{ ...inputStyle, width: 220, padding: "7px 12px", fontSize: 13 }}
@@ -774,22 +766,22 @@ export default function RemindersPage() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: "#1a1a2e", letterSpacing: "-1px" }}>{filteredLogs.length}</div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>Recordatorios enviados</div>
+                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Recordatorios enviados"}</div>
                 </div>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: "#25D366", letterSpacing: "-1px" }}>
                     {filteredLogs.filter(l => l.sent_via === "whatsapp").length}
                   </div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>Por WhatsApp</div>
+                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Por WhatsApp"}</div>
                 </div>
               </div>
             )}
 
             {loadingLogs ? (
-              <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>Cargando...</div>
+              <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>{"Cargando..."}</div>
             ) : filteredLogs.length === 0 ? (
               <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
-                <div style={{ fontSize: 44, marginBottom: 12 }}>{"🔔"}</div>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>{"\u{1F514}"}</div>
                 <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>
                   {histSearch ? "Sin resultados para esa búsqueda" : "Sin recordatorios enviados"}
                 </div>
@@ -817,7 +809,7 @@ export default function RemindersPage() {
 
       </div>
 
-      {/* ── Bulk send modal ────────────────────────────────────────────────── */}
+      {/* ── Bulk modal ──────────────────────────────────────────────────────── */}
       {bulkOpen && (
         <div style={{
           position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", zIndex: 1000,
@@ -827,14 +819,14 @@ export default function RemindersPage() {
             {bulkIndex >= bulkQueue.length ? (
               <>
                 <div style={{ textAlign: "center", padding: "16px 0 24px" }}>
-                  <div style={{ fontSize: 52, marginBottom: 12 }}>{"🎉"}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>{"¡Todo enviado!"}</div>
+                  <div style={{ fontSize: 52, marginBottom: 12 }}>{"\u{1F389}"}</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>{"iTodo enviado!"}</div>
                   <div style={{ fontSize: 14, color: "#6b7280", marginTop: 6 }}>
                     {`Se enviaron ${bulkQueue.length} recordatorio${bulkQueue.length !== 1 ? "s" : ""} por WhatsApp.`}
                   </div>
                 </div>
                 <button onClick={() => setBulkOpen(false)} style={{ ...btnPrimary, width: "100%", justifyContent: "center", fontSize: 15, padding: "12px 0" }}>
-                  Listo
+                  {"Listo"}
                 </button>
               </>
             ) : bulkCurrent ? (
@@ -861,14 +853,14 @@ export default function RemindersPage() {
                     {bulkCurrent.clients?.name}
                   </div>
                   <div style={{ fontSize: 13, color: "#6b7280" }}>
-                    {fmtApptDate(bulkCurrent.appointment_date)} {"·"} {fmt12(bulkCurrent.appointment_time)}
+                    {`${fmtApptDate(bulkCurrent.appointment_date)} · ${fmt12(bulkCurrent.appointment_time)}`}
                   </div>
                   <div style={{ fontSize: 13, color: "#6b7280" }}>
                     {bulkCurrent.services?.name}
                     {bulkCurrent.professionals?.name ? ` · ${bulkCurrent.professionals.name}` : ""}
                   </div>
                   <div style={{ fontSize: 13, color: "#1a1a2e", fontWeight: 600, marginTop: 6 }}>
-                    {"📱 "}{bulkCurrent.clients?.phone}
+                    {`\u{1F4F1} ${bulkCurrent.clients?.phone}`}
                   </div>
                 </div>
 
@@ -894,13 +886,13 @@ export default function RemindersPage() {
                       color: "white", fontWeight: 700, fontSize: 15, textDecoration: "none",
                     }}
                   >
-                    Abrir WhatsApp
+                    {"Abrir WhatsApp"}
                   </a>
                   <button
                     onClick={() => setBulkIndex(i => i + 1)}
                     style={{ ...btnGhost, padding: "12px 16px", whiteSpace: "nowrap" }}
                   >
-                    {`Saltar →`}
+                    {"Saltar →"}
                   </button>
                 </div>
               </>
