@@ -9,6 +9,7 @@ interface AdminContextType {
   logoUrl: string | null;
   currency: string;
   locale: string;
+  refreshCurrency: () => Promise<void>;
 }
 
 export const AdminContext = createContext<AdminContextType>({
@@ -18,6 +19,7 @@ export const AdminContext = createContext<AdminContextType>({
   logoUrl: null,
   currency: "COP",
   locale: "es-CO",
+  refreshCurrency: async () => {},
 });
 
 export const useAdmin = () => useContext(AdminContext);

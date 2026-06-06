@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import styles from "./admin.module.css";
 import { supabase } from "@/lib/supabase";
 import { AdminContext } from "./admin-context";
@@ -99,6 +99,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push("/login"); };
 
+  const refreshCurrency = useCallback(async () => {
+    if (!tenantInfo) return;
+    const { data: t } = await (supabase as any).from("tenants").select("settings").eq("id", tenantInfo.id).maybeSingle();
+    if (t) {
+      const currency = t.settings?.currency ?? "COP";
+      const locale   = t.settings?.locale   ?? "es-CO";
+      setTenantInfo(prev => prev ? { ...prev, currency, locale } : prev);
+    }
+  }, [tenantInfo]);
+
   const currentPageLabel = (() => {
     for (const group of NAV_GROUPS) {
       for (const item of group.items) {
@@ -125,7 +135,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const initials = tenantInfo.name.substring(0, 2).toUpperCase();
 
   return (
-    <AdminContext.Provider value={{ tenantId: tenantInfo.id, tenantSlug: tenantInfo.slug, businessName: tenantInfo.name, logoUrl: tenantInfo.logoUrl, currency: tenantInfo.currency, locale: tenantInfo.locale }}>
+    <AdminContext.Provider value={{ tenantId: tenantInfo.id, tenantSlug: tenantInfo.slug, businessName: tenantInfo.name, logoUrl: tenantInfo.logoUrl, currency: tenantInfo.currency, locale: tenantInfo.locale, refreshCurrency }}>
       <div className={styles.adminLayout}>
 
         {/* Mobile overlay */}

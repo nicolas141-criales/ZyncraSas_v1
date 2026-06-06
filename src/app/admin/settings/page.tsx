@@ -86,7 +86,7 @@ function SectionCard({ icon, title, subtitle, children }: { icon: React.ReactNod
 }
 
 export default function SettingsPage() {
-  const { tenantId } = useAdmin();
+  const { tenantId, refreshCurrency } = useAdmin();
 
   const [whatsappReminders, setWhatsappReminders] = useState(true);
   const [emailNotifs, setEmailNotifs] = useState(false);
@@ -151,10 +151,12 @@ export default function SettingsPage() {
     await supabase.from("tenants").update({ settings: newSettings }).eq("id", tenantId);
 
     setSaving(false);
-    setMsg(error
-      ? { type: "err", text: error.message }
-      : { type: "ok", text: "Configuración guardada." }
-    );
+    if (error) {
+      setMsg({ type: "err", text: error.message });
+    } else {
+      await refreshCurrency();
+      setMsg({ type: "ok", text: "Configuración guardada." });
+    }
     setTimeout(() => setMsg(null), 3000);
   }
 

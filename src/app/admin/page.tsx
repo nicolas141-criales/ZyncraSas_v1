@@ -804,7 +804,7 @@ export default function AdminOverview() {
   </div>
   <div>
     <div class="st">Ingresos por día — ${revLabel}</div>
-    <div class="card"><div class="ct">Barras de ingresos diarios</div>${vBars(revBarsData, "#fb0f05", "#0027fe", "rg1", v => v >= 1000000 ? (v/1000000).toFixed(1)+"M" : v >= 1000 ? (v/1000).toFixed(0)+"k" : String(v))}</div>
+    <div class="card"><div class="ct">Barras de ingresos diarios</div>${vBars(revBarsData, "#fb0f05", "#0027fe", "rg1", fmt)}</div>
   </div>
 </div>
 
@@ -997,7 +997,7 @@ export default function AdminOverview() {
           <div style={{ padding: "16px 20px 20px" }}>
             <BarChart
               data={data.weeklyRevenue.map(d => ({ label: d.day, value: d.revenue }))}
-              fmtVal={v => v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + "M" : v >= 1_000 ? (v / 1_000).toFixed(0) + "k" : fmt(v)}
+              fmtVal={fmt}
             />
           </div>
         </div>
