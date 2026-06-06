@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import styles from "./admin.module.css";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "./admin-context";
@@ -191,6 +191,7 @@ function StatusPill({ status }: { status: string }) {
     pending:   { bg: "rgba(245,158,11,0.1)", color: "#f59e0b", label: "Pendiente" },
     completed: { bg: "rgba(100,116,139,0.1)", color: "#64748b", label: "Completada" },
     cancelled: { bg: "rgba(239,68,68,0.1)", color: "#ef4444", label: "Cancelada" },
+    no_show:   { bg: "rgba(239,68,68,0.08)", color: "#dc2626", label: "No se presentó" },
   };
   const s = map[status] || map.pending;
   return (
@@ -354,6 +355,8 @@ export default function AdminOverview() {
   const [showNewAppt, setShowNewAppt] = useState(false);
   const [showBlock, setShowBlock] = useState(false);
   const [showWA, setShowWA] = useState(false);
+  const [showRangePicker, setShowRangePicker] = useState(false);
+  const rangePickerRef = useRef<HTMLDivElement>(null);
   const [apptClients, setApptClients] = useState<any[]>([]);
   const [apptServices, setApptServices] = useState<any[]>([]);
   const [apptProfs, setApptProfs] = useState<any[]>([]);
@@ -475,6 +478,16 @@ export default function AdminOverview() {
     if (tenantId) fetchAll(tenantId, filter);
   }, [tenantId, filter, fetchAll]);
 
+  useEffect(() => {
+    if (!showRangePicker) return;
+    const onOutside = (e: MouseEvent) => {
+      if (rangePickerRef.current && !rangePickerRef.current.contains(e.target as Node))
+        setShowRangePicker(false);
+    };
+    document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, [showRangePicker]);
+
   const revDiff = data.todayRevenue - data.prevDayRevenue;
   const revTrend = revDiff > 0 ? "up" : revDiff < 0 ? "down" : "neutral";
   const fmt = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
@@ -574,12 +587,32 @@ ${data.topServices.map((s: any) => `<tr><td>${s.name}</td><td>${s.count}</td></t
         </div>
 
         <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-          {(["hoy", "semana", "mes", "custom"] as const).map(f => (
-            <FilterBtn key={f} active={filter === f} onClick={() => { setFilter(f); if (f !== "custom") fetchAll(tenantId!, f); }}>
-              {f === "hoy" ? "Hoy" : f === "semana" ? "7 días" : f === "mes" ? "30 días"
-                : (customStart && customEnd ? `${customStart.slice(5)} → ${customEnd.slice(5)}` : "Rango")}
+          {(["hoy", "semana", "mes"] as const).map(f => (
+            <FilterBtn key={f} active={filter === f} onClick={() => { setFilter(f); setShowRangePicker(false); fetchAll(tenantId!, f); }}>
+              {f === "hoy" ? "Hoy" : f === "semana" ? "7 días" : "30 días"}
             </FilterBtn>
           ))}
+
+          {/* Rango personalizado — botón + popup */}
+          <div ref={rangePickerRef} style={{ position: "relative" }}>
+            <FilterBtn active={filter === "custom"} onClick={() => { setFilter("custom"); setShowRangePicker(s => !s); }}>
+              {customStart && customEnd ? `${customStart.slice(5)} → ${customEnd.slice(5)}` : "Rango"}
+            </FilterBtn>
+            {showRangePicker && (
+              <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 200 }}>
+                <DateRangePicker
+                  start={customStart}
+                  end={customEnd}
+                  onApply={(s, e) => {
+                    setCustomStart(s); setCustomEnd(e);
+                    fetchAll(tenantId!, "custom", s, e);
+                    setShowRangePicker(false);
+                  }}
+                />
+              </div>
+            )}
+          </div>
+
           <button onClick={() => fetchAll(tenantId!, filter, customStart, customEnd)}
             style={{ width: "34px", height: "34px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#564E66", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <IconRefresh size={15} />
@@ -590,18 +623,6 @@ ${data.topServices.map((s: any) => `<tr><td>${s.name}</td><td>${s.count}</td></t
           </button>
         </div>
       </div>
-
-      {/* ─── Date Range Picker ─── */}
-      {filter === "custom" && (
-        <DateRangePicker
-          start={customStart}
-          end={customEnd}
-          onApply={(s, e) => {
-            setCustomStart(s); setCustomEnd(e);
-            fetchAll(tenantId!, "custom", s, e);
-          }}
-        />
-      )}
 
       {/* ─── Primary Metrics ─── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "14px" }}>
@@ -633,7 +654,7 @@ ${data.topServices.map((s: any) => `<tr><td>${s.name}</td><td>${s.count}</td></t
         />
         <MetricCard
           icon={<IconPercent size={20} />} iconColor={data.noShowRate > 15 ? "#ef4444" : "#fb0f05"}
-          label="No-shows"
+          label="Inasistencias"
           value={`${data.noShowRate.toFixed(1)}%`}
           sub="últimos 7 días"
           alert={data.noShowRate > 15}
