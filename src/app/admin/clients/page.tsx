@@ -77,7 +77,7 @@ export default function ClientsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Â¿Eliminar este cliente?")) return;
+    if (!confirm("¿Eliminar este cliente?")) return;
     await supabase.from("clients").delete().eq("id", id);
     setClients(prev => prev.filter(c => c.id !== id));
   };
@@ -110,7 +110,7 @@ export default function ClientsPage() {
               <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
             </svg>
             <input
-              type="text" placeholder="Buscarâ€¦" value={search} onChange={e => setSearch(e.target.value)}
+              type="text" placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)}
               style={{ ...inp, paddingLeft: "36px", width: "220px" }}
             />
           </div>
@@ -123,27 +123,27 @@ export default function ClientsPage() {
       {/* List */}
       <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden" }}>
         {loading ? (
-          <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando clientesâ€¦</div>
+          <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando clientes...</div>
         ) : filtered.length === 0 ? (
           <div style={{ padding: "64px 32px", textAlign: "center" }}>
             <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "rgba(251,15,5,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", margin: "0 auto 16px" }}>
               <IconUserGroup size={26} />
             </div>
             <div style={{ fontWeight: 700, fontSize: "16px", color: "#14111C", marginBottom: "6px" }}>
-              {search ? "Sin resultados" : "AÃºn no hay clientes"}
+              {search ? "Sin resultados" : "Aún no hay clientes"}
             </div>
             <p style={{ color: "#8E879B", fontSize: "14px", marginBottom: "24px" }}>
-              {search ? `No encontramos clientes para "${search}"` : "Los clientes aparecen aquÃ­ cuando agendan citas o los agregas manualmente."}
+              {search ? `No encontramos clientes para "${search}"` : "Los clientes aparecen aquí cuando agendan citas o los agregas manualmente."}
             </p>
             {!search && (
-              <button className="btn-primary" onClick={openCreate}>AÃ±adir primer cliente</button>
+              <button className="btn-primary" onClick={openCreate}>Añadir primer cliente</button>
             )}
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
             {/* Table header */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", padding: "12px 20px", borderBottom: "1px solid #f0eeeb", background: "#fafaf8" }}>
-              {["Cliente","TelÃ©fono","Correo","Acciones"].map(h => (
+              {["Cliente","Teléfono","Correo","Acciones"].map(h => (
                 <div key={h} style={{ fontSize: "11px", fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</div>
               ))}
             </div>
@@ -172,7 +172,7 @@ export default function ClientsPage() {
                 </div>
 
                 {/* Email */}
-                <span style={{ fontSize: "13px", color: "#564E66" }}>{c.email || <span style={{ color: "#d0ceca" }}>â€”</span>}</span>
+                <span style={{ fontSize: "13px", color: "#564E66" }}>{c.email || <span style={{ color: "#d0ceca" }}>—</span>}</span>
 
                 {/* Actions */}
                 <div style={{ display: "flex", gap: "6px" }}>
@@ -218,14 +218,14 @@ export default function ClientsPage() {
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: "16px" }}>
                 <label style={lbl}>Nombre completo *</label>
-                <input required autoFocus value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ej. MarÃ­a GarcÃ­a" style={inp} />
+                <input required autoFocus value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="Ej. María García" style={inp} />
               </div>
               <div style={{ marginBottom: "16px" }}>
-                <label style={lbl}>TelÃ©fono * <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(sin +57)</span></label>
+                <label style={lbl}>Teléfono * <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(sin +57)</span></label>
                 <input required value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="3001234567" style={inp} />
               </div>
               <div style={{ marginBottom: "24px" }}>
-                <label style={lbl}>Correo electrÃ³nico <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(opcional)</span></label>
+                <label style={lbl}>Correo electrónico <span style={{ fontWeight: 400, textTransform: "none", letterSpacing: 0 }}>(opcional)</span></label>
                 <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="maria@email.com" style={inp} />
               </div>
 
@@ -238,7 +238,7 @@ export default function ClientsPage() {
               <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)} disabled={saving}>Cancelar</button>
                 <button type="submit" className="btn-primary" disabled={saving}>
-                  {saving ? "Guardandoâ€¦" : editing ? "Guardar cambios" : "Crear cliente"}
+                  {saving ? "Guardando..." : editing ? "Guardar cambios" : "Crear cliente"}
                 </button>
               </div>
             </form>

@@ -13,7 +13,7 @@ interface LinkedApt {
   time: string;
 }
 
-// â"€â"€â"€ Types â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ─── Types ───────────────────────────────────────────────────────────────────
 
 interface Service {
   id: string;
@@ -50,7 +50,7 @@ interface Sale {
   pos_sale_items: { name: string; price: number; quantity: number }[];
 }
 
-// â"€â"€â"€ Helpers â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 
 const PAYMENT_METHODS = [
@@ -60,7 +60,7 @@ const PAYMENT_METHODS = [
   { key: "daviplata", label: "Daviplata", color: "#f59e0b" },
 ];
 
-// â"€â"€â"€ Styles â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "10px 13px", border: "1.5px solid #e8e6e2",
@@ -73,7 +73,7 @@ const lbl: React.CSSProperties = {
   marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em",
 };
 
-// â"€â"€â"€ Main Component â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function PosPage() {
   const { tenantId, currency, locale } = useAdmin();
@@ -112,7 +112,7 @@ export default function PosPage() {
   const [linkedApt, setLinkedApt] = useState<LinkedApt | null>(null);
   const clientRef = useRef<HTMLDivElement>(null);
 
-  // â"€â"€ Load services â"€â"€
+  // ── Load services ──
   useEffect(() => {
     if (!tenantId) return;
     supabase.from("services").select("id,name,price,duration_minutes")
@@ -164,7 +164,7 @@ export default function PosPage() {
     if (tenantId && tab === "historial") loadHistory(tenantId);
   }, [tenantId, tab, loadHistory]);
 
-  // â"€â"€ Client search â"€â"€
+  // ── Client search ──
   useEffect(() => {
     if (!tenantId || clientSearch.length < 2) { setClientResults([]); return; }
     const t = setTimeout(async () => {
@@ -178,7 +178,7 @@ export default function PosPage() {
     return () => clearTimeout(t);
   }, [clientSearch, tenantId]);
 
-  // â"€â"€ Cart helpers â"€â"€
+  // ── Cart helpers ──
   const addToCart = (svc: Service) => {
     setCart(prev => {
       const existing = prev.find(i => i.serviceId === svc.id);
@@ -203,7 +203,7 @@ export default function PosPage() {
 
   const removeItem = (key: string) => setCart(prev => prev.filter(i => i.key !== key));
 
-  // â"€â"€ Totals â"€â"€
+  // ── Totals ──
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const discountVal = parseFloat(discountValue) || 0;
   const discountAmount = discountType === "percentage"
@@ -211,7 +211,7 @@ export default function PosPage() {
     : Math.min(discountVal, subtotal);
   const total = Math.max(subtotal - discountAmount, 0);
 
-  // â"€â"€ Charge â"€â"€
+  // ── Charge ──
   const handleCharge = async () => {
     if (!tenantId || cart.length === 0) return;
     setCharging(true);
@@ -239,18 +239,18 @@ export default function PosPage() {
     }
 
     setCharging(false);
-    setSuccessMsg(`Venta de ${fmt(total)} registrada con Ã©xito.`);
+    setSuccessMsg(`Venta de ${fmt(total)} registrada con éxito.`);
     setCart([]); setClient(null); setClientSearch(""); setDiscountValue(""); setSaleNote("");
     setPaymentMethod("efectivo"); setLinkedApt(null);
     setTimeout(() => setSuccessMsg(""), 3500);
   };
 
-  // â"€â"€ Filtered services â"€â"€
+  // ── Filtered services ──
   const filtered = services.filter(s =>
     !search || s.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // â"€â"€â"€ Render â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
@@ -285,7 +285,7 @@ export default function PosPage() {
         </div>
       )}
 
-      {/* â"€â"€ TAB: Cobrar â"€â"€ */}
+      {/* ── TAB: Cobrar ── */}
       {tab === "cobrar" && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 20, alignItems: "start" }}>
 
@@ -305,7 +305,7 @@ export default function PosPage() {
               </div>
               <button onClick={() => { setFreeItemName(""); setFreeItemPrice(""); setShowFreeItem(true); }}
                 style={{ display: "flex", alignItems: "center", gap: 6, padding: "10px 16px", borderRadius: 10, border: "1.5px solid rgba(251,15,5,0.3)", background: "rgba(251,15,5,0.06)", color: "#fb0f05", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", whiteSpace: "nowrap" }}>
-                <IconPlus size={14} /> Ãtem libre
+                <IconPlus size={14} /> Ítem libre
               </button>
             </div>
 
@@ -337,7 +337,7 @@ export default function PosPage() {
                       <div style={{ fontSize: 11, color: "#8E879B", marginTop: 4 }}>{svc.duration_minutes} min</div>
                       {inCart && (
                         <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: "#fb0f05" }}>
-                          Ã- {inCart.qty} en carrito
+                          × {inCart.qty} en carrito
                         </div>
                       )}
                     </button>
@@ -401,7 +401,7 @@ export default function PosPage() {
                     <input type="text" value={clientSearch} onChange={e => { setClientSearch(e.target.value); setShowClientDrop(true); }}
                       onFocus={() => clientSearch.length >= 2 && setShowClientDrop(true)}
                       onBlur={() => setTimeout(() => setShowClientDrop(false), 200)}
-                      placeholder="Nombre o telÃ©fono..." style={inp} />
+                      placeholder="Nombre o teléfono..." style={inp} />
                     {showClientDrop && clientResults.length > 0 && (
                       <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "white", border: "1px solid #e8e6e2", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 50, overflow: "hidden", marginTop: 4 }}>
                         {clientResults.map(c => (
@@ -420,7 +420,7 @@ export default function PosPage() {
               {/* Cart items */}
               {cart.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "20px 0", color: "#8E879B", fontSize: 13 }}>
-                  Selecciona servicios del catÃ¡logo.
+                  Selecciona servicios del catálogo.
                 </div>
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -431,7 +431,7 @@ export default function PosPage() {
                         <div style={{ fontSize: 11, color: "#8E879B" }}>{fmt(item.price)} c/u</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>âˆ'</button>
+                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
                         <span style={{ fontSize: 13, fontWeight: 700, color: "#14111C", minWidth: 18, textAlign: "center" }}>{item.qty}</span>
                         <button onClick={() => updateQty(item.key, 1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                         <button onClick={() => removeItem(item.key)} style={{ width: 26, height: 26, borderRadius: 7, border: "none", background: "rgba(239,68,68,0.08)", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -479,7 +479,7 @@ export default function PosPage() {
                   {discountAmount > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
                       <span style={{ color: "#564E66" }}>Descuento</span>
-                      <span style={{ fontWeight: 600, color: "#ef4444" }}>âˆ'{fmt(discountAmount)}</span>
+                      <span style={{ fontWeight: 600, color: "#ef4444" }}>-{fmt(discountAmount)}</span>
                     </div>
                   )}
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, fontWeight: 800, marginTop: 4 }}>
@@ -494,7 +494,7 @@ export default function PosPage() {
               {/* Payment method */}
               {cart.length > 0 && (
                 <div>
-                  <label style={lbl}>MÃ©todo de pago</label>
+                  <label style={lbl}>Método de pago</label>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
                     {PAYMENT_METHODS.map(pm => (
                       <button key={pm.key} onClick={() => setPaymentMethod(pm.key)} style={{
@@ -532,14 +532,14 @@ export default function PosPage() {
                   boxShadow: (cart.length === 0 || charging) ? "none" : "0 4px 16px rgba(251,15,5,0.3)",
                   transition: "all 0.15s",
                 }}>
-                {charging ? "Procesando..." : cart.length === 0 ? "Agrega Ã­tems al carrito" : `Cobrar ${fmt(total)}`}
+                {charging ? "Procesando..." : cart.length === 0 ? "Agrega ítems al carrito" : `Cobrar ${fmt(total)}`}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* â"€â"€ TAB: Historial â"€â"€ */}
+      {/* ── TAB: Historial ── */}
       {tab === "historial" && (
         <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
@@ -554,12 +554,12 @@ export default function PosPage() {
             </div>
           ) : sales.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>
-              Sin ventas registradas aÃºn.
+              Sin ventas registradas aún.
             </div>
           ) : (
             <div>
               <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 90px 80px 110px", gap: 12, padding: "10px 20px", borderBottom: "1px solid #f0eeeb", fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                <span>Fecha</span><span>Cliente</span><span>MÃ©todo</span><span style={{ textAlign: "center" }}>Ãtems</span><span style={{ textAlign: "right" }}>Total</span>
+                <span>Fecha</span><span>Cliente</span><span>Método</span><span style={{ textAlign: "center" }}>Ítems</span><span style={{ textAlign: "right" }}>Total</span>
               </div>
               {sales.map((s, i) => (
                 <div key={s.id}>
@@ -595,14 +595,14 @@ export default function PosPage() {
                     <div style={{ padding: "10px 20px 16px 52px", borderBottom: i < sales.length - 1 ? "1px solid #f0eeeb" : "none", background: "#fafafa" }}>
                       {s.pos_sale_items?.map((item, j) => (
                         <div key={j} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#564E66", marginBottom: 4 }}>
-                          <span>{item.name} Ã- {item.quantity}</span>
+                          <span>{item.name} × {item.quantity}</span>
                           <span style={{ fontWeight: 600, color: "#3a3548" }}>{fmt(item.price * item.quantity)}</span>
                         </div>
                       ))}
                       {s.discount_value > 0 && (
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#ef4444", marginTop: 6 }}>
                           <span>Descuento</span>
-                          <span style={{ fontWeight: 600 }}>âˆ'{fmt(s.subtotal - s.total)}</span>
+                          <span style={{ fontWeight: 600 }}>-{fmt(s.subtotal - s.total)}</span>
                         </div>
                       )}
                       {s.note && <div style={{ fontSize: 11, color: "#8E879B", marginTop: 6 }}>Nota: {s.note}</div>}
@@ -615,13 +615,13 @@ export default function PosPage() {
         </div>
       )}
 
-      {/* â"€â"€ Modal: Ãtem libre â"€â"€ */}
+      {/* ── Modal: Ítem libre ── */}
       {showFreeItem && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setShowFreeItem(false); }}>
           <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: "#14111C" }}>Ãtem libre</div>
+              <div style={{ fontWeight: 800, fontSize: 16, color: "#14111C" }}>Ítem libre</div>
               <button onClick={() => setShowFreeItem(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}><IconX size={18} /></button>
             </div>
             <div style={{ marginBottom: 14 }}>
