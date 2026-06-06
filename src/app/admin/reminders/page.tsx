@@ -108,29 +108,57 @@ function previewMsg(template: string) {
 // ── Shared styles ─────────────────────────────────────────────────────────────
 
 const card: React.CSSProperties = {
-  background: "white", borderRadius: 14, padding: "20px 24px", border: "1px solid #e8e6e2",
+  background: "white",
+  borderRadius: 14,
+  padding: "20px 24px",
+  border: "1px solid #e8e6e2",
 };
 
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
-  fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
+  width: "100%",
+  padding: "8px 12px",
+  borderRadius: 8,
+  border: "1px solid #e8e6e2",
+  fontSize: 14,
+  color: "#1a1a2e",
+  background: "white",
+  boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
 };
 
 const btnPrimary: React.CSSProperties = {
-  display: "inline-flex", alignItems: "center", gap: 6,
-  padding: "9px 20px", borderRadius: 10, border: "none",
-  background: "#fb0f05", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  padding: "9px 20px",
+  borderRadius: 10,
+  border: "none",
+  background: "#fb0f05",
+  color: "white",
+  fontWeight: 700,
+  fontSize: 14,
+  cursor: "pointer",
 };
 
 const btnGhost: React.CSSProperties = {
-  display: "inline-flex", alignItems: "center", gap: 6,
-  padding: "7px 14px", borderRadius: 10, border: "1px solid #e8e6e2",
-  background: "white", color: "#6b7280", fontWeight: 600, fontSize: 13, cursor: "pointer",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: 6,
+  padding: "7px 14px",
+  borderRadius: 10,
+  border: "1px solid #e8e6e2",
+  background: "white",
+  color: "#6b7280",
+  fontWeight: 600,
+  fontSize: 13,
+  cursor: "pointer",
 };
 
 const codeStyle: React.CSSProperties = {
-  background: "#f0f0f5", padding: "1px 5px", borderRadius: 4, fontSize: 12,
+  background: "#f0f0f5",
+  padding: "1px 5px",
+  borderRadius: 4,
+  fontSize: 12,
 };
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -377,302 +405,357 @@ export default function RemindersPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ padding: "0 0 40px" }}>
+    <div style={{ padding: "0 0 48px" }}>
 
-      {/* Page header */}
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Recordatorios</h1>
-        <p style={{ color: "#6b7280", fontSize: 14, margin: "4px 0 0" }}>
-          Envía recordatorios de cita a tus clientes por WhatsApp
-        </p>
-      </div>
+      {/* ── Centered container ── */}
+      <div style={{ maxWidth: 760, margin: "0 auto" }}>
 
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 24, background: "#f0f0f5", borderRadius: 10, padding: 4, width: "fit-content" }}>
-        {(["proximas", "config", "historial"] as const).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{
-            padding: "7px 18px", borderRadius: 8, border: "none", cursor: "pointer",
-            fontSize: 13, fontWeight: 600, transition: "all .2s",
-            background: tab === t ? "white" : "transparent",
-            color:      tab === t ? "#1a1a2e" : "#6b7280",
-            boxShadow:  tab === t ? "0 1px 4px rgba(0,0,0,.1)" : "none",
+        {/* Page header */}
+        <div style={{ marginBottom: 28, textAlign: "center" }}>
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            background: "rgba(251,15,5,0.07)", borderRadius: 20,
+            padding: "4px 14px", marginBottom: 12,
           }}>
-            {t === "proximas" ? "Próximas citas" : t === "config" ? "Configuración" : "Historial"}
-          </button>
-        ))}
-      </div>
-
-      {/* ── Próximas citas ─────────────────────────────────────────────────── */}
-      {tab === "proximas" && (
-        <div style={{ maxWidth: 760 }}>
-
-          {/* Filter bar */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 18, alignItems: "center", flexWrap: "wrap" }}>
-            <span style={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>Mostrar:</span>
-            {[1, 3, 7].map(d => (
-              <button key={d} onClick={() => setDaysAhead(d)} style={{
-                padding: "5px 14px", borderRadius: 20, border: "none", cursor: "pointer",
-                fontSize: 12, fontWeight: 600,
-                background: daysAhead === d ? "#fb0f05" : "#f0f0f5",
-                color:      daysAhead === d ? "white"   : "#6b7280",
-              }}>
-                {d === 1 ? "Hoy" : `${d} días`}
-              </button>
-            ))}
-
-            {professionals.length > 0 && (
-              <select
-                value={profFilter}
-                onChange={e => setProfFilter(e.target.value)}
-                style={{
-                  ...inputStyle, width: "auto", padding: "5px 10px", fontSize: 12,
-                  fontWeight: 600, cursor: "pointer",
-                  color: profFilter === "all" ? "#6b7280" : "#1a1a2e",
-                }}
-              >
-                <option value="all">Todos los profesionales</option>
-                {professionals.map(p => (
-                  <option key={p.id} value={p.id}>{p.name}</option>
-                ))}
-              </select>
-            )}
-
-            {bulkQueue.length > 0 && (
-              <button
-                onClick={() => { setBulkIndex(0); setBulkOpen(true); }}
-                style={{ ...btnPrimary, marginLeft: "auto", fontSize: 13, padding: "7px 16px" }}
-              >
-                📤 Enviar a todos ({bulkQueue.length})
-              </button>
-            )}
+            <span style={{ fontSize: 15 }}>🔔</span>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#fb0f05", letterSpacing: ".04em", textTransform: "uppercase" }}>
+              WhatsApp
+            </span>
           </div>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1a1a2e", margin: "0 0 6px", letterSpacing: "-0.03em" }}>
+            Recordatorios
+          </h1>
+          <p style={{ color: "#6b7280", fontSize: 14, margin: 0 }}>
+            Envía recordatorios de cita a tus clientes por WhatsApp
+          </p>
+        </div>
 
-          {loading ? (
-            <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>Cargando citas...</div>
-          ) : filteredAppts.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>📅</div>
-              <div style={{ fontWeight: 600, color: "#6b7280" }}>Sin citas próximas</div>
-              <div style={{ fontSize: 13, marginTop: 4 }}>No hay citas en el período seleccionado</div>
+        {/* Tabs */}
+        <div style={{
+          display: "grid", gridTemplateColumns: "repeat(3, 1fr)",
+          gap: 4, marginBottom: 28,
+          background: "#f0f0f5", borderRadius: 12, padding: 4,
+        }}>
+          {(["proximas", "config", "historial"] as const).map(t => (
+            <button key={t} onClick={() => setTab(t)} style={{
+              padding: "9px 0", borderRadius: 9, border: "none", cursor: "pointer",
+              fontSize: 13, fontWeight: 600, transition: "all .2s", textAlign: "center",
+              background: tab === t ? "white" : "transparent",
+              color:      tab === t ? "#1a1a2e" : "#6b7280",
+              boxShadow:  tab === t ? "0 1px 4px rgba(0,0,0,.1)" : "none",
+            }}>
+              {t === "proximas" ? "📅 Próximas citas" : t === "config" ? "⚙️ Configuración" : "📋 Historial"}
+            </button>
+          ))}
+        </div>
+
+        {/* ── Próximas citas ───────────────────────────────────────────────── */}
+        {tab === "proximas" && (
+          <div>
+            {/* Filter bar */}
+            <div style={{
+              display: "flex", gap: 8, marginBottom: 20,
+              alignItems: "center", flexWrap: "wrap",
+              background: "white", borderRadius: 12, padding: "12px 16px",
+              border: "1px solid #e8e6e2",
+            }}>
+              <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>
+                Período
+              </span>
+              <div style={{ display: "flex", gap: 6 }}>
+                {[1, 3, 7].map(d => (
+                  <button key={d} onClick={() => setDaysAhead(d)} style={{
+                    padding: "5px 14px", borderRadius: 20, border: "none", cursor: "pointer",
+                    fontSize: 12, fontWeight: 600,
+                    background: daysAhead === d ? "#fb0f05" : "#f0f0f5",
+                    color:      daysAhead === d ? "white"   : "#6b7280",
+                  }}>
+                    {d === 1 ? "Hoy" : `${d} días`}
+                  </button>
+                ))}
+              </div>
+
+              {professionals.length > 0 && (
+                <select
+                  value={profFilter}
+                  onChange={e => setProfFilter(e.target.value)}
+                  style={{
+                    ...inputStyle, width: "auto", padding: "5px 10px", fontSize: 12,
+                    fontWeight: 600, cursor: "pointer",
+                    color: profFilter === "all" ? "#6b7280" : "#1a1a2e",
+                  }}
+                >
+                  <option value="all">Todos los profesionales</option>
+                  {professionals.map(p => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              )}
+
+              {bulkQueue.length > 0 && (
+                <button
+                  onClick={() => { setBulkIndex(0); setBulkOpen(true); }}
+                  style={{ ...btnPrimary, marginLeft: "auto", fontSize: 12, padding: "6px 14px" }}
+                >
+                  📤 Enviar a todos ({bulkQueue.length})
+                </button>
+              )}
             </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              {Object.entries(grouped).map(([date, appts]) => (
-                <div key={date}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                    {fmtApptDate(date)}
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                    {appts.map(appt => {
-                      const hasPhone   = !!appt.clients?.phone;
-                      const wasSent    = sentSet.has(appt.id);
-                      const isConfirmed = confirmedSet.has(appt.id) || appt.status === "confirmed";
-                      const msg = applyVars(settings.message_template, appt);
-                      return (
-                        <div key={appt.id} style={{ ...card, padding: "14px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3, flexWrap: "wrap" }}>
-                              <span style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>
-                                {appt.clients?.name ?? "—"}
-                              </span>
-                              <span style={{ fontSize: 12, color: "#9b9bb0" }}>
-                                {fmt12(appt.appointment_time)}
-                              </span>
-                              {isConfirmed && (
-                                <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#e8f5e9", color: "#388e3c" }}>
-                                  ✓ Confirmado
+
+            {loading ? (
+              <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>Cargando citas...</div>
+            ) : filteredAppts.length === 0 ? (
+              <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>📅</div>
+                <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>Sin citas próximas</div>
+                <div style={{ fontSize: 13, marginTop: 4 }}>No hay citas en el período seleccionado</div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                {Object.entries(grouped).map(([date, appts]) => (
+                  <div key={date}>
+                    <div style={{
+                      fontSize: 11, fontWeight: 700, color: "#6b7280", marginBottom: 10,
+                      textTransform: "uppercase", letterSpacing: "0.07em",
+                      display: "flex", alignItems: "center", gap: 8,
+                    }}>
+                      <span style={{
+                        display: "inline-block", width: 28, height: 2,
+                        background: "#e8e6e2", borderRadius: 2,
+                      }} />
+                      {fmtApptDate(date)}
+                      <span style={{
+                        display: "inline-block", flex: 1, height: 2,
+                        background: "#e8e6e2", borderRadius: 2,
+                      }} />
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                      {appts.map(appt => {
+                        const hasPhone    = !!appt.clients?.phone;
+                        const wasSent     = sentSet.has(appt.id);
+                        const isConfirmed = confirmedSet.has(appt.id) || appt.status === "confirmed";
+                        const msg = applyVars(settings.message_template, appt);
+                        return (
+                          <div key={appt.id} style={{
+                            ...card, padding: "14px 18px",
+                            display: "flex", justifyContent: "space-between",
+                            alignItems: "center", gap: 12,
+                          }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3, flexWrap: "wrap" }}>
+                                <span style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>
+                                  {appt.clients?.name ?? "—"}
                                 </span>
+                                <span style={{ fontSize: 12, color: "#9b9bb0", fontWeight: 600 }}>
+                                  {fmt12(appt.appointment_time)}
+                                </span>
+                                {isConfirmed && (
+                                  <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#e8f5e9", color: "#388e3c" }}>
+                                    ✓ Confirmado
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ fontSize: 13, color: "#6b7280" }}>
+                                {appt.services?.name ?? "—"}
+                                {appt.professionals?.name ? ` · ${appt.professionals.name}` : ""}
+                              </div>
+                              {!hasPhone && (
+                                <div style={{ fontSize: 12, color: "#f59e0b", marginTop: 3 }}>⚠ Sin teléfono</div>
                               )}
                             </div>
-                            <div style={{ fontSize: 13, color: "#6b7280" }}>
-                              {appt.services?.name ?? "—"}
-                              {appt.professionals?.name ? ` · ${appt.professionals.name}` : ""}
+
+                            <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+                              {!isConfirmed && (
+                                <button onClick={() => confirmAppointment(appt)} style={btnGhost}>
+                                  ✓ Confirmó
+                                </button>
+                              )}
+                              {wasSent ? (
+                                <span style={{ fontSize: 13, fontWeight: 700, color: "#25D366" }}>✓ Enviado</span>
+                              ) : hasPhone ? (
+                                <a
+                                  href={waLink(appt.clients!.phone!, msg)}
+                                  target="_blank" rel="noopener noreferrer"
+                                  onClick={() => logSent(appt)}
+                                  style={{
+                                    display: "inline-flex", alignItems: "center", gap: 6,
+                                    padding: "7px 14px", borderRadius: 10,
+                                    background: "#25D366", color: "white",
+                                    fontWeight: 700, fontSize: 13, textDecoration: "none",
+                                  }}
+                                >
+                                  WhatsApp
+                                </a>
+                              ) : (
+                                <span style={{ fontSize: 12, color: "#d1d5db" }}>Sin teléfono</span>
+                              )}
                             </div>
-                            {!hasPhone && (
-                              <div style={{ fontSize: 12, color: "#f59e0b", marginTop: 3 }}>⚠ Sin teléfono</div>
-                            )}
                           </div>
-
-                          <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-                            {!isConfirmed && (
-                              <button onClick={() => confirmAppointment(appt)} style={btnGhost}>
-                                ✓ Confirmó
-                              </button>
-                            )}
-                            {wasSent ? (
-                              <span style={{ fontSize: 13, fontWeight: 700, color: "#25D366" }}>✓ Enviado</span>
-                            ) : hasPhone ? (
-                              <a
-                                href={waLink(appt.clients!.phone!, msg)}
-                                target="_blank" rel="noopener noreferrer"
-                                onClick={() => logSent(appt)}
-                                style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "7px 14px", borderRadius: 10, background: "#25D366", color: "white", fontWeight: 700, fontSize: 13, textDecoration: "none" }}
-                              >
-                                WhatsApp
-                              </a>
-                            ) : (
-                              <span style={{ fontSize: 12, color: "#d1d5db" }}>Sin teléfono</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Configuración ──────────────────────────────────────────────────── */}
-      {tab === "config" && (
-        <div style={{ maxWidth: 640 }}>
-
-          {/* hours_before */}
-          <div style={{ ...card, marginBottom: 14 }}>
-            <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>
-              Anticipación del recordatorio principal
-            </h3>
-            <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 14px" }}>
-              Con cuántas horas de anticipación se enviará (referencia para automatización futura)
-            </p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              {[1, 2, 4, 12, 24, 48].map(h => (
-                <button key={h} onClick={() => setSettings(s => ({ ...s, hours_before: h }))} style={{
-                  padding: "7px 16px", borderRadius: 20, border: "none", cursor: "pointer",
-                  fontSize: 13, fontWeight: 600,
-                  background: settings.hours_before === h ? "#fb0f05" : "#f0f0f5",
-                  color:      settings.hours_before === h ? "white"   : "#6b7280",
-                }}>
-                  {h < 24 ? `${h}h` : `${h}h`}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Variables reference */}
-          <div style={{ background: "#f0f0f5", borderRadius: 10, padding: "10px 14px", marginBottom: 14, fontSize: 13, color: "#6b7280", lineHeight: 2 }}>
-            Variables:{" "}
-            {["{{nombre}}", "{{servicio}}", "{{fecha}}", "{{hora}}", "{{profesional}}"].map(v => (
-              <code key={v} style={{ ...codeStyle, marginRight: 6 }}>{v}</code>
-            ))}
-          </div>
-
-          {/* Template cards */}
-          <TemplateCard
-            title="Recordatorio principal"
-            subtitle={`${settings.hours_before}h antes de la cita — confirmación de asistencia`}
-            template={settings.message_template}
-            defaultTpl={DEFAULT_24H}
-            enabled={settings.enabled_24h}
-            onTemplate={v => setSettings(s => ({ ...s, message_template: v }))}
-            onEnabled={v => setSettings(s => ({ ...s, enabled_24h: v }))}
-          />
-          <TemplateCard
-            title="Recordatorio urgente (2h antes)"
-            subtitle="Para el día de la cita, minutos antes de la hora"
-            template={settings.template_2h}
-            defaultTpl={DEFAULT_2H}
-            enabled={settings.enabled_2h}
-            onTemplate={v => setSettings(s => ({ ...s, template_2h: v }))}
-            onEnabled={v => setSettings(s => ({ ...s, enabled_2h: v }))}
-          />
-          <TemplateCard
-            title="Post-servicio"
-            subtitle="Después de la cita — solicitar reseña o retroalimentación"
-            template={settings.template_post}
-            defaultTpl={DEFAULT_POST}
-            enabled={settings.enabled_post}
-            onTemplate={v => setSettings(s => ({ ...s, template_post: v }))}
-            onEnabled={v => setSettings(s => ({ ...s, enabled_post: v }))}
-          />
-
-          <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8 }}>
-            <button onClick={saveSettings} disabled={savingSettings} style={btnPrimary}>
-              {savingSettings ? "Guardando..." : "Guardar configuración"}
-            </button>
-            {settingsMsg && (
-              <span style={{ fontSize: 13, fontWeight: 600, color: settingsMsg.type === "ok" ? "#388e3c" : "#c62828" }}>
-                {settingsMsg.type === "ok" ? "✓ " : "✕ "}{settingsMsg.text}
-              </span>
+                ))}
+              </div>
             )}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* ── Historial ──────────────────────────────────────────────────────── */}
-      {tab === "historial" && (
-        <div style={{ maxWidth: 680 }}>
+        {/* ── Configuración ────────────────────────────────────────────────── */}
+        {tab === "config" && (
+          <div>
+            {/* hours_before */}
+            <div style={{ ...card, marginBottom: 14 }}>
+              <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>
+                Anticipación del recordatorio principal
+              </h3>
+              <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 14px" }}>
+                Con cuántas horas de anticipación se enviará (referencia para automatización futura)
+              </p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {[1, 2, 4, 12, 24, 48].map(h => (
+                  <button key={h} onClick={() => setSettings(s => ({ ...s, hours_before: h }))} style={{
+                    padding: "7px 16px", borderRadius: 20, border: "none", cursor: "pointer",
+                    fontSize: 13, fontWeight: 600,
+                    background: settings.hours_before === h ? "#fb0f05" : "#f0f0f5",
+                    color:      settings.hours_before === h ? "white"   : "#6b7280",
+                  }}>
+                    {h < 24 ? `${h}h` : `${h}h`}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          {/* Filters */}
-          <div style={{ display: "flex", gap: 8, marginBottom: 16, alignItems: "center", flexWrap: "wrap" }}>
-            <input
-              type="text"
-              placeholder="Buscar cliente o teléfono..."
-              value={histSearch}
-              onChange={e => setHistSearch(e.target.value)}
-              style={{ ...inputStyle, width: 220, padding: "7px 12px", fontSize: 13 }}
-            />
-            <div style={{ display: "flex", gap: 4 }}>
-              {([["all", "Todo"], ["month", "Este mes"], ["week", "Esta semana"]] as const).map(([v, label]) => (
-                <button key={v} onClick={() => setHistPeriod(v)} style={{
-                  padding: "7px 14px", borderRadius: 20, border: "none", cursor: "pointer",
-                  fontSize: 12, fontWeight: 600,
-                  background: histPeriod === v ? "#1a1a2e" : "#f0f0f5",
-                  color:      histPeriod === v ? "white"   : "#6b7280",
-                }}>
-                  {label}
-                </button>
+            {/* Variables reference */}
+            <div style={{ background: "#f0f0f5", borderRadius: 10, padding: "10px 14px", marginBottom: 14, fontSize: 13, color: "#6b7280", lineHeight: 2 }}>
+              Variables:{" "}
+              {["{{nombre}}", "{{servicio}}", "{{fecha}}", "{{hora}}", "{{profesional}}"].map(v => (
+                <code key={v} style={{ ...codeStyle, marginRight: 6 }}>{v}</code>
               ))}
+            </div>
+
+            {/* Template cards */}
+            <TemplateCard
+              title="Recordatorio principal"
+              subtitle={`${settings.hours_before}h antes de la cita — confirmación de asistencia`}
+              template={settings.message_template}
+              defaultTpl={DEFAULT_24H}
+              enabled={settings.enabled_24h}
+              onTemplate={v => setSettings(s => ({ ...s, message_template: v }))}
+              onEnabled={v => setSettings(s => ({ ...s, enabled_24h: v }))}
+            />
+            <TemplateCard
+              title="Recordatorio urgente (2h antes)"
+              subtitle="Para el día de la cita, minutos antes de la hora"
+              template={settings.template_2h}
+              defaultTpl={DEFAULT_2H}
+              enabled={settings.enabled_2h}
+              onTemplate={v => setSettings(s => ({ ...s, template_2h: v }))}
+              onEnabled={v => setSettings(s => ({ ...s, enabled_2h: v }))}
+            />
+            <TemplateCard
+              title="Post-servicio"
+              subtitle="Después de la cita — solicitar reseña o retroalimentación"
+              template={settings.template_post}
+              defaultTpl={DEFAULT_POST}
+              enabled={settings.enabled_post}
+              onTemplate={v => setSettings(s => ({ ...s, template_post: v }))}
+              onEnabled={v => setSettings(s => ({ ...s, enabled_post: v }))}
+            />
+
+            <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 8 }}>
+              <button onClick={saveSettings} disabled={savingSettings} style={btnPrimary}>
+                {savingSettings ? "Guardando..." : "Guardar configuración"}
+              </button>
+              {settingsMsg && (
+                <span style={{ fontSize: 13, fontWeight: 600, color: settingsMsg.type === "ok" ? "#388e3c" : "#c62828" }}>
+                  {settingsMsg.type === "ok" ? "✓ " : "✕ "}{settingsMsg.text}
+                </span>
+              )}
             </div>
           </div>
+        )}
 
-          {/* Stats */}
-          {filteredLogs.length > 0 && (
-            <div style={{ display: "flex", gap: 12, marginBottom: 16 }}>
-              <div style={{ ...card, padding: "14px 20px", flex: 1 }}>
-                <div style={{ fontSize: 24, fontWeight: 800, color: "#1a1a2e" }}>{filteredLogs.length}</div>
-                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>Recordatorios enviados</div>
-              </div>
-              <div style={{ ...card, padding: "14px 20px", flex: 1 }}>
-                <div style={{ fontSize: 24, fontWeight: 800, color: "#25D366" }}>
-                  {filteredLogs.filter(l => l.sent_via === "whatsapp").length}
-                </div>
-                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>Por WhatsApp</div>
+        {/* ── Historial ────────────────────────────────────────────────────── */}
+        {tab === "historial" && (
+          <div>
+            {/* Filters */}
+            <div style={{
+              display: "flex", gap: 8, marginBottom: 20,
+              alignItems: "center", flexWrap: "wrap",
+              background: "white", borderRadius: 12, padding: "12px 16px",
+              border: "1px solid #e8e6e2",
+            }}>
+              <input
+                type="text"
+                placeholder="Buscar cliente o teléfono..."
+                value={histSearch}
+                onChange={e => setHistSearch(e.target.value)}
+                style={{ ...inputStyle, width: 220, padding: "7px 12px", fontSize: 13 }}
+              />
+              <div style={{ display: "flex", gap: 4, marginLeft: "auto" }}>
+                {([["all", "Todo"], ["month", "Este mes"], ["week", "Esta semana"]] as const).map(([v, label]) => (
+                  <button key={v} onClick={() => setHistPeriod(v)} style={{
+                    padding: "7px 14px", borderRadius: 20, border: "none", cursor: "pointer",
+                    fontSize: 12, fontWeight: 600,
+                    background: histPeriod === v ? "#1a1a2e" : "#f0f0f5",
+                    color:      histPeriod === v ? "white"   : "#6b7280",
+                  }}>
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
-          )}
 
-          {loadingLogs ? (
-            <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>Cargando...</div>
-          ) : filteredLogs.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>🔔</div>
-              <div style={{ fontWeight: 600, color: "#6b7280" }}>
-                {histSearch ? "Sin resultados para esa búsqueda" : "Sin recordatorios enviados"}
-              </div>
-            </div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {filteredLogs.map(l => (
-                <div key={l.id} style={{ ...card, padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{l.client_name}</div>
-                    <div style={{ fontSize: 12, color: "#9b9bb0" }}>{l.client_phone ?? "Sin teléfono"}</div>
+            {/* Stats */}
+            {filteredLogs.length > 0 && (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+                <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: "#1a1a2e", letterSpacing: "-1px" }}>
+                    {filteredLogs.length}
                   </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>{fmtDate(l.created_at)}</div>
-                    <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#e8f5e9", color: "#388e3c" }}>
-                      WhatsApp
-                    </span>
-                  </div>
+                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>Recordatorios enviados</div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+                <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
+                  <div style={{ fontSize: 32, fontWeight: 800, color: "#25D366", letterSpacing: "-1px" }}>
+                    {filteredLogs.filter(l => l.sent_via === "whatsapp").length}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>Por WhatsApp</div>
+                </div>
+              </div>
+            )}
+
+            {loadingLogs ? (
+              <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>Cargando...</div>
+            ) : filteredLogs.length === 0 ? (
+              <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
+                <div style={{ fontSize: 44, marginBottom: 12 }}>🔔</div>
+                <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>
+                  {histSearch ? "Sin resultados para esa búsqueda" : "Sin recordatorios enviados"}
+                </div>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {filteredLogs.map(l => (
+                  <div key={l.id} style={{ ...card, padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{l.client_name}</div>
+                      <div style={{ fontSize: 12, color: "#9b9bb0" }}>{l.client_phone ?? "Sin teléfono"}</div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>{fmtDate(l.created_at)}</div>
+                      <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#e8f5e9", color: "#388e3c" }}>
+                        WhatsApp
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+      </div>{/* end centered container */}
 
       {/* ── Bulk send modal ────────────────────────────────────────────────── */}
       {bulkOpen && (
@@ -683,7 +766,6 @@ export default function RemindersPage() {
           <div style={{ background: "white", borderRadius: 20, padding: 28, maxWidth: 440, width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,.25)" }}>
 
             {bulkIndex >= bulkQueue.length ? (
-              /* Done state */
               <>
                 <div style={{ textAlign: "center", padding: "16px 0 24px" }}>
                   <div style={{ fontSize: 52, marginBottom: 12 }}>🎉</div>
@@ -697,7 +779,6 @@ export default function RemindersPage() {
                 </button>
               </>
             ) : bulkCurrent ? (
-              /* Sending state */
               <>
                 {/* Header */}
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
