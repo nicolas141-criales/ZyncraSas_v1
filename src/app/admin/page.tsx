@@ -991,7 +991,7 @@ export default function AdminOverview() {
       </div>
 
       {/* ─── Charts Row ─── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", alignItems: "start" }}>
         <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
           <SectionHeader title={filter === "hoy" ? "Ingresos por hora — hoy" : `Ingresos — ${periodLabel.toLowerCase()}`} icon={<IconBanknotes size={16} />} />
           <div style={{ padding: "16px 20px 20px" }}>
@@ -1013,7 +1013,7 @@ export default function AdminOverview() {
         </div>
 
         <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader title="Top servicios" icon={<IconChartBar size={16} />} />
+          <SectionHeader title="Top 5 servicios" icon={<IconChartBar size={16} />} />
           <div style={{ padding: "16px 20px 20px" }}>
             {data.topServices.length === 0 ? (
               <p style={{ color: "#8E879B", fontSize: "13px" }}>Sin datos aún.</p>
