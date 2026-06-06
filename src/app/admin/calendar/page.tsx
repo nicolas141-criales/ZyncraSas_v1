@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconCalendar, IconX, IconPlus } from "../ZyncraIcons";
@@ -59,6 +60,7 @@ const inp: React.CSSProperties = {
 
 export default function CalendarPage() {
   const { tenantId } = useAdmin();
+  const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<"week" | "day" | "professional">("week");
@@ -419,12 +421,26 @@ export default function CalendarPage() {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", flexWrap: "wrap" }}>
               <button className="btn-secondary" onClick={() => setSelectedApt(null)}>Cancelar</button>
               <button className="btn-primary" onClick={saveApt} disabled={isSaving}
                 style={editForm.status === "cancelled" ? { background: "#ef4444" } : {}}>
                 {isSaving ? "Guardando…" : "Guardar cambios"}
               </button>
+              {(editForm.status === "pending" || editForm.status === "confirmed") && (
+                <button
+                  onClick={() => { setSelectedApt(null); router.push(`/admin/pos?appointment=${selectedApt!.id}`); }}
+                  style={{
+                    padding: "10px 18px", borderRadius: "10px", border: "none",
+                    background: "linear-gradient(135deg, #10b981, #0ea5e9)",
+                    color: "white", fontWeight: 700, fontSize: "13px",
+                    cursor: "pointer", display: "flex", alignItems: "center", gap: 6,
+                    fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                    boxShadow: "0 4px 12px rgba(16,185,129,0.3)",
+                  }}>
+                  💳 Cobrar cita
+                </button>
+              )}
             </div>
           </div>
         </div>

@@ -5,7 +5,15 @@ import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconCreditCard, IconPlus, IconX, IconSearch } from "../ZyncraIcons";
 
-// â”€â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+interface LinkedApt {
+  id: string;
+  clientName: string;
+  serviceName: string;
+  date: string;
+  time: string;
+}
+
+// â"€â"€â"€ Types â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 interface Service {
   id: string;
@@ -42,7 +50,7 @@ interface Sale {
   pos_sale_items: { name: string; price: number; quantity: number }[];
 }
 
-// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Helpers â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 
 const PAYMENT_METHODS = [
@@ -52,7 +60,7 @@ const PAYMENT_METHODS = [
   { key: "daviplata", label: "Daviplata", color: "#f59e0b" },
 ];
 
-// â”€â”€â”€ Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Styles â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "10px 13px", border: "1.5px solid #e8e6e2",
@@ -65,7 +73,7 @@ const lbl: React.CSSProperties = {
   marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em",
 };
 
-// â”€â”€â”€ Main Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// â"€â"€â"€ Main Component â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
 export default function PosPage() {
   const { tenantId, currency, locale } = useAdmin();
@@ -101,9 +109,10 @@ export default function PosPage() {
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [expandedSale, setExpandedSale] = useState<string | null>(null);
 
+  const [linkedApt, setLinkedApt] = useState<LinkedApt | null>(null);
   const clientRef = useRef<HTMLDivElement>(null);
 
-  // â”€â”€ Load services â”€â”€
+  // â"€â"€ Load services â"€â"€
   useEffect(() => {
     if (!tenantId) return;
     supabase.from("services").select("id,name,price,duration_minutes")
@@ -111,7 +120,34 @@ export default function PosPage() {
       .then(({ data }) => { setServices(data || []); setLoadingServices(false); });
   }, [tenantId]);
 
-  // â”€â”€ Load history â”€â”€
+  // ── Load from appointment param ──────────────────────────────────────────
+  useEffect(() => {
+    if (!tenantId) return;
+    const aptId = new URLSearchParams(window.location.search).get("appointment");
+    if (!aptId) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("appointments")
+        .select("id, appointment_date, appointment_time, clients(id,name,phone), services(id,name,price)")
+        .eq("id", aptId)
+        .single();
+      if (!data) return;
+      if (data.clients) setClient({ id: data.clients.id, name: data.clients.name, phone: data.clients.phone });
+      if (data.services) {
+        setCart([{ key: data.services.id, serviceId: data.services.id, name: data.services.name, price: data.services.price, qty: 1 }]);
+      }
+      setLinkedApt({
+        id: aptId,
+        clientName: data.clients?.name ?? "-",
+        serviceName: data.services?.name ?? "-",
+        date: data.appointment_date,
+        time: (data.appointment_time as string).slice(0, 5),
+      });
+    })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId]);
+
+  // ─────────────────────────────────────────────────────────────────────────
   const loadHistory = useCallback(async (tid: string) => {
     setLoadingHistory(true);
     const { data } = await supabase
@@ -128,7 +164,7 @@ export default function PosPage() {
     if (tenantId && tab === "historial") loadHistory(tenantId);
   }, [tenantId, tab, loadHistory]);
 
-  // â”€â”€ Client search â”€â”€
+  // â"€â"€ Client search â"€â"€
   useEffect(() => {
     if (!tenantId || clientSearch.length < 2) { setClientResults([]); return; }
     const t = setTimeout(async () => {
@@ -142,7 +178,7 @@ export default function PosPage() {
     return () => clearTimeout(t);
   }, [clientSearch, tenantId]);
 
-  // â”€â”€ Cart helpers â”€â”€
+  // â"€â"€ Cart helpers â"€â"€
   const addToCart = (svc: Service) => {
     setCart(prev => {
       const existing = prev.find(i => i.serviceId === svc.id);
@@ -167,7 +203,7 @@ export default function PosPage() {
 
   const removeItem = (key: string) => setCart(prev => prev.filter(i => i.key !== key));
 
-  // â”€â”€ Totals â”€â”€
+  // â"€â"€ Totals â"€â"€
   const subtotal = cart.reduce((s, i) => s + i.price * i.qty, 0);
   const discountVal = parseFloat(discountValue) || 0;
   const discountAmount = discountType === "percentage"
@@ -175,7 +211,7 @@ export default function PosPage() {
     : Math.min(discountVal, subtotal);
   const total = Math.max(subtotal - discountAmount, 0);
 
-  // â”€â”€ Charge â”€â”€
+  // â"€â"€ Charge â"€â"€
   const handleCharge = async () => {
     if (!tenantId || cart.length === 0) return;
     setCharging(true);
@@ -188,6 +224,7 @@ export default function PosPage() {
       total,
       payment_method: paymentMethod,
       note: saleNote.trim() || null,
+      appointment_id: linkedApt?.id || null,
     }).select().single();
 
     if (error || !sale) { setCharging(false); return; }
@@ -196,19 +233,24 @@ export default function PosPage() {
       cart.map(i => ({ sale_id: sale.id, service_id: i.serviceId, name: i.name, price: i.price, quantity: i.qty }))
     );
 
+    // Marcar cita como completada
+    if (linkedApt?.id) {
+      await supabase.from("appointments").update({ status: "completed" }).eq("id", linkedApt.id);
+    }
+
     setCharging(false);
     setSuccessMsg(`Venta de ${fmt(total)} registrada con Ã©xito.`);
     setCart([]); setClient(null); setClientSearch(""); setDiscountValue(""); setSaleNote("");
-    setPaymentMethod("efectivo");
+    setPaymentMethod("efectivo"); setLinkedApt(null);
     setTimeout(() => setSuccessMsg(""), 3500);
   };
 
-  // â”€â”€ Filtered services â”€â”€
+  // â"€â"€ Filtered services â"€â"€
   const filtered = services.filter(s =>
     !search || s.name.toLowerCase().includes(search.toLowerCase())
   );
 
-  // â”€â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // â"€â"€â"€ Render â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€â"€
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
@@ -243,7 +285,7 @@ export default function PosPage() {
         </div>
       )}
 
-      {/* â”€â”€ TAB: Cobrar â”€â”€ */}
+      {/* â"€â"€ TAB: Cobrar â"€â"€ */}
       {tab === "cobrar" && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 20, alignItems: "start" }}>
 
@@ -295,7 +337,7 @@ export default function PosPage() {
                       <div style={{ fontSize: 11, color: "#8E879B", marginTop: 4 }}>{svc.duration_minutes} min</div>
                       {inCart && (
                         <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: "#fb0f05" }}>
-                          Ã— {inCart.qty} en carrito
+                          Ã- {inCart.qty} en carrito
                         </div>
                       )}
                     </button>
@@ -318,6 +360,29 @@ export default function PosPage() {
             </div>
 
             <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
+              {/* Cita vinculada */}
+              {linkedApt && (
+                <div style={{ padding: "10px 14px", borderRadius: 10, background: "rgba(16,185,129,0.08)", border: "1px solid rgba(16,185,129,0.25)" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div>
+                      <div style={{ fontSize: 10, fontWeight: 700, color: "#10b981", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 3 }}>
+                        Cita vinculada
+                      </div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#14111C" }}>{linkedApt.clientName}</div>
+                      <div style={{ fontSize: 11, color: "#8E879B", marginTop: 1 }}>
+                        {linkedApt.serviceName} · {linkedApt.date} {linkedApt.time}
+                      </div>
+                    </div>
+                    <button onClick={() => setLinkedApt(null)}
+                      style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B", padding: 2, flexShrink: 0 }}>
+                      <IconX size={13} />
+                    </button>
+                  </div>
+                  <div style={{ fontSize: 10, color: "#10b981", marginTop: 6, fontWeight: 600 }}>
+                    La cita se marcará como Completada al cobrar.
+                  </div>
+                </div>
+              )}
               {/* Client selector */}
               <div style={{ position: "relative" }} ref={clientRef}>
                 <label style={lbl}>Cliente (opcional)</label>
@@ -366,7 +431,7 @@ export default function PosPage() {
                         <div style={{ fontSize: 11, color: "#8E879B" }}>{fmt(item.price)} c/u</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>âˆ’</button>
+                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>âˆ'</button>
                         <span style={{ fontSize: 13, fontWeight: 700, color: "#14111C", minWidth: 18, textAlign: "center" }}>{item.qty}</span>
                         <button onClick={() => updateQty(item.key, 1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                         <button onClick={() => removeItem(item.key)} style={{ width: 26, height: 26, borderRadius: 7, border: "none", background: "rgba(239,68,68,0.08)", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -414,7 +479,7 @@ export default function PosPage() {
                   {discountAmount > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
                       <span style={{ color: "#564E66" }}>Descuento</span>
-                      <span style={{ fontWeight: 600, color: "#ef4444" }}>âˆ’{fmt(discountAmount)}</span>
+                      <span style={{ fontWeight: 600, color: "#ef4444" }}>âˆ'{fmt(discountAmount)}</span>
                     </div>
                   )}
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, fontWeight: 800, marginTop: 4 }}>
@@ -474,7 +539,7 @@ export default function PosPage() {
         </div>
       )}
 
-      {/* â”€â”€ TAB: Historial â”€â”€ */}
+      {/* â"€â"€ TAB: Historial â"€â"€ */}
       {tab === "historial" && (
         <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
@@ -530,14 +595,14 @@ export default function PosPage() {
                     <div style={{ padding: "10px 20px 16px 52px", borderBottom: i < sales.length - 1 ? "1px solid #f0eeeb" : "none", background: "#fafafa" }}>
                       {s.pos_sale_items?.map((item, j) => (
                         <div key={j} style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#564E66", marginBottom: 4 }}>
-                          <span>{item.name} Ã— {item.quantity}</span>
+                          <span>{item.name} Ã- {item.quantity}</span>
                           <span style={{ fontWeight: 600, color: "#3a3548" }}>{fmt(item.price * item.quantity)}</span>
                         </div>
                       ))}
                       {s.discount_value > 0 && (
                         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12, color: "#ef4444", marginTop: 6 }}>
                           <span>Descuento</span>
-                          <span style={{ fontWeight: 600 }}>âˆ’{fmt(s.subtotal - s.total)}</span>
+                          <span style={{ fontWeight: 600 }}>âˆ'{fmt(s.subtotal - s.total)}</span>
                         </div>
                       )}
                       {s.note && <div style={{ fontSize: 11, color: "#8E879B", marginTop: 6 }}>Nota: {s.note}</div>}
@@ -550,7 +615,7 @@ export default function PosPage() {
         </div>
       )}
 
-      {/* â”€â”€ Modal: Ãtem libre â”€â”€ */}
+      {/* â"€â"€ Modal: Ãtem libre â"€â"€ */}
       {showFreeItem && (
         <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setShowFreeItem(false); }}>
