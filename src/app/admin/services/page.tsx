@@ -8,7 +8,7 @@ import { IconServiceBell, IconPlus, IconClock, IconCreditCard, IconX, IconSlider
 type FieldType = "text" | "number" | "date" | "select" | "boolean";
 interface CustomField { id: string; name: string; field_key: string; field_type: FieldType; required: boolean; options: string[]; position: number; }
 const TYPE_LABELS: Record<FieldType, string> = { text: "Texto libre", number: "Número", date: "Fecha", select: "Lista desplegable", boolean: "Sí / No" };
-const TYPE_ICONS: Record<FieldType, string> = { text: "T", number: "#", date: "📅", select: "≡", boolean: "✓" };
+const TYPE_ICONS: Record<FieldType, string> = { text: "T", number: "#", date: "D", select: "≡", boolean: "✓" };
 function slugify(s: string) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, ""); }
 const EMPTY_FIELD = { name: "", field_type: "text" as FieldType, required: false, options: "" };
 

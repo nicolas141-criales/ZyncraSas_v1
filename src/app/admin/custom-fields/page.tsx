@@ -41,7 +41,7 @@ const TYPE_LABELS: Record<FieldType, string> = {
 const TYPE_ICONS: Record<FieldType, string> = {
   text: "T",
   number: "#",
-  date: "📅",
+  date: "D",
   select: "≡",
   boolean: "✓",
 };

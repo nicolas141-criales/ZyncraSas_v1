@@ -3,6 +3,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
+import {
+  IconBell, IconCalendar, IconChat, IconCheck, IconClipboard,
+  IconCog, IconPhone, IconSend, IconStar, IconZap,
+} from "../ZyncraIcons";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -202,10 +206,10 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 type TemplateKey = "24h" | "2h" | "post";
 
-const TEMPLATE_TABS: { key: TemplateKey; icon: string; label: string; desc: string }[] = [
-  { key: "24h",  icon: "\u{1F514}", label: "Principal",   desc: "24 horas antes" },
-  { key: "2h",   icon: "⚡",    label: "Urgente",     desc: "2 horas antes" },
-  { key: "post", icon: "✨",    label: "Post-visita", desc: "Tras el servicio" },
+const TEMPLATE_TABS: { key: TemplateKey; icon: React.ReactNode; label: string; desc: string }[] = [
+  { key: "24h",  icon: <IconBell size={14} />,  label: "Principal",   desc: "24 horas antes" },
+  { key: "2h",   icon: <IconZap size={14} />,   label: "Urgente",     desc: "2 horas antes" },
+  { key: "post", icon: <IconStar size={14} />,  label: "Post-visita", desc: "Tras el servicio" },
 ];
 
 export default function RemindersPage() {
@@ -406,7 +410,7 @@ export default function RemindersPage() {
             background: "rgba(251,15,5,0.07)", borderRadius: 20,
             padding: "4px 14px", marginBottom: 12,
           }}>
-            <span style={{ fontSize: 15 }}>{"\u{1F4AC}"}</span>
+            <IconChat size={14} color="#fb0f05" />
             <span style={{ fontSize: 12, fontWeight: 700, color: "#fb0f05", letterSpacing: ".04em", textTransform: "uppercase" }}>
               WhatsApp
             </span>
@@ -428,16 +432,17 @@ export default function RemindersPage() {
           {(["proximas", "config", "historial"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)} style={{
               padding: "9px 0", borderRadius: 9, border: "none", cursor: "pointer",
-              fontSize: 13, fontWeight: 600, transition: "all .2s", textAlign: "center",
+              fontSize: 13, fontWeight: 600, transition: "all .2s",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
               background: tab === t ? "white" : "transparent",
               color:      tab === t ? "#1a1a2e" : "#6b7280",
               boxShadow:  tab === t ? "0 1px 4px rgba(0,0,0,.1)" : "none",
             }}>
               {t === "proximas"
-                ? `\u{1F4C5} Próximas citas`
+                ? <><IconCalendar size={13} /> Próximas</>
                 : t === "config"
-                ? `⚙️ Configuración`
-                : `\u{1F4CB} Historial`}
+                ? <><IconCog size={13} /> Configuración</>
+                : <><IconClipboard size={13} /> Historial</>}
             </button>
           ))}
         </div>
@@ -489,7 +494,7 @@ export default function RemindersPage() {
                   onClick={() => { setBulkIndex(0); setBulkOpen(true); }}
                   style={{ ...btnPrimary, marginLeft: "auto", fontSize: 12, padding: "6px 14px" }}
                 >
-                  {`\u{1F4E4} Enviar a todos (${bulkQueue.length})`}
+                  <><IconSend size={13} /> {`Enviar a todos (${bulkQueue.length})`}</>
                 </button>
               )}
             </div>
@@ -498,7 +503,9 @@ export default function RemindersPage() {
               <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>{"Cargando citas..."}</div>
             ) : filteredAppts.length === 0 ? (
               <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
-                <div style={{ fontSize: 44, marginBottom: 12 }}>{"\u{1F4C5}"}</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12, opacity: 0.35 }}>
+                  <IconCalendar size={48} color="#6b7280" />
+                </div>
                 <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>{"Sin citas próximas"}</div>
                 <div style={{ fontSize: 13, marginTop: 4 }}>{"No hay citas en el período seleccionado"}</div>
               </div>
@@ -705,7 +712,7 @@ export default function RemindersPage() {
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                     <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#25D366", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      <span style={{ color: "white", fontSize: 13 }}>{"\u{1F4F1}"}</span>
+                      <IconPhone size={14} color="white" />
                     </div>
                     <div style={{ background: "#dcfce7", borderRadius: "4px 12px 12px 12px", padding: "10px 14px", fontSize: 13, color: "#1a1a2e", whiteSpace: "pre-wrap", lineHeight: 1.65, maxWidth: 300, wordBreak: "break-word" }}>
                       {previewMsg(current.value)}
@@ -781,7 +788,9 @@ export default function RemindersPage() {
               <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>{"Cargando..."}</div>
             ) : filteredLogs.length === 0 ? (
               <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
-                <div style={{ fontSize: 44, marginBottom: 12 }}>{"\u{1F514}"}</div>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: 12, opacity: 0.35 }}>
+                  <IconBell size={48} color="#6b7280" />
+                </div>
                 <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>
                   {histSearch ? "Sin resultados para esa búsqueda" : "Sin recordatorios enviados"}
                 </div>
@@ -819,8 +828,12 @@ export default function RemindersPage() {
             {bulkIndex >= bulkQueue.length ? (
               <>
                 <div style={{ textAlign: "center", padding: "16px 0 24px" }}>
-                  <div style={{ fontSize: 52, marginBottom: 12 }}>{"\u{1F389}"}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>{"iTodo enviado!"}</div>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+                    <div style={{ width: 56, height: 56, borderRadius: "50%", background: "rgba(16,185,129,0.12)", border: "2px solid rgba(16,185,129,0.3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <IconCheck size={28} color="#10b981" />
+                    </div>
+                  </div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>{"¡Todo enviado!"}</div>
                   <div style={{ fontSize: 14, color: "#6b7280", marginTop: 6 }}>
                     {`Se enviaron ${bulkQueue.length} recordatorio${bulkQueue.length !== 1 ? "s" : ""} por WhatsApp.`}
                   </div>
@@ -859,8 +872,9 @@ export default function RemindersPage() {
                     {bulkCurrent.services?.name}
                     {bulkCurrent.professionals?.name ? ` · ${bulkCurrent.professionals.name}` : ""}
                   </div>
-                  <div style={{ fontSize: 13, color: "#1a1a2e", fontWeight: 600, marginTop: 6 }}>
-                    {`\u{1F4F1} ${bulkCurrent.clients?.phone}`}
+                  <div style={{ fontSize: 13, color: "#1a1a2e", fontWeight: 600, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
+                    <IconPhone size={13} color="#6b7280" />
+                    {bulkCurrent.clients?.phone}
                   </div>
                 </div>
 
