@@ -74,7 +74,17 @@
       "Bash(tar -tf design)",
       "Bash(tar -xf design -C .)",
       "PowerShell(New-Item *)",
-      "Bash(npx next *)"
+      "Bash(npx next *)",
+      "Bash(git -C /Users/felipecontreras/ZyncraSas_v1 log --oneline -10)",
+      "Bash(npx tsc *)",
+      "Bash(node_modules/.bin/tsc --noEmit)",
+      "Bash(git -C /Users/felipecontreras/ZyncraSas_v1 status)",
+      "Bash(git -C /Users/felipecontreras/ZyncraSas_v1 diff --stat)",
+      "Bash(git -C /Users/felipecontreras/ZyncraSas_v1 diff src/app/admin/page.tsx)",
+      "Bash(python3 *)",
+      "Bash(git *)",
+      "Bash(xargs ls -lh)",
+      "Bash(xargs ls -la)"
     ]
   }
 }
