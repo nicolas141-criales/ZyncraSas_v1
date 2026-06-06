@@ -5,25 +5,6 @@ import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconCog, IconBell, IconCreditCard, IconPalette, IconArrowRight, IconClock } from "../ZyncraIcons";
 
-const COUNTRIES = [
-  { code: "CO", name: "Colombia",          currency: "COP", locale: "es-CO" },
-  { code: "MX", name: "México",            currency: "MXN", locale: "es-MX" },
-  { code: "AR", name: "Argentina",         currency: "ARS", locale: "es-AR" },
-  { code: "CL", name: "Chile",             currency: "CLP", locale: "es-CL" },
-  { code: "PE", name: "Perú",              currency: "PEN", locale: "es-PE" },
-  { code: "EC", name: "Ecuador",           currency: "USD", locale: "es-EC" },
-  { code: "VE", name: "Venezuela",         currency: "VES", locale: "es-VE" },
-  { code: "BO", name: "Bolivia",           currency: "BOB", locale: "es-BO" },
-  { code: "PY", name: "Paraguay",          currency: "PYG", locale: "es-PY" },
-  { code: "UY", name: "Uruguay",           currency: "UYU", locale: "es-UY" },
-  { code: "CR", name: "Costa Rica",        currency: "CRC", locale: "es-CR" },
-  { code: "PA", name: "Panamá",            currency: "PAB", locale: "es-PA" },
-  { code: "GT", name: "Guatemala",         currency: "GTQ", locale: "es-GT" },
-  { code: "DO", name: "Rep. Dominicana",   currency: "DOP", locale: "es-DO" },
-  { code: "US", name: "Estados Unidos",    currency: "USD", locale: "en-US" },
-  { code: "ES", name: "España",            currency: "EUR", locale: "es-ES" },
-] as const;
-
 // Claves numéricas "0"-"6" = Date.getDay() → igual que la app mobile
 const DAY_KEYS = ["1","2","3","4","5","6","0"] as const; // Lun→Dom
 type DayKey = typeof DAY_KEYS[number];
@@ -86,7 +67,7 @@ function SectionCard({ icon, title, subtitle, children }: { icon: React.ReactNod
 }
 
 export default function SettingsPage() {
-  const { tenantId, refreshCurrency } = useAdmin();
+  const { tenantId } = useAdmin();
 
   const [whatsappReminders, setWhatsappReminders] = useState(true);
   const [emailNotifs, setEmailNotifs] = useState(false);
@@ -94,7 +75,6 @@ export default function SettingsPage() {
   const [requireDeposit, setRequireDeposit] = useState(false);
   const [depositAmount, setDepositAmount] = useState("20");
   const [businessHours, setBusinessHours] = useState<Record<DayKey, { open: boolean; start: string; end: string }>>(DEFAULT_HOURS);
-  const [country, setCountry] = useState("CO");
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ type: "ok" | "err"; text: string } | null>(null);
 
@@ -117,9 +97,6 @@ export default function SettingsPage() {
       if (tenantData?.settings?.schedule) {
         setBusinessHours({ ...DEFAULT_HOURS, ...tenantData.settings.schedule });
       }
-      if (tenantData?.settings?.country) {
-        setCountry(tenantData.settings.country);
-      }
     }
     load();
   }, [tenantId]);
@@ -137,26 +114,16 @@ export default function SettingsPage() {
       updated_at: new Date().toISOString(),
     }, { onConflict: "tenant_id" });
 
-    // Guarda el horario en tenants.settings.schedule (igual que la app mobile)
     const { data: currentTenant } = await supabase
       .from("tenants").select("settings").eq("id", tenantId).maybeSingle();
-    const selected = COUNTRIES.find(c => c.code === country) ?? COUNTRIES[0];
-    const newSettings = {
-      ...(currentTenant?.settings ?? {}),
-      schedule: businessHours,
-      country: selected.code,
-      currency: selected.currency,
-      locale: selected.locale,
-    };
+    const newSettings = { ...(currentTenant?.settings ?? {}), schedule: businessHours };
     await supabase.from("tenants").update({ settings: newSettings }).eq("id", tenantId);
 
     setSaving(false);
-    if (error) {
-      setMsg({ type: "err", text: error.message });
-    } else {
-      await refreshCurrency();
-      setMsg({ type: "ok", text: "Configuración guardada." });
-    }
+    setMsg(error
+      ? { type: "err", text: error.message }
+      : { type: "ok", text: "Configuración guardada." }
+    );
     setTimeout(() => setMsg(null), 3000);
   }
 
@@ -205,38 +172,6 @@ export default function SettingsPage() {
             </div>
           </div>
         )}
-      </SectionCard>
-
-      {/* Región y moneda */}
-      <SectionCard icon={<IconCreditCard size={17} />} title="Región y moneda" subtitle="Determina el formato de precios en todo el panel">
-        <SettingRow title="País de operación" description="Los precios se mostrarán con la moneda local del país seleccionado.">
-          <select
-            value={country}
-            onChange={e => setCountry(e.target.value)}
-            style={{
-              padding: "8px 14px", borderRadius: "10px", border: "1.5px solid #e8e6e2",
-              fontSize: "13px", fontWeight: 600, color: "#14111C", background: "white",
-              fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-              cursor: "pointer", outline: "none", minWidth: "180px",
-            }}
-          >
-            {COUNTRIES.map(c => (
-              <option key={c.code} value={c.code}>
-                {c.name} — {c.currency}
-              </option>
-            ))}
-          </select>
-        </SettingRow>
-        {(() => {
-          const sel = COUNTRIES.find(c => c.code === country);
-          if (!sel) return null;
-          const preview = new Intl.NumberFormat(sel.locale, { style: "currency", currency: sel.currency, maximumFractionDigits: 0 }).format(125000);
-          return (
-            <div style={{ padding: "12px 0 8px", fontSize: "12px", color: "#8E879B" }}>
-              Vista previa: <strong style={{ color: "#fb0f05", fontWeight: 700 }}>{preview}</strong>
-            </div>
-          );
-        })()}
       </SectionCard>
 
       {/* Horarios de atención */}

@@ -13,6 +13,25 @@ const createSlug = (name: string) =>
 
 // ── Data ─────────────────────────────────────────────────────────────────────
 
+const COUNTRIES = [
+  { code: "CO", name: "Colombia",          currency: "COP", locale: "es-CO" },
+  { code: "MX", name: "México",            currency: "MXN", locale: "es-MX" },
+  { code: "AR", name: "Argentina",         currency: "ARS", locale: "es-AR" },
+  { code: "CL", name: "Chile",             currency: "CLP", locale: "es-CL" },
+  { code: "PE", name: "Perú",              currency: "PEN", locale: "es-PE" },
+  { code: "EC", name: "Ecuador",           currency: "USD", locale: "es-EC" },
+  { code: "VE", name: "Venezuela",         currency: "VES", locale: "es-VE" },
+  { code: "BO", name: "Bolivia",           currency: "BOB", locale: "es-BO" },
+  { code: "PY", name: "Paraguay",          currency: "PYG", locale: "es-PY" },
+  { code: "UY", name: "Uruguay",           currency: "UYU", locale: "es-UY" },
+  { code: "CR", name: "Costa Rica",        currency: "CRC", locale: "es-CR" },
+  { code: "PA", name: "Panamá",            currency: "PAB", locale: "es-PA" },
+  { code: "GT", name: "Guatemala",         currency: "GTQ", locale: "es-GT" },
+  { code: "DO", name: "Rep. Dominicana",   currency: "DOP", locale: "es-DO" },
+  { code: "US", name: "Estados Unidos",    currency: "USD", locale: "en-US" },
+  { code: "ES", name: "España",            currency: "EUR", locale: "es-ES" },
+] as const;
+
 const BIZ_TYPES = [
   { id: "barberia",  emoji: "💈", label: "Barbería" },
   { id: "salon",     emoji: "✂️", label: "Salón de belleza" },
@@ -117,6 +136,7 @@ export default function RegisterPage() {
   // Step 1
   const [bizType, setBizType] = useState("");
   const [businessName, setBusinessName] = useState("");
+  const [country, setCountry] = useState("CO");
 
   // Step 2
   const [collaborators, setCollaborators] = useState("");
@@ -168,9 +188,19 @@ export default function RegisterPage() {
 
       if (authData.user) {
         const slug = createSlug(businessName);
+        const selectedCountry = COUNTRIES.find(c => c.code === country) ?? COUNTRIES[0];
         const { data: tenantData, error: tenantError } = await supabase
           .from("tenants")
-          .insert([{ owner_id: authData.user.id, name: businessName, slug }])
+          .insert([{
+            owner_id: authData.user.id,
+            name: businessName,
+            slug,
+            settings: {
+              country: selectedCountry.code,
+              currency: selectedCountry.currency,
+              locale: selectedCountry.locale,
+            },
+          }])
           .select()
           .single();
 
@@ -296,6 +326,22 @@ export default function RegisterPage() {
                 <input type="text" className={styles.input} style={{ paddingLeft: 14 }}
                   placeholder="Ej: Black Fade Barbershop"
                   value={businessName} onChange={e => setBusinessName(e.target.value)} />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label className={styles.label}>País de operación</label>
+                <select
+                  value={country}
+                  onChange={e => setCountry(e.target.value)}
+                  className={styles.input}
+                  style={{ paddingLeft: 14, cursor: "pointer" }}
+                >
+                  {COUNTRIES.map(c => (
+                    <option key={c.code} value={c.code}>
+                      {c.name} — {c.currency}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <button className={styles.button} disabled={!canContinue()} onClick={() => setStep(2)}>
