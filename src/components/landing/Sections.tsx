@@ -313,6 +313,7 @@ export function CtaSection() {
               otro lado. En serio.
             </p>
             <div
+              className="cta-buttons"
               style={{
                 display: "flex",
                 justifyContent: "center",
@@ -368,6 +369,7 @@ export function CtaSection() {
               </a>
             </div>
             <div
+              className="cta-trust"
               style={{
                 display: "flex",
                 justifyContent: "center",

@@ -25,6 +25,7 @@ const BentoHeroTile = ({
   accent = "#fb0f05",
   style = {},
   padding = 18,
+  className,
 }: {
   children: ReactNode;
   span?: number;
@@ -32,8 +33,10 @@ const BentoHeroTile = ({
   accent?: string;
   style?: CSSProperties;
   padding?: number;
+  className?: string;
 }) => (
   <div
+    className={className}
     style={{
       gridColumn: `span ${span}`,
       gridRow: `span ${rowSpan}`,
@@ -674,6 +677,7 @@ export default function BentoHero() {
   return (
     <section
       id="top"
+      className="bento-section"
       style={{
         position: "relative",
         paddingTop: 96,
@@ -697,6 +701,7 @@ export default function BentoHero() {
           }}
         >
           <div
+            className="hero-chip"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -764,6 +769,7 @@ export default function BentoHero() {
           </p>
 
           <div
+            className="hero-actions"
             style={{
               display: "flex",
               justifyContent: "center",
@@ -819,6 +825,7 @@ export default function BentoHero() {
           </div>
 
           <div
+            className="hero-trust"
             style={{
               display: "flex",
               justifyContent: "center",
@@ -863,13 +870,13 @@ export default function BentoHero() {
             <TileRevenue />
           </BentoHeroTile>
 
-          <BentoHeroTile span={3} rowSpan={2} accent="#0027fe">
+          <BentoHeroTile span={3} rowSpan={2} accent="#0027fe" className="bento-hide-mobile">
             <TilePos />
           </BentoHeroTile>
-          <BentoHeroTile span={3} rowSpan={2} accent="#FBBF24">
+          <BentoHeroTile span={3} rowSpan={2} accent="#FBBF24" className="bento-hide-mobile">
             <TileReviews />
           </BentoHeroTile>
-          <BentoHeroTile span={3} rowSpan={2} accent="#22D3EE">
+          <BentoHeroTile span={3} rowSpan={2} accent="#22D3EE" className="bento-hide-mobile">
             <TileBookingLink />
           </BentoHeroTile>
           <BentoHeroTile

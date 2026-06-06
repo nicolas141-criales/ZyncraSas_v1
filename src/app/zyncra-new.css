@@ -182,6 +182,75 @@ button { font-family: inherit; }
   .demo-tabs { flex-wrap: wrap; }
 }
 
+/* ══════════════════════════════════════════════
+   MOBILE RESPONSIVE — comprehensive fixes
+   ══════════════════════════════════════════════ */
+
+/* Container padding token — overrides inline var(--zn-pad, 28px) */
+@media (max-width: 640px) {
+  :root { --zn-pad: 16px; }
+}
+
+/* BentoHero section */
+@media (max-width: 1000px) {
+  .bento-section { min-height: auto !important; }
+}
+@media (max-width: 640px) {
+  .bento-section { padding-top: 80px !important; padding-bottom: 40px !important; }
+
+  /* Hero badge */
+  .hero-chip { font-size: 11px !important; padding: 5px 5px 5px 10px !important; gap: 7px !important; }
+
+  /* Hero CTA buttons → full-width stack */
+  .hero-actions {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 0 4px;
+  }
+  .hero-actions a {
+    width: 100% !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Hero trust items */
+  .hero-trust { gap: 12px !important; row-gap: 8px !important; justify-content: flex-start !important; }
+
+  /* CTA section buttons → full-width stack */
+  .cta-buttons {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+  }
+  .cta-buttons a {
+    width: 100% !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+  .cta-trust { gap: 14px !important; row-gap: 8px !important; justify-content: flex-start !important; }
+
+  /* CTA wrap tighter */
+  .cta-wrap { padding: 36px 20px !important; text-align: left !important; }
+
+  /* PageHero for inner pages */
+  .page-hero-section { padding-top: 88px !important; padding-bottom: 24px !important; }
+
+  /* Stats bar cells */
+  .stats-cell { padding: 20px 16px !important; }
+}
+
+/* Bento secondary tiles hidden at 1-column layout */
+@media (max-width: 600px) {
+  .bento-hide-mobile { display: none !important; }
+}
+
+/* Very small phones */
+@media (max-width: 390px) {
+  .hero-trust { flex-direction: column !important; align-items: flex-start !important; gap: 8px !important; }
+  .feat-compact-grid { grid-template-columns: 1fr !important; }
+}
+
 /* ── Dark Mode ── */
 [data-theme="dark"] {
   --bg: #09090F;

@@ -17,7 +17,7 @@ export const Container = ({
 }) => (
   <div
     className={className}
-    style={{ maxWidth: max, margin: "0 auto", padding: "0 28px", ...style }}
+    style={{ maxWidth: max, margin: "0 auto", padding: "0 var(--zn-pad, 28px)", ...style }}
   >
     {children}
   </div>
@@ -393,6 +393,7 @@ export const PageHero = ({
   accent?: string;
 }) => (
   <section
+    className="page-hero-section"
     style={{
       position: "relative",
       paddingTop: 110,
