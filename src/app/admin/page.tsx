@@ -27,13 +27,14 @@ interface DashboardData {
   topServices: { name: string; count: number }[];
   hourlyData: { hour: string; count: number }[];
   weeklyRevenue: { day: string; revenue: number }[];
+  paymentData: { method: string; label: string; color: string; amount: number; count: number }[];
 }
 
 const EMPTY: DashboardData = {
   todayRevenue: 0, prevDayRevenue: 0, todayCount: 0, pending: 0,
   noShowRate: 0, avgTicket: 0, returningPct: 0, newClientsToday: 0,
   occupancyRate: 0, upcomingApts: [], staffPerf: [], topServices: [],
-  hourlyData: [], weeklyRevenue: [],
+  hourlyData: [], weeklyRevenue: [], paymentData: [],
 };
 
 // ─── Date helpers ─────────────────────────────────────────
@@ -62,18 +63,24 @@ function Sparkline({ data, color = "#fb0f05" }: { data: number[]; color?: string
 }
 
 // ─── Bar Chart ────────────────────────────────────────────
-function BarChart({ data }: { data: { label: string; value: number; color?: string }[] }) {
+function BarChart({ data, fmtVal }: {
+  data: { label: string; value: number; color?: string }[];
+  fmtVal?: (v: number) => string;
+}) {
   const max = Math.max(...data.map(d => d.value), 1);
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: "5px", height: "72px" }}>
       {data.map((d, i) => (
         <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}>
-          <div style={{
-            width: "100%", borderRadius: "5px 5px 0 0",
-            height: `${Math.max((d.value / max) * 60, 3)}px`,
-            background: d.color || "linear-gradient(to top, #fb0f05, #0027fe)",
-            transition: "height 0.5s ease",
-          }} />
+          <div
+            title={d.value > 0 ? (fmtVal ? fmtVal(d.value) : String(d.value)) : undefined}
+            style={{
+              width: "100%", borderRadius: "5px 5px 0 0",
+              height: `${Math.max((d.value / max) * 60, 3)}px`,
+              background: d.color || "linear-gradient(to top, #fb0f05, #0027fe)",
+              transition: "height 0.5s ease",
+              cursor: d.value > 0 ? "default" : undefined,
+            }} />
           <span style={{ fontSize: "9px", color: "#8E879B", textAlign: "center", lineHeight: 1 }}>{d.label}</span>
         </div>
       ))}
@@ -432,13 +439,15 @@ export default function AdminOverview() {
         return { day: dayNames[d.getDay() === 0 ? 6 : d.getDay() - 1] + " " + d.getDate(), revenue: rev };
       });
     } else {
+      const MONS_S = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
       const weekCount = Math.ceil(dayCount / 7);
       weeklyRevenue = Array.from({ length: weekCount }, (_, wi) => {
         const wS = new Date(weekStart); wS.setDate(weekStart.getDate() + wi * 7);
         const wE = new Date(wS); wE.setDate(wS.getDate() + 6);
         const wsStr = toISO(wS), weStr = toISO(wE);
         const rev = apts.filter(a => a.appointment_date >= wsStr && a.appointment_date <= weStr && a.status !== "cancelled").reduce((s, a) => s + Number(a.services?.price || 0), 0);
-        return { day: `S${wi + 1}`, revenue: rev };
+        const label = `${String(wS.getDate()).padStart(2, "0")} ${MONS_S[wS.getMonth()]}`;
+        return { day: label, revenue: rev };
       });
     }
     // ── Ocupación dinámica: citas no canceladas / (profesionales × 8 slots × días) ──
@@ -447,11 +456,34 @@ export default function AdminOverview() {
       (filteredApts.filter(a => a.status !== "cancelled").length / (profCount * 8 * dayCount)) * 100,
       100
     );
-    const { count: newClientsToday } = await supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tid).gte("created_at", weekStartStr).lte("created_at", rangeEndStr + "T23:59:59");
+    const [{ count: newClientsToday }, { data: posRaw }] = await Promise.all([
+      supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tid).gte("created_at", weekStartStr).lte("created_at", rangeEndStr + "T23:59:59"),
+      (supabase as any).from("pos_sales").select("payment_method, total").eq("tenant_id", tid).gte("created_at", weekStartStr + "T00:00:00").lte("created_at", rangeEndStr + "T23:59:59"),
+    ]);
     const uniqueClients = new Set(apts.map(a => a.client_id)).size;
     const multiVisit = apts.filter((a, _, arr) => arr.filter(b => b.client_id === a.client_id).length > 1);
     const returningPct = uniqueClients > 0 ? (new Set(multiVisit.map(a => a.client_id)).size / uniqueClients) * 100 : 0;
-    setData({ todayRevenue, prevDayRevenue, todayCount, pending, noShowRate, avgTicket, returningPct, newClientsToday: newClientsToday || 0, occupancyRate, upcomingApts, staffPerf, topServices, hourlyData, weeklyRevenue });
+    // ── Medios de pago (pos_sales) ────────────────────────────────────────
+    const PM_META: Record<string, { label: string; color: string }> = {
+      efectivo:  { label: "Efectivo",   color: "#10b981" },
+      tarjeta:   { label: "Tarjeta",    color: "#6366f1" },
+      nequi:     { label: "Nequi",      color: "#0027fe" },
+      daviplata: { label: "Daviplata",  color: "#f59e0b" },
+    };
+    const pmMap: Record<string, { amount: number; count: number }> = {};
+    ((posRaw as any[]) || []).forEach(s => {
+      const pm = s.payment_method || "otro";
+      if (!pmMap[pm]) pmMap[pm] = { amount: 0, count: 0 };
+      pmMap[pm].amount += Number(s.total || 0);
+      pmMap[pm].count++;
+    });
+    const paymentData = Object.entries(pmMap).map(([method, v]) => ({
+      method,
+      label: PM_META[method]?.label ?? method,
+      color: PM_META[method]?.color ?? "#8E879B",
+      ...v,
+    })).sort((a, b) => b.amount - a.amount);
+    setData({ todayRevenue, prevDayRevenue, todayCount, pending, noShowRate, avgTicket, returningPct, newClientsToday: newClientsToday || 0, occupancyRate, upcomingApts, staffPerf, topServices, hourlyData, weeklyRevenue, paymentData });
     hasLoadedOnce.current = true;
     setLoading(false);
     setRefreshing(false);
@@ -931,22 +963,24 @@ export default function AdminOverview() {
       </div>
 
       {/* ─── Charts Row ─── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px" }}>
         <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
           <SectionHeader title={filter === "hoy" ? "Ingresos por hora — hoy" : `Ingresos — ${periodLabel.toLowerCase()}`} icon={<IconBanknotes size={16} />} />
           <div style={{ padding: "16px 20px 20px" }}>
-            <BarChart data={data.weeklyRevenue.map(d => ({ label: d.day, value: d.revenue }))} />
+            <BarChart
+              data={data.weeklyRevenue.map(d => ({ label: d.day, value: d.revenue }))}
+              fmtVal={v => v >= 1_000_000 ? (v / 1_000_000).toFixed(1) + "M" : v >= 1_000 ? (v / 1_000).toFixed(0) + "k" : fmt(v)}
+            />
           </div>
         </div>
 
         <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
           <SectionHeader title={filter === "hoy" ? "Citas por hora — hoy" : "Citas por hora del período"} icon={<IconClock size={16} />} />
           <div style={{ padding: "16px 20px 20px" }}>
-            <BarChart data={data.hourlyData.map(h => ({
-              label: h.hour.replace(":00", "h"),
-              value: h.count,
-              color: "linear-gradient(to top, #10b981, #6ee7b7)",
-            }))} />
+            <BarChart
+              data={data.hourlyData.map(h => ({ label: h.hour.replace(":00", "h"), value: h.count, color: "linear-gradient(to top, #10b981, #6ee7b7)" }))}
+              fmtVal={v => `${v} cita${v !== 1 ? "s" : ""}`}
+            />
           </div>
         </div>
 
@@ -971,6 +1005,42 @@ export default function AdminOverview() {
                     </div>
                   );
                 })}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Medios de pago */}
+        <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
+          <SectionHeader title="Medios de pago" icon={<IconCreditCard size={16} />} />
+          <div style={{ padding: "16px 20px 20px" }}>
+            {data.paymentData.length === 0 ? (
+              <p style={{ color: "#8E879B", fontSize: "13px" }}>Sin ventas POS en este período.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {data.paymentData.map((pm, i) => {
+                  const maxAmt = data.paymentData[0].amount;
+                  return (
+                    <div key={i}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", marginBottom: "4px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: pm.color, flexShrink: 0 }} />
+                          <span style={{ fontWeight: 600, color: "#3a3548" }}>{pm.label}</span>
+                        </div>
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                          <span style={{ color: "#8E879B", fontSize: "11px" }}>{pm.count} venta{pm.count !== 1 ? "s" : ""}</span>
+                          <span style={{ fontWeight: 700, color: pm.color }}>{fmt(pm.amount)}</span>
+                        </div>
+                      </div>
+                      <div style={{ height: "5px", borderRadius: "3px", background: "rgba(20,15,30,0.04)", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${(pm.amount / maxAmt) * 100}%`, background: pm.color, borderRadius: "3px", transition: "width 0.6s ease" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+                <div style={{ marginTop: "4px", fontSize: "11px", color: "#8E879B", borderTop: "1px solid #f0eeeb", paddingTop: "8px" }}>
+                  Total POS: <strong style={{ color: "#14111C" }}>{fmt(data.paymentData.reduce((s, p) => s + p.amount, 0))}</strong>
+                </div>
               </div>
             )}
           </div>
