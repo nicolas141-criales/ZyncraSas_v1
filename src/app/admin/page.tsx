@@ -68,20 +68,48 @@ function BarChart({ data, fmtVal }: {
   fmtVal?: (v: number) => string;
 }) {
   const max = Math.max(...data.map(d => d.value), 1);
+  const [hov, setHov] = useState<number | null>(null);
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: "5px", height: "72px" }}>
       {data.map((d, i) => (
-        <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}>
-          <div
-            title={d.value > 0 ? (fmtVal ? fmtVal(d.value) : String(d.value)) : undefined}
-            style={{
-              width: "100%", borderRadius: "5px 5px 0 0",
-              height: `${Math.max((d.value / max) * 60, 3)}px`,
-              background: d.color || "linear-gradient(to top, #fb0f05, #0027fe)",
-              transition: "height 0.5s ease",
-              cursor: d.value > 0 ? "default" : undefined,
-            }} />
-          <span style={{ fontSize: "9px", color: "#8E879B", textAlign: "center", lineHeight: 1 }}>{d.label}</span>
+        <div
+          key={i}
+          style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "5px", position: "relative" }}
+          onMouseEnter={() => d.value > 0 && setHov(i)}
+          onMouseLeave={() => setHov(null)}
+        >
+          {hov === i && (
+            <div style={{
+              position: "absolute", bottom: "calc(100% - 18px)", left: "50%",
+              transform: "translateX(-50%)",
+              background: "#14111C", color: "white",
+              fontSize: "11px", fontWeight: 700, letterSpacing: "-0.2px",
+              padding: "4px 9px", borderRadius: "7px",
+              whiteSpace: "nowrap", pointerEvents: "none", zIndex: 20,
+              boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
+            }}>
+              {fmtVal ? fmtVal(d.value) : String(d.value)}
+              {/* Caret */}
+              <div style={{
+                position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)",
+                width: 0, height: 0,
+                borderLeft: "5px solid transparent",
+                borderRight: "5px solid transparent",
+                borderTop: "5px solid #14111C",
+              }} />
+            </div>
+          )}
+          <div style={{
+            width: "100%", borderRadius: "5px 5px 0 0",
+            height: `${Math.max((d.value / max) * 60, 3)}px`,
+            background: hov === i
+              ? (d.color?.includes("gradient") ? d.color : d.color ? d.color : "linear-gradient(to top, #fb0f05, #0027fe)")
+              : (d.color || "linear-gradient(to top, #fb0f05, #0027fe)"),
+            opacity: hov !== null && hov !== i ? 0.45 : 1,
+            transition: "opacity 0.15s, height 0.5s ease",
+            cursor: "pointer",
+          }} />
+          <span style={{ fontSize: "9px", color: hov === i ? "#14111C" : "#8E879B", fontWeight: hov === i ? 700 : 400, textAlign: "center", lineHeight: 1, transition: "color 0.15s" }}>{d.label}</span>
         </div>
       ))}
     </div>
