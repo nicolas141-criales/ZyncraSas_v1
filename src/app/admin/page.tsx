@@ -36,6 +36,10 @@ const EMPTY: DashboardData = {
   hourlyData: [], weeklyRevenue: [],
 };
 
+// ─── Date helpers ─────────────────────────────────────────
+const toISO = (dt: Date) =>
+  `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+
 // ─── Sparkline ────────────────────────────────────────────
 function Sparkline({ data, color = "#fb0f05" }: { data: number[]; color?: string }) {
   if (data.length < 2) return null;
@@ -196,6 +200,94 @@ function StatusPill({ status }: { status: string }) {
   );
 }
 
+// ─── Date Range Picker ────────────────────────────────────
+const MONTHS_CAL = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+const DAYS_CAL   = ["Lu","Ma","Mi","Ju","Vi","Sá","Do"];
+
+function DateRangePicker({ start, end, onApply }: {
+  start: string; end: string; onApply: (s: string, e: string) => void;
+}) {
+  const today = new Date();
+  const [ds, setDs]   = useState(start); // draft start
+  const [de, setDe]   = useState(end);   // draft end
+  const [hov, setHov] = useState("");
+  const [cy, setCy]   = useState(today.getFullYear());
+  const [cm, setCm]   = useState(today.getMonth());
+
+  const local = (y: number, m: number, d: number) =>
+    `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+  const rawFirst   = new Date(cy, cm, 1).getDay();
+  const firstDay   = rawFirst === 0 ? 6 : rawFirst - 1;
+  const daysInMon  = new Date(cy, cm + 1, 0).getDate();
+  const todayISO   = toISO(today);
+
+  const handleClick = (iso: string) => {
+    if (!ds || (ds && de)) { setDs(iso); setDe(""); }
+    else if (iso >= ds) { setDe(iso); }
+    else { setDs(iso); setDe(""); }
+  };
+
+  const effectiveEnd = de || (hov > ds ? hov : "");
+  const inRange = (iso: string) => {
+    if (!ds) return false;
+    const lo = ds < effectiveEnd ? ds : effectiveEnd;
+    const hi = ds < effectiveEnd ? effectiveEnd : ds;
+    return iso > lo && iso < hi;
+  };
+  const isEdge = (iso: string) => iso === ds || (de && iso === de);
+  const canApply = ds && de;
+
+  const prevMo = () => { if (cm === 0) { setCy(y => y-1); setCm(11); } else setCm(m => m-1); };
+  const nextMo = () => { if (cm === 11) { setCy(y => y+1); setCm(0); } else setCm(m => m+1); };
+
+  return (
+    <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: 16, padding: 18, display: "inline-block", boxShadow: "0 8px 32px rgba(0,0,0,0.10)", marginTop: 10 }}>
+      {/* Month nav */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <button onClick={prevMo} style={{ background: "none", border: "1px solid #e8e6e2", borderRadius: 8, width: 28, height: 28, cursor: "pointer", fontSize: 13, color: "#3a3548" }}>‹</button>
+        <span style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{MONTHS_CAL[cm]} {cy}</span>
+        <button onClick={nextMo} style={{ background: "none", border: "1px solid #e8e6e2", borderRadius: 8, width: 28, height: 28, cursor: "pointer", fontSize: 13, color: "#3a3548" }}>›</button>
+      </div>
+      {/* Header */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2, marginBottom: 3 }}>
+        {DAYS_CAL.map(d => <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#8E879B", padding: "2px 0" }}>{d}</div>)}
+      </div>
+      {/* Days */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2 }}>
+        {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
+        {Array.from({ length: daysInMon }, (_, i) => i + 1).map(day => {
+          const iso   = local(cy, cm, day);
+          const edge  = isEdge(iso);
+          const range = !edge && inRange(iso);
+          const isToday = iso === todayISO;
+          return (
+            <button key={day} onClick={() => handleClick(iso)}
+              onMouseEnter={() => !de && ds && setHov(iso)}
+              onMouseLeave={() => setHov("")}
+              style={{
+                padding: "5px 2px", borderRadius: edge ? 7 : 0, border: "none",
+                background: edge ? "#fb0f05" : range ? "rgba(251,15,5,0.10)" : "transparent",
+                color: edge ? "white" : isToday ? "#fb0f05" : "#14111C",
+                fontSize: 12, fontWeight: edge || isToday ? 700 : 400,
+                cursor: "pointer", outline: isToday && !edge ? "1.5px solid rgba(251,15,5,0.5)" : "none",
+                outlineOffset: -1,
+              }}>{day}</button>
+          );
+        })}
+      </div>
+      {/* Selected display */}
+      <div style={{ marginTop: 12, padding: "9px 12px", background: "rgba(20,15,30,.03)", borderRadius: 10, fontSize: 12, color: "#564E66", textAlign: "center" }}>
+        {ds ? <><strong>Desde:</strong> {ds}{de ? <> &nbsp;→&nbsp; <strong>Hasta:</strong> {de}</> : <span style={{ color: "#8E879B" }}> — elige fecha fin</span>}</> : "Selecciona la fecha de inicio"}
+      </div>
+      <button onClick={() => canApply && onApply(ds, de)} disabled={!canApply}
+        style={{ marginTop: 10, width: "100%", padding: "9px", borderRadius: 9, border: "none", background: canApply ? "#fb0f05" : "rgba(20,15,30,.07)", color: canApply ? "white" : "#8E879B", fontWeight: 700, fontSize: 13, cursor: canApply ? "pointer" : "not-allowed", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
+        Aplicar filtro
+      </button>
+    </div>
+  );
+}
+
 // ─── Filter Button ────────────────────────────────────────
 function FilterBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
@@ -235,17 +327,17 @@ export default function AdminOverview() {
   const fetchAll = useCallback(async (tid: string, f: "hoy" | "semana" | "mes" | "custom" = "hoy", cStart?: string, cEnd?: string) => {
     setLoading(true);
     const now = new Date();
-    const todayStr = now.toISOString().split("T")[0];
+    const todayStr = toISO(now);
     const prevDate = new Date(now); prevDate.setDate(prevDate.getDate() - 1);
-    const prevStr = prevDate.toISOString().split("T")[0];
+    const prevStr = toISO(prevDate);
     let rangeStart = new Date(now);
     let rangeEndStr = todayStr;
     if (f === "semana") rangeStart.setDate(now.getDate() - 6);
     else if (f === "mes") rangeStart.setDate(now.getDate() - 29);
     else if (f === "custom" && cStart && cEnd) { rangeStart = new Date(cStart + "T00:00:00"); rangeEndStr = cEnd; }
-    else rangeStart.setDate(now.getDate() - 6);
+    else rangeStart = new Date(now); // "hoy": rango = solo hoy
     const weekStart = rangeStart;
-    const weekStartStr = weekStart.toISOString().split("T")[0];
+    const weekStartStr = toISO(weekStart);
 
     const { data: weekApts } = await supabase
       .from("appointments")
@@ -284,11 +376,11 @@ export default function AdminOverview() {
     const dayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
     const weeklyRevenue = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
-      const ds = d.toISOString().split("T")[0];
+      const ds = toISO(d);
       const rev = apts.filter(a => a.appointment_date === ds && a.status !== "cancelled").reduce((s, a) => s + Number(a.services?.price || 0), 0);
       return { day: dayNames[d.getDay() === 0 ? 6 : d.getDay() - 1], revenue: rev };
     });
-    const { count: newClientsToday } = await supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tid).gte("created_at", todayStr);
+    const { count: newClientsToday } = await supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tid).gte("created_at", todayStr).lte("created_at", todayStr + "T23:59:59");
     const uniqueClients = new Set(apts.map(a => a.client_id)).size;
     const multiVisit = apts.filter((a, _, arr) => arr.filter(b => b.client_id === a.client_id).length > 1);
     const returningPct = uniqueClients > 0 ? (new Set(multiVisit.map(a => a.client_id)).size / uniqueClients) * 100 : 0;
@@ -337,6 +429,73 @@ export default function AdminOverview() {
   const revTrend = revDiff > 0 ? "up" : revDiff < 0 ? "down" : "neutral";
   const fmt = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
+  const periodLabel = filter === "hoy" ? "Hoy" : filter === "semana" ? "Últimos 7 días" : filter === "mes" ? "Últimos 30 días" : `${customStart} — ${customEnd}`;
+
+  const downloadHTML = () => {
+    const now = new Date();
+    const generated = now.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const html = `<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8"><title>Reporte Zyncra</title>
+<style>
+  body{font-family:'Segoe UI',Arial,sans-serif;margin:40px;color:#111;background:#f4f4f9}
+  h1{color:#fb0f05;margin:0 0 4px}
+  h2{font-size:15px;color:#3a3548;margin:28px 0 10px;text-transform:uppercase;letter-spacing:.06em}
+  .meta{font-size:13px;color:#6b6b80;margin-bottom:28px}
+  .metrics{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:0}
+  .metric{background:white;border-radius:12px;padding:16px 22px;box-shadow:0 2px 12px rgba(0,0,0,.07);min-width:140px}
+  .metric-value{font-size:24px;font-weight:800;color:#fb0f05}
+  .metric-label{font-size:11px;color:#6b6b80;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+  table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:8px}
+  th{background:#fb0f05;color:white;padding:11px 14px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+  td{padding:10px 14px;font-size:13px;border-bottom:1px solid #f0eeeb}
+  tr:last-child td{border-bottom:none}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+  .pending{background:rgba(245,158,11,.12);color:#d97706}
+  .confirmed{background:rgba(16,185,129,.12);color:#059669}
+  .cancelled{background:rgba(239,68,68,.12);color:#dc2626}
+  .completed{background:rgba(100,116,139,.12);color:#475569}
+</style></head><body>
+<h1>Reporte Zyncra</h1>
+<p class="meta">Período: <strong>${periodLabel}</strong> &nbsp;·&nbsp; Generado: ${generated}</p>
+
+<h2>Métricas principales</h2>
+<div class="metrics">
+  <div class="metric"><div class="metric-value">${fmt(data.todayRevenue)}</div><div class="metric-label">Ingresos</div></div>
+  <div class="metric"><div class="metric-value">${data.todayCount}</div><div class="metric-label">Citas</div></div>
+  <div class="metric"><div class="metric-value">${data.pending}</div><div class="metric-label">Pendientes</div></div>
+  <div class="metric"><div class="metric-value">${fmt(data.avgTicket)}</div><div class="metric-label">Ticket promedio</div></div>
+  <div class="metric"><div class="metric-value">${data.returningPct.toFixed(0)}%</div><div class="metric-label">Recurrentes</div></div>
+  <div class="metric"><div class="metric-value">${data.newClientsToday}</div><div class="metric-label">Nuevos clientes</div></div>
+</div>
+
+<h2>Citas del período</h2>
+<table><tr><th>Hora</th><th>Cliente</th><th>Servicio</th><th>Colaborador</th><th>Estado</th></tr>
+${data.upcomingApts.map((a: any) => `<tr>
+  <td>${a.appointment_time?.slice(0,5) ?? "—"}</td>
+  <td>${a.clients?.name ?? "—"}</td>
+  <td>${a.services?.name ?? "—"}</td>
+  <td>${a.professionals?.name ?? "—"}</td>
+  <td><span class="badge ${a.status}">${{ confirmed:"Confirmada", pending:"Pendiente", completed:"Completada", cancelled:"Cancelada" }[a.status as string] ?? a.status}</span></td>
+</tr>`).join("")}
+</table>
+
+<h2>Rendimiento del equipo</h2>
+<table><tr><th>Colaborador</th><th>Citas</th><th>Ingresos</th></tr>
+${data.staffPerf.map((s: any) => `<tr><td>${s.name}</td><td>${s.count}</td><td>${fmt(s.revenue)}</td></tr>`).join("")}
+</table>
+
+<h2>Top servicios</h2>
+<table><tr><th>Servicio</th><th>Citas</th></tr>
+${data.topServices.map((s: any) => `<tr><td>${s.name}</td><td>${s.count}</td></tr>`).join("")}
+</table>
+</body></html>`;
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `reporte-zyncra-${toISO(now)}.html`; a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const inputSt: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e8e6e2", borderRadius: "10px", fontSize: "14px", background: "rgba(20,15,30,0.025)", color: "#14111C", boxSizing: "border-box", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" };
 
   if (loading) {
@@ -367,26 +526,32 @@ export default function AdminOverview() {
         <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
           {(["hoy", "semana", "mes", "custom"] as const).map(f => (
             <FilterBtn key={f} active={filter === f} onClick={() => { setFilter(f); if (f !== "custom") fetchAll(tenantId!, f); }}>
-              {f === "hoy" ? "Hoy" : f === "semana" ? "7 días" : f === "mes" ? "30 días" : "Rango"}
+              {f === "hoy" ? "Hoy" : f === "semana" ? "7 días" : f === "mes" ? "30 días"
+                : (customStart && customEnd ? `${customStart.slice(5)} → ${customEnd.slice(5)}` : "Rango")}
             </FilterBtn>
           ))}
-          {filter === "custom" && (
-            <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-              <input type="date" value={customStart} onChange={e => setCustomStart(e.target.value)} style={{ ...inputSt, width: "auto", padding: "6px 10px", fontSize: "12px" }} />
-              <span style={{ color: "#8E879B", fontSize: "12px" }}>—</span>
-              <input type="date" value={customEnd} onChange={e => setCustomEnd(e.target.value)} style={{ ...inputSt, width: "auto", padding: "6px 10px", fontSize: "12px" }} />
-              <button onClick={() => fetchAll(tenantId!, "custom", customStart, customEnd)} disabled={!customStart || !customEnd}
-                style={{ padding: "7px 14px", borderRadius: "9px", border: "none", background: (!customStart || !customEnd) ? "rgba(20,15,30,0.08)" : "#fb0f05", color: "#fff", cursor: (!customStart || !customEnd) ? "not-allowed" : "pointer", fontSize: "13px", fontWeight: 600 }}>
-                Buscar
-              </button>
-            </div>
-          )}
           <button onClick={() => fetchAll(tenantId!, filter, customStart, customEnd)}
             style={{ width: "34px", height: "34px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#564E66", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <IconRefresh size={15} />
           </button>
+          <button onClick={downloadHTML}
+            style={{ height: "34px", padding: "0 14px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#564E66", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
+            ⬇ HTML
+          </button>
         </div>
       </div>
+
+      {/* ─── Date Range Picker ─── */}
+      {filter === "custom" && (
+        <DateRangePicker
+          start={customStart}
+          end={customEnd}
+          onApply={(s, e) => {
+            setCustomStart(s); setCustomEnd(e);
+            fetchAll(tenantId!, "custom", s, e);
+          }}
+        />
+      )}
 
       {/* ─── Primary Metrics ─── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "14px" }}>
