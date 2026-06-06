@@ -6,7 +6,7 @@ type Params = Promise<{ token: string }>;
 export async function GET(_req: NextRequest, { params }: { params: Params }) {
   const { token } = await params;
 
-  const { data: appt, error } = await getSupabaseAdmin()
+  const { data: rawAppt, error } = await getSupabaseAdmin()
     .from("appointments")
     .select(`
       id, status, appointment_date, appointment_time, manage_token, tenant_id, professional_id,
@@ -16,6 +16,8 @@ export async function GET(_req: NextRequest, { params }: { params: Params }) {
     `)
     .eq("manage_token", token)
     .maybeSingle();
+
+  const appt = rawAppt as any;
 
   if (error || !appt) {
     return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 });
@@ -34,11 +36,13 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   const body = await req.json();
   const { action, date, time } = body;
 
-  const { data: appt, error } = await getSupabaseAdmin()
+  const { data: rawAppt2, error } = await getSupabaseAdmin()
     .from("appointments")
     .select("id, status, tenant_id, professional_id, service_id, appointment_date, appointment_time, clients(name,email), services(name,duration_minutes), professionals(name)")
     .eq("manage_token", token)
     .maybeSingle();
+
+  const appt = rawAppt2 as any;
 
   if (error || !appt) {
     return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 });
