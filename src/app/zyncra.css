@@ -94,6 +94,7 @@
 .z-nav-links a.active { color: var(--z-red); }
 .z-nav-right { display: flex; gap: 10px; align-items: center; }
 .z-nav-mobile-btn { display: none; background: none; border: none; font-size: 20px; cursor: pointer; color: var(--z-ink); padding: 8px; }
+.z-nav-mobile-cta { display: none; }
 
 /* ── Buttons ── */
 .z-btn-ghost { padding: 7px 18px; background: transparent; color: var(--z-ink-2); font-family: var(--z-font); font-size: 14px; font-weight: 500; border: 1.5px solid var(--z-border); border-radius: 9px; cursor: pointer; text-decoration: none; transition: all .15s; display: inline-flex; align-items: center; }
@@ -402,10 +403,30 @@
 /* ── Mobile ── */
 @media (max-width: 860px) {
   .z-nav { width: calc(100% - 32px); padding: 0 16px; }
-  .z-nav-links { display: none; position: fixed; top: 80px; left: 50%; transform: translateX(-50%); width: 90%; background: white; border: 1px solid var(--z-border); border-radius: 20px; padding: 16px; flex-direction: column; box-shadow: 0 8px 32px rgba(0,0,0,.1); z-index: 200; }
+  .z-nav-links {
+    display: none;
+    position: fixed;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 32px);
+    max-width: 420px;
+    background: white;
+    border: 1px solid var(--z-border);
+    border-radius: 20px;
+    padding: 12px;
+    flex-direction: column;
+    box-shadow: 0 8px 32px rgba(0,0,0,.1);
+    z-index: 200;
+  }
   .z-nav-links.open { display: flex; }
-  .z-nav-mobile-btn { display: block; }
-  .z-nav-right .z-btn-ghost { display: none; }
+  .z-nav-links li { width: 100%; }
+  .z-nav-links a { display: block; padding: 12px 16px; border-radius: 10px; font-size: 15px; min-height: 44px; display: flex; align-items: center; }
+  .z-nav-mobile-btn { display: block; min-width: 44px; min-height: 44px; display: flex; align-items: center; justify-content: center; }
+  .z-nav-right { display: none; }
+  .z-nav-mobile-cta { display: flex; border-top: 1px solid var(--z-border); margin-top: 8px; padding-top: 12px; flex-direction: column; gap: 8px; }
+  .z-nav-mobile-login { color: var(--z-ink-2) !important; font-weight: 500; }
+  .z-nav-mobile-start { justify-content: center; border-radius: 10px !important; min-height: 44px; padding: 12px 20px !important; font-size: 15px !important; }
   .z-hero { grid-template-columns: 1fr; padding: 100px 20px 60px; gap: 48px; }
   .z-hero-right { display: none; }
   .z-stats-strip { grid-template-columns: repeat(2,1fr); gap: 24px; padding: 32px 20px; }
@@ -427,6 +448,27 @@
   .z-video-grid { grid-template-columns: 1fr 1fr; }
   .z-metrics-grid { grid-template-columns: repeat(2,1fr); }
   .z-big-quote { padding: 40px 24px; }
+}
+
+/* ── Small phones ── */
+@media (max-width: 480px) {
+  .z-hero { padding: 90px 16px 48px; }
+  .z-hero-title { letter-spacing: -1.5px; }
+  .z-hero-sub { font-size: 16px; }
+  .z-hero-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+  .z-btn-xl, .z-btn-xl-ghost { width: 100%; justify-content: center; padding: 14px 20px; }
+  .z-cta-banner { margin: 0 12px 48px; padding: 48px 20px; }
+  .z-cta-actions { flex-direction: column; align-items: stretch; }
+  .z-btn-white, .z-btn-outline-white { width: 100%; justify-content: center; }
+  .z-footer-top { grid-template-columns: 1fr; gap: 28px; }
+  .z-video-grid { grid-template-columns: 1fr; }
+  .z-plans-grid { gap: 16px; }
+  .z-plan-card { padding: 28px 20px; }
+  .z-section-title { letter-spacing: -1px; }
+  .z-page-hero { padding: 90px 16px 48px; }
+  .zyncra section { padding: 48px 16px; }
+  .z-stats-strip { padding: 24px 16px; gap: 16px; }
+  .z-stat-val { font-size: 28px; }
 }
 
 /* ── Business Types Marquee ── */
