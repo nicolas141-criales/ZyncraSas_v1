@@ -25,6 +25,8 @@ interface CashMovement {
   amount: number;
   description: string;
   category: string | null;
+  pos_sale_id: string | null;
+  payment_method: string | null;
   created_at: string;
 }
 
@@ -266,6 +268,29 @@ export default function CajaPage() {
   const totalEgresos  = movements.filter(m => m.type === "egreso").reduce((s, m) => s + Number(m.amount), 0);
   const balance = session ? Number(session.opening_amount) + totalIngresos - totalEgresos : 0;
 
+  // Desglose por método de pago
+  // Efectivo = fondo inicial + ingresos sin método (manuales) + ingresos POS efectivo − todos los egresos
+  const PM_META: Record<string, { label: string; color: string; icon: string }> = {
+    efectivo:  { label: "Efectivo",   color: "#10b981", icon: "💵" },
+    tarjeta:   { label: "Tarjeta",    color: "#6366f1", icon: "💳" },
+    nequi:     { label: "Nequi",      color: "#0027fe", icon: "📱" },
+    daviplata: { label: "Daviplata",  color: "#f59e0b", icon: "🟡" },
+  };
+  const pmBreakdown = Object.entries(PM_META).map(([key, meta]) => {
+    let total = 0;
+    if (key === "efectivo") {
+      const efectivoIngresos = movements
+        .filter(m => m.type === "ingreso" && (!m.payment_method || m.payment_method === "efectivo"))
+        .reduce((s, m) => s + Number(m.amount), 0);
+      total = (session ? Number(session.opening_amount) : 0) + efectivoIngresos - totalEgresos;
+    } else {
+      total = movements
+        .filter(m => m.type === "ingreso" && m.payment_method === key)
+        .reduce((s, m) => s + Number(m.amount), 0);
+    }
+    return { key, ...meta, total };
+  });
+
   const cats = movForm.type === "ingreso" ? INGRESO_CATS : EGRESO_CATS;
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -351,6 +376,35 @@ export default function CajaPage() {
               <MetricCard label="Balance actual"   value={fmt(balance)}                gradient />
             </div>
 
+            {/* Desglose por método de pago */}
+            <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
+              <div style={{ padding: "14px 20px", borderBottom: "1px solid #e8e6e2", fontWeight: 700, fontSize: 13, color: "#14111C" }}>
+                Saldo por método de pago
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
+                {pmBreakdown.map((pm, i) => (
+                  <div key={pm.key} style={{
+                    padding: "18px 20px",
+                    borderRight: i < pmBreakdown.length - 1 ? "1px solid #f0eeeb" : "none",
+                  }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                      <span style={{ fontSize: 16 }}>{pm.icon}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>{pm.label}</span>
+                    </div>
+                    <div style={{
+                      fontSize: 20, fontWeight: 800, letterSpacing: "-0.5px",
+                      color: pm.total < 0 ? "#ef4444" : pm.color,
+                    }}>
+                      {fmt(pm.total)}
+                    </div>
+                    <div style={{ fontSize: 11, color: "#8E879B", marginTop: 4 }}>
+                      {pm.key === "efectivo" ? "en caja física" : `vía ${pm.label.toLowerCase()}`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
             {/* Actions */}
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <button onClick={() => { setMovForm({ type: "ingreso", amount: "", description: "", category: "" }); setMovMsg(""); setShowMov(true); }}
@@ -388,8 +442,14 @@ export default function CajaPage() {
                       </div>
                       <div>
                         <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{m.description}</div>
-                        <div style={{ fontSize: 11, color: "#8E879B", marginTop: 2, display: "flex", gap: 8, alignItems: "center" }}>
-                          {m.category && <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(20,15,30,0.04)", color: "#564E66" }}>{m.category}</span>}
+                        <div style={{ fontSize: 11, color: "#8E879B", marginTop: 2, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                          {m.payment_method && PM_META[m.payment_method] && (
+                            <span style={{ padding: "2px 8px", borderRadius: 20, fontWeight: 700, fontSize: 10, background: `${PM_META[m.payment_method].color}15`, color: PM_META[m.payment_method].color }}>
+                              {PM_META[m.payment_method].icon} {PM_META[m.payment_method].label}
+                            </span>
+                          )}
+                          {m.category && m.category !== "POS" && <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(20,15,30,0.04)", color: "#564E66" }}>{m.category}</span>}
+                          {m.category === "POS" && !m.payment_method && <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(20,15,30,0.04)", color: "#564E66" }}>POS</span>}
                           <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
                             <IconClock size={11} /> {fmtTime(m.created_at)}
                           </span>

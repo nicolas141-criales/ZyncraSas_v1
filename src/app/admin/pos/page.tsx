@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconCreditCard, IconPlus, IconX, IconSearch } from "../ZyncraIcons";
@@ -79,7 +80,9 @@ export default function PosPage() {
   const { tenantId, currency, locale } = useAdmin();
   const fmt         = (n: number) => new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
   const fmtDateTime = (iso: string) => new Date(iso).toLocaleString(locale, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
+  const router = useRouter();
   const [tab, setTab] = useState<"cobrar" | "historial">("cobrar");
+  const [openSession, setOpenSession] = useState<{ id: string } | null | "loading">("loading");
 
   // Catalog
   const [services, setServices] = useState<Service[]>([]);
@@ -118,6 +121,15 @@ export default function PosPage() {
     supabase.from("services").select("id,name,price,duration_minutes")
       .eq("tenant_id", tenantId).order("name")
       .then(({ data }) => { setServices(data || []); setLoadingServices(false); });
+  }, [tenantId]);
+
+  // ── Verify open cash session ──────────────────────────────────────────────
+  useEffect(() => {
+    if (!tenantId) return;
+    supabase.from("cash_sessions")
+      .select("id").eq("tenant_id", tenantId).is("closed_at", null)
+      .order("opened_at", { ascending: false }).limit(1).maybeSingle()
+      .then(({ data }) => setOpenSession(data ? { id: data.id } : null));
   }, [tenantId]);
 
   // ── Load from appointment param ──────────────────────────────────────────
@@ -233,6 +245,21 @@ export default function PosPage() {
       cart.map(i => ({ sale_id: sale.id, service_id: i.serviceId, name: i.name, price: i.price, quantity: i.qty }))
     );
 
+    // Registrar ingreso automático en caja activa
+    if (openSession && openSession !== "loading") {
+      const desc = `Venta POS${client ? ` · ${client.name}` : ""}${linkedApt ? ` · ${linkedApt.serviceName}` : ""}`;
+      await supabase.from("cash_movements").insert({
+        session_id: openSession.id,
+        tenant_id: tenantId,
+        type: "ingreso",
+        amount: total,
+        description: desc,
+        category: "POS",
+        pos_sale_id: sale.id,
+        payment_method: paymentMethod,
+      });
+    }
+
     // Marcar cita como completada
     if (linkedApt?.id) {
       await supabase.from("appointments").update({ status: "completed" }).eq("id", linkedApt.id);
@@ -286,7 +313,27 @@ export default function PosPage() {
       )}
 
       {/* ── TAB: Cobrar ── */}
-      {tab === "cobrar" && (
+      {tab === "cobrar" && openSession === "loading" && (
+        <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
+          <div style={{ width: 36, height: 36, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+        </div>
+      )}
+      {tab === "cobrar" && openSession === null && (
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "white", borderRadius: 24, border: "1px solid #e8e6e2", padding: "48px 36px", maxWidth: 420, width: "100%", textAlign: "center" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+            <div style={{ fontSize: 20, fontWeight: 800, color: "#14111C", marginBottom: 8 }}>Caja no abierta</div>
+            <p style={{ color: "#8E879B", fontSize: 14, lineHeight: 1.6, marginBottom: 28 }}>
+              Para poder cobrar debes abrir primero el turno en el Sistema de Caja.
+            </p>
+            <button onClick={() => router.push("/admin/caja")}
+              style={{ width: "100%", padding: "13px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #fb0f05, #0027fe)", color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
+              Ir a Sistema de Caja →
+            </button>
+          </div>
+        </div>
+      )}
+      {tab === "cobrar" && openSession !== "loading" && openSession !== null && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 20, alignItems: "start" }}>
 
           {/* Left: Catalog */}
