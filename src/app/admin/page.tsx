@@ -356,8 +356,10 @@ export default function AdminOverview() {
   const [blockForm, setBlockForm] = useState({ date: "", start: "", end: "", reason: "" });
   const [blockSaving, setBlockSaving] = useState(false);
   const [blockMsg, setBlockMsg] = useState("");
+  const [profFilter, setProfFilter] = useState("");
+  const [profOptions, setProfOptions] = useState<{ id: string; name: string }[]>([]);
 
-  const fetchAll = useCallback(async (tid: string, f: "hoy" | "semana" | "mes" | "custom" = "hoy", cStart?: string, cEnd?: string) => {
+  const fetchAll = useCallback(async (tid: string, f: "hoy" | "semana" | "mes" | "custom" = "hoy", cStart?: string, cEnd?: string, profId = "") => {
     if (!hasLoadedOnce.current) setLoading(true);
     else setRefreshing(true);
     const now = new Date();
@@ -369,26 +371,22 @@ export default function AdminOverview() {
     if (f === "semana") rangeStart.setDate(now.getDate() - 6);
     else if (f === "mes") rangeStart.setDate(now.getDate() - 29);
     else if (f === "custom" && cStart && cEnd) { rangeStart = new Date(cStart + "T00:00:00"); rangeEndStr = cEnd; }
-    else rangeStart = new Date(now); // "hoy": rango = solo hoy
+    else rangeStart = new Date(now);
     const weekStart = rangeStart;
     const weekStartStr = toISO(weekStart);
 
-    const { data: weekApts } = await supabase
+    const baseQ = (supabase as any)
       .from("appointments")
       .select("id, appointment_date, appointment_time, status, client_id, clients(name, no_shows), services(name, price), professionals(name)")
       .eq("tenant_id", tid)
       .gte("appointment_date", weekStartStr)
       .lte("appointment_date", rangeEndStr)
       .order("appointment_date").order("appointment_time");
+    const { data: weekApts } = await (profId ? baseQ.eq("professional_id", profId) : baseQ);
 
     const apts = (weekApts || []) as any[];
-    // filteredApts: "hoy" = solo hoy; semana/mes/custom = todo el rango
-    const filteredApts = f === "hoy"
-      ? apts.filter(a => a.appointment_date === todayStr)
-      : apts;
-    const prevApts = f === "hoy"
-      ? apts.filter(a => a.appointment_date === prevStr)
-      : [];
+    const filteredApts = f === "hoy" ? apts.filter(a => a.appointment_date === todayStr) : apts;
+    const prevApts = f === "hoy" ? apts.filter(a => a.appointment_date === prevStr) : [];
     const calcRevenue = (list: any[]) => list.filter(a => a.status !== "cancelled").reduce((s, a) => s + Number(a.services?.price || 0), 0);
     const todayRevenue = calcRevenue(filteredApts);
     const prevDayRevenue = calcRevenue(prevApts);
@@ -416,17 +414,43 @@ export default function AdminOverview() {
     const hours = ["08", "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19"];
     const hourlyData = hours.map(h => ({ hour: `${h}:00`, count: filteredApts.filter(a => a.appointment_time?.startsWith(h)).length }));
     const dayNames = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
-    const weeklyRevenue = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
-      const ds = toISO(d);
-      const rev = apts.filter(a => a.appointment_date === ds && a.status !== "cancelled").reduce((s, a) => s + Number(a.services?.price || 0), 0);
-      return { day: dayNames[d.getDay() === 0 ? 6 : d.getDay() - 1], revenue: rev };
-    });
+    // ── Revenue chart alineada al período ──────────────────────────────────
+    const dayCount = Math.max(1, Math.round(
+      (new Date(rangeEndStr + "T00:00:00").getTime() - new Date(weekStartStr + "T00:00:00").getTime()) / 86400000
+    ) + 1);
+    let weeklyRevenue: { day: string; revenue: number }[];
+    if (f === "hoy") {
+      weeklyRevenue = hours.map(h => ({
+        day: h + "h",
+        revenue: filteredApts.filter(a => a.appointment_time?.startsWith(h) && a.status !== "cancelled").reduce((s, a) => s + Number(a.services?.price || 0), 0),
+      }));
+    } else if (dayCount <= 14) {
+      weeklyRevenue = Array.from({ length: dayCount }, (_, i) => {
+        const d = new Date(weekStart); d.setDate(weekStart.getDate() + i);
+        const ds = toISO(d);
+        const rev = apts.filter(a => a.appointment_date === ds && a.status !== "cancelled").reduce((s, a) => s + Number(a.services?.price || 0), 0);
+        return { day: dayNames[d.getDay() === 0 ? 6 : d.getDay() - 1] + " " + d.getDate(), revenue: rev };
+      });
+    } else {
+      const weekCount = Math.ceil(dayCount / 7);
+      weeklyRevenue = Array.from({ length: weekCount }, (_, wi) => {
+        const wS = new Date(weekStart); wS.setDate(weekStart.getDate() + wi * 7);
+        const wE = new Date(wS); wE.setDate(wS.getDate() + 6);
+        const wsStr = toISO(wS), weStr = toISO(wE);
+        const rev = apts.filter(a => a.appointment_date >= wsStr && a.appointment_date <= weStr && a.status !== "cancelled").reduce((s, a) => s + Number(a.services?.price || 0), 0);
+        return { day: `S${wi + 1}`, revenue: rev };
+      });
+    }
+    // ── Ocupación dinámica: citas no canceladas / (profesionales × 8 slots × días) ──
+    const profCount = profId ? 1 : Math.max(Object.keys(staffMap).length, 1);
+    const occupancyRate = Math.min(
+      (filteredApts.filter(a => a.status !== "cancelled").length / (profCount * 8 * dayCount)) * 100,
+      100
+    );
     const { count: newClientsToday } = await supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tid).gte("created_at", weekStartStr).lte("created_at", rangeEndStr + "T23:59:59");
     const uniqueClients = new Set(apts.map(a => a.client_id)).size;
     const multiVisit = apts.filter((a, _, arr) => arr.filter(b => b.client_id === a.client_id).length > 1);
     const returningPct = uniqueClients > 0 ? (new Set(multiVisit.map(a => a.client_id)).size / uniqueClients) * 100 : 0;
-    const occupancyRate = Math.min((todayCount / 10) * 100, 100);
     setData({ todayRevenue, prevDayRevenue, todayCount, pending, noShowRate, avgTicket, returningPct, newClientsToday: newClientsToday || 0, occupancyRate, upcomingApts, staffPerf, topServices, hourlyData, weeklyRevenue });
     hasLoadedOnce.current = true;
     setLoading(false);
@@ -452,7 +476,7 @@ export default function AdminOverview() {
     const { error } = await supabase.from("appointments").insert({ tenant_id: tenantId, client_id: apptForm.client_id, service_id: apptForm.service_id || null, professional_id: apptForm.professional_id || null, appointment_date: apptForm.date, appointment_time: apptForm.time, status: "confirmed" });
     setApptSaving(false);
     if (error) { setApptMsg("Error: " + error.message); }
-    else { setApptMsg("Cita creada con éxito"); setTimeout(() => { setShowNewAppt(false); fetchAll(tenantId, filter); }, 1200); }
+    else { setApptMsg("Cita creada con éxito"); setTimeout(() => { setShowNewAppt(false); fetchAll(tenantId, filter, customStart, customEnd, profFilter); }, 1200); }
   };
 
   const handleBlockSlot = async (e: React.FormEvent) => {
@@ -466,8 +490,15 @@ export default function AdminOverview() {
   };
 
   useEffect(() => {
-    if (tenantId) fetchAll(tenantId, filter);
-  }, [tenantId, filter, fetchAll]);
+    if (tenantId) fetchAll(tenantId, filter, customStart, customEnd, profFilter);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tenantId, filter, fetchAll, profFilter]);
+
+  useEffect(() => {
+    if (!tenantId) return;
+    supabase.from("professionals").select("id, name").eq("tenant_id", tenantId).eq("is_active", true).order("name")
+      .then(({ data }) => setProfOptions(data || []));
+  }, [tenantId]);
 
   useEffect(() => {
     if (!showRangePicker) return;
@@ -797,14 +828,14 @@ export default function AdminOverview() {
 
         <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
           {(["hoy", "semana", "mes"] as const).map(f => (
-            <FilterBtn key={f} active={filter === f} onClick={() => { setFilter(f); setShowRangePicker(false); fetchAll(tenantId!, f); }}>
+            <FilterBtn key={f} active={filter === f} onClick={() => { setFilter(f); setShowRangePicker(false); fetchAll(tenantId!, f, undefined, undefined, profFilter); }}>
               {f === "hoy" ? "Hoy" : f === "semana" ? "7 días" : "30 días"}
             </FilterBtn>
           ))}
 
           {/* Rango personalizado — botón + popup */}
           <div ref={rangePickerRef} style={{ position: "relative" }}>
-            <FilterBtn active={filter === "custom"} onClick={() => { setFilter("custom"); setShowRangePicker(s => !s); }}>
+            <FilterBtn active={filter === "custom"} onClick={() => { setFilter("custom"); setShowRangePicker(s => !s); if (customStart && customEnd) fetchAll(tenantId!, "custom", customStart, customEnd, profFilter); }}>
               {customStart && customEnd ? `${customStart.slice(5)} → ${customEnd.slice(5)}` : "Rango"}
             </FilterBtn>
             {showRangePicker && (
@@ -814,7 +845,7 @@ export default function AdminOverview() {
                   end={customEnd}
                   onApply={(s, e) => {
                     setCustomStart(s); setCustomEnd(e);
-                    fetchAll(tenantId!, "custom", s, e);
+                    fetchAll(tenantId!, "custom", s, e, profFilter);
                     setShowRangePicker(false);
                   }}
                 />
@@ -822,7 +853,7 @@ export default function AdminOverview() {
             )}
           </div>
 
-          <button onClick={() => fetchAll(tenantId!, filter, customStart, customEnd)}
+          <button onClick={() => fetchAll(tenantId!, filter, customStart, customEnd, profFilter)}
             style={{ width: "34px", height: "34px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#564E66", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
             <IconRefresh size={15} />
           </button>
@@ -831,6 +862,25 @@ export default function AdminOverview() {
             ⬇ HTML
           </button>
         </div>
+
+        {/* Filtro de miembro */}
+        {profOptions.length > 0 && (
+          <select
+            value={profFilter}
+            onChange={e => { setProfFilter(e.target.value); fetchAll(tenantId!, filter, customStart, customEnd, e.target.value); }}
+            style={{
+              height: "34px", padding: "0 12px", borderRadius: "9px",
+              border: profFilter ? "1.5px solid rgba(251,15,5,0.4)" : "1.5px solid #e8e6e2",
+              background: profFilter ? "rgba(251,15,5,0.06)" : "white",
+              color: profFilter ? "#fb0f05" : "#564E66",
+              fontSize: "13px", fontWeight: 600, cursor: "pointer",
+              fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+              outline: "none",
+            }}>
+            <option value="">Todo el equipo</option>
+            {profOptions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        )}
       </div>
 
       {/* ─── Primary Metrics ─── */}
@@ -865,7 +915,7 @@ export default function AdminOverview() {
           icon={<IconPercent size={20} />} iconColor={data.noShowRate > 15 ? "#ef4444" : "#fb0f05"}
           label="Inasistencias"
           value={`${data.noShowRate.toFixed(1)}%`}
-          sub="últimos 7 días"
+          sub={periodLabel.toLowerCase()}
           alert={data.noShowRate > 15}
           trend={data.noShowRate > 10 ? "down" : "up"}
           trendVal={data.noShowRate > 15 ? "Alto — activa depósitos" : "Bajo control"}
@@ -875,15 +925,15 @@ export default function AdminOverview() {
       {/* ─── Secondary Metrics ─── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "14px" }}>
         <MetricCard icon={<IconCreditCard size={18} />} iconColor="#fb0f05" label="Ticket promedio" value={fmt(data.avgTicket)} sub="por servicio" />
-        <MetricCard icon={<IconRefresh size={18} />} iconColor="#fb0f05" label="Clientes recurrentes" value={`${data.returningPct.toFixed(0)}%`} sub="de la semana" trend={data.returningPct > 50 ? "up" : "neutral"} />
+        <MetricCard icon={<IconRefresh size={18} />} iconColor="#fb0f05" label="Clientes recurrentes" value={`${data.returningPct.toFixed(0)}%`} sub={periodLabel.toLowerCase()} trend={data.returningPct > 50 ? "up" : "neutral"} />
         <MetricCard icon={<IconUsers size={18} />} iconColor="#10b981" label={filter === "hoy" ? "Nuevos hoy" : "Nuevos clientes"} value={String(data.newClientsToday)} sub={filter === "hoy" ? "registrados hoy" : "en el período"} />
-        <MetricCard icon={<IconChartBar size={18} />} iconColor="#fb0f05" label="Ocupación del día" value={`${data.occupancyRate.toFixed(0)}%`} sub="slots usados" trend={data.occupancyRate > 70 ? "up" : "neutral"} />
+        <MetricCard icon={<IconChartBar size={18} />} iconColor="#fb0f05" label="Ocupación" value={`${data.occupancyRate.toFixed(0)}%`} sub={`capacidad ${periodLabel.toLowerCase()}`} trend={data.occupancyRate > 70 ? "up" : "neutral"} />
       </div>
 
       {/* ─── Charts Row ─── */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px" }}>
         <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader title="Ingresos — 7 días" icon={<IconBanknotes size={16} />} />
+          <SectionHeader title={filter === "hoy" ? "Ingresos por hora — hoy" : `Ingresos — ${periodLabel.toLowerCase()}`} icon={<IconBanknotes size={16} />} />
           <div style={{ padding: "16px 20px 20px" }}>
             <BarChart data={data.weeklyRevenue.map(d => ({ label: d.day, value: d.revenue }))} />
           </div>
