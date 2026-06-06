@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
+import { APP_URL } from "@/lib/config";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -75,11 +76,9 @@ export default function ReviewsSitePage() {
 
   useEffect(() => { loadReviews(); }, [loadReviews]);
 
-  // Build public URL using current window origin + tenantId
+  // Build public URL using primary domain
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setPublicUrl(`${window.location.origin}/review/${tenantId}`);
-    }
+    setPublicUrl(`${APP_URL}/review/${tenantId}`);
   }, [tenantId]);
 
   // Load show_on_booking preference from google_review_settings (reuse table)

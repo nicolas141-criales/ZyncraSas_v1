@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconPalette, IconCheck, IconStorefront } from "../ZyncraIcons";
+import { APP_URL } from "@/lib/config";
 
 interface BrandingConfig {
   business_name: string; logo_url: string; logo_object_position: string;
@@ -42,7 +43,7 @@ export default function BrandingPage() {
   const [logoPreview, setLogoPreview] = useState<string>("");
   const [copied, setCopied] = useState(false);
 
-  const bookingLink = typeof window !== "undefined" ? `${window.location.origin}/book/${tenantSlug}` : `/book/${tenantSlug}`;
+  const bookingLink = `${APP_URL}/book/${tenantSlug}`;
 
   const fetchBranding = useCallback(async (tid: string) => {
     const { data: brandings } = await supabase.from("branding").select("*").eq("tenant_id", tid).limit(1);
