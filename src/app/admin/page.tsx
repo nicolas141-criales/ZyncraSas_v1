@@ -485,168 +485,260 @@ export default function AdminOverview() {
   const downloadHTML = () => {
     const now = new Date();
     const generated = now.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
-    const statusLabel: Record<string, string> = { confirmed: "Confirmada", pending: "Pendiente", completed: "Completada", cancelled: "Cancelada", no_show: "No se presentó" };
-    const cancelledCount = data.upcomingApts.filter((a: any) => a.status === "cancelled").length;
-    const noShowCount    = data.upcomingApts.filter((a: any) => a.status === "no_show").length;
-    const completedCount = data.upcomingApts.filter((a: any) => a.status === "completed").length;
-    const confirmedCount = data.upcomingApts.filter((a: any) => a.status === "confirmed").length;
-    const maxHour = Math.max(...data.hourlyData.map(h => h.count), 1);
-    const maxDay  = Math.max(...data.weeklyRevenue.map(d => d.revenue), 1);
+    const SL: Record<string, string> = { confirmed: "Confirmada", pending: "Pendiente", completed: "Completada", cancelled: "Cancelada", no_show: "No se presentó" };
+    const apts = data.upcomingApts as any[];
+    const noShowCount    = apts.filter(a => a.status === "no_show").length;
+    const completedCount = apts.filter(a => a.status === "completed").length;
+    const confirmedCount = apts.filter(a => a.status === "confirmed").length;
+    const MONS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+    // ── SVG vertical bar chart ──────────────────────────────────────────────
+    function vBars(
+      items: { label: string; value: number; sub?: string }[],
+      c1: string, c2: string, gid: string,
+      fmtV: (v: number) => string
+    ): string {
+      if (!items.length) return '<p style="color:#8E879B;font-size:12px;padding:16px">Sin datos.</p>';
+      const max = Math.max(...items.map(i => i.value), 1);
+      const BW = 46, BH = 90, GAP = 14;
+      const TW = items.length * (BW + GAP);
+      const bars = items.map((item, i) => {
+        const bh = item.value > 0 ? Math.max((item.value / max) * BH, 4) : 0;
+        const x = i * (BW + GAP);
+        return (
+          (bh > 0
+            ? `<rect x="${x}" y="${BH - bh}" width="${BW}" height="${bh}" rx="5" fill="url(#${gid})"/>`
+            : `<rect x="${x}" y="${BH - 2}" width="${BW}" height="2" rx="1" fill="#e8e6e2"/>`) +
+          (item.value > 0
+            ? `<text x="${x + BW / 2}" y="${BH - bh - 5}" text-anchor="middle" font-size="9" fill="#8E879B" font-family="Segoe UI,sans-serif">${fmtV(item.value)}</text>`
+            : "") +
+          `<text x="${x + BW / 2}" y="${BH + 14}" text-anchor="middle" font-size="10" fill="#64748b" font-family="Segoe UI,sans-serif" font-weight="600">${item.label}</text>` +
+          (item.sub ? `<text x="${x + BW / 2}" y="${BH + 26}" text-anchor="middle" font-size="9" fill="#b0abc0" font-family="Segoe UI,sans-serif">${item.sub}</text>` : "")
+        );
+      }).join("");
+      return (
+        `<div style="padding:14px 16px">` +
+        `<svg width="100%" viewBox="0 0 ${TW} ${BH + 40}" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">` +
+        `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">` +
+        `<stop offset="0%" stop-color="${c1}"/><stop offset="100%" stop-color="${c2}"/>` +
+        `</linearGradient></defs>${bars}</svg></div>`
+      );
+    }
+
+    // ── Heat map (horas × días) ────────────────────────────────────────────
+    const HRS = ["08","09","10","11","12","13","14","15","16","17","18","19"];
+    const hmDays = [...new Set(apts.map(a => a.appointment_date as string))].sort().slice(0, 31);
+    const hmMax = Math.max(
+      ...hmDays.flatMap(day => HRS.map(h => apts.filter(a => a.appointment_date === day && (a.appointment_time as string)?.startsWith(h)).length)),
+      1
+    );
+    const heatMapHTML = hmDays.length === 0
+      ? '<p style="color:#8E879B;font-size:12px;padding:14px 16px">Sin datos para este período.</p>'
+      : (
+        `<div style="overflow-x:auto;padding:14px 16px 12px">` +
+        `<div style="display:inline-grid;grid-template-columns:68px ${HRS.map(() => "26px").join(" ")};row-gap:4px;column-gap:3px;align-items:center">` +
+        `<div style="font-size:9px;color:#b0abc0;font-weight:700;text-transform:uppercase;letter-spacing:.06em">Día</div>` +
+        HRS.map(h => `<div style="text-align:center;font-size:9px;color:#8E879B;font-weight:700">${h}h</div>`).join("") +
+        hmDays.map(day => {
+          const parts = day.split("-");
+          const lbl = parseInt(parts[2]) + " " + MONS[parseInt(parts[1]) - 1];
+          return (
+            `<div style="font-size:9px;color:#64748b;font-weight:600;white-space:nowrap;padding-right:4px">${lbl}</div>` +
+            HRS.map(h => {
+              const cnt = apts.filter(a => a.appointment_date === day && (a.appointment_time as string)?.startsWith(h)).length;
+              const op = cnt === 0 ? 0 : Math.max(0.08, (cnt / hmMax) * 0.92 + 0.08);
+              const tc = op > 0.55 ? "white" : "#fb0f05";
+              return (
+                `<div style="background:rgba(251,15,5,${op.toFixed(2)});border-radius:4px;height:26px;width:26px;` +
+                `display:flex;align-items:center;justify-content:center" title="${cnt} cita${cnt !== 1 ? "s" : ""}">` +
+                (cnt > 0 ? `<span style="font-size:9px;font-weight:700;color:${tc}">${cnt}</span>` : "") +
+                `</div>`
+              );
+            }).join("")
+          );
+        }).join("") +
+        `</div>` +
+        `<div style="display:flex;align-items:center;gap:6px;margin-top:10px">` +
+        `<span style="font-size:9px;color:#b0abc0">Sin citas</span>` +
+        `<div style="display:flex;gap:2px">` +
+        ["0.08","0.25","0.45","0.65","0.85","1.0"].map(op =>
+          `<div style="width:14px;height:14px;border-radius:3px;background:rgba(251,15,5,${op})"></div>`
+        ).join("") +
+        `</div><span style="font-size:9px;color:#b0abc0">Máx. ocupación</span></div></div>`
+      );
+
+    // ── Donut de estados ──────────────────────────────────────────────────
+    const statusItems = [
+      { label: "Confirmada",    count: confirmedCount, color: "#10b981" },
+      { label: "Completada",    count: completedCount, color: "#64748b" },
+      { label: "Pendiente",     count: data.pending,   color: "#f59e0b" },
+      { label: "No se presentó",count: noShowCount,    color: "#dc2626" },
+    ].filter(s => s.count > 0);
+    const dTotal = statusItems.reduce((s, c) => s + c.count, 0);
+    const CX = 65, CY = 65, OR = 50, IR = 28;
+    let ang = -Math.PI / 2;
+    const donutPaths = dTotal > 0
+      ? statusItems.map(si => {
+          const a = (si.count / dTotal) * 2 * Math.PI;
+          const x1 = CX + OR * Math.cos(ang), y1 = CY + OR * Math.sin(ang);
+          const x2 = CX + OR * Math.cos(ang + a), y2 = CY + OR * Math.sin(ang + a);
+          const xi1 = CX + IR * Math.cos(ang), yi1 = CY + IR * Math.sin(ang);
+          const xi2 = CX + IR * Math.cos(ang + a), yi2 = CY + IR * Math.sin(ang + a);
+          const lg = a > Math.PI ? 1 : 0;
+          const path = `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${OR} ${OR} 0 ${lg} 1 ${x2.toFixed(1)} ${y2.toFixed(1)} L ${xi2.toFixed(1)} ${yi2.toFixed(1)} A ${IR} ${IR} 0 ${lg} 0 ${xi1.toFixed(1)} ${yi1.toFixed(1)} Z`;
+          ang += a;
+          return `<path d="${path}" fill="${si.color}" opacity="0.88"/>`;
+        }).join("")
+      : `<circle cx="${CX}" cy="${CY}" r="${OR}" fill="#f0eeeb"/><circle cx="${CX}" cy="${CY}" r="${IR}" fill="white"/>`;
+    const donutHTML =
+      `<div style="display:flex;align-items:center;gap:18px;padding:14px 16px 16px;flex-wrap:wrap">` +
+      `<svg width="130" height="130" viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">` +
+      donutPaths +
+      `<text x="${CX}" y="${CY + 6}" text-anchor="middle" font-size="18" font-weight="800" fill="#14111C" font-family="Segoe UI,sans-serif">${dTotal}</text>` +
+      `<text x="${CX}" y="${CY + 18}" text-anchor="middle" font-size="9" fill="#8E879B" font-family="Segoe UI,sans-serif">citas</text>` +
+      `</svg>` +
+      `<div style="display:flex;flex-direction:column;gap:8px">` +
+      statusItems.map(si =>
+        `<div style="display:flex;align-items:center;gap:8px">` +
+        `<div style="width:9px;height:9px;border-radius:50%;background:${si.color};flex-shrink:0"></div>` +
+        `<span style="font-size:12px;color:#3a3548">${si.label}</span>` +
+        `<span style="font-size:13px;font-weight:800;color:#14111C;margin-left:6px">${si.count}</span>` +
+        `<span style="font-size:10px;color:#b0abc0">${dTotal > 0 ? ((si.count / dTotal) * 100).toFixed(0) + "%" : ""}</span>` +
+        `</div>`
+      ).join("") +
+      `</div></div>`;
+
+    // ── Staff rows con mini-barra ─────────────────────────────────────────
+    const maxStaffRev = Math.max(...data.staffPerf.map((s: any) => s.revenue), 1);
+    const staffRows = data.staffPerf.map((s: any) =>
+      `<tr>` +
+      `<td style="font-weight:600">${s.name}</td>` +
+      `<td>${s.count}</td>` +
+      `<td style="color:#fb0f05;font-weight:700">${fmt(s.revenue)}</td>` +
+      `<td>${s.count > 0 ? fmt(s.revenue / s.count) : "—"}</td>` +
+      `<td style="min-width:80px"><div style="background:#f0eeeb;border-radius:4px;height:6px"><div style="background:linear-gradient(90deg,#fb0f05,#0027fe);height:100%;width:${((s.revenue / maxStaffRev) * 100).toFixed(0)}%;border-radius:4px"></div></div></td>` +
+      `</tr>`
+    ).join("") || `<tr><td colspan="5" style="text-align:center;color:#8E879B">Sin datos</td></tr>`;
+
+    // ── Datos alineados al filtro ─────────────────────────────────────────
+    const revLabel = filter === "hoy" ? "Hoy (y días anteriores)" : filter === "semana" ? "Últimos 7 días" : filter === "mes" ? "Últimos 30 días (desglose semanal)" : `${customStart} → ${customEnd}`;
+    const revBarsData = data.weeklyRevenue.map(d => ({
+      label: d.day,
+      value: d.revenue,
+      sub: d.revenue > 0 ? (d.revenue >= 1000000 ? (d.revenue / 1000000).toFixed(1) + "M" : (d.revenue / 1000).toFixed(0) + "k") : "",
+    }));
+    const svcBarsData = data.topServices.map(s => ({
+      label: s.name.length > 7 ? s.name.slice(0, 7) + "…" : s.name,
+      value: s.count,
+      sub: data.todayCount > 0 ? ((s.count / data.todayCount) * 100).toFixed(0) + "%" : "",
+    }));
+
     const html = `<!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8"><title>Reporte Zyncra — ${periodLabel}</title>
 <style>
-  *{box-sizing:border-box}
-  body{font-family:'Segoe UI',Arial,sans-serif;margin:0;color:#111;background:#f0eff5;print-color-adjust:exact;-webkit-print-color-adjust:exact}
-  .page{max-width:900px;margin:0 auto;padding:36px 32px}
-  .header{background:linear-gradient(135deg,#14111C 0%,#2a1a1a 100%);border-radius:16px;padding:28px 32px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:center}
-  .header h1{color:white;margin:0;font-size:22px;font-weight:800;letter-spacing:-0.5px}
-  .header-meta{text-align:right}
-  .header-meta .period{color:#fb0f05;font-weight:800;font-size:14px}
-  .header-meta .date{color:rgba(255,255,255,.5);font-size:11px;margin-top:4px}
-  .print-btn{background:#fb0f05;color:white;border:none;padding:8px 18px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-top:10px}
-  h2{font-size:11px;color:#8E879B;margin:24px 0 10px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
-  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:0}
-  .metrics-sm{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-  .metric{background:white;border-radius:12px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-  .metric-value{font-size:22px;font-weight:800;background:linear-gradient(135deg,#fb0f05,#0027fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-  .metric-value.alert{background:none;-webkit-text-fill-color:#ef4444;color:#ef4444}
-  .metric-label{font-size:10px;color:#8E879B;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
-  .metric-sub{font-size:11px;color:#b0abc0;margin-top:2px}
-  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;color:#14111C;background:#f0eff5;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .page{max-width:960px;margin:0 auto;padding:32px}
+  .hdr{background:linear-gradient(135deg,#14111C 0%,#2a1018 100%);border-radius:16px;padding:22px 28px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+  .hdr h1{color:white;font-size:20px;font-weight:800;letter-spacing:-.5px}
+  .hdr-sub{color:rgba(255,255,255,.4);font-size:11px;margin-top:2px}
+  .hdr-right{text-align:right}
+  .period-pill{display:inline-block;background:#fb0f05;color:white;padding:3px 11px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.04em;margin-bottom:5px}
+  .date-txt{color:rgba(255,255,255,.4);font-size:10px}
+  .print-btn{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18);padding:5px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;margin-top:7px;display:inline-block}
+  .st{font-size:10px;color:#8E879B;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin:18px 0 7px}
+  .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .metric{background:white;border-radius:11px;padding:13px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .mv{font-size:20px;font-weight:800;background:linear-gradient(135deg,#fb0f05,#0027fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15}
+  .mv.alert{background:none;-webkit-text-fill-color:#ef4444}
+  .ml{font-size:9px;color:#8E879B;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+  .ms{font-size:10px;color:#b0abc0;margin-top:2px}
   .card{background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-  .card-title{padding:12px 16px;border-bottom:1px solid #f0eeeb;font-size:11px;font-weight:700;color:#3a3548;text-transform:uppercase;letter-spacing:.06em}
+  .ct{padding:10px 16px;border-bottom:1px solid #f0eeeb;font-size:10px;font-weight:700;color:#3a3548;text-transform:uppercase;letter-spacing:.06em}
   table{width:100%;border-collapse:collapse}
-  th{background:#f8f7fb;padding:9px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#8E879B;font-weight:700;border-bottom:1px solid #f0eeeb}
-  td{padding:9px 14px;font-size:12px;border-bottom:1px solid #f8f7fb;color:#3a3548}
+  th{background:#f8f7fb;padding:8px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:#8E879B;font-weight:700;border-bottom:1px solid #f0eeeb}
+  td{padding:8px 12px;font-size:12px;border-bottom:1px solid #f8f7fb;color:#3a3548}
   tr:last-child td{border-bottom:none}
-  tr:hover td{background:#fafafa}
-  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
-  .pending{background:rgba(245,158,11,.12);color:#d97706}
+  .badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700}
   .confirmed{background:rgba(16,185,129,.12);color:#059669}
-  .cancelled{background:rgba(239,68,68,.12);color:#dc2626}
+  .pending{background:rgba(245,158,11,.12);color:#d97706}
   .completed{background:rgba(100,116,139,.12);color:#475569}
+  .cancelled{background:rgba(239,68,68,.12);color:#dc2626}
   .no_show{background:rgba(220,38,38,.1);color:#b91c1c}
-  .bar-wrap{padding:12px 16px 16px}
-  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
-  .bar-label{font-size:11px;color:#8E879B;width:32px;text-align:right;flex-shrink:0}
-  .bar-track{flex:1;background:#f0eff5;border-radius:4px;height:10px;overflow:hidden}
-  .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#fb0f05,#0027fe)}
-  .bar-val{font-size:11px;font-weight:700;color:#3a3548;width:48px;text-align:right;flex-shrink:0}
-  .status-row{display:flex;gap:8px;flex-wrap:wrap;padding:14px 16px}
-  .stat-pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700}
-  .footer{margin-top:28px;text-align:center;font-size:11px;color:#b0abc0}
+  .foot{margin-top:22px;text-align:center;font-size:10px;color:#c0bbc8;padding-bottom:4px}
   @media print{.print-btn{display:none}.page{padding:0}}
-</style></head>
-<body>
-<div class="page">
+</style></head><body><div class="page">
 
-  <div class="header">
-    <div>
-      <h1>Reporte Zyncra</h1>
-      <div style="color:rgba(255,255,255,.4);font-size:12px;margin-top:4px">Panel de gestión del negocio</div>
-    </div>
-    <div class="header-meta">
-      <div class="period">${periodLabel}</div>
-      <div class="date">Generado: ${generated}</div>
-      <button class="print-btn" onclick="window.print()">Imprimir / PDF</button>
-    </div>
+<div class="hdr">
+  <div><h1>Reporte Zyncra</h1><div class="hdr-sub">Panel de gestión del negocio</div></div>
+  <div class="hdr-right">
+    <div class="period-pill">${periodLabel}</div>
+    <div class="date-txt">${generated}</div>
+    <button class="print-btn" onclick="window.print()">⎙ Imprimir / PDF</button>
   </div>
-
-  <h2>Resumen del período</h2>
-  <div class="metrics">
-    <div class="metric"><div class="metric-value">${fmt(data.todayRevenue)}</div><div class="metric-label">Ingresos totales</div>${filter === "hoy" && data.prevDayRevenue > 0 ? `<div class="metric-sub">${data.todayRevenue >= data.prevDayRevenue ? "▲" : "▼"} ${fmt(Math.abs(data.todayRevenue - data.prevDayRevenue))} vs ayer</div>` : ""}</div>
-    <div class="metric"><div class="metric-value">${data.todayCount}</div><div class="metric-label">Total de citas</div><div class="metric-sub">${data.occupancyRate.toFixed(0)}% ocupación</div></div>
-    <div class="metric"><div class="metric-value">${fmt(data.avgTicket)}</div><div class="metric-label">Ticket promedio</div><div class="metric-sub">por servicio cobrado</div></div>
-    <div class="metric"><div class="metric-value ${data.noShowRate > 15 ? "alert" : ""}">${data.noShowRate.toFixed(1)}%</div><div class="metric-label">Inasistencias</div><div class="metric-sub">${noShowCount} sin presentarse</div></div>
-  </div>
-
-  <h2 style="margin-top:14px">Indicadores adicionales</h2>
-  <div class="metrics-sm">
-    <div class="metric"><div class="metric-value">${data.pending}</div><div class="metric-label">Pendientes</div><div class="metric-sub">requieren acción</div></div>
-    <div class="metric"><div class="metric-value">${data.returningPct.toFixed(0)}%</div><div class="metric-label">Clientes recurrentes</div></div>
-    <div class="metric"><div class="metric-value">${data.newClientsToday}</div><div class="metric-label">Nuevos clientes</div></div>
-    <div class="metric">
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
-        <span class="badge confirmed">${confirmedCount} confirmadas</span>
-        <span class="badge completed">${completedCount} completadas</span>
-        <span class="badge cancelled">${cancelledCount} canceladas</span>
-        <span class="badge no_show">${noShowCount} inasistencias</span>
-      </div>
-      <div class="metric-label" style="margin-top:6px">Estados de citas</div>
-    </div>
-  </div>
-
-  <h2>Distribución por hora — hoy</h2>
-  <div class="card">
-    <div class="bar-wrap">
-      ${data.hourlyData.map(h => `<div class="bar-row">
-        <span class="bar-label">${h.hour.replace(":00","h")}</span>
-        <div class="bar-track"><div class="bar-fill" style="width:${(h.count/maxHour)*100}%"></div></div>
-        <span class="bar-val">${h.count} cita${h.count !== 1 ? "s" : ""}</span>
-      </div>`).join("")}
-    </div>
-  </div>
-
-  <h2>Ingresos — últimos 7 días</h2>
-  <div class="card">
-    <div class="bar-wrap">
-      ${data.weeklyRevenue.map(d => `<div class="bar-row">
-        <span class="bar-label">${d.day}</span>
-        <div class="bar-track"><div class="bar-fill" style="width:${(d.revenue/maxDay)*100}%"></div></div>
-        <span class="bar-val" style="width:90px">${fmt(d.revenue)}</span>
-      </div>`).join("")}
-    </div>
-  </div>
-
-  <div class="two-col" style="margin-top:20px">
-    <div>
-      <h2>Rendimiento del equipo</h2>
-      <div class="card">
-        <table>
-          <tr><th>Colaborador</th><th>Citas</th><th>Ingresos</th><th>Ticket prom.</th></tr>
-          ${data.staffPerf.map((s: any) => `<tr>
-            <td style="font-weight:600">${s.name}</td>
-            <td>${s.count}</td>
-            <td style="color:#fb0f05;font-weight:700">${fmt(s.revenue)}</td>
-            <td>${s.count > 0 ? fmt(s.revenue / s.count) : "—"}</td>
-          </tr>`).join("")}
-        </table>
-      </div>
-    </div>
-    <div>
-      <h2>Top servicios</h2>
-      <div class="card">
-        <table>
-          <tr><th>Servicio</th><th>Citas</th><th>% del total</th></tr>
-          ${data.topServices.map((s: any) => `<tr>
-            <td style="font-weight:600">${s.name}</td>
-            <td>${s.count}</td>
-            <td>${data.todayCount > 0 ? ((s.count/data.todayCount)*100).toFixed(0) + "%" : "—"}</td>
-          </tr>`).join("")}
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <h2>Detalle de citas</h2>
-  <div class="card">
-    <table>
-      <tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Servicio</th><th>Valor</th><th>Colaborador</th><th>Estado</th></tr>
-      ${data.upcomingApts.map((a: any) => `<tr>
-        <td>${a.appointment_date ?? "—"}</td>
-        <td style="font-weight:700;color:#fb0f05">${a.appointment_time?.slice(0,5) ?? "—"}</td>
-        <td style="font-weight:600">${a.clients?.name ?? "—"}</td>
-        <td>${a.services?.name ?? "—"}</td>
-        <td style="font-weight:700">${a.services?.price ? fmt(Number(a.services.price)) : "—"}</td>
-        <td>${a.professionals?.name ?? "Sin asignar"}</td>
-        <td><span class="badge ${a.status}">${statusLabel[a.status as string] ?? a.status}</span></td>
-      </tr>`).join("")}
-    </table>
-  </div>
-
-  <div class="footer">Reporte generado por Zyncra &nbsp;·&nbsp; ${generated}</div>
 </div>
-</body></html>`;
+
+<div class="st">Resumen del período</div>
+<div class="g4">
+  <div class="metric"><div class="mv">${fmt(data.todayRevenue)}</div><div class="ml">Ingresos totales</div>${filter === "hoy" && data.prevDayRevenue > 0 ? `<div class="ms">${data.todayRevenue >= data.prevDayRevenue ? "▲" : "▼"} ${fmt(Math.abs(data.todayRevenue - data.prevDayRevenue))} vs ayer</div>` : ""}</div>
+  <div class="metric"><div class="mv">${data.todayCount}</div><div class="ml">Total de citas</div><div class="ms">${data.occupancyRate.toFixed(0)}% ocupación</div></div>
+  <div class="metric"><div class="mv">${fmt(data.avgTicket)}</div><div class="ml">Ticket promedio</div></div>
+  <div class="metric"><div class="mv${data.noShowRate > 15 ? " alert" : ""}">${data.noShowRate.toFixed(1)}%</div><div class="ml">Inasistencias</div><div class="ms">${noShowCount} sin presentarse</div></div>
+</div>
+<div class="g4" style="margin-top:10px">
+  <div class="metric"><div class="mv">${data.pending}</div><div class="ml">Pendientes</div></div>
+  <div class="metric"><div class="mv">${data.returningPct.toFixed(0)}%</div><div class="ml">Clientes recurrentes</div></div>
+  <div class="metric"><div class="mv">${data.newClientsToday}</div><div class="ml">Nuevos clientes hoy</div></div>
+  <div class="metric"><div class="mv">${data.occupancyRate.toFixed(0)}%</div><div class="ml">Ocupación del día</div></div>
+</div>
+
+<div class="g2" style="margin-top:18px">
+  <div>
+    <div class="st">Estado de citas</div>
+    <div class="card"><div class="ct">Distribución por estado</div>${donutHTML}</div>
+  </div>
+  <div>
+    <div class="st">Ingresos por día — ${revLabel}</div>
+    <div class="card"><div class="ct">Barras de ingresos diarios</div>${vBars(revBarsData, "#fb0f05", "#0027fe", "rg1", v => v >= 1000000 ? (v/1000000).toFixed(1)+"M" : v >= 1000 ? (v/1000).toFixed(0)+"k" : String(v))}</div>
+  </div>
+</div>
+
+<div class="st">Distribución por hora — Mapa de calor</div>
+<div class="card"><div class="ct">Citas por hora y día del período</div>${heatMapHTML}</div>
+
+<div class="st">Top servicios</div>
+<div class="card"><div class="ct">Servicios más solicitados</div>${vBars(svcBarsData, "#10b981", "#0ea5e9", "sg1", v => String(v))}</div>
+
+<div class="st" style="margin-top:18px">Rendimiento del equipo</div>
+<div class="card">
+  <table>
+    <tr><th>Colaborador</th><th>Citas</th><th>Ingresos</th><th>Ticket prom.</th><th style="min-width:90px">Participación</th></tr>
+    ${staffRows}
+  </table>
+</div>
+
+<div class="st" style="margin-top:18px">Detalle de citas — ${periodLabel}</div>
+<div class="card">
+  <table>
+    <tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Servicio</th><th>Valor</th><th>Colaborador</th><th>Estado</th></tr>
+    ${apts.map(a =>
+      `<tr>` +
+      `<td style="color:#8E879B">${a.appointment_date ?? "—"}</td>` +
+      `<td style="font-weight:700;color:#fb0f05">${(a.appointment_time as string)?.slice(0, 5) ?? "—"}</td>` +
+      `<td style="font-weight:600">${a.clients?.name ?? "—"}</td>` +
+      `<td>${a.services?.name ?? "—"}</td>` +
+      `<td style="font-weight:700">${a.services?.price ? fmt(Number(a.services.price)) : "—"}</td>` +
+      `<td>${a.professionals?.name ?? "Sin asignar"}</td>` +
+      `<td><span class="badge ${a.status}">${SL[a.status as string] ?? a.status}</span></td>` +
+      `</tr>`
+    ).join("") || `<tr><td colspan="7" style="text-align:center;color:#8E879B;padding:20px">Sin citas en este período</td></tr>`}
+  </table>
+</div>
+
+<div class="foot">Generado por Zyncra &nbsp;·&nbsp; ${generated}</div>
+</div></body></html>`;
+
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
