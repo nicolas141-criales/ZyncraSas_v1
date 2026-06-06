@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseAdmin } from "@/lib/supabase-server";
+import { getSupabaseAdmin } from "@/lib/supabase-server";
 
 type Params = Promise<{ token: string }>;
 
 export async function GET(_req: NextRequest, { params }: { params: Params }) {
   const { token } = await params;
 
-  const { data: appt, error } = await supabaseAdmin
+  const { data: appt, error } = await getSupabaseAdmin()
     .from("appointments")
     .select(`
       id, status, appointment_date, appointment_time, manage_token, tenant_id, professional_id,
@@ -22,8 +22,8 @@ export async function GET(_req: NextRequest, { params }: { params: Params }) {
   }
 
   const [{ data: tenant }, { data: branding }] = await Promise.all([
-    supabaseAdmin.from("tenants").select("name, settings").eq("id", appt.tenant_id).maybeSingle(),
-    supabaseAdmin.from("branding").select("business_name, primary_color, secondary_color, logo_url").eq("tenant_id", appt.tenant_id).maybeSingle(),
+    getSupabaseAdmin().from("tenants").select("name, settings").eq("id", appt.tenant_id).maybeSingle(),
+    getSupabaseAdmin().from("branding").select("business_name, primary_color, secondary_color, logo_url").eq("tenant_id", appt.tenant_id).maybeSingle(),
   ]);
 
   return NextResponse.json({ appt, tenant, branding });
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   const body = await req.json();
   const { action, date, time } = body;
 
-  const { data: appt, error } = await supabaseAdmin
+  const { data: appt, error } = await getSupabaseAdmin()
     .from("appointments")
     .select("id, status, tenant_id, professional_id, service_id, appointment_date, appointment_time, clients(name,email), services(name,duration_minutes), professionals(name)")
     .eq("manage_token", token)
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
   }
 
   if (action === "cancel") {
-    const { error: updErr } = await supabaseAdmin
+    const { error: updErr } = await getSupabaseAdmin()
       .from("appointments")
       .update({ status: "cancelled" })
       .eq("id", appt.id);
@@ -63,7 +63,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
       return NextResponse.json({ error: "Fecha y hora requeridas" }, { status: 400 });
     }
 
-    const { error: updErr } = await supabaseAdmin
+    const { error: updErr } = await getSupabaseAdmin()
       .from("appointments")
       .update({ appointment_date: date, appointment_time: time, status: "pending" })
       .eq("id", appt.id);
@@ -77,7 +77,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
 
     if (client?.email) {
       const [{ data: branding }] = await Promise.all([
-        supabaseAdmin.from("branding").select("business_name,primary_color,secondary_color").eq("tenant_id", appt.tenant_id).maybeSingle(),
+        getSupabaseAdmin().from("branding").select("business_name,primary_color,secondary_color").eq("tenant_id", appt.tenant_id).maybeSingle(),
       ]);
 
       const base = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
