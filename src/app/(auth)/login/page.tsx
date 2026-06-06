@@ -43,7 +43,10 @@ export default function LoginPage() {
       <div className={styles.brand}>
         <div className={styles.brandLogo}>
           <div className={styles.brandLogoBox}>
-            <Image src="/zyncra-logo.png" alt="Zyncra" height={28} width={86} style={{ height: 28, width: "auto" }} />
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
+              <Image src="/zyncra-icon.png" alt="Zyncra" height={30} width={30} style={{ height: 30, width: "auto" }} />
+              <span style={{ fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif", fontWeight: 800, fontSize: 21, color: "white", letterSpacing: "-0.6px", lineHeight: 1 }}>Zyncra</span>
+            </div>
           </div>
         </div>
 
@@ -73,8 +76,9 @@ export default function LoginPage() {
         <div className={styles.card}>
           {/* Logo only on mobile */}
           <div className={styles.logoMobile}>
-            <div className={styles.logoMobileBox}>
-              <Image src="/zyncra-logo.png" alt="Zyncra" height={28} width={86} style={{ height: 28, width: "auto" }} />
+            <div className={styles.logoMobileBox} style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+              <Image src="/zyncra-icon.png" alt="Zyncra" height={26} width={26} style={{ height: 26, width: "auto" }} />
+              <span style={{ fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif", fontWeight: 800, fontSize: 19, color: "#14111C", letterSpacing: "-0.5px", lineHeight: 1 }}>Zyncra</span>
             </div>
           </div>
 

@@ -148,11 +148,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Logo */}
             <div className={styles.brand}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ background: "rgba(255,255,255,0.12)", backdropFilter: "blur(8px)", border: "1px solid rgba(255,255,255,0.18)", borderRadius: 10, padding: "6px 14px", display: "inline-flex" }}>
-                  <Image src="/zyncra-logo.png" alt="Zyncra" height={26} width={80}
-                    style={{ height: 26, width: "auto" }} />
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
+                  <Image src="/zyncra-icon.png" alt="Zyncra" height={30} width={30}
+                    style={{ height: 30, width: "auto" }} />
+                  <span style={{
+                    fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                    fontWeight: 800, fontSize: 20, color: "white",
+                    letterSpacing: "-0.6px", lineHeight: 1,
+                  }}>Zyncra</span>
                 </div>
-                <div />
                 <button onClick={() => setSidebarOpen(false)}
                   style={{ background: "none", border: "none", color: "rgba(255,255,255,.4)", cursor: "pointer", padding: 4, display: "none" }}
                   className={styles.menuToggle}>
