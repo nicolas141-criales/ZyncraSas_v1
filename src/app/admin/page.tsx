@@ -247,18 +247,15 @@ function DateRangePicker({ start, end, onApply }: {
   const nextMo = () => { if (cm === 11) { setCy(y => y+1); setCm(0); } else setCm(m => m+1); };
 
   return (
-    <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: 18, padding: "20px 22px", display: "inline-block", boxShadow: "0 12px 40px rgba(0,0,0,0.12)", marginTop: 8 }}>
+    <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: 18, padding: "16px 18px", display: "inline-block", boxShadow: "0 12px 40px rgba(0,0,0,0.12)", marginTop: 8 }}>
 
-      {/* Instruction chips */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-        <div style={{ flex: 1, padding: "9px 12px", borderRadius: 10, background: ds ? "rgba(251,15,5,0.07)" : "rgba(20,15,30,.04)", border: `1.5px solid ${ds ? "rgba(251,15,5,0.3)" : "#e8e6e2"}`, textAlign: "center" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Desde</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: ds ? "#fb0f05" : "#b0abc0" }}>{ds ? fmtDisplay(ds) : "— Elige inicio —"}</div>
-        </div>
-        <div style={{ flex: 1, padding: "9px 12px", borderRadius: 10, background: de ? "rgba(251,15,5,0.07)" : "rgba(20,15,30,.04)", border: `1.5px solid ${de ? "rgba(251,15,5,0.3)" : "#e8e6e2"}`, textAlign: "center" }}>
-          <div style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 2 }}>Hasta</div>
-          <div style={{ fontSize: 13, fontWeight: 700, color: de ? "#fb0f05" : "#b0abc0" }}>{de ? fmtDisplay(de) : "— Elige fin —"}</div>
-        </div>
+      {/* Compact range bar */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, padding: "6px 10px", borderRadius: 8, background: "rgba(20,15,30,.03)", border: "1px solid #e8e6e2" }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".05em" }}>Desde</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: ds ? "#fb0f05" : "#c0bbc8" }}>{ds ? fmtDisplay(ds) : "—"}</span>
+        <span style={{ color: "#c0bbc8", fontSize: 11, margin: "0 2px" }}>→</span>
+        <span style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".05em" }}>Hasta</span>
+        <span style={{ fontSize: 12, fontWeight: 700, color: de ? "#fb0f05" : "#c0bbc8" }}>{de ? fmtDisplay(de) : "—"}</span>
       </div>
 
       {/* Month nav */}
@@ -315,14 +312,14 @@ function DateRangePicker({ start, end, onApply }: {
       </div>
 
       {/* Apply / Clear */}
-      <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
+      <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
         <button onClick={() => { setDs(""); setDe(""); setHov(""); }}
-          style={{ flex: "0 0 auto", padding: "9px 14px", borderRadius: 9, border: "1.5px solid #e8e6e2", background: "white", color: "#8E879B", fontWeight: 600, fontSize: 13, cursor: "pointer", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
+          style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid #e8e6e2", background: "white", color: "#8E879B", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
           Limpiar
         </button>
         <button onClick={() => canApply && onApply(ds, de)} disabled={!canApply}
-          style={{ flex: 1, padding: "10px", borderRadius: 9, border: "none", background: canApply ? "linear-gradient(135deg,#fb0f05,#0027fe)" : "rgba(20,15,30,.07)", color: canApply ? "white" : "#8E879B", fontWeight: 700, fontSize: 13, cursor: canApply ? "pointer" : "not-allowed", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
-          {canApply ? `Aplicar: ${fmtDisplay(ds)} → ${fmtDisplay(de)}` : "Aplica el rango"}
+          style={{ flex: 1, padding: "7px 14px", borderRadius: 8, border: "none", background: canApply ? "linear-gradient(135deg,#fb0f05,#0027fe)" : "rgba(20,15,30,.07)", color: canApply ? "white" : "#8E879B", fontWeight: 700, fontSize: 12, cursor: canApply ? "pointer" : "not-allowed", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
+          Aplicar
         </button>
       </div>
     </div>
