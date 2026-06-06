@@ -249,15 +249,6 @@ function DateRangePicker({ start, end, onApply }: {
   return (
     <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: 18, padding: "16px 18px", display: "inline-block", boxShadow: "0 12px 40px rgba(0,0,0,0.12)", marginTop: 8 }}>
 
-      {/* Compact range bar */}
-      <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 12, padding: "6px 10px", borderRadius: 8, background: "rgba(20,15,30,.03)", border: "1px solid #e8e6e2" }}>
-        <span style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".05em" }}>Desde</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color: ds ? "#fb0f05" : "#c0bbc8" }}>{ds ? fmtDisplay(ds) : "—"}</span>
-        <span style={{ color: "#c0bbc8", fontSize: 11, margin: "0 2px" }}>→</span>
-        <span style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".05em" }}>Hasta</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color: de ? "#fb0f05" : "#c0bbc8" }}>{de ? fmtDisplay(de) : "—"}</span>
-      </div>
-
       {/* Month nav */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <button onClick={prevMo} style={{ background: "none", border: "1.5px solid #e8e6e2", borderRadius: 9, width: 32, height: 32, cursor: "pointer", fontSize: 16, color: "#3a3548", display:"flex",alignItems:"center",justifyContent:"center" }}>‹</button>
@@ -493,61 +484,168 @@ export default function AdminOverview() {
 
   const downloadHTML = () => {
     const now = new Date();
-    const generated = now.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const generated = now.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    const statusLabel: Record<string, string> = { confirmed: "Confirmada", pending: "Pendiente", completed: "Completada", cancelled: "Cancelada", no_show: "No se presentó" };
+    const cancelledCount = data.upcomingApts.filter((a: any) => a.status === "cancelled").length;
+    const noShowCount    = data.upcomingApts.filter((a: any) => a.status === "no_show").length;
+    const completedCount = data.upcomingApts.filter((a: any) => a.status === "completed").length;
+    const confirmedCount = data.upcomingApts.filter((a: any) => a.status === "confirmed").length;
+    const maxHour = Math.max(...data.hourlyData.map(h => h.count), 1);
+    const maxDay  = Math.max(...data.weeklyRevenue.map(d => d.revenue), 1);
     const html = `<!DOCTYPE html>
-<html lang="es"><head><meta charset="utf-8"><title>Reporte Zyncra</title>
+<html lang="es"><head><meta charset="utf-8"><title>Reporte Zyncra — ${periodLabel}</title>
 <style>
-  body{font-family:'Segoe UI',Arial,sans-serif;margin:40px;color:#111;background:#f4f4f9}
-  h1{color:#fb0f05;margin:0 0 4px}
-  h2{font-size:15px;color:#3a3548;margin:28px 0 10px;text-transform:uppercase;letter-spacing:.06em}
-  .meta{font-size:13px;color:#6b6b80;margin-bottom:28px}
-  .metrics{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:0}
-  .metric{background:white;border-radius:12px;padding:16px 22px;box-shadow:0 2px 12px rgba(0,0,0,.07);min-width:140px}
-  .metric-value{font-size:24px;font-weight:800;color:#fb0f05}
-  .metric-label{font-size:11px;color:#6b6b80;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
-  table{width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.07);margin-bottom:8px}
-  th{background:#fb0f05;color:white;padding:11px 14px;text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
-  td{padding:10px 14px;font-size:13px;border-bottom:1px solid #f0eeeb}
+  *{box-sizing:border-box}
+  body{font-family:'Segoe UI',Arial,sans-serif;margin:0;color:#111;background:#f0eff5;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  .page{max-width:900px;margin:0 auto;padding:36px 32px}
+  .header{background:linear-gradient(135deg,#14111C 0%,#2a1a1a 100%);border-radius:16px;padding:28px 32px;margin-bottom:28px;display:flex;justify-content:space-between;align-items:center}
+  .header h1{color:white;margin:0;font-size:22px;font-weight:800;letter-spacing:-0.5px}
+  .header-meta{text-align:right}
+  .header-meta .period{color:#fb0f05;font-weight:800;font-size:14px}
+  .header-meta .date{color:rgba(255,255,255,.5);font-size:11px;margin-top:4px}
+  .print-btn{background:#fb0f05;color:white;border:none;padding:8px 18px;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;margin-top:10px}
+  h2{font-size:11px;color:#8E879B;margin:24px 0 10px;text-transform:uppercase;letter-spacing:.08em;font-weight:700}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:0}
+  .metrics-sm{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .metric{background:white;border-radius:12px;padding:14px 18px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .metric-value{font-size:22px;font-weight:800;background:linear-gradient(135deg,#fb0f05,#0027fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .metric-value.alert{background:none;-webkit-text-fill-color:#ef4444;color:#ef4444}
+  .metric-label{font-size:10px;color:#8E879B;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+  .metric-sub{font-size:11px;color:#b0abc0;margin-top:2px}
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .card{background:white;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+  .card-title{padding:12px 16px;border-bottom:1px solid #f0eeeb;font-size:11px;font-weight:700;color:#3a3548;text-transform:uppercase;letter-spacing:.06em}
+  table{width:100%;border-collapse:collapse}
+  th{background:#f8f7fb;padding:9px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#8E879B;font-weight:700;border-bottom:1px solid #f0eeeb}
+  td{padding:9px 14px;font-size:12px;border-bottom:1px solid #f8f7fb;color:#3a3548}
   tr:last-child td{border-bottom:none}
-  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+  tr:hover td{background:#fafafa}
+  .badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
   .pending{background:rgba(245,158,11,.12);color:#d97706}
   .confirmed{background:rgba(16,185,129,.12);color:#059669}
   .cancelled{background:rgba(239,68,68,.12);color:#dc2626}
   .completed{background:rgba(100,116,139,.12);color:#475569}
-</style></head><body>
-<h1>Reporte Zyncra</h1>
-<p class="meta">Período: <strong>${periodLabel}</strong> &nbsp;·&nbsp; Generado: ${generated}</p>
+  .no_show{background:rgba(220,38,38,.1);color:#b91c1c}
+  .bar-wrap{padding:12px 16px 16px}
+  .bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .bar-label{font-size:11px;color:#8E879B;width:32px;text-align:right;flex-shrink:0}
+  .bar-track{flex:1;background:#f0eff5;border-radius:4px;height:10px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#fb0f05,#0027fe)}
+  .bar-val{font-size:11px;font-weight:700;color:#3a3548;width:48px;text-align:right;flex-shrink:0}
+  .status-row{display:flex;gap:8px;flex-wrap:wrap;padding:14px 16px}
+  .stat-pill{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700}
+  .footer{margin-top:28px;text-align:center;font-size:11px;color:#b0abc0}
+  @media print{.print-btn{display:none}.page{padding:0}}
+</style></head>
+<body>
+<div class="page">
 
-<h2>Métricas principales</h2>
-<div class="metrics">
-  <div class="metric"><div class="metric-value">${fmt(data.todayRevenue)}</div><div class="metric-label">Ingresos</div></div>
-  <div class="metric"><div class="metric-value">${data.todayCount}</div><div class="metric-label">Citas</div></div>
-  <div class="metric"><div class="metric-value">${data.pending}</div><div class="metric-label">Pendientes</div></div>
-  <div class="metric"><div class="metric-value">${fmt(data.avgTicket)}</div><div class="metric-label">Ticket promedio</div></div>
-  <div class="metric"><div class="metric-value">${data.returningPct.toFixed(0)}%</div><div class="metric-label">Recurrentes</div></div>
-  <div class="metric"><div class="metric-value">${data.newClientsToday}</div><div class="metric-label">Nuevos clientes</div></div>
+  <div class="header">
+    <div>
+      <h1>Reporte Zyncra</h1>
+      <div style="color:rgba(255,255,255,.4);font-size:12px;margin-top:4px">Panel de gestión del negocio</div>
+    </div>
+    <div class="header-meta">
+      <div class="period">${periodLabel}</div>
+      <div class="date">Generado: ${generated}</div>
+      <button class="print-btn" onclick="window.print()">Imprimir / PDF</button>
+    </div>
+  </div>
+
+  <h2>Resumen del período</h2>
+  <div class="metrics">
+    <div class="metric"><div class="metric-value">${fmt(data.todayRevenue)}</div><div class="metric-label">Ingresos totales</div>${filter === "hoy" && data.prevDayRevenue > 0 ? `<div class="metric-sub">${data.todayRevenue >= data.prevDayRevenue ? "▲" : "▼"} ${fmt(Math.abs(data.todayRevenue - data.prevDayRevenue))} vs ayer</div>` : ""}</div>
+    <div class="metric"><div class="metric-value">${data.todayCount}</div><div class="metric-label">Total de citas</div><div class="metric-sub">${data.occupancyRate.toFixed(0)}% ocupación</div></div>
+    <div class="metric"><div class="metric-value">${fmt(data.avgTicket)}</div><div class="metric-label">Ticket promedio</div><div class="metric-sub">por servicio cobrado</div></div>
+    <div class="metric"><div class="metric-value ${data.noShowRate > 15 ? "alert" : ""}">${data.noShowRate.toFixed(1)}%</div><div class="metric-label">Inasistencias</div><div class="metric-sub">${noShowCount} sin presentarse</div></div>
+  </div>
+
+  <h2 style="margin-top:14px">Indicadores adicionales</h2>
+  <div class="metrics-sm">
+    <div class="metric"><div class="metric-value">${data.pending}</div><div class="metric-label">Pendientes</div><div class="metric-sub">requieren acción</div></div>
+    <div class="metric"><div class="metric-value">${data.returningPct.toFixed(0)}%</div><div class="metric-label">Clientes recurrentes</div></div>
+    <div class="metric"><div class="metric-value">${data.newClientsToday}</div><div class="metric-label">Nuevos clientes</div></div>
+    <div class="metric">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
+        <span class="badge confirmed">${confirmedCount} confirmadas</span>
+        <span class="badge completed">${completedCount} completadas</span>
+        <span class="badge cancelled">${cancelledCount} canceladas</span>
+        <span class="badge no_show">${noShowCount} inasistencias</span>
+      </div>
+      <div class="metric-label" style="margin-top:6px">Estados de citas</div>
+    </div>
+  </div>
+
+  <h2>Distribución por hora — hoy</h2>
+  <div class="card">
+    <div class="bar-wrap">
+      ${data.hourlyData.map(h => `<div class="bar-row">
+        <span class="bar-label">${h.hour.replace(":00","h")}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${(h.count/maxHour)*100}%"></div></div>
+        <span class="bar-val">${h.count} cita${h.count !== 1 ? "s" : ""}</span>
+      </div>`).join("")}
+    </div>
+  </div>
+
+  <h2>Ingresos — últimos 7 días</h2>
+  <div class="card">
+    <div class="bar-wrap">
+      ${data.weeklyRevenue.map(d => `<div class="bar-row">
+        <span class="bar-label">${d.day}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${(d.revenue/maxDay)*100}%"></div></div>
+        <span class="bar-val" style="width:90px">${fmt(d.revenue)}</span>
+      </div>`).join("")}
+    </div>
+  </div>
+
+  <div class="two-col" style="margin-top:20px">
+    <div>
+      <h2>Rendimiento del equipo</h2>
+      <div class="card">
+        <table>
+          <tr><th>Colaborador</th><th>Citas</th><th>Ingresos</th><th>Ticket prom.</th></tr>
+          ${data.staffPerf.map((s: any) => `<tr>
+            <td style="font-weight:600">${s.name}</td>
+            <td>${s.count}</td>
+            <td style="color:#fb0f05;font-weight:700">${fmt(s.revenue)}</td>
+            <td>${s.count > 0 ? fmt(s.revenue / s.count) : "—"}</td>
+          </tr>`).join("")}
+        </table>
+      </div>
+    </div>
+    <div>
+      <h2>Top servicios</h2>
+      <div class="card">
+        <table>
+          <tr><th>Servicio</th><th>Citas</th><th>% del total</th></tr>
+          ${data.topServices.map((s: any) => `<tr>
+            <td style="font-weight:600">${s.name}</td>
+            <td>${s.count}</td>
+            <td>${data.todayCount > 0 ? ((s.count/data.todayCount)*100).toFixed(0) + "%" : "—"}</td>
+          </tr>`).join("")}
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <h2>Detalle de citas</h2>
+  <div class="card">
+    <table>
+      <tr><th>Fecha</th><th>Hora</th><th>Cliente</th><th>Servicio</th><th>Valor</th><th>Colaborador</th><th>Estado</th></tr>
+      ${data.upcomingApts.map((a: any) => `<tr>
+        <td>${a.appointment_date ?? "—"}</td>
+        <td style="font-weight:700;color:#fb0f05">${a.appointment_time?.slice(0,5) ?? "—"}</td>
+        <td style="font-weight:600">${a.clients?.name ?? "—"}</td>
+        <td>${a.services?.name ?? "—"}</td>
+        <td style="font-weight:700">${a.services?.price ? fmt(Number(a.services.price)) : "—"}</td>
+        <td>${a.professionals?.name ?? "Sin asignar"}</td>
+        <td><span class="badge ${a.status}">${statusLabel[a.status as string] ?? a.status}</span></td>
+      </tr>`).join("")}
+    </table>
+  </div>
+
+  <div class="footer">Reporte generado por Zyncra &nbsp;·&nbsp; ${generated}</div>
 </div>
-
-<h2>Citas del período</h2>
-<table><tr><th>Hora</th><th>Cliente</th><th>Servicio</th><th>Colaborador</th><th>Estado</th></tr>
-${data.upcomingApts.map((a: any) => `<tr>
-  <td>${a.appointment_time?.slice(0,5) ?? "—"}</td>
-  <td>${a.clients?.name ?? "—"}</td>
-  <td>${a.services?.name ?? "—"}</td>
-  <td>${a.professionals?.name ?? "—"}</td>
-  <td><span class="badge ${a.status}">${{ confirmed:"Confirmada", pending:"Pendiente", completed:"Completada", cancelled:"Cancelada" }[a.status as string] ?? a.status}</span></td>
-</tr>`).join("")}
-</table>
-
-<h2>Rendimiento del equipo</h2>
-<table><tr><th>Colaborador</th><th>Citas</th><th>Ingresos</th></tr>
-${data.staffPerf.map((s: any) => `<tr><td>${s.name}</td><td>${s.count}</td><td>${fmt(s.revenue)}</td></tr>`).join("")}
-</table>
-
-<h2>Top servicios</h2>
-<table><tr><th>Servicio</th><th>Citas</th></tr>
-${data.topServices.map((s: any) => `<tr><td>${s.name}</td><td>${s.count}</td></tr>`).join("")}
-</table>
 </body></html>`;
     const blob = new Blob([html], { type: "text/html;charset=utf-8" });
     const url = URL.createObjectURL(blob);
