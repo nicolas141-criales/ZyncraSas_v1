@@ -259,13 +259,23 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
   );
 
   return (
-    <main style={{ minHeight: "100vh", background: "#f4f4f9", padding: "32px 16px", fontFamily: "'Segoe UI','Inter',sans-serif" }}>
+    <main style={{ minHeight: "100vh", background: "#f4f4f9", fontFamily: "'Segoe UI','Inter',sans-serif" }}>
 
-      {/* Header */}
-      <div style={{ maxWidth: 480, margin: "0 auto 20px", textAlign: "center" }}>
-        <p style={{ fontSize: 13, color: "#6b6b80", margin: 0 }}>{businessName}</p>
+      {/* Branded header */}
+      <div style={{ background: primaryColor, padding: "32px 24px 28px", textAlign: "center" }}>
+        {branding?.logo_url && (
+          <img
+            src={branding.logo_url}
+            alt={businessName}
+            style={{ height: 60, maxWidth: 200, objectFit: "contain", display: "block", margin: "0 auto 12px", borderRadius: 10 }}
+          />
+        )}
+        <p style={{ color: "white", fontWeight: 800, fontSize: 20, margin: 0, letterSpacing: "-0.025em" }}>
+          {businessName}
+        </p>
       </div>
 
+      <div style={{ padding: "24px 16px 40px" }}>
       <div style={cardStyle}>
 
         {/* ── DONE ── */}
@@ -395,9 +405,15 @@ export default function ManagePage({ params }: { params: Promise<{ token: string
 
       </div>
 
-      <p style={{ textAlign: "center", fontSize: 12, color: "#b0b0c0", marginTop: 24 }}>
-        Reservas gestionadas por <strong>Zyncra</strong>
-      </p>
+      {/* Zyncra footer */}
+      <div style={{ textAlign: "center", marginTop: 20 }}>
+        <p style={{ fontSize: 12, color: "#b0b0c0", margin: "0 0 6px" }}>Agenda gestionada con</p>
+        <a href="https://zyncra.app" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: 6 }}>
+          <img src="/zyncra-icon.png" alt="Zyncra" width={20} height={20} style={{ borderRadius: 5, verticalAlign: "middle" }} />
+          <span style={{ fontSize: 15, fontWeight: 800, color: "#fb0f05", verticalAlign: "middle" }}>Zyncra</span>
+        </a>
+      </div>
+      </div>
     </main>
   );
 }

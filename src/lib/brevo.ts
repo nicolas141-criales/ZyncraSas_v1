@@ -51,27 +51,23 @@ function buildHtml(body: string, p: ReminderEmailParams): string {
   const manageBtn = p.manage_url ? `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
       <tr>
-        <td align="center">
-          <table role="presentation" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="padding-right:8px;">
-                <a href="${p.manage_url}?action=reschedule"
-                   style="display:inline-block;padding:13px 24px;background:#0027fe;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-                  📅 Reagendar
-                </a>
-              </td>
-              <td>
-                <a href="${p.manage_url}?action=cancel"
-                   style="display:inline-block;padding:13px 24px;background:#6b7280;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-                  ✕ Cancelar
-                </a>
-              </td>
-            </tr>
-          </table>
+        <td align="center" style="padding-bottom:10px;">
+          <a href="${p.manage_url}?action=reschedule" class="btn-full"
+             style="display:inline-block;width:220px;max-width:100%;padding:14px 0;background:#0027fe;color:#ffffff;text-decoration:none;border-radius:11px;font-weight:700;font-size:15px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;text-align:center;">
+            📅 Reagendar cita
+          </a>
         </td>
       </tr>
       <tr>
-        <td align="center" style="padding-top:8px;">
+        <td align="center" style="padding-bottom:10px;">
+          <a href="${p.manage_url}?action=cancel" class="btn-full"
+             style="display:inline-block;width:220px;max-width:100%;padding:14px 0;background:#6b7280;color:#ffffff;text-decoration:none;border-radius:11px;font-weight:700;font-size:15px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;text-align:center;">
+            ✕ Cancelar cita
+          </a>
+        </td>
+      </tr>
+      <tr>
+        <td align="center">
           <p style="margin:0;font-size:12px;color:#9b9bb0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
             Sin necesidad de cuenta
           </p>
@@ -81,25 +77,49 @@ function buildHtml(body: string, p: ReminderEmailParams): string {
 
   return `<!DOCTYPE html>
 <html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <style>
+    @media only screen and (max-width:600px){
+      .email-wrap   { padding:16px 8px !important; }
+      .email-card   { border-radius:14px !important; }
+      .email-header { padding:24px 20px 20px !important; }
+      .email-body   { padding:22px 20px 20px !important; }
+      .email-footer { padding:18px 20px !important; }
+      .logo-img     { height:44px !important; }
+      .biz-name     { font-size:17px !important; }
+      .btn-full     { width:100% !important; display:block !important; box-sizing:border-box !important; }
+      .appt-label   { font-size:13px !important; }
+      .appt-value   { font-size:13px !important; }
+    }
+  </style>
+</head>
 <body style="margin:0;padding:0;background:#f0eff8;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0eff8;padding:40px 16px;">
-    <tr><td align="center">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f0eff8;">
+    <tr><td align="center" class="email-wrap" style="padding:32px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="email-card"
              style="max-width:540px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 48px rgba(0,0,0,0.10);">
+
+        <!-- Header with brand color -->
         <tr>
-          <td style="background:${color};padding:36px 32px 28px;text-align:center;">
+          <td class="email-header" style="background:${color};padding:32px 32px 26px;text-align:center;">
             ${logo}
-            <p style="margin:0;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.025em;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${biz}</p>
+            <p class="biz-name" style="margin:0;font-size:20px;font-weight:800;color:#ffffff;letter-spacing:-0.025em;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${biz}</p>
           </td>
         </tr>
+
+        <!-- Body -->
         <tr>
-          <td style="padding:32px 32px 28px;">
+          <td class="email-body" style="padding:28px 32px 24px;">
             ${body.replace("__APPT_CARD__", apptCard).replace("__MANAGE_BTN__", manageBtn)}
           </td>
         </tr>
+
+        <!-- Footer -->
         <tr>
-          <td style="border-top:1px solid #e8e6e2;padding:22px 32px;text-align:center;background:#fafaf9;">
+          <td class="email-footer" style="border-top:1px solid #e8e6e2;padding:20px 32px;text-align:center;background:#fafaf9;">
             <p style="margin:0 0 6px;font-size:12px;color:#b0aec0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Agenda gestionada con</p>
             <a href="https://zyncra.app" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;">
               <img src="https://zyncra.app/zyncra-icon.png" alt="Zyncra" width="20" height="20"
@@ -108,6 +128,7 @@ function buildHtml(body: string, p: ReminderEmailParams): string {
             </a>
           </td>
         </tr>
+
       </table>
     </td></tr>
   </table>
