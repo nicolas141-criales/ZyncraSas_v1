@@ -67,10 +67,9 @@ function manageBtns(url: string): string {
       <td align="center" style="padding-bottom:10px;">
         <a href="${url}?action=reschedule"
            style="display:inline-block;width:240px;max-width:100%;padding:14px 0;
-                  background:${T.grad};color:#ffffff;text-decoration:none;
+                  background:#0027fe;color:#ffffff;text-decoration:none;
                   border-radius:11px;font-weight:700;font-size:15px;
-                  font-family:${T.font};text-align:center;
-                  box-shadow:0 4px 16px rgba(0,39,254,0.22);">
+                  font-family:${T.font};text-align:center;">
           📅 Reagendar cita
         </a>
       </td>
@@ -78,12 +77,11 @@ function manageBtns(url: string): string {
     <tr>
       <td align="center" style="padding-bottom:10px;">
         <a href="${url}?action=cancel"
-           style="display:inline-block;width:240px;max-width:100%;padding:13px 0;
-                  background:#ffffff;color:${T.ink3};text-decoration:none;
-                  border-radius:11px;font-weight:600;font-size:15px;
-                  font-family:${T.font};text-align:center;
-                  border:1.5px solid ${T.border};">
-          Cancelar cita
+           style="display:inline-block;width:240px;max-width:100%;padding:14px 0;
+                  background:#6b7280;color:#ffffff;text-decoration:none;
+                  border-radius:11px;font-weight:700;font-size:15px;
+                  font-family:${T.font};text-align:center;">
+          ✕ Cancelar cita
         </a>
       </td>
     </tr>
@@ -182,7 +180,7 @@ function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
                          style="width:20px;height:20px;border-radius:5px;display:block;">
                   </td>
                   <td style="vertical-align:middle;">
-                    <span style="font-size:15px;font-weight:800;color:${T.red};
+                    <span style="font-size:15px;font-weight:800;color:${T.ink1};
                                  font-family:${T.font};">Zyncra</span>
                   </td>
                 </tr>

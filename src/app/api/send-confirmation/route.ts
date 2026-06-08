@@ -123,10 +123,9 @@ function emailHTML({
                 <td align="center" style="padding-bottom:10px;">
                   <a href="${rescheduleUrl}" class="bf"
                      style="display:inline-block;width:240px;max-width:100%;padding:14px 0;
-                            background:${GRAD};color:#ffffff;text-decoration:none;
+                            background:#0027fe;color:#ffffff;text-decoration:none;
                             border-radius:11px;font-weight:700;font-size:15px;
-                            font-family:${FONT};text-align:center;
-                            box-shadow:0 4px 16px rgba(0,39,254,0.22);">
+                            font-family:${FONT};text-align:center;">
                     📅 Reagendar cita
                   </a>
                 </td>
@@ -134,12 +133,11 @@ function emailHTML({
               <tr>
                 <td align="center" style="padding-bottom:10px;">
                   <a href="${cancelUrl}" class="bf"
-                     style="display:inline-block;width:240px;max-width:100%;padding:13px 0;
-                            background:#ffffff;color:#564E66;text-decoration:none;
-                            border-radius:11px;font-weight:600;font-size:15px;
-                            font-family:${FONT};text-align:center;
-                            border:1.5px solid #e8e6e2;">
-                    Cancelar cita
+                     style="display:inline-block;width:240px;max-width:100%;padding:14px 0;
+                            background:#6b7280;color:#ffffff;text-decoration:none;
+                            border-radius:11px;font-weight:700;font-size:15px;
+                            font-family:${FONT};text-align:center;">
+                    ✕ Cancelar cita
                   </a>
                 </td>
               </tr>
@@ -173,7 +171,7 @@ function emailHTML({
                          style="width:20px;height:20px;border-radius:5px;display:block;">
                   </td>
                   <td style="vertical-align:middle;">
-                    <span style="font-size:15px;font-weight:800;color:#fb0f05;
+                    <span style="font-size:15px;font-weight:800;color:#14111C;
                                  font-family:${FONT};">Zyncra</span>
                   </td>
                 </tr>
