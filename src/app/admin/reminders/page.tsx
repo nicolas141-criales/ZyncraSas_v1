@@ -43,9 +43,7 @@ interface Professional {
   name: string;
 }
 
-// ── Defaults — all emoji as \u{XXXX} escapes so the source is pure ASCII ─────
-// \u{1F44B} = hand wave, \u{1F4C5} = calendar, \u{23F0} = alarm,
-// \u{2702}  = scissors,  \u{1F514} = bell,     \u{1F64F} = praying hands
+// ── Defaults ──────────────────────────────────────────────────────────────────
 
 const DEFAULT_24H = [
   "Hola {{nombre}} \u{1F44B}",
@@ -206,10 +204,10 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 type TemplateKey = "24h" | "2h" | "post";
 
-const TEMPLATE_TABS: { key: TemplateKey; icon: React.ReactNode; label: string; desc: string }[] = [
-  { key: "24h",  icon: <IconBell size={14} />,  label: "Principal",   desc: "24 horas antes" },
-  { key: "2h",   icon: <IconZap size={14} />,   label: "Urgente",     desc: "2 horas antes" },
-  { key: "post", icon: <IconStar size={14} />,  label: "Post-visita", desc: "Tras el servicio" },
+const TEMPLATE_TABS: { key: TemplateKey; icon: React.ReactNode; label: string; desc: string; color: string }[] = [
+  { key: "24h",  icon: <IconBell size={14} />,  label: "Principal",   desc: "24 horas antes",   color: "#3b82f6" },
+  { key: "2h",   icon: <IconZap size={14} />,   label: "Urgente",     desc: "2 horas antes",    color: "#f59e0b" },
+  { key: "post", icon: <IconStar size={14} />,  label: "Post-visita", desc: "Tras el servicio", color: "#8b5cf6" },
 ];
 
 export default function RemindersPage() {
@@ -219,6 +217,7 @@ export default function RemindersPage() {
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(false);
+  // sentSet tracks "apptId:templateKey" so each message type is independent
   const [sentSet, setSentSet] = useState<Set<string>>(new Set());
   const [confirmedSet, setConfirmedSet] = useState<Set<string>>(new Set());
   const [daysAhead, setDaysAhead] = useState(3);
@@ -227,6 +226,7 @@ export default function RemindersPage() {
 
   const [bulkOpen, setBulkOpen] = useState(false);
   const [bulkIndex, setBulkIndex] = useState(0);
+  const [bulkTemplate, setBulkTemplate] = useState<TemplateKey | null>(null);
 
   const [settings, setSettings] = useState<ReminderSettings>(DEFAULT_SETTINGS);
   const [savingSettings, setSavingSettings] = useState(false);
@@ -305,15 +305,15 @@ export default function RemindersPage() {
 
   // ── Actions ───────────────────────────────────────────────────────────────
 
-  async function logSent(appt: Appointment) {
+  async function logSent(appt: Appointment, type: TemplateKey) {
     await supabase.from("reminder_logs").insert({
       tenant_id:      tenantId,
       appointment_id: appt.id,
       client_name:    appt.clients?.name  ?? "",
       client_phone:   appt.clients?.phone ?? null,
-      sent_via:       "whatsapp",
+      sent_via:       `whatsapp-${type}`,
     });
-    setSentSet(prev => new Set([...prev, appt.id]));
+    setSentSet(prev => new Set([...prev, `${appt.id}:${type}`]));
   }
 
   async function confirmAppointment(appt: Appointment) {
@@ -365,9 +365,10 @@ export default function RemindersPage() {
     }, {} as Record<string, Appointment[]>),
   [filteredAppts]);
 
+  // All appointments with phone are eligible for bulk send
   const bulkQueue = useMemo(() =>
-    filteredAppts.filter(a => !!a.clients?.phone && !sentSet.has(a.id)),
-  [filteredAppts, sentSet]);
+    filteredAppts.filter(a => !!a.clients?.phone),
+  [filteredAppts]);
 
   const filteredLogs = useMemo(() => {
     let r = logs;
@@ -491,7 +492,7 @@ export default function RemindersPage() {
 
               {bulkQueue.length > 0 && (
                 <button
-                  onClick={() => { setBulkIndex(0); setBulkOpen(true); }}
+                  onClick={() => { setBulkIndex(0); setBulkTemplate(null); setBulkOpen(true); }}
                   style={{ ...btnPrimary, marginLeft: "auto", fontSize: 12, padding: "6px 14px" }}
                 >
                   <><IconSend size={13} /> {`Enviar a todos (${bulkQueue.length})`}</>
@@ -525,15 +526,14 @@ export default function RemindersPage() {
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {appts.map(appt => {
                         const hasPhone    = !!appt.clients?.phone;
-                        const wasSent     = sentSet.has(appt.id);
                         const isConfirmed = confirmedSet.has(appt.id) || appt.status === "confirmed";
-                        const msg = applyVars(settings.message_template, appt);
                         return (
                           <div key={appt.id} style={{
                             ...card, padding: "14px 18px",
                             display: "flex", justifyContent: "space-between",
                             alignItems: "center", gap: 12,
                           }}>
+                            {/* Client info */}
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3, flexWrap: "wrap" }}>
                                 <span style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>
@@ -559,30 +559,46 @@ export default function RemindersPage() {
                               )}
                             </div>
 
-                            <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
+                            {/* Actions */}
+                            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
                               {!isConfirmed && (
                                 <button onClick={() => confirmAppointment(appt)} style={btnGhost}>
                                   {"✓ Confirmó"}
                                 </button>
                               )}
-                              {wasSent ? (
-                                <span style={{ fontSize: 13, fontWeight: 700, color: "#25D366" }}>
-                                  {"✓ Enviado"}
-                                </span>
-                              ) : hasPhone ? (
-                                <a
-                                  href={waLink(appt.clients!.phone!, msg)}
-                                  target="_blank" rel="noopener noreferrer"
-                                  onClick={() => logSent(appt)}
-                                  style={{
-                                    display: "inline-flex", alignItems: "center", gap: 6,
-                                    padding: "7px 14px", borderRadius: 10,
-                                    background: "#25D366", color: "white",
-                                    fontWeight: 700, fontSize: 13, textDecoration: "none",
-                                  }}
-                                >
-                                  WhatsApp
-                                </a>
+                              {hasPhone ? (
+                                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                                  {TEMPLATE_TABS.map(t => {
+                                    const wasSentThis = sentSet.has(`${appt.id}:${t.key}`);
+                                    return wasSentThis ? (
+                                      <span key={t.key} style={{
+                                        fontSize: 11, fontWeight: 700, color: "#388e3c",
+                                        padding: "4px 9px", borderRadius: 8, background: "#f0fdf4",
+                                        display: "inline-flex", alignItems: "center", gap: 3,
+                                        border: "1px solid #bbf7d0",
+                                      }}>
+                                        <IconCheck size={9} /> {t.label}
+                                      </span>
+                                    ) : (
+                                      <a key={t.key}
+                                        href={waLink(appt.clients!.phone!, applyVars(tplMeta[t.key].value, appt))}
+                                        target="_blank" rel="noopener noreferrer"
+                                        onClick={() => logSent(appt, t.key)}
+                                        title={t.desc}
+                                        style={{
+                                          display: "inline-flex", alignItems: "center", gap: 4,
+                                          padding: "4px 9px", borderRadius: 8,
+                                          background: "#25D366", color: "white",
+                                          fontWeight: 600, fontSize: 11, textDecoration: "none",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        {t.icon}
+                                        {t.label}
+                                      </a>
+                                    );
+                                  })}
+                                </div>
                               ) : (
                                 <span style={{ fontSize: 12, color: "#d1d5db" }}>{"Sin teléfono"}</span>
                               )}
@@ -648,13 +664,13 @@ export default function RemindersPage() {
                     onClick={() => setActiveTemplate(t.key)}
                     style={{
                       padding: "12px 10px", borderRadius: 12, cursor: "pointer",
-                      border: isActive ? "2px solid #fb0f05" : "2px solid #e8e6e2",
-                      background: isActive ? "rgba(251,15,5,0.04)" : "white",
+                      border: isActive ? `2px solid ${t.color}` : "2px solid #e8e6e2",
+                      background: isActive ? `${t.color}0d` : "white",
                       textAlign: "center", transition: "all .15s",
                     }}
                   >
                     <div style={{ fontSize: 22, marginBottom: 4 }}>{t.icon}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: isActive ? "#fb0f05" : "#1a1a2e" }}>{t.label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: isActive ? t.color : "#1a1a2e" }}>{t.label}</div>
                     <div style={{ fontSize: 11, color: "#9b9bb0", marginTop: 2 }}>{t.desc}</div>
                     <div style={{
                       display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6,
@@ -777,7 +793,7 @@ export default function RemindersPage() {
                 </div>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
                   <div style={{ fontSize: 32, fontWeight: 800, color: "#25D366", letterSpacing: "-1px" }}>
-                    {filteredLogs.filter(l => l.sent_via === "whatsapp").length}
+                    {filteredLogs.filter(l => l.sent_via.startsWith("whatsapp")).length}
                   </div>
                   <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Por WhatsApp"}</div>
                 </div>
@@ -797,20 +813,31 @@ export default function RemindersPage() {
               </div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {filteredLogs.map(l => (
-                  <div key={l.id} style={{ ...card, padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{l.client_name}</div>
-                      <div style={{ fontSize: 12, color: "#9b9bb0" }}>{l.client_phone ?? "Sin teléfono"}</div>
+                {filteredLogs.map(l => {
+                  const tplKey = l.sent_via.replace("whatsapp-", "") as TemplateKey;
+                  const tplInfo = TEMPLATE_TABS.find(t => t.key === tplKey);
+                  return (
+                    <div key={l.id} style={{ ...card, padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{l.client_name}</div>
+                        <div style={{ fontSize: 12, color: "#9b9bb0" }}>{l.client_phone ?? "Sin teléfono"}</div>
+                      </div>
+                      <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
+                        <div style={{ fontSize: 12, color: "#6b7280" }}>{fmtDate(l.created_at)}</div>
+                        <div style={{ display: "flex", gap: 4 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#e8f5e9", color: "#388e3c" }}>
+                            WhatsApp
+                          </span>
+                          {tplInfo && (
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: `${tplInfo.color}15`, color: tplInfo.color }}>
+                              {tplInfo.label}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>{fmtDate(l.created_at)}</div>
-                      <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#e8f5e9", color: "#388e3c" }}>
-                        WhatsApp
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -825,7 +852,68 @@ export default function RemindersPage() {
           display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
         }}>
           <div style={{ background: "white", borderRadius: 20, padding: 28, maxWidth: 440, width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,.25)" }}>
-            {bulkIndex >= bulkQueue.length ? (
+
+            {/* Step 0 — pick template */}
+            {!bulkTemplate ? (
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: 17, color: "#1a1a2e" }}>{"¿Qué mensaje enviar?"}</div>
+                    <div style={{ fontSize: 13, color: "#6b7280", marginTop: 3 }}>
+                      {`A ${bulkQueue.length} cliente${bulkQueue.length !== 1 ? "s" : ""} con teléfono`}
+                    </div>
+                  </div>
+                  <button onClick={() => setBulkOpen(false)} style={{ background: "none", border: "none", fontSize: 22, cursor: "pointer", color: "#9b9bb0", lineHeight: 1 }}>
+                    {"×"}
+                  </button>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {TEMPLATE_TABS.map(t => {
+                    const meta = tplMeta[t.key];
+                    return (
+                      <button
+                        key={t.key}
+                        onClick={() => setBulkTemplate(t.key)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 14,
+                          padding: "14px 18px", borderRadius: 14,
+                          border: `2px solid ${t.color}30`,
+                          background: `${t.color}08`,
+                          cursor: "pointer", textAlign: "left", transition: "all .15s",
+                        }}
+                      >
+                        <div style={{
+                          width: 40, height: 40, borderRadius: 10, flexShrink: 0,
+                          background: `${t.color}18`, display: "flex", alignItems: "center", justifyContent: "center",
+                        }}>
+                          <span style={{ color: t.color }}>{t.icon}</span>
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>{t.label}</div>
+                          <div style={{ fontSize: 12, color: "#6b7280", marginTop: 1 }}>{t.desc}</div>
+                          <div style={{
+                            marginTop: 6, fontSize: 12, color: "#1a1a2e", lineHeight: 1.5,
+                            whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                            opacity: 0.65,
+                          }}>
+                            {previewMsg(meta.value).split("\n")[0]}
+                          </div>
+                        </div>
+                        <div style={{
+                          fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, flexShrink: 0,
+                          background: meta.enabled ? "#e8f5e9" : "#f0f0f5",
+                          color: meta.enabled ? "#388e3c" : "#9b9bb0",
+                        }}>
+                          {meta.enabled ? "Activo" : "Inactivo"}
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            ) : bulkIndex >= bulkQueue.length ? (
+              /* Success */
               <>
                 <div style={{ textAlign: "center", padding: "16px 0 24px" }}>
                   <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
@@ -843,11 +931,25 @@ export default function RemindersPage() {
                 </button>
               </>
             ) : bulkCurrent ? (
+              /* Per-appointment step */
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: "#6b7280" }}>
-                    {`${bulkIndex + 1} de ${bulkQueue.length}`}
-                  </span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#6b7280" }}>
+                      {`${bulkIndex + 1} de ${bulkQueue.length}`}
+                    </span>
+                    {(() => {
+                      const t = TEMPLATE_TABS.find(t => t.key === bulkTemplate)!;
+                      return (
+                        <span style={{
+                          fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
+                          background: `${t.color}15`, color: t.color,
+                        }}>
+                          {t.label} · {t.desc}
+                        </span>
+                      );
+                    })()}
+                  </div>
                   <button onClick={() => setBulkOpen(false)} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "#9b9bb0", lineHeight: 1 }}>
                     {"×"}
                   </button>
@@ -883,15 +985,15 @@ export default function RemindersPage() {
                   padding: "10px 14px", fontSize: 13, color: "#1a1a2e", whiteSpace: "pre-wrap",
                   lineHeight: 1.65, maxHeight: 130, overflowY: "auto", marginBottom: 16,
                 }}>
-                  {applyVars(settings.message_template, bulkCurrent)}
+                  {applyVars(tplMeta[bulkTemplate].value, bulkCurrent)}
                 </div>
 
                 <div style={{ display: "flex", gap: 10 }}>
                   <a
-                    href={waLink(bulkCurrent.clients!.phone!, applyVars(settings.message_template, bulkCurrent))}
+                    href={waLink(bulkCurrent.clients!.phone!, applyVars(tplMeta[bulkTemplate].value, bulkCurrent))}
                     target="_blank" rel="noopener noreferrer"
                     onClick={() => {
-                      logSent(bulkCurrent);
+                      logSent(bulkCurrent, bulkTemplate);
                       setTimeout(() => setBulkIndex(i => i + 1), 350);
                     }}
                     style={{
@@ -911,6 +1013,7 @@ export default function RemindersPage() {
                 </div>
               </>
             ) : null}
+
           </div>
         </div>
       )}
