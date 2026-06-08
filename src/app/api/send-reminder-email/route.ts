@@ -1,0 +1,89 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@supabase/supabase-js";
+import {
+  sendEmail,
+  buildEmail24h,
+  buildEmail2h,
+  buildEmailPost,
+} from "@/lib/brevo";
+
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+const DAYS_ES   = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+const MONTHS_ES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+
+function fmt12(time: string) {
+  const [h, m] = time.split(":");
+  const hr = parseInt(h);
+  return `${hr % 12 || 12}:${m} ${hr >= 12 ? "PM" : "AM"}`;
+}
+
+function fmtDate(dateStr: string) {
+  const d = new Date(dateStr + "T00:00:00");
+  return `${DAYS_ES[d.getDay()]} ${d.getDate()} de ${MONTHS_ES[d.getMonth()]}`;
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const {
+      appointmentId,
+      tenantId,
+      clientEmail,
+      clientName,
+      clientPhone,
+      templateKey,
+      serviceName,
+      appointmentDate,
+      appointmentTime,
+      professionalName,
+    } = body as {
+      appointmentId:   string;
+      tenantId:        string;
+      clientEmail:     string;
+      clientName:      string;
+      clientPhone?:    string;
+      templateKey:     "24h" | "2h" | "post";
+      serviceName:     string;
+      appointmentDate: string;
+      appointmentTime: string;
+      professionalName?: string;
+    };
+
+    if (!clientEmail || !templateKey || !appointmentId || !tenantId) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const vars = {
+      nombre:       clientName,
+      servicio:     serviceName,
+      profesional:  professionalName,
+      fecha:        fmtDate(appointmentDate),
+      hora:         fmt12(appointmentTime),
+    };
+
+    const builders = { "24h": buildEmail24h, "2h": buildEmail2h, "post": buildEmailPost };
+    const { subject, html } = builders[templateKey](vars);
+
+    await sendEmail({ to: clientEmail, toName: clientName, subject, html });
+
+    await supabaseAdmin.from("reminder_logs").insert({
+      tenant_id:      tenantId,
+      appointment_id: appointmentId,
+      client_name:    clientName,
+      client_phone:   clientPhone ?? null,
+      client_email:   clientEmail,
+      sent_via:       `email-${templateKey}`,
+      channel:        "email",
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[send-reminder-email]", msg);
+    return NextResponse.json({ error: msg }, { status: 500 });
+  }
+}

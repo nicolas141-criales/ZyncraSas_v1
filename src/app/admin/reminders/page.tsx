@@ -15,7 +15,7 @@ interface Appointment {
   appointment_date: string;
   appointment_time: string;
   status: string;
-  clients: { id: string; name: string; phone: string | null } | null;
+  clients: { id: string; name: string; phone: string | null; email: string | null } | null;
   services: { name: string } | null;
   professionals: { id: string; name: string } | null;
 }
@@ -219,6 +219,9 @@ export default function RemindersPage() {
   const [loading, setLoading] = useState(false);
   // sentSet tracks "apptId:templateKey" so each message type is independent
   const [sentSet, setSentSet] = useState<Set<string>>(new Set());
+  // emailSentSet tracks "apptId:templateKey" for email channel
+  const [emailSentSet, setEmailSentSet] = useState<Set<string>>(new Set());
+  const [emailSending, setEmailSending] = useState<string | null>(null);
   const [confirmedSet, setConfirmedSet] = useState<Set<string>>(new Set());
   const [daysAhead, setDaysAhead] = useState(3);
 
@@ -282,7 +285,7 @@ export default function RemindersPage() {
     const futureStr = localISO(future);
     const { data } = await supabase
       .from("appointments")
-      .select("id, appointment_date, appointment_time, status, clients(id, name, phone), services(name), professionals(id, name)")
+      .select("id, appointment_date, appointment_time, status, clients(id, name, phone, email), services(name), professionals(id, name)")
       .eq("tenant_id", tenantId)
       .gte("appointment_date", today)
       .lte("appointment_date", futureStr)
@@ -320,6 +323,37 @@ export default function RemindersPage() {
       sent_via:       `whatsapp-${type}`,
     });
     setSentSet(prev => new Set([...prev, `${appt.id}:${type}`]));
+  }
+
+  async function sendEmailReminder(appt: Appointment, type: TemplateKey) {
+    const key = `${appt.id}:${type}`;
+    setEmailSending(key);
+    try {
+      const res = await fetch("/api/send-reminder-email", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          appointmentId:   appt.id,
+          tenantId,
+          clientEmail:     appt.clients?.email,
+          clientName:      appt.clients?.name  ?? "",
+          clientPhone:     appt.clients?.phone ?? null,
+          templateKey:     type,
+          serviceName:     appt.services?.name ?? "",
+          appointmentDate: appt.appointment_date,
+          appointmentTime: appt.appointment_time,
+          professionalName: appt.professionals?.name ?? null,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(`Error al enviar email: ${err.error ?? res.statusText}`);
+        return;
+      }
+      setEmailSentSet(prev => new Set([...prev, key]));
+    } finally {
+      setEmailSending(null);
+    }
   }
 
   async function confirmAppointment(appt: Appointment) {
@@ -532,6 +566,7 @@ export default function RemindersPage() {
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {appts.map(appt => {
                         const hasPhone    = !!appt.clients?.phone;
+                        const hasEmail    = !!appt.clients?.email;
                         const isConfirmed = confirmedSet.has(appt.id) || appt.status === "confirmed";
                         return (
                           <div key={appt.id} style={{
@@ -563,6 +598,11 @@ export default function RemindersPage() {
                                   {"⚠ Sin teléfono"}
                                 </div>
                               )}
+                              {hasEmail && (
+                                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                                  {appt.clients!.email}
+                                </div>
+                              )}
                             </div>
 
                             {/* Actions */}
@@ -572,6 +612,7 @@ export default function RemindersPage() {
                                   {"✓ Confirmó"}
                                 </button>
                               )}
+                              {/* WhatsApp buttons */}
                               {hasPhone ? (
                                 <div style={{ display: "flex", gap: 5, flexWrap: "wrap", justifyContent: "flex-end" }}>
                                   {TEMPLATE_TABS.map(t => {
@@ -607,6 +648,42 @@ export default function RemindersPage() {
                                 </div>
                               ) : (
                                 <span style={{ fontSize: 12, color: "#d1d5db" }}>{"Sin teléfono"}</span>
+                              )}
+
+                              {/* Email buttons */}
+                              {hasEmail && (
+                                <div style={{ display: "flex", gap: 5, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                                  {TEMPLATE_TABS.map(t => {
+                                    const emailKey = `${appt.id}:${t.key}`;
+                                    const emailSent = emailSentSet.has(emailKey);
+                                    const sending   = emailSending === emailKey;
+                                    return emailSent ? (
+                                      <span key={t.key} style={{
+                                        fontSize: 11, fontWeight: 700, color: "#1d4ed8",
+                                        padding: "4px 9px", borderRadius: 8, background: "#eff6ff",
+                                        display: "inline-flex", alignItems: "center", gap: 3,
+                                        border: "1px solid #bfdbfe",
+                                      }}>
+                                        <IconCheck size={9} /> {t.label}
+                                      </span>
+                                    ) : (
+                                      <button key={t.key}
+                                        onClick={() => sendEmailReminder(appt, t.key)}
+                                        disabled={sending}
+                                        title={`Enviar email ${t.desc}`}
+                                        style={{
+                                          display: "inline-flex", alignItems: "center", gap: 4,
+                                          padding: "4px 9px", borderRadius: 8, border: "none",
+                                          background: sending ? "#93c5fd" : "#3b82f6", color: "white",
+                                          fontWeight: 600, fontSize: 11, cursor: sending ? "wait" : "pointer",
+                                          whiteSpace: "nowrap",
+                                        }}
+                                      >
+                                        📧 {sending ? "…" : t.label}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
                               )}
                             </div>
                           </div>
@@ -792,16 +869,22 @@ export default function RemindersPage() {
             </div>
 
             {filteredLogs.length > 0 && (
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 20 }}>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
-                  <div style={{ fontSize: 32, fontWeight: 800, color: "#1a1a2e", letterSpacing: "-1px" }}>{filteredLogs.length}</div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Recordatorios enviados"}</div>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: "#1a1a2e", letterSpacing: "-1px" }}>{filteredLogs.length}</div>
+                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Total"}</div>
                 </div>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
-                  <div style={{ fontSize: 32, fontWeight: 800, color: "#25D366", letterSpacing: "-1px" }}>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: "#25D366", letterSpacing: "-1px" }}>
                     {filteredLogs.filter(l => l.sent_via.startsWith("whatsapp")).length}
                   </div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Por WhatsApp"}</div>
+                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"WhatsApp"}</div>
+                </div>
+                <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
+                  <div style={{ fontSize: 28, fontWeight: 800, color: "#3b82f6", letterSpacing: "-1px" }}>
+                    {filteredLogs.filter(l => l.sent_via.startsWith("email")).length}
+                  </div>
+                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Email"}</div>
                 </div>
               </div>
             )}
@@ -820,20 +903,29 @@ export default function RemindersPage() {
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {filteredLogs.map(l => {
-                  const tplKey = l.sent_via.replace("whatsapp-", "") as TemplateKey;
+                  const isEmail = l.sent_via.startsWith("email-");
+                  const tplKey = l.sent_via.replace("whatsapp-", "").replace("email-", "") as TemplateKey;
                   const tplInfo = TEMPLATE_TABS.find(t => t.key === tplKey);
                   return (
                     <div key={l.id} style={{ ...card, padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
                         <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{l.client_name}</div>
-                        <div style={{ fontSize: 12, color: "#9b9bb0" }}>{l.client_phone ?? "Sin teléfono"}</div>
+                        <div style={{ fontSize: 12, color: "#9b9bb0" }}>
+                          {isEmail ? (l as any).client_email ?? l.client_phone ?? "—" : l.client_phone ?? "Sin teléfono"}
+                        </div>
                       </div>
                       <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
                         <div style={{ fontSize: 12, color: "#6b7280" }}>{fmtDate(l.created_at)}</div>
                         <div style={{ display: "flex", gap: 4 }}>
-                          <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#e8f5e9", color: "#388e3c" }}>
-                            WhatsApp
-                          </span>
+                          {isEmail ? (
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#eff6ff", color: "#3b82f6" }}>
+                              📧 Email
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#e8f5e9", color: "#388e3c" }}>
+                              WhatsApp
+                            </span>
+                          )}
                           {tplInfo && (
                             <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: `${tplInfo.color}15`, color: tplInfo.color }}>
                               {tplInfo.label}
