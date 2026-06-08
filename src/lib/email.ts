@@ -55,14 +55,14 @@ function badge(svg: string, bg: string, color: string): string {
 // ── Appointment card ──────────────────────────────────────────────────────────
 
 function apptCard(p: ReminderEmailParams): string {
-  const rows: [string, string, string, string][] = [
-    [SVG.calendar, "#eff2ff", "#0027fe", "Fecha",       p.fecha],
-    [SVG.clock,    "#f3ecff", "#7B2FBE", "Hora",        p.hora],
-    [SVG.scissors, "#fff0f0", "#fb0f05", "Servicio",     p.servicio],
+  const rows: [string, string, string, string, string][] = [
+    [SVG.calendar, "#eff2ff", "#0027fe", "Fecha",        p.fecha],
+    [SVG.clock,    "#f3ecff", "#7B2FBE", "Hora",         p.hora],
+    [SVG.scissors, "#fff0f0", "#fb0f05", "Servicio",      p.servicio],
     ...(p.profesional
       ? [[SVG.user, "#e0fafb", "#0891b2", "Profesional", p.profesional]] as [string,string,string,string,string][]
       : []),
-  ] as [string,string,string,string,string][];
+  ];
 
   const rowsHtml = rows.map(([svg, bg, color, label, value], i) => `
     <tr>
