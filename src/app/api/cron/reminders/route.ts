@@ -70,7 +70,7 @@ async function sendReminder(appt: any, key: ReminderKey) {
   const client = appt.clients;
   if (!client?.email) return;
 
-  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+  const base = (process.env.NEXT_PUBLIC_APP_URL ?? "https://zyncra.app").replace(/\/$/, "");
   const res = await fetch(`${base}/api/send-reminder-email`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },
