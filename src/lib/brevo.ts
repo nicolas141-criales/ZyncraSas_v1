@@ -11,6 +11,7 @@ export interface ReminderEmailParams {
   fecha:       string;
   hora:        string;
   profesional?: string;
+  manage_url?:  string;
 }
 
 export async function sendReminderEmail(

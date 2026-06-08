@@ -35,6 +35,7 @@ export async function POST(req: NextRequest) {
       appointmentDate,
       appointmentTime,
       professionalName,
+      manageToken,
     } = body as {
       appointmentId:    string;
       tenantId:         string;
@@ -46,7 +47,10 @@ export async function POST(req: NextRequest) {
       appointmentDate:  string;
       appointmentTime:  string;
       professionalName?: string;
+      manageToken?:     string | null;
     };
+
+    const manage_url = manageToken ? `https://zyncra.app/manage/${manageToken}` : undefined;
 
     if (!clientEmail || !templateKey || !appointmentId || !tenantId) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -58,6 +62,7 @@ export async function POST(req: NextRequest) {
       fecha:       fmtDate(appointmentDate),
       hora:        fmt12(appointmentTime),
       profesional: professionalName,
+      manage_url,
     });
 
     await supabaseAdmin.from("reminder_logs").insert({

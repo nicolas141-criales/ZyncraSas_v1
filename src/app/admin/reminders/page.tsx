@@ -15,6 +15,7 @@ interface Appointment {
   appointment_date: string;
   appointment_time: string;
   status: string;
+  manage_token: string | null;
   clients: { id: string; name: string; phone: string | null; email: string | null } | null;
   services: { name: string } | null;
   professionals: { id: string; name: string } | null;
@@ -285,7 +286,7 @@ export default function RemindersPage() {
     const futureStr = localISO(future);
     const { data } = await supabase
       .from("appointments")
-      .select("id, appointment_date, appointment_time, status, clients(id, name, phone, email), services(name), professionals(id, name)")
+      .select("id, appointment_date, appointment_time, status, manage_token, clients(id, name, phone, email), services(name), professionals(id, name)")
       .eq("tenant_id", tenantId)
       .gte("appointment_date", today)
       .lte("appointment_date", futureStr)
@@ -343,6 +344,7 @@ export default function RemindersPage() {
           appointmentDate: appt.appointment_date,
           appointmentTime: appt.appointment_time,
           professionalName: appt.professionals?.name ?? null,
+          manageToken:     appt.manage_token ?? null,
         }),
       });
       if (!res.ok) {
