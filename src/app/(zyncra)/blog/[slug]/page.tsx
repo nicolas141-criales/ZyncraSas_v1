@@ -155,7 +155,7 @@ export default async function ArticlePage({ params }: { params: Promise<{ slug: 
             {related.map((r, i) => {
               const rc = CATS[r.category] ?? CATS["Negocios"];
               return (
-                <Link key={r.slug} href={`/blog/${r.slug}`} className={`z-blog-card z-reveal z-d${i + 1}`}>
+                <Link key={r.slug} href={`/blog/${r.slug}`} className={`z-blog-card z-fadeup z-d${i + 1}`}>
                   <div className="z-blog-num">0{i + 1}</div>
                   <div className="z-blog-cat" style={{ background: rc.bg, color: rc.text }}>{r.category}</div>
                   <div className="z-blog-title">{r.title}</div>

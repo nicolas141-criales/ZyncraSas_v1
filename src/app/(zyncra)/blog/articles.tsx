@@ -481,3 +481,9 @@ export const ARTICLES: Record<string, Article> = {
 };
 
 export const ARTICLE_LIST = Object.values(ARTICLES);
+
+export type ArticleMeta = Omit<Article, "content">;
+
+export function getArticlesMeta(): ArticleMeta[] {
+  return ARTICLE_LIST.map(({ content: _c, ...meta }) => meta);
+}
