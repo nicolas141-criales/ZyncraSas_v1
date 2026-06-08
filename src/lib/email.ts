@@ -12,47 +12,81 @@ export interface ReminderEmailParams {
   primary_color?: string;
 }
 
-// ── Design tokens (mirrors landing page globals.css) ─────────────────────────
+// ── Design tokens ─────────────────────────────────────────────────────────────
 const T = {
-  ink1:      "#14111C",
-  ink2:      "#3a3a48",
-  ink3:      "#564E66",
-  ink4:      "#8E879B",
-  ink5:      "#a0a0b0",
-  border:    "#e8e6e2",
-  bgWrap:    "#f0eff8",
-  bgCard:    "#ffffff",
-  bgElevated:"#f7f7fa",
-  grad:      "linear-gradient(135deg,#fb0f05 0%,#0027fe 100%)",
-  red:       "#fb0f05",
-  font:      "'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif",
+  ink1:       "#14111C",
+  ink2:       "#3a3a48",
+  ink3:       "#564E66",
+  ink4:       "#8E879B",
+  ink5:       "#a0a0b0",
+  border:     "#e8e6e2",
+  bgWrap:     "#f0eff8",
+  bgCard:     "#ffffff",
+  bgElevated: "#f7f7fa",
+  grad:       "linear-gradient(135deg,#fb0f05 0%,#0027fe 100%)",
+  font:       "'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif",
 };
 
-// ── Shared blocks ─────────────────────────────────────────────────────────────
+// ── SVG icons (exact paths from src/components/landing/icons.tsx) ─────────────
+// stroke-width 1.6, round caps, 20×20 display / 24×24 viewBox
+const SVG = {
+  calendar: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/><circle cx="8" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="14" r="1" fill="currentColor" stroke="none"/></svg>`,
+
+  clock: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
+
+  scissors: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.5 15.5M20 20L8.5 8.5M14 12h6"/></svg>`,
+
+  user: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.2c2.8.5 5 2.8 5 5.8"/></svg>`,
+
+  star: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#FBBF24" stroke="none"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.8 6.6 19.5l1.2-6L3.3 9.3l6.1-.7L12 3z"/></svg>`,
+
+  bolt: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13.5H12L11 22l8.5-11.5H12L13 2z"/></svg>`,
+
+  check: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>`,
+};
+
+// icon wrapped in a small colored rounded badge — matches landing icon style
+function badge(svg: string, bg: string, color: string): string {
+  return `<span style="display:inline-block;width:24px;height:24px;background:${bg};
+                border-radius:6px;text-align:center;line-height:24px;vertical-align:middle;
+                color:${color};">${svg}</span>`;
+}
+
+// ── Appointment card ──────────────────────────────────────────────────────────
 
 function apptCard(p: ReminderEmailParams): string {
-  const rows = [
-    ["📅", "Fecha",      p.fecha],
-    ["⏰", "Hora",       p.hora],
-    ["✂️", "Servicio",   p.servicio],
-    ...(p.profesional ? [["👤", "Profesional", p.profesional]] : []),
-  ];
+  const rows: [string, string, string, string][] = [
+    [SVG.calendar, "#eff2ff", "#0027fe", "Fecha",       p.fecha],
+    [SVG.clock,    "#f3ecff", "#7B2FBE", "Hora",        p.hora],
+    [SVG.scissors, "#fff0f0", "#fb0f05", "Servicio",     p.servicio],
+    ...(p.profesional
+      ? [[SVG.user, "#e0fafb", "#0891b2", "Profesional", p.profesional]] as [string,string,string,string,string][]
+      : []),
+  ] as [string,string,string,string,string][];
 
-  const rowsHtml = rows.map(([ , label, value], i) => `
+  const rowsHtml = rows.map(([svg, bg, color, label, value], i) => `
     <tr>
-      <td style="padding:10px 0;font-size:13px;font-weight:600;color:${T.ink4};
-                 ${i > 0 ? `border-top:1px solid ${T.border};` : ""}
-                 font-family:${T.font};">${label}</td>
-      <td style="padding:10px 0;font-size:14px;font-weight:700;color:${T.ink1};
-                 text-align:right;
-                 ${i > 0 ? `border-top:1px solid ${T.border};` : ""}
-                 font-family:${T.font};">${value}</td>
+      <td style="padding:10px 0;${i > 0 ? `border-top:1px solid ${T.border};` : ""}vertical-align:middle;width:140px;">
+        <table role="presentation" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding-right:8px;vertical-align:middle;">
+              ${badge(svg, bg, color)}
+            </td>
+            <td style="vertical-align:middle;font-size:13px;font-weight:600;
+                       color:${T.ink4};font-family:${T.font};">${label}</td>
+          </tr>
+        </table>
+      </td>
+      <td style="padding:10px 0;${i > 0 ? `border-top:1px solid ${T.border};` : ""}
+                 font-size:14px;font-weight:700;color:${T.ink1};
+                 text-align:right;font-family:${T.font};">${value}</td>
     </tr>`).join("");
 
   return `
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-         style="background:${T.bgElevated};border-radius:12px;border:1px solid ${T.border};margin-top:20px;">
-    <tr><td style="padding:16px 20px;">
+         style="background:${T.bgElevated};border-radius:12px;
+                border:1px solid ${T.border};margin-top:20px;">
+    <tr><td style="padding:4px 20px;">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
         ${rowsHtml}
       </table>
@@ -60,9 +94,12 @@ function apptCard(p: ReminderEmailParams): string {
   </table>`;
 }
 
+// ── Manage buttons ────────────────────────────────────────────────────────────
+
 function manageBtns(url: string): string {
   return `
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+         style="margin-top:24px;">
     <tr>
       <td align="center" style="padding-bottom:10px;">
         <a href="${url}?action=reschedule"
@@ -70,7 +107,7 @@ function manageBtns(url: string): string {
                   background:#0027fe;color:#ffffff;text-decoration:none;
                   border-radius:11px;font-weight:700;font-size:15px;
                   font-family:${T.font};text-align:center;">
-          📅 Reagendar cita
+          Reagendar cita
         </a>
       </td>
     </tr>
@@ -81,7 +118,7 @@ function manageBtns(url: string): string {
                   background:#6b7280;color:#ffffff;text-decoration:none;
                   border-radius:11px;font-weight:700;font-size:15px;
                   font-family:${T.font};text-align:center;">
-          ✕ Cancelar cita
+          Cancelar cita
         </a>
       </td>
     </tr>
@@ -95,7 +132,7 @@ function manageBtns(url: string): string {
   </table>`;
 }
 
-// ── Outer wrapper (header + body + footer) ────────────────────────────────────
+// ── Outer wrapper ─────────────────────────────────────────────────────────────
 
 function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
   const headerBg = p.primary_color ?? "#14111C";
@@ -116,14 +153,13 @@ function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     @media only screen and (max-width:600px){
-      .ew  { padding:16px 8px !important; }
-      .ec  { border-radius:14px !important; }
-      .eh  { padding:22px 20px 18px !important; }
-      .eb  { padding:22px 20px 20px !important; }
-      .ef  { padding:16px 20px !important; }
-      .li  { height:44px !important; }
-      .bn  { font-size:17px !important; }
-      .bf  { width:100% !important; display:block !important; box-sizing:border-box !important; }
+      .ew { padding:16px 8px !important; }
+      .ec { border-radius:14px !important; }
+      .eh { padding:22px 20px 18px !important; }
+      .eb { padding:22px 20px 20px !important; }
+      .ef { padding:16px 20px !important; }
+      .bn { font-size:17px !important; }
+      .bf { width:100% !important; display:block !important; box-sizing:border-box !important; }
     }
   </style>
 </head>
@@ -137,7 +173,7 @@ function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
              style="max-width:540px;background:${T.bgCard};border-radius:20px;
                     overflow:hidden;box-shadow:0 8px 32px rgba(20,15,30,0.10);">
 
-        <!-- ── Header ── -->
+        <!-- Header -->
         <tr>
           <td class="eh"
               style="background:${headerBg};padding:28px 32px 22px;text-align:center;">
@@ -148,19 +184,19 @@ function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
           </td>
         </tr>
 
-        <!-- ── Gradient accent bar ── -->
+        <!-- Gradient accent bar -->
         <tr>
           <td style="height:3px;background:${T.grad};font-size:0;line-height:0;">&nbsp;</td>
         </tr>
 
-        <!-- ── Body ── -->
+        <!-- Body -->
         <tr>
           <td class="eb" style="padding:28px 32px 24px;">
             ${bodyHtml}
           </td>
         </tr>
 
-        <!-- ── Footer ── -->
+        <!-- Footer -->
         <tr>
           <td class="ef"
               style="border-top:1px solid ${T.border};padding:18px 32px;
@@ -169,8 +205,7 @@ function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
                       text-transform:uppercase;color:${T.ink5};font-family:${T.font};">
               Agenda gestionada con
             </p>
-            <a href="https://zyncra.app"
-               style="text-decoration:none;display:inline-block;">
+            <a href="https://zyncra.app" style="text-decoration:none;display:inline-block;">
               <table role="presentation" cellpadding="0" cellspacing="0"
                      style="display:inline-table;">
                 <tr>
@@ -196,27 +231,24 @@ function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
 </html>`;
 }
 
-// ── Per-template content ──────────────────────────────────────────────────────
+// ── Per-template bodies ───────────────────────────────────────────────────────
 
 const SUBJECTS: Record<ReminderTemplateKey, (p: ReminderEmailParams) => string> = {
-  "24h":  (p) => `Tienes una cita mañana en ${p.business_name ?? "el negocio"} 📅`,
-  "2h":   (p) => `Tu cita en ${p.business_name ?? "el negocio"} es en 2 horas ⚡`,
-  "post": (p) => `¿Cómo estuvo tu visita en ${p.business_name ?? "el negocio"}? ⭐`,
+  "24h":  (p) => `Tienes una cita mañana en ${p.business_name ?? "el negocio"}`,
+  "2h":   (p) => `Tu cita en ${p.business_name ?? "el negocio"} es en 2 horas`,
+  "post": (p) => `¿Cómo estuvo tu visita en ${p.business_name ?? "el negocio"}?`,
 };
 
 function body24h(p: ReminderEmailParams): string {
   return `
-    <p style="margin:0 0 6px;font-size:18px;font-weight:700;color:${T.ink1};
+    <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:${T.ink1};
               font-family:${T.font};">
-      Hola, ${p.nombre} 👋
+      Hola, ${p.nombre}
     </p>
-    <p style="margin:0 0 4px;font-size:15px;color:${T.ink3};line-height:1.7;
+    <p style="margin:0;font-size:15px;color:${T.ink3};line-height:1.7;
               font-family:${T.font};">
-      Te recordamos que mañana tienes una cita confirmada.
-    </p>
-    <p style="margin:0 0 0;font-size:15px;color:${T.ink3};line-height:1.7;
-              font-family:${T.font};">
-      ¡Te esperamos!
+      Te recordamos que <strong style="color:${T.ink2};">mañana</strong>
+      tienes una cita confirmada. ¡Te esperamos!
     </p>
     ${apptCard(p)}
     ${p.manage_url ? manageBtns(p.manage_url) : ""}`;
@@ -224,11 +256,18 @@ function body24h(p: ReminderEmailParams): string {
 
 function body2h(p: ReminderEmailParams): string {
   return `
-    <p style="margin:0 0 6px;font-size:18px;font-weight:700;color:${T.ink1};
-              font-family:${T.font};">
-      ¡Ya casi, ${p.nombre}! ⚡
-    </p>
-    <p style="margin:0 0 4px;font-size:15px;color:${T.ink3};line-height:1.7;
+    <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
+      <tr>
+        <td style="vertical-align:middle;padding-right:8px;color:#7B2FBE;">
+          ${SVG.bolt}
+        </td>
+        <td style="vertical-align:middle;font-size:18px;font-weight:700;
+                   color:${T.ink1};font-family:${T.font};">
+          ¡Ya casi, ${p.nombre}!
+        </td>
+      </tr>
+    </table>
+    <p style="margin:0;font-size:15px;color:${T.ink3};line-height:1.7;
               font-family:${T.font};">
       Tu cita es <strong style="color:${T.ink2};">en 2 horas</strong>.
       Recuerda llegar unos minutos antes.
@@ -238,28 +277,27 @@ function body2h(p: ReminderEmailParams): string {
 }
 
 function bodyPost(p: ReminderEmailParams): string {
+  const stars = SVG.star.repeat(5);
   return `
-    <p style="margin:0 0 6px;font-size:18px;font-weight:700;color:${T.ink1};
+    <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:${T.ink1};
               font-family:${T.font};">
-      ¡Gracias por visitarnos, ${p.nombre}! 🙏
+      ¡Gracias por visitarnos, ${p.nombre}!
     </p>
     <p style="margin:0 0 16px;font-size:15px;color:${T.ink3};line-height:1.7;
               font-family:${T.font};">
       Esperamos que hayas disfrutado tu
       <strong style="color:${T.ink2};">${p.servicio}</strong>
       en <strong style="color:${T.ink2};">${p.business_name}</strong>.
-      Tu opinión nos ayuda a mejorar.
     </p>
 
-    <!-- Star rating row -->
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
            style="background:${T.bgElevated};border-radius:12px;
                   border:1px solid ${T.border};margin-bottom:4px;">
       <tr>
-        <td style="padding:16px 20px;text-align:center;">
-          <p style="margin:0 0 4px;font-size:13px;font-weight:600;color:${T.ink4};
+        <td style="padding:18px 20px;text-align:center;">
+          <p style="margin:0 0 10px;font-size:13px;font-weight:600;color:${T.ink4};
                     font-family:${T.font};">¿Cómo calificarías tu experiencia?</p>
-          <p style="margin:0;font-size:28px;letter-spacing:4px;">⭐⭐⭐⭐⭐</p>
+          <div style="font-size:0;">${stars}</div>
         </td>
       </tr>
     </table>
@@ -271,11 +309,10 @@ function bodyPost(p: ReminderEmailParams): string {
         <td align="center">
           <a href="${p.manage_url}"
              style="display:inline-block;width:240px;max-width:100%;padding:14px 0;
-                    background:${T.grad};color:#ffffff;text-decoration:none;
+                    background:#0027fe;color:#ffffff;text-decoration:none;
                     border-radius:11px;font-weight:700;font-size:15px;
-                    font-family:${T.font};text-align:center;
-                    box-shadow:0 4px 16px rgba(0,39,254,0.22);">
-            📅 Agendar próxima cita
+                    font-family:${T.font};text-align:center;">
+            Agendar próxima cita
           </a>
         </td>
       </tr>
