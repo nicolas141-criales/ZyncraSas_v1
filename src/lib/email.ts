@@ -181,7 +181,7 @@ export async function sendReminderEmail(
   toName: string,
   params: ReminderEmailParams,
 ): Promise<void> {
-  const from    = `${process.env.BREVO_SENDER_NAME ?? "Zyncra"} <${process.env.BREVO_SENDER_EMAIL ?? "noreply@zyncra.app"}>`;
+  const from    = process.env.RESEND_FROM_EMAIL ?? "Zyncra <noreply@zyncra.app>";
   const subject = SUBJECTS[templateKey](params);
   const html    = buildHtml(BODIES[templateKey](params), params);
 

@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, skipped: true });
     }
 
-    const base = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
+    const base = (process.env.NEXT_PUBLIC_APP_URL ?? "https://zyncra.app").replace(/\/$/, "");
     const cancelUrl     = `${base}/manage/${manageToken}?action=cancel`;
     const rescheduleUrl = `${base}/manage/${manageToken}?action=reschedule`;
 
