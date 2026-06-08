@@ -107,6 +107,7 @@ export default function Nav() {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Link
               href="/login"
+              className="zn-nav-login"
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 fontSize: 13.5, padding: "8px 14px", borderRadius: 10,
@@ -123,6 +124,7 @@ export default function Nav() {
               type="button"
               onClick={() => (window as any).__zyncraToggleTheme?.()}
               aria-label={theme === "dark" ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+              className="zn-theme-toggle"
               style={{
                 width: 36,
                 height: 36,
@@ -150,6 +152,7 @@ export default function Nav() {
             </button>
             <Link
               href="/register"
+              className="zn-nav-cta"
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 fontSize: 13.5, padding: "8px 14px", borderRadius: 10,
@@ -170,7 +173,8 @@ export default function Nav() {
                 border: "none",
                 cursor: "pointer",
                 color: "var(--fg)",
-                padding: 4,
+                padding: 6,
+                lineHeight: 0,
               }}
               className="zn-mobile-menu-btn"
               onClick={() => setOpen((o) => !o)}
@@ -236,7 +240,13 @@ export default function Nav() {
 
       <style>{`
         @media (max-width: 760px) {
+          .zn-desktop-nav   { display: none !important; }
+          .zn-nav-login     { display: none !important; }
+          .zn-nav-cta       { display: none !important; }
           .zn-mobile-menu-btn { display: flex !important; }
+        }
+        @media (min-width: 761px) {
+          .zn-theme-toggle  { display: inline-flex !important; }
         }
       `}</style>
     </header>

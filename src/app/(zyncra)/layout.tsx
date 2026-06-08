@@ -61,7 +61,6 @@ export default function ZyncraLayout({ children }: { children: React.ReactNode }
         fontFamily: "var(--font-sans)",
         fontSize: 16,
         lineHeight: 1.6,
-        overflowX: "clip",
         WebkitFontSmoothing: "antialiased",
         MozOsxFontSmoothing: "grayscale",
         minHeight: "100vh",
