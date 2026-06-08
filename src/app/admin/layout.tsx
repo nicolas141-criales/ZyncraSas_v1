@@ -43,6 +43,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Ventas",
     items: [
+      { href: "/admin/finanzas",   label: "Módulo Financiero",   icon: <IconChartBar size={17} /> },
       { href: "/admin/pos",        label: "Sistema POS",         icon: <IconCreditCard size={17} /> },
       { href: "/admin/caja",       label: "Sistema de Caja",     icon: <IconBanknotes size={17} /> },
       { href: "/admin/invoices",   label: "Factura Electrónica", icon: <IconDocument size={17} /> },
