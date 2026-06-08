@@ -56,13 +56,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    const { data: branding } = await supabaseAdmin
+      .from("branding")
+      .select("business_name, logo_url, primary_color")
+      .eq("tenant_id", tenantId)
+      .maybeSingle();
+
     await sendReminderEmail(templateKey, clientEmail, clientName, {
-      nombre:      clientName,
-      servicio:    serviceName,
-      fecha:       fmtDate(appointmentDate),
-      hora:        fmt12(appointmentTime),
-      profesional: professionalName,
+      nombre:         clientName,
+      servicio:       serviceName,
+      fecha:          fmtDate(appointmentDate),
+      hora:           fmt12(appointmentTime),
+      profesional:    professionalName,
       manage_url,
+      business_name:  branding?.business_name  ?? undefined,
+      logo_url:       branding?.logo_url        ?? undefined,
+      primary_color:  branding?.primary_color   ?? "#1a1a2e",
     });
 
     await supabaseAdmin.from("reminder_logs").insert({

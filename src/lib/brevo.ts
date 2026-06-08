@@ -6,12 +6,15 @@ const TEMPLATE_IDS = { "24h": 1, "2h": 2, "post": 3 } as const;
 export type ReminderTemplateKey = keyof typeof TEMPLATE_IDS;
 
 export interface ReminderEmailParams {
-  nombre:      string;
-  servicio:    string;
-  fecha:       string;
-  hora:        string;
-  profesional?: string;
-  manage_url?:  string;
+  nombre:        string;
+  servicio:      string;
+  fecha:         string;
+  hora:          string;
+  profesional?:  string;
+  manage_url?:   string;
+  business_name?: string;
+  logo_url?:     string;
+  primary_color?: string;
 }
 
 export async function sendReminderEmail(
