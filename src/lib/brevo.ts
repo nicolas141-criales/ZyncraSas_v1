@@ -1,5 +1,3 @@
-import nodemailer from "nodemailer";
-
 export type ReminderTemplateKey = "24h" | "2h" | "post";
 
 export interface ReminderEmailParams {
@@ -14,26 +12,12 @@ export interface ReminderEmailParams {
   primary_color?: string;
 }
 
-// ── SMTP transport (Brevo SMTP — no IP restrictions) ─────────────────────────
-
-function getTransport() {
-  return nodemailer.createTransport({
-    host: "smtp-relay.brevo.com",
-    port: 587,
-    secure: false,
-    auth: {
-      user: process.env.BREVO_SMTP_USER!,
-      pass: process.env.BREVO_SMTP_PASS!,
-    },
-  });
-}
-
 // ── HTML template builder ─────────────────────────────────────────────────────
 
 function buildHtml(body: string, p: ReminderEmailParams): string {
-  const color  = p.primary_color ?? "#1a1a2e";
-  const biz    = p.business_name ?? "";
-  const logo   = p.logo_url
+  const color = p.primary_color ?? "#1a1a2e";
+  const biz   = p.business_name ?? "";
+  const logo  = p.logo_url
     ? `<img src="${p.logo_url}" alt="${biz}" height="56"
            style="height:56px;max-width:200px;width:auto;object-fit:contain;display:block;margin:0 auto 12px;border-radius:8px;">`
     : "";
@@ -91,25 +75,17 @@ function buildHtml(body: string, p: ReminderEmailParams): string {
     <tr><td align="center">
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              style="max-width:540px;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 8px 48px rgba(0,0,0,0.10);">
-
-        <!-- Business header -->
         <tr>
           <td style="background:${color};padding:36px 32px 28px;text-align:center;">
             ${logo}
-            <p style="margin:0;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.025em;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-              ${biz}
-            </p>
+            <p style="margin:0;font-size:21px;font-weight:800;color:#ffffff;letter-spacing:-0.025em;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">${biz}</p>
           </td>
         </tr>
-
-        <!-- Body -->
         <tr>
           <td style="padding:32px 32px 28px;">
             ${body.replace("__APPT_CARD__", apptCard).replace("__MANAGE_BTN__", manageBtn)}
           </td>
         </tr>
-
-        <!-- Footer -->
         <tr>
           <td style="border-top:1px solid #e8e6e2;padding:22px 32px;text-align:center;background:#fafaf9;">
             <p style="margin:0 0 6px;font-size:12px;color:#b0aec0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">Agenda gestionada con</p>
@@ -120,7 +96,6 @@ function buildHtml(body: string, p: ReminderEmailParams): string {
             </a>
           </td>
         </tr>
-
       </table>
     </td></tr>
   </table>
@@ -165,7 +140,7 @@ const BODIES: Record<ReminderTemplateKey, (p: ReminderEmailParams) => string> = 
     __MANAGE_BTN__`,
 };
 
-// ── Public send function ──────────────────────────────────────────────────────
+// ── Send via Resend ───────────────────────────────────────────────────────────
 
 export async function sendReminderEmail(
   templateKey: ReminderTemplateKey,
@@ -173,14 +148,21 @@ export async function sendReminderEmail(
   toName: string,
   params: ReminderEmailParams,
 ): Promise<void> {
-  const transport = getTransport();
-  const subject   = SUBJECTS[templateKey](params);
-  const html      = buildHtml(BODIES[templateKey](params), params);
+  const from    = `${process.env.BREVO_SENDER_NAME ?? "Zyncra"} <${process.env.BREVO_SENDER_EMAIL ?? "noreply@zyncra.app"}>`;
+  const subject = SUBJECTS[templateKey](params);
+  const html    = buildHtml(BODIES[templateKey](params), params);
 
-  await transport.sendMail({
-    from:    `"${process.env.BREVO_SENDER_NAME ?? "Zyncra"}" <${process.env.BREVO_SENDER_EMAIL ?? "noreply@zyncra.app"}>`,
-    to:      `"${toName}" <${to}>`,
-    subject,
-    html,
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${process.env.RESEND_API_KEY}`,
+      "Content-Type":  "application/json",
+    },
+    body: JSON.stringify({ from, to: [`${toName} <${to}>`], subject, html }),
   });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(`Resend error ${res.status}: ${JSON.stringify(err)}`);
+  }
 }
