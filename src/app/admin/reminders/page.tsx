@@ -221,6 +221,11 @@ export default function RemindersPage() {
   const [sentSet, setSentSet] = useState<Set<string>>(new Set());
   const [confirmedSet, setConfirmedSet] = useState<Set<string>>(new Set());
   const [daysAhead, setDaysAhead] = useState(3);
+
+  // Returns local date string YYYY-MM-DD (avoids UTC offset issues with toISOString)
+  function localISO(d: Date) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
   const [profFilter, setProfFilter] = useState("all");
   const [professionals, setProfessionals] = useState<Professional[]>([]);
 
@@ -270,10 +275,11 @@ export default function RemindersPage() {
 
   const loadAppts = useCallback(async () => {
     setLoading(true);
-    const today = new Date().toISOString().split("T")[0];
-    const future = new Date();
+    const now = new Date();
+    const today = localISO(now);
+    const future = new Date(now);
     future.setDate(future.getDate() + daysAhead);
-    const futureStr = future.toISOString().split("T")[0];
+    const futureStr = localISO(future);
     const { data } = await supabase
       .from("appointments")
       .select("id, appointment_date, appointment_time, status, clients(id, name, phone), services(name), professionals(id, name)")
@@ -461,14 +467,14 @@ export default function RemindersPage() {
                 {"Período"}
               </span>
               <div style={{ display: "flex", gap: 6 }}>
-                {[1, 3, 7].map(d => (
+                {([0, 3, 7] as const).map(d => (
                   <button key={d} onClick={() => setDaysAhead(d)} style={{
                     padding: "5px 14px", borderRadius: 20, border: "none", cursor: "pointer",
                     fontSize: 12, fontWeight: 600,
                     background: daysAhead === d ? "#fb0f05" : "#f0f0f5",
                     color:      daysAhead === d ? "white"   : "#6b7280",
                   }}>
-                    {d === 1 ? "Hoy" : `${d} días`}
+                    {d === 0 ? "Hoy" : `${d} días`}
                   </button>
                 ))}
               </div>
