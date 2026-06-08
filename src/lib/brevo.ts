@@ -51,17 +51,29 @@ function buildHtml(body: string, p: ReminderEmailParams): string {
   const manageBtn = p.manage_url ? `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top:24px;">
       <tr>
-        <td align="center" style="padding-bottom:8px;">
-          <a href="${p.manage_url}"
-             style="display:inline-block;padding:14px 36px;background:linear-gradient(135deg,#fb0f05 0%,#0027fe 100%);color:#ffffff;text-decoration:none;border-radius:12px;font-weight:700;font-size:15px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-            📅 Gestionar mi cita
-          </a>
+        <td align="center">
+          <table role="presentation" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding-right:8px;">
+                <a href="${p.manage_url}?action=reschedule"
+                   style="display:inline-block;padding:13px 24px;background:#0027fe;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+                  📅 Reagendar
+                </a>
+              </td>
+              <td>
+                <a href="${p.manage_url}?action=cancel"
+                   style="display:inline-block;padding:13px 24px;background:#6b7280;color:#ffffff;text-decoration:none;border-radius:10px;font-weight:700;font-size:14px;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+                  ✕ Cancelar
+                </a>
+              </td>
+            </tr>
+          </table>
         </td>
       </tr>
       <tr>
-        <td align="center">
+        <td align="center" style="padding-top:8px;">
           <p style="margin:0;font-size:12px;color:#9b9bb0;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
-            Reagenda o cancela con 1 clic · Sin necesidad de cuenta
+            Sin necesidad de cuenta
           </p>
         </td>
       </tr>

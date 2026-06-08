@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSupabaseAdmin } from "@/lib/supabase-server";
+import { createClient } from "@supabase/supabase-js";
 
 type Params = Promise<{ token: string }>;
 
-// Cast helper — Supabase infers `never` for update/select when no DB types
-// are provided, so we cast the client to `any` at the call site.
-const db = () => getSupabaseAdmin() as any;
+const db = () => createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  { auth: { autoRefreshToken: false, persistSession: false } }
+) as any;
 
 export async function GET(_req: NextRequest, { params }: { params: Params }) {
   const { token } = await params;
