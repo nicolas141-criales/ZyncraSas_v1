@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import {
-  sendEmail,
-  buildEmail24h,
-  buildEmail2h,
-  buildEmailPost,
-} from "@/lib/brevo";
+import { sendReminderEmail, type ReminderTemplateKey } from "@/lib/brevo";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -41,15 +36,15 @@ export async function POST(req: NextRequest) {
       appointmentTime,
       professionalName,
     } = body as {
-      appointmentId:   string;
-      tenantId:        string;
-      clientEmail:     string;
-      clientName:      string;
-      clientPhone?:    string;
-      templateKey:     "24h" | "2h" | "post";
-      serviceName:     string;
-      appointmentDate: string;
-      appointmentTime: string;
+      appointmentId:    string;
+      tenantId:         string;
+      clientEmail:      string;
+      clientName:       string;
+      clientPhone?:     string;
+      templateKey:      ReminderTemplateKey;
+      serviceName:      string;
+      appointmentDate:  string;
+      appointmentTime:  string;
       professionalName?: string;
     };
 
@@ -57,18 +52,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const vars = {
-      nombre:       clientName,
-      servicio:     serviceName,
-      profesional:  professionalName,
-      fecha:        fmtDate(appointmentDate),
-      hora:         fmt12(appointmentTime),
-    };
-
-    const builders = { "24h": buildEmail24h, "2h": buildEmail2h, "post": buildEmailPost };
-    const { subject, html } = builders[templateKey](vars);
-
-    await sendEmail({ to: clientEmail, toName: clientName, subject, html });
+    await sendReminderEmail(templateKey, clientEmail, clientName, {
+      nombre:      clientName,
+      servicio:    serviceName,
+      fecha:       fmtDate(appointmentDate),
+      hora:        fmt12(appointmentTime),
+      profesional: professionalName,
+    });
 
     await supabaseAdmin.from("reminder_logs").insert({
       tenant_id:      tenantId,
