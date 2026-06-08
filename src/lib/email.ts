@@ -27,50 +27,45 @@ const T = {
   font:       "'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif",
 };
 
-// ── SVG icons (exact paths from src/components/landing/icons.tsx) ─────────────
-// stroke-width 1.6, round caps, 20×20 display / 24×24 viewBox
-const SVG = {
-  calendar: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/><circle cx="8" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r="1" fill="currentColor" stroke="none"/><circle cx="16" cy="14" r="1" fill="currentColor" stroke="none"/></svg>`,
-
-  clock: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>`,
-
-  scissors: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M20 4L8.5 15.5M20 20L8.5 8.5M14 12h6"/></svg>`,
-
-  user: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><circle cx="17" cy="9" r="2.6"/><path d="M16 14.2c2.8.5 5 2.8 5 5.8"/></svg>`,
-
-  star: `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="#FBBF24" stroke="none"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.8 6.6 19.5l1.2-6L3.3 9.3l6.1-.7L12 3z"/></svg>`,
-
-  bolt: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13.5H12L11 22l8.5-11.5H12L13 2z"/></svg>`,
-
-  check: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 6.5"/></svg>`,
+// ── Hosted icon URLs (public/icons/) — SVG in <img> renders in Gmail/Apple/Outlook
+const BASE = "https://zyncra.app/icons";
+const ICONS = {
+  calendar: `${BASE}/email-calendar.svg`,
+  clock:    `${BASE}/email-clock.svg`,
+  scissors: `${BASE}/email-scissors.svg`,
+  user:     `${BASE}/email-user.svg`,
+  star:     `${BASE}/email-star.svg`,
+  bolt:     `${BASE}/email-bolt.svg`,
 };
 
-// icon wrapped in a small colored rounded badge — matches landing icon style
-function badge(svg: string, bg: string, color: string): string {
-  return `<span style="display:inline-block;width:24px;height:24px;background:${bg};
-                border-radius:6px;text-align:center;line-height:24px;vertical-align:middle;
-                color:${color};">${svg}</span>`;
+// icon wrapped in a colored rounded badge
+function badge(iconUrl: string, bg: string): string {
+  return `<span style="display:inline-block;width:28px;height:28px;background:${bg};
+                border-radius:6px;text-align:center;line-height:32px;vertical-align:middle;">
+    <img src="${iconUrl}" width="16" height="16" alt=""
+         style="display:inline-block;vertical-align:middle;border:0;">
+  </span>`;
 }
 
 // ── Appointment card ──────────────────────────────────────────────────────────
 
 function apptCard(p: ReminderEmailParams): string {
-  const rows: [string, string, string, string, string][] = [
-    [SVG.calendar, "#eff2ff", "#0027fe", "Fecha",        p.fecha],
-    [SVG.clock,    "#f3ecff", "#7B2FBE", "Hora",         p.hora],
-    [SVG.scissors, "#fff0f0", "#fb0f05", "Servicio",      p.servicio],
+  const rows: [string, string, string, string][] = [
+    [ICONS.calendar, "#eff2ff", "Fecha",        p.fecha],
+    [ICONS.clock,    "#f3ecff", "Hora",         p.hora],
+    [ICONS.scissors, "#fff0f0", "Servicio",     p.servicio],
     ...(p.profesional
-      ? [[SVG.user, "#e0fafb", "#0891b2", "Profesional", p.profesional]] as [string,string,string,string,string][]
+      ? [[ICONS.user, "#e0fafb", "Profesional", p.profesional]] as [string,string,string,string][]
       : []),
   ];
 
-  const rowsHtml = rows.map(([svg, bg, color, label, value], i) => `
+  const rowsHtml = rows.map(([icon, bg, label, value], i) => `
     <tr>
       <td style="padding:10px 0;${i > 0 ? `border-top:1px solid ${T.border};` : ""}vertical-align:middle;width:140px;">
         <table role="presentation" cellpadding="0" cellspacing="0">
           <tr>
             <td style="padding-right:8px;vertical-align:middle;">
-              ${badge(svg, bg, color)}
+              ${badge(icon, bg)}
             </td>
             <td style="vertical-align:middle;font-size:13px;font-weight:600;
                        color:${T.ink4};font-family:${T.font};">${label}</td>
@@ -150,8 +145,9 @@ function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="x-apple-disable-message-reformatting">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
     @media only screen and (max-width:600px){
       .ew { padding:16px 8px !important; }
       .ec { border-radius:14px !important; }
@@ -258,8 +254,9 @@ function body2h(p: ReminderEmailParams): string {
   return `
     <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
       <tr>
-        <td style="vertical-align:middle;padding-right:8px;color:#7B2FBE;">
-          ${SVG.bolt}
+        <td style="vertical-align:middle;padding-right:8px;">
+          <img src="${ICONS.bolt}" width="16" height="16" alt=""
+               style="display:inline-block;vertical-align:middle;border:0;">
         </td>
         <td style="vertical-align:middle;font-size:18px;font-weight:700;
                    color:${T.ink1};font-family:${T.font};">
@@ -277,7 +274,7 @@ function body2h(p: ReminderEmailParams): string {
 }
 
 function bodyPost(p: ReminderEmailParams): string {
-  const stars = SVG.star.repeat(5);
+  const stars = `<img src="${ICONS.star}" width="20" height="20" alt="★" style="display:inline-block;border:0;margin:0 1px;">`.repeat(5);
   return `
     <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:${T.ink1};
               font-family:${T.font};">
