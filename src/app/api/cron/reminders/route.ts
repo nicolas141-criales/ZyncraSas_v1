@@ -86,6 +86,7 @@ async function sendReminder(appt: any, key: ReminderKey) {
       appointmentTime:  appt.appointment_time,
       professionalName: appt.professionals?.name ?? null,
       manageToken:      appt.manage_token        ?? null,
+      source:           "auto",
     }),
   });
   if (!res.ok) {

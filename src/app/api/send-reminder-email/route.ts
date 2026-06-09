@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       appointmentTime,
       professionalName,
       manageToken,
+      source,
     } = body as {
       appointmentId:    string;
       tenantId:         string;
@@ -48,6 +49,7 @@ export async function POST(req: NextRequest) {
       appointmentTime:  string;
       professionalName?: string;
       manageToken?:     string | null;
+      source?:          "auto" | "manual";
     };
 
     const manage_url = manageToken ? `https://zyncra.app/manage/${manageToken}` : undefined;
@@ -82,6 +84,7 @@ export async function POST(req: NextRequest) {
       client_email:   clientEmail,
       sent_via:       `email-${templateKey}`,
       channel:        "email",
+      source:         source ?? "manual",
     });
 
     return NextResponse.json({ ok: true });

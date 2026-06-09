@@ -25,7 +25,9 @@ interface ReminderLog {
   id: string;
   client_name: string;
   client_phone: string | null;
+  client_email?: string | null;
   sent_via: string;
+  source: "auto" | "manual";
   created_at: string;
 }
 
@@ -222,6 +224,8 @@ export default function RemindersPage() {
   const [sentSet, setSentSet] = useState<Set<string>>(new Set());
   // emailSentSet tracks "apptId:templateKey" for email channel
   const [emailSentSet, setEmailSentSet] = useState<Set<string>>(new Set());
+  // autoEmailSentSet tracks emails sent automatically by the cron
+  const [autoEmailSentSet, setAutoEmailSentSet] = useState<Set<string>>(new Set());
   const [emailSending, setEmailSending] = useState<string | null>(null);
   const [confirmedSet, setConfirmedSet] = useState<Set<string>>(new Set());
   const [daysAhead, setDaysAhead] = useState(3);
@@ -293,7 +297,41 @@ export default function RemindersPage() {
       .in("status", ["pending", "confirmed"])
       .order("appointment_date")
       .order("appointment_time");
-    setAppointments((data as unknown as Appointment[]) ?? []);
+    const fetchedAppts = (data as unknown as Appointment[]) ?? [];
+    setAppointments(fetchedAppts);
+
+    // Load reminder logs from DB so sent status persists across reloads
+    // and reflects automatic sends by the cron job
+    if (fetchedAppts.length > 0) {
+      const apptIds = fetchedAppts.map(a => a.id);
+      const { data: logsData } = await supabase
+        .from("reminder_logs")
+        .select("appointment_id, sent_via, source")
+        .in("appointment_id", apptIds);
+
+      const newSentSet       = new Set<string>();
+      const newEmailSentSet  = new Set<string>();
+      const newAutoSet       = new Set<string>();
+
+      (logsData ?? []).forEach((l: any) => {
+        const apptId = l.appointment_id as string;
+        const sv     = (l.sent_via ?? "") as string;
+        if (sv.startsWith("whatsapp-")) {
+          const type = sv.replace("whatsapp-", "");
+          newSentSet.add(`${apptId}:${type}`);
+        } else if (sv.startsWith("email-")) {
+          const type = sv.replace("email-", "");
+          const key  = `${apptId}:${type}`;
+          newEmailSentSet.add(key);
+          if (l.source === "auto") newAutoSet.add(key);
+        }
+      });
+
+      setSentSet(newSentSet);
+      setEmailSentSet(newEmailSentSet);
+      setAutoEmailSentSet(newAutoSet);
+    }
+
     setLoading(false);
   }, [tenantId, daysAhead]);
 
@@ -658,15 +696,21 @@ export default function RemindersPage() {
                                   {TEMPLATE_TABS.map(t => {
                                     const emailKey = `${appt.id}:${t.key}`;
                                     const emailSent = emailSentSet.has(emailKey);
+                                    const isAuto    = autoEmailSentSet.has(emailKey);
                                     const sending   = emailSending === emailKey;
                                     return emailSent ? (
                                       <span key={t.key} style={{
-                                        fontSize: 11, fontWeight: 700, color: "#1d4ed8",
-                                        padding: "4px 9px", borderRadius: 8, background: "#eff6ff",
+                                        fontSize: 11, fontWeight: 700,
+                                        color:      isAuto ? "#7c3aed" : "#1d4ed8",
+                                        padding: "4px 9px", borderRadius: 8,
+                                        background:  isAuto ? "#ede9fe" : "#eff6ff",
                                         display: "inline-flex", alignItems: "center", gap: 3,
-                                        border: "1px solid #bfdbfe",
-                                      }}>
-                                        <IconCheck size={9} /> {t.label}
+                                        border: `1px solid ${isAuto ? "#c4b5fd" : "#bfdbfe"}`,
+                                      }}
+                                        title={isAuto ? "Enviado automáticamente por el sistema" : "Enviado manualmente"}
+                                      >
+                                        <IconCheck size={9} />
+                                        {isAuto ? `⚡ Auto` : t.label}
                                       </span>
                                     ) : (
                                       <button key={t.key}
@@ -918,7 +962,12 @@ export default function RemindersPage() {
                       </div>
                       <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
                         <div style={{ fontSize: 12, color: "#6b7280" }}>{fmtDate(l.created_at)}</div>
-                        <div style={{ display: "flex", gap: 4 }}>
+                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                          {l.source === "auto" && (
+                            <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#ede9fe", color: "#7c3aed" }}>
+                              ⚡ Auto
+                            </span>
+                          )}
                           {isEmail ? (
                             <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#eff6ff", color: "#3b82f6" }}>
                               📧 Email
