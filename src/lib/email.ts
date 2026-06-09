@@ -12,131 +12,105 @@ export interface ReminderEmailParams {
   primary_color?: string;
 }
 
-// ── Design tokens ─────────────────────────────────────────────────────────────
-const T = {
-  ink1:       "#14111C",
-  ink2:       "#3a3a48",
-  ink3:       "#564E66",
-  ink4:       "#8E879B",
-  ink5:       "#a0a0b0",
-  border:     "#e8e6e2",
-  bgWrap:     "#f0eff8",
-  bgCard:     "#ffffff",
-  bgElevated: "#f7f7fa",
-  grad:       "linear-gradient(135deg,#fb0f05 0%,#0027fe 100%)",
-  font:       "'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif",
-};
+// ── Design tokens ──────────────────────────────────────────────────────────────
+const F    = "'Space Grotesk','Helvetica Neue',Helvetica,Arial,sans-serif";
+const INK1 = "#14111C";
+const INK3 = "#564E66";
+const INK4 = "#8E879B";
+const INK5 = "#b0adb8";
+const SEP  = "#f0eff8";
 
-// ── Hosted icon URLs (public/icons/) — SVG in <img> renders in Gmail/Apple/Outlook
-const BASE = "https://zyncra.app/icons";
-const ICONS = {
-  calendar: `${BASE}/email-calendar.svg`,
-  clock:    `${BASE}/email-clock.svg`,
-  scissors: `${BASE}/email-scissors.svg`,
-  user:     `${BASE}/email-user.svg`,
-  star:     `${BASE}/email-star.svg`,
-  bolt:     `${BASE}/email-bolt.svg`,
-};
-
-// icon wrapped in a colored rounded badge
-function badge(iconUrl: string, bg: string): string {
-  return `<span style="display:inline-block;width:28px;height:28px;background:${bg};
-                border-radius:6px;text-align:center;line-height:32px;vertical-align:middle;">
-    <img src="${iconUrl}" width="16" height="16" alt=""
-         style="display:inline-block;vertical-align:middle;border:0;">
-  </span>`;
+// ── Detail rows (label uppercase left, value bold right) ───────────────────────
+function detailRows(p: ReminderEmailParams): string {
+  const entries: [string, string][] = [
+    ["Servicio",    p.servicio],
+    ["Profesional", p.profesional ?? "—"],
+    ["Fecha",       p.fecha],
+    ["Hora",        p.hora],
+  ];
+  return entries.map(([label, value], i) => `
+    <tr>
+      <td style="padding:10px 0;font-size:11px;font-weight:700;letter-spacing:0.07em;
+                 text-transform:uppercase;color:${INK4};
+                 ${i > 0 ? `border-top:1px solid ${SEP};` : ""}
+                 font-family:${F};">${label}</td>
+      <td style="padding:10px 0;font-size:14px;font-weight:700;color:${INK1};
+                 text-align:right;
+                 ${i > 0 ? `border-top:1px solid ${SEP};` : ""}
+                 font-family:${F};">${value}</td>
+    </tr>`).join("");
 }
 
-// ── Appointment card ──────────────────────────────────────────────────────────
-
-function apptCard(p: ReminderEmailParams): string {
-  const rows: [string, string, string, string][] = [
-    [ICONS.calendar, "#eff2ff", "Fecha",        p.fecha],
-    [ICONS.clock,    "#f3ecff", "Hora",         p.hora],
-    [ICONS.scissors, "#fff0f0", "Servicio",     p.servicio],
-    ...(p.profesional
-      ? [[ICONS.user, "#e0fafb", "Profesional", p.profesional]] as [string,string,string,string][]
-      : []),
-  ];
-
-  const rowsHtml = rows.map(([icon, bg, label, value], i) => `
+// ── CTA block: primary button + text links ─────────────────────────────────────
+function ctaBlock(manageUrl: string, primaryColor: string): string {
+  const btn = primaryColor || "#14111C";
+  return `
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+         style="margin-top:8px;">
     <tr>
-      <td style="padding:10px 0;${i > 0 ? `border-top:1px solid ${T.border};` : ""}vertical-align:middle;width:140px;">
-        <table role="presentation" cellpadding="0" cellspacing="0">
+      <td style="padding-bottom:0;">
+        <a href="${manageUrl}" class="btn"
+           style="display:block;background:${btn};color:#ffffff;
+                  text-decoration:none;text-align:center;
+                  padding:15px 24px;border-radius:12px;
+                  font-size:15px;font-weight:700;letter-spacing:-0.01em;
+                  font-family:${F};">
+          Gestionar mi cita &nbsp;→
+        </a>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding-top:14px;text-align:center;">
+        <a href="${manageUrl}?action=reschedule"
+           style="color:#0027fe;text-decoration:none;font-size:13px;font-weight:600;
+                  font-family:${F};">Reagendar</a>
+        <span style="color:#d8d5dd;margin:0 10px;">·</span>
+        <a href="${manageUrl}?action=cancel"
+           style="color:${INK4};text-decoration:none;font-size:13px;font-weight:600;
+                  font-family:${F};">Cancelar</a>
+      </td>
+    </tr>
+  </table>`;
+}
+
+// ── Outer wrapper ──────────────────────────────────────────────────────────────
+function buildHtml(
+  label: string,
+  title: string,
+  subtitle: string,
+  bodyExtra: string,
+  p: ReminderEmailParams,
+): string {
+  const cinta      = p.primary_color ?? "#14111C";
+  const biz        = p.business_name ?? "";
+  const logoHtml   = p.logo_url
+    ? `<img src="${p.logo_url}" alt="${biz}" height="44"
+           style="height:44px;max-width:160px;width:auto;object-fit:contain;
+                  display:block;border-radius:6px;">`
+    : "";
+
+  // Top bar: logo (left) + business name (right if logo, else centered as heading)
+  const topBar = logoHtml
+    ? `
+    <tr>
+      <td style="padding:20px 32px 0;" class="ep">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="padding-right:8px;vertical-align:middle;">
-              ${badge(icon, bg)}
+            <td style="vertical-align:middle;">${logoHtml}</td>
+            <td align="right" style="vertical-align:middle;">
+              <span style="font-size:12px;font-weight:600;color:${INK4};font-family:${F};">${biz}</span>
             </td>
-            <td style="vertical-align:middle;font-size:13px;font-weight:600;
-                       color:${T.ink4};font-family:${T.font};">${label}</td>
           </tr>
         </table>
       </td>
-      <td style="padding:10px 0;${i > 0 ? `border-top:1px solid ${T.border};` : ""}
-                 font-size:14px;font-weight:700;color:${T.ink1};
-                 text-align:right;font-family:${T.font};">${value}</td>
-    </tr>`).join("");
-
-  return `
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-         style="background:${T.bgElevated};border-radius:12px;
-                border:1px solid ${T.border};margin-top:20px;">
-    <tr><td style="padding:4px 20px;">
-      <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-        ${rowsHtml}
-      </table>
-    </td></tr>
-  </table>`;
-}
-
-// ── Manage buttons ────────────────────────────────────────────────────────────
-
-function manageBtns(url: string): string {
-  return `
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-         style="margin-top:24px;">
+    </tr>`
+    : `
     <tr>
-      <td align="center" style="padding-bottom:10px;">
-        <a href="${url}?action=reschedule"
-           style="display:inline-block;width:240px;max-width:100%;padding:14px 0;
-                  background:#0027fe;color:#ffffff;text-decoration:none;
-                  border-radius:11px;font-weight:700;font-size:15px;
-                  font-family:${T.font};text-align:center;">
-          Reagendar cita
-        </a>
+      <td style="padding:20px 32px 0;" class="ep">
+        <p style="margin:0;font-size:15px;font-weight:800;color:${INK1};
+                  letter-spacing:-0.02em;font-family:${F};">${biz}</p>
       </td>
-    </tr>
-    <tr>
-      <td align="center" style="padding-bottom:10px;">
-        <a href="${url}?action=cancel"
-           style="display:inline-block;width:240px;max-width:100%;padding:14px 0;
-                  background:#6b7280;color:#ffffff;text-decoration:none;
-                  border-radius:11px;font-weight:700;font-size:15px;
-                  font-family:${T.font};text-align:center;">
-          Cancelar cita
-        </a>
-      </td>
-    </tr>
-    <tr>
-      <td align="center">
-        <p style="margin:4px 0 0;font-size:12px;color:${T.ink5};font-family:${T.font};">
-          Sin necesidad de cuenta &middot; Un clic para gestionar
-        </p>
-      </td>
-    </tr>
-  </table>`;
-}
-
-// ── Outer wrapper ─────────────────────────────────────────────────────────────
-
-function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
-  const headerBg = p.primary_color ?? "#14111C";
-  const biz      = p.business_name ?? "";
-  const logo     = p.logo_url
-    ? `<img src="${p.logo_url}" alt="${biz}" height="52"
-             style="height:52px;max-width:180px;width:auto;object-fit:contain;
-                    display:block;margin:0 auto 10px;border-radius:8px;">`
-    : "";
+    </tr>`;
 
   return `<!DOCTYPE html>
 <html lang="es">
@@ -145,77 +119,69 @@ function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="x-apple-disable-message-reformatting">
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
     @media only screen and (max-width:600px){
-      .ew { padding:16px 8px !important; }
-      .ec { border-radius:14px !important; }
-      .eh { padding:22px 20px 18px !important; }
-      .eb { padding:22px 20px 20px !important; }
-      .ef { padding:16px 20px !important; }
-      .bn { font-size:17px !important; }
-      .bf { width:100% !important; display:block !important; box-sizing:border-box !important; }
+      .ew{padding:16px 8px!important}
+      .ec{border-radius:16px!important}
+      .ep{padding-left:20px!important;padding-right:20px!important}
+      .btn{width:100%!important;display:block!important;box-sizing:border-box!important}
     }
   </style>
 </head>
-<body style="margin:0;padding:0;background:${T.bgWrap};font-family:${T.font};">
+<body style="margin:0;padding:0;background:#f0eff8;font-family:${F};">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-         style="background:${T.bgWrap};">
-    <tr><td align="center" class="ew" style="padding:32px 16px;">
+         style="background:#f0eff8;">
+    <tr><td align="center" class="ew" style="padding:36px 16px;">
 
       <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
              class="ec"
-             style="max-width:540px;background:${T.bgCard};border-radius:20px;
-                    overflow:hidden;box-shadow:0 8px 32px rgba(20,15,30,0.10);">
+             style="max-width:560px;background:#ffffff;border-radius:20px;
+                    overflow:hidden;box-shadow:0 2px 20px rgba(20,15,30,0.08);">
 
-        <!-- Header -->
+        <!-- LA CINTA (tenant brand color) -->
         <tr>
-          <td class="eh"
-              style="background:${headerBg};padding:28px 32px 22px;text-align:center;">
-            ${logo}
-            <p class="bn"
-               style="margin:0;font-size:20px;font-weight:800;color:#ffffff;
-                      letter-spacing:-0.03em;font-family:${T.font};">${biz}</p>
+          <td style="height:7px;background:${cinta};font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+
+        <!-- Business identity -->
+        ${topBar}
+
+        <!-- Heading -->
+        <tr>
+          <td style="padding:26px 32px 0;" class="ep">
+            <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:0.10em;
+                      text-transform:uppercase;color:${INK4};font-family:${F};">${label}</p>
+            <h1 style="margin:0 0 10px;font-size:28px;font-weight:800;color:${INK1};
+                       letter-spacing:-0.04em;line-height:1.15;font-family:${F};">${title}</h1>
+            <p style="margin:0;font-size:15px;color:${INK3};line-height:1.55;
+                      font-family:${F};">${subtitle}</p>
           </td>
         </tr>
 
-        <!-- Gradient accent bar -->
+        <!-- Detail rows -->
         <tr>
-          <td style="height:3px;background:${T.grad};font-size:0;line-height:0;">&nbsp;</td>
-        </tr>
-
-        <!-- Body -->
-        <tr>
-          <td class="eb" style="padding:28px 32px 24px;">
-            ${bodyHtml}
+          <td style="padding:22px 32px;" class="ep">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+              ${detailRows(p)}
+            </table>
           </td>
         </tr>
 
-        <!-- Footer -->
+        <!-- Extra body content (post rating, etc.) -->
+        ${bodyExtra ? `<tr><td style="padding:0 32px;" class="ep">${bodyExtra}</td></tr>` : ""}
+
+        <!-- CTA -->
+        ${p.manage_url ? `<tr><td style="padding:4px 32px 32px;" class="ep">${ctaBlock(p.manage_url, cinta)}</td></tr>` : `<tr><td style="padding:0 0 32px;"></td></tr>`}
+
+        <!-- Footer: Zyncra only -->
         <tr>
-          <td class="ef"
-              style="border-top:1px solid ${T.border};padding:18px 32px;
-                     text-align:center;background:${T.bgElevated};">
-            <p style="margin:0 0 6px;font-size:11px;font-weight:600;letter-spacing:0.06em;
-                      text-transform:uppercase;color:${T.ink5};font-family:${T.font};">
-              Agenda gestionada con
-            </p>
-            <a href="https://zyncra.app" style="text-decoration:none;display:inline-block;">
-              <table role="presentation" cellpadding="0" cellspacing="0"
-                     style="display:inline-table;">
-                <tr>
-                  <td style="vertical-align:middle;padding-right:6px;">
-                    <img src="https://zyncra.app/zyncra-icon.png" alt="Zyncra"
-                         width="20" height="20"
-                         style="width:20px;height:20px;border-radius:5px;display:block;">
-                  </td>
-                  <td style="vertical-align:middle;">
-                    <span style="font-size:15px;font-weight:800;color:${T.ink1};
-                                 font-family:${T.font};">Zyncra</span>
-                  </td>
-                </tr>
-              </table>
+          <td style="border-top:1px solid ${SEP};padding:16px 32px;text-align:center;">
+            <span style="font-size:12px;color:${INK5};font-family:${F};">
+              Agenda gestionada con &nbsp;
+            </span>
+            <a href="https://zyncra.app" style="text-decoration:none;">
+              <span style="font-size:12px;font-weight:800;color:${INK3};font-family:${F};">Zyncra</span>
             </a>
           </td>
         </tr>
@@ -227,101 +193,71 @@ function buildHtml(bodyHtml: string, p: ReminderEmailParams): string {
 </html>`;
 }
 
-// ── Per-template bodies ───────────────────────────────────────────────────────
+// ── Per-template definitions ───────────────────────────────────────────────────
 
 const SUBJECTS: Record<ReminderTemplateKey, (p: ReminderEmailParams) => string> = {
-  "24h":  (p) => `Tienes una cita mañana en ${p.business_name ?? "el negocio"}`,
-  "2h":   (p) => `Tu cita en ${p.business_name ?? "el negocio"} es en 2 horas`,
-  "post": (p) => `¿Cómo estuvo tu visita en ${p.business_name ?? "el negocio"}?`,
+  "24h":  (p) => `Tu cita mañana — ${p.business_name ?? "el negocio"}`,
+  "2h":   (p) => `Tu cita es en 2 horas — ${p.business_name ?? "el negocio"}`,
+  "post": (p) => `¿Cómo estuvo tu visita? — ${p.business_name ?? "el negocio"}`,
 };
 
-function body24h(p: ReminderEmailParams): string {
-  return `
-    <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:${T.ink1};
-              font-family:${T.font};">
-      Hola, ${p.nombre}
-    </p>
-    <p style="margin:0;font-size:15px;color:${T.ink3};line-height:1.7;
-              font-family:${T.font};">
-      Te recordamos que <strong style="color:${T.ink2};">mañana</strong>
-      tienes una cita confirmada. ¡Te esperamos!
-    </p>
-    ${apptCard(p)}
-    ${p.manage_url ? manageBtns(p.manage_url) : ""}`;
+function build24h(p: ReminderEmailParams): string {
+  return buildHtml(
+    "Recordatorio · 24 horas",
+    "Tienes cita mañana",
+    `Hola <strong style="color:${INK1};">${p.nombre}</strong>, te recordamos que mañana tienes una cita confirmada. ¡Te esperamos!`,
+    "",
+    p,
+  );
 }
 
-function body2h(p: ReminderEmailParams): string {
-  return `
-    <table role="presentation" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
-      <tr>
-        <td style="vertical-align:middle;padding-right:8px;">
-          <img src="${ICONS.bolt}" width="16" height="16" alt=""
-               style="display:inline-block;vertical-align:middle;border:0;">
-        </td>
-        <td style="vertical-align:middle;font-size:18px;font-weight:700;
-                   color:${T.ink1};font-family:${T.font};">
-          ¡Ya casi, ${p.nombre}!
-        </td>
-      </tr>
-    </table>
-    <p style="margin:0;font-size:15px;color:${T.ink3};line-height:1.7;
-              font-family:${T.font};">
-      Tu cita es <strong style="color:${T.ink2};">en 2 horas</strong>.
-      Recuerda llegar unos minutos antes.
-    </p>
-    ${apptCard(p)}
-    ${p.manage_url ? manageBtns(p.manage_url) : ""}`;
+function build2h(p: ReminderEmailParams): string {
+  return buildHtml(
+    "Recordatorio · 2 horas",
+    "¡Ya casi es tu hora!",
+    `Hola <strong style="color:${INK1};">${p.nombre}</strong>, tu cita es <strong style="color:${INK1};">en 2 horas</strong>. Recuerda llegar unos minutos antes.`,
+    "",
+    p,
+  );
 }
 
-function bodyPost(p: ReminderEmailParams): string {
-  const stars = `<img src="${ICONS.star}" width="20" height="20" alt="★" style="display:inline-block;border:0;margin:0 1px;">`.repeat(5);
-  return `
-    <p style="margin:0 0 4px;font-size:18px;font-weight:700;color:${T.ink1};
-              font-family:${T.font};">
-      ¡Gracias por visitarnos, ${p.nombre}!
-    </p>
-    <p style="margin:0 0 16px;font-size:15px;color:${T.ink3};line-height:1.7;
-              font-family:${T.font};">
-      Esperamos que hayas disfrutado tu
-      <strong style="color:${T.ink2};">${p.servicio}</strong>
-      en <strong style="color:${T.ink2};">${p.business_name}</strong>.
-    </p>
+function buildPost(p: ReminderEmailParams): string {
+  const stars = Array(5).fill(
+    `<td style="padding:0 2px;">
+       <span style="font-size:22px;color:#fbbf24;font-family:${F};">★</span>
+     </td>`
+  ).join("");
 
+  const ratingBlock = `
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-           style="background:${T.bgElevated};border-radius:12px;
-                  border:1px solid ${T.border};margin-bottom:4px;">
-      <tr>
-        <td style="padding:18px 20px;text-align:center;">
-          <p style="margin:0 0 10px;font-size:13px;font-weight:600;color:${T.ink4};
-                    font-family:${T.font};">¿Cómo calificarías tu experiencia?</p>
-          <div style="font-size:0;">${stars}</div>
-        </td>
-      </tr>
-    </table>
+           style="background:#fafaf8;border-radius:12px;border:1px solid #f0eff8;margin-bottom:16px;">
+      <tr><td style="padding:18px 20px;text-align:center;">
+        <p style="margin:0 0 10px;font-size:12px;font-weight:700;letter-spacing:0.07em;
+                  text-transform:uppercase;color:${INK4};font-family:${F};">
+          ¿Cómo calificarías tu experiencia?
+        </p>
+        <table role="presentation" cellpadding="0" cellspacing="0"
+               style="display:inline-table;margin:0 auto;">
+          <tr>${stars}</tr>
+        </table>
+      </td></tr>
+    </table>`;
 
-    ${p.manage_url ? `
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
-           style="margin-top:20px;">
-      <tr>
-        <td align="center">
-          <a href="${p.manage_url}"
-             style="display:inline-block;width:240px;max-width:100%;padding:14px 0;
-                    background:#0027fe;color:#ffffff;text-decoration:none;
-                    border-radius:11px;font-weight:700;font-size:15px;
-                    font-family:${T.font};text-align:center;">
-            Agendar próxima cita
-          </a>
-        </td>
-      </tr>
-    </table>` : ""}`;
+  return buildHtml(
+    "Post-visita",
+    "¡Gracias por tu visita!",
+    `Hola <strong style="color:${INK1};">${p.nombre}</strong>, esperamos que hayas disfrutado tu <strong style="color:${INK1};">${p.servicio}</strong>. Nos encantaría saber cómo estuvo.`,
+    ratingBlock,
+    p,
+  );
 }
 
-// ── Send via Resend ───────────────────────────────────────────────────────────
+// ── Send via Resend ────────────────────────────────────────────────────────────
 
 const BUILDERS: Record<ReminderTemplateKey, (p: ReminderEmailParams) => string> = {
-  "24h":  body24h,
-  "2h":   body2h,
-  "post": bodyPost,
+  "24h":  build24h,
+  "2h":   build2h,
+  "post": buildPost,
 };
 
 export async function sendReminderEmail(
@@ -332,7 +268,7 @@ export async function sendReminderEmail(
 ): Promise<void> {
   const from    = process.env.RESEND_FROM_EMAIL ?? "Zyncra <noreply@zyncra.app>";
   const subject = SUBJECTS[templateKey](params);
-  const html    = buildHtml(BUILDERS[templateKey](params), params);
+  const html    = BUILDERS[templateKey](params);
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
