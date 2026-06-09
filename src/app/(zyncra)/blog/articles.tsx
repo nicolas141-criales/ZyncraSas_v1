@@ -1,4 +1,9 @@
 import React from "react";
+import Link from "next/link";
+
+const IL = ({ href, children }: { href: string; children: React.ReactNode }) => (
+  <a href={href} style={{ color: "#fb0f05", fontWeight: 700, textDecoration: "none", borderBottom: "1.5px solid rgba(251,15,5,0.25)", paddingBottom: 1 }}>{children}</a>
+);
 
 export const CATS: Record<string, { bg: string; text: string }> = {
   Agenda:        { bg: "rgba(251,15,5,.1)",   text: "#fb0f05" },
@@ -60,7 +65,7 @@ export const ARTICLES: Record<string, Article> = {
         </blockquote>
 
         <h2>1. El recordatorio de cita por WhatsApp es lo más importante</h2>
-        <p>El 80% de los no-shows no son clientes que deciden no ir — son clientes que simplemente olvidan. Un recordatorio por WhatsApp bien diseñado resuelve la mayoría del problema:</p>
+        <p>El 80% de los no-shows no son clientes que deciden no ir — son clientes que simplemente olvidan. Un <IL href="/features">recordatorio automático por WhatsApp</IL> bien diseñado resuelve la mayoría del problema:</p>
         <ul>
           <li><strong>24 horas antes:</strong> Mensaje con fecha, hora y servicio. Tasa de apertura en WhatsApp: 98% vs 20% del email.</li>
           <li><strong>2 horas antes:</strong> Mensaje de confirmación final con link para reagendar si no pueden.</li>
@@ -76,9 +81,9 @@ export const ARTICLES: Record<string, Article> = {
         <p>Para servicios de más de 60 minutos (keratinas, coloraciones, tratamientos capilares), pedir un depósito del 20-30% reduce los no-shows a casi cero. Un cliente que ha pagado algo siempre avisa si no puede ir. En Colombia, puedes recibir el depósito por Nequi, Daviplata o transferencia.</p>
 
         <h2>5. Identifica a tus clientes reincidentes</h2>
-        <p>Con un buen sistema de gestión puedes ver qué clientes tienen historial de no-shows repetidos. Con esa información puedes agregarles un recordatorio extra o requerir depósito preventivo. La data que ya tienes en tu sistema es tu mejor herramienta de prevención.</p>
+        <p>Con un buen <IL href="/features">sistema de gestión</IL> puedes ver qué clientes tienen historial de no-shows repetidos. Con esa información puedes agregarles un recordatorio extra o requerir depósito preventivo. La data que ya tienes en tu sistema es tu mejor herramienta de prevención.</p>
 
-        <p>Implementado correctamente, este sistema lleva los no-shows del 25% al 8-10% en los primeros 30 días. Para un negocio mediano en Colombia, eso son <strong>$1.5-2M mensuales adicionales</strong> — sin nuevos clientes, solo recuperando lo que ya tenías.</p>
+        <p>Implementado correctamente, este sistema lleva los no-shows del 25% al 8-10% en los primeros 30 días. Para un negocio mediano en Colombia, eso son <strong>$1.5-2M mensuales adicionales</strong> — sin nuevos clientes, solo recuperando lo que ya tenías. <IL href="/reviews">Mira los resultados de negocios que ya lo implementaron →</IL></p>
       </>
     ),
   },
@@ -113,15 +118,15 @@ export const ARTICLES: Record<string, Article> = {
 
         <h2>Las 5 funciones esenciales que debe tener</h2>
         <ul>
-          <li><strong>Agenda online 24/7:</strong> Los clientes reservan desde su celular sin llamar. El sistema bloquea el horario automáticamente.</li>
-          <li><strong>Recordatorios automáticos por WhatsApp:</strong> Reduce no-shows del 25% al 8% sin hacer nada manual.</li>
-          <li><strong>POS integrado:</strong> Cobra en efectivo, Nequi, Daviplata o tarjeta. La caja cuadra sola al final del día.</li>
-          <li><strong>Factura electrónica DIAN:</strong> Cumple la obligación tributaria sin contratar un contador por cada factura.</li>
-          <li><strong>Comisiones automáticas:</strong> Tus profesionales ven cuánto ganaron en tiempo real. Cero reclamos.</li>
+          <li><strong><IL href="/features">Agenda online 24/7:</IL></strong> Los clientes reservan desde su celular sin llamar. El sistema bloquea el horario automáticamente.</li>
+          <li><strong><IL href="/features">Recordatorios automáticos por WhatsApp:</IL></strong> Reduce no-shows del 25% al 8% sin hacer nada manual.</li>
+          <li><strong><IL href="/features">POS integrado:</IL></strong> Cobra en efectivo, Nequi, Daviplata o tarjeta. La caja cuadra sola al final del día.</li>
+          <li><strong><IL href="/features">Factura electrónica DIAN:</IL></strong> Cumple la obligación tributaria sin contratar un contador por cada factura.</li>
+          <li><strong><IL href="/features">Comisiones automáticas:</IL></strong> Tus profesionales ven cuánto ganaron en tiempo real. Cero reclamos.</li>
         </ul>
 
         <h2>¿Cuánto cuesta un software para salón en Colombia?</h2>
-        <p>El rango va de $0 (soluciones básicas) hasta $500.000/mes (software tipo ERP). Para la mayoría de salones y barberías en Colombia, la zona ideal está entre $80.000 y $200.000 al mes — lo que equivale a 2-4 servicios. Si el software te ayuda a retener 5 clientes más al mes, se paga solo.</p>
+        <p>El rango va de $0 (soluciones básicas) hasta $500.000/mes (software tipo ERP). Para la mayoría de salones y barberías en Colombia, la zona ideal está entre $80.000 y $200.000 al mes — lo que equivale a 2-4 servicios. Si el software te ayuda a retener 5 clientes más al mes, se paga solo. <IL href="/pricing">Ver planes y precios →</IL></p>
 
         <blockquote className="z-blog-pullquote">
           "En el primer mes con Zyncra recuperamos $1.8M que antes perdíamos en no-shows y caja descuadrada. El software se pagó en los primeros 10 días."
@@ -132,7 +137,7 @@ export const ARTICLES: Record<string, Article> = {
         <p>El mayor miedo de los dueños de salón al cambiar de sistema es perder clientes en la transición. La clave es hacerlo gradual: primero migra la agenda, luego el POS, finalmente la facturación. La mayoría de plataformas permiten importar clientes desde Excel o contactos de WhatsApp. En 2 semanas tu equipo ya opera con el nuevo sistema sin fricción.</p>
 
         <h2>Red flags: software que debes evitar</h2>
-        <p>Huye de cualquier software que no tenga soporte en horario colombiano, que cobre por cada usuario extra, que no se integre con WhatsApp, o que no emita factura electrónica DIAN. En 2026, esos tres son mínimos para operar en Colombia.</p>
+        <p>Huye de cualquier software que no tenga soporte en horario colombiano, que cobre por cada usuario extra, que no se integre con WhatsApp, o que no emita factura electrónica DIAN. En 2026, esos tres son mínimos para operar en Colombia. <IL href="/reviews">Lee lo que dicen 500+ negocios que ya cambiaron →</IL></p>
       </>
     ),
   },
@@ -166,7 +171,7 @@ export const ARTICLES: Record<string, Article> = {
         <p>El cuaderno de citas tiene tres problemas fatales: se puede perder, no funciona a las 11 pm cuando el cliente quiere reservar, y no te avisa cuando alguien cancela. Una agenda online para barbería funciona 24/7, bloquea horarios automáticamente y envía confirmaciones sin que hagas nada.</p>
 
         <h2>Cómo funciona el sistema de reservas online</h2>
-        <p>El flujo es simple: el cliente entra a tu link de reservas, elige el servicio (corte, barba, combo), selecciona el barbero que prefiere y escoge el horario disponible. El sistema le envía una confirmación por WhatsApp y a ti te llega la notificación. Sin llamadas. Sin WhatsApps manuales. Sin citas dobles.</p>
+        <p>El flujo es simple: el cliente entra a tu <IL href="/features">link de reservas</IL>, elige el servicio (corte, barba, combo), selecciona el barbero que prefiere y escoge el horario disponible. El sistema le envía una confirmación por WhatsApp y a ti te llega la notificación. Sin llamadas. Sin WhatsApps manuales. Sin citas dobles.</p>
 
         <h2>El link de reservas: la herramienta más subutilizada en Colombia</h2>
         <p>La mayoría de barberías que tienen agenda online cometen un error: no comparten el link. El link de reservas debe estar en:</p>
@@ -186,7 +191,7 @@ export const ARTICLES: Record<string, Article> = {
         <p>La agenda online captura la cita. WhatsApp mantiene la relación. Configura tu WhatsApp Business para que el mensaje automático incluya el link de reservas. Así, cada nuevo contacto que llega a tu WhatsApp recibe inmediatamente la opción de agendar. Conviertes consultas en citas sin responder manualmente.</p>
 
         <h2>Resultados reales en barberías colombianas</h2>
-        <p>Las barberías que implementan agenda online en Colombia reportan entre 8 y 15 citas nuevas adicionales por mes en el primer trimestre — solo del tráfico orgánico en Google y de referencias de clientes actuales. Con publicidad en Instagram o TikTok ese número se multiplica porque el funnel ya está listo.</p>
+        <p>Las barberías que implementan <IL href="/features">agenda online</IL> en Colombia reportan entre 8 y 15 citas nuevas adicionales por mes en el primer trimestre — solo del tráfico orgánico en Google y de referencias de clientes actuales. Con publicidad en Instagram o TikTok ese número se multiplica porque el funnel ya está listo.</p>
       </>
     ),
   },
@@ -244,7 +249,7 @@ export const ARTICLES: Record<string, Article> = {
         </blockquote>
 
         <h2>Cómo configurar los recordatorios automáticos en tu salón</h2>
-        <p>Con una herramienta como Zyncra, configuras las 3 plantillas una sola vez — con las variables de nombre, hora y servicio — y el sistema los envía automáticamente para cada cita. No tienes que hacer nada. Las plantillas se pueden personalizar con el nombre de tu negocio, emojis y el tono que uses con tus clientes.</p>
+        <p>Con una herramienta como <IL href="/features">Zyncra</IL>, configuras las 3 plantillas una sola vez — con las variables de nombre, hora y servicio — y el sistema los envía automáticamente para cada cita. No tienes que hacer nada. Las plantillas se pueden personalizar con el nombre de tu negocio, emojis y el tono que uses con tus clientes. <IL href="/pricing">Ver planes →</IL></p>
       </>
     ),
   },
@@ -274,7 +279,7 @@ export const ARTICLES: Record<string, Article> = {
     content: (
       <>
         <h2>Por qué las reseñas de Google valen más que cualquier pauta</h2>
-        <p>Una barbería con 4.8 estrellas y 120 reseñas aparece primero en Google Maps cuando alguien busca "barbería cerca". Eso es tráfico gratuito, continuo y altamente calificado — personas que ya quieren el servicio y solo están eligiendo dónde ir. Ninguna pauta de Meta o TikTok compite con ese nivel de intención de compra.</p>
+        <p>Una barbería con 4.8 estrellas y 120 reseñas aparece primero en Google Maps cuando alguien busca "barbería cerca". Eso es tráfico gratuito, continuo y altamente calificado — personas que ya quieren el servicio y solo están eligiendo dónde ir. Ninguna pauta de Meta o TikTok compite con ese nivel de intención de compra. <IL href="/reviews">Ve cómo lo lograron negocios reales en Colombia →</IL></p>
 
         <h2>El momento exacto para pedir la reseña</h2>
         <p>El error más común: pedir la reseña al final de la cita cuando el cliente está de pie, apurado y pagando. El momento correcto es <strong>2-3 horas después</strong> de la cita, cuando el cliente ya llegó a su destino, se miró al espejo y está contento. Ese es el momento donde la emoción positiva es máxima.</p>
@@ -300,7 +305,7 @@ export const ARTICLES: Record<string, Article> = {
         <p>Responde siempre en menos de 24 horas. No te defiendas — agradece el feedback y ofrece una solución concreta. Los lectores de reseñas juzgan más tu respuesta que la queja misma. Una respuesta profesional a una reseña negativa puede convertirse en marketing positivo.</p>
 
         <h2>Automatiza el pedido de reseñas con cada cita</h2>
-        <p>Con Zyncra puedes configurar el mensaje post-visita como plantilla automática que se envía por WhatsApp 2 horas después de cada cita. No tienes que recordar hacerlo — el sistema lo hace por cada cliente, con su nombre y el servicio específico que recibió.</p>
+        <p>Con <IL href="/features">Zyncra</IL> puedes configurar el mensaje post-visita como plantilla automática que se envía por WhatsApp 2 horas después de cada cita. No tienes que recordar hacerlo — el sistema lo hace por cada cliente, con su nombre y el servicio específico que recibió.</p>
       </>
     ),
   },
@@ -342,7 +347,7 @@ export const ARTICLES: Record<string, Article> = {
         </ul>
 
         <h2>El flujo real de la factura electrónica en un salón</h2>
-        <p>En la práctica, facturar electrónicamente se ve así: el cliente paga → en el POS seleccionas "generar factura" → ingresas el NIT o cédula del cliente → el sistema genera el XML, lo envía a la DIAN, recibe el CUFE y le manda la factura al cliente por email o WhatsApp. Todo tarda menos de 10 segundos.</p>
+        <p>En la práctica, facturar electrónicamente se ve así: el cliente paga → en el <IL href="/features">POS</IL> seleccionas "generar factura" → ingresas el NIT o cédula del cliente → el sistema genera el XML, lo envía a la DIAN, recibe el CUFE y le manda la factura al cliente por email o WhatsApp. Todo tarda menos de 10 segundos.</p>
 
         <blockquote className="z-blog-pullquote">
           "Antes le dedicaba 2 horas a la semana a cuadrar facturas con mi contadora. Ahora Zyncra las genera automáticas con cada cobro. No toco nada."
@@ -350,7 +355,7 @@ export const ARTICLES: Record<string, Article> = {
         </blockquote>
 
         <h2>¿Cuánto cuesta implementar la factura electrónica?</h2>
-        <p>Los proveedores tecnológicos en Colombia cobran entre $30.000 y $150.000 al mes según el volumen de facturas. Para un salón con 30-100 transacciones al mes, el costo ronda los $50.000/mes. Si lo tienes integrado en tu software de gestión (como Zyncra con Factus), no pagas por separado.</p>
+        <p>Los proveedores tecnológicos en Colombia cobran entre $30.000 y $150.000 al mes según el volumen de facturas. Para un salón con 30-100 transacciones al mes, el costo ronda los $50.000/mes. Si lo tienes integrado en tu <IL href="/features">software de gestión</IL> (como Zyncra con Factus), no pagas por separado. <IL href="/pricing">Ver qué incluye cada plan →</IL></p>
 
         <h2>Cómo sacar la resolución DIAN paso a paso</h2>
         <ol>
@@ -400,7 +405,7 @@ export const ARTICLES: Record<string, Article> = {
           Esta semana tenemos disponibilidad para [Servicio] y queremos ofrecerte un [descuento/regalo] por volver.<br /><br />
           ¿Te agendamos? 📅 [link de reservas]
         </div>
-        <p>El secreto está en tres elementos: personalización (nombre + servicio específico que usaba), escasez o beneficio concreto (no solo "te esperamos"), y fricción cero (link directo para agendar).</p>
+        <p>El secreto está en tres elementos: personalización (nombre + servicio específico que usaba), escasez o beneficio concreto (no solo "te esperamos"), y fricción cero (<IL href="/features">link directo para agendar</IL>).</p>
 
         <h2>El momento exacto para enviar la campaña</h2>
         <p>Las campañas de WhatsApp enviadas entre martes y jueves entre 10 AM y 12 PM tienen la tasa de respuesta más alta en Colombia. Evita lunes (la gente está ocupada) y viernes (ya tienen planes). Los fines de semana funcionan para recordatorios, no para campañas de reactivación.</p>
@@ -419,7 +424,7 @@ export const ARTICLES: Record<string, Article> = {
         </ul>
 
         <h2>Lo que nunca debes enviar por WhatsApp</h2>
-        <p>Evita mensajes masivos sin personalización, listas de precios sin contexto, y mensajes después de las 8 PM. El spameo en WhatsApp hace que los clientes te bloqueen y pierdes el canal de comunicación para siempre. La clave es parecer una conversación, no publicidad.</p>
+        <p>Evita mensajes masivos sin personalización, listas de precios sin contexto, y mensajes después de las 8 PM. El spameo en WhatsApp hace que los clientes te bloqueen y pierdes el canal de comunicación para siempre. La clave es parecer una conversación, no publicidad. Si quieres profundizar, lee nuestra guía sobre <IL href="/blog/recordatorios-automaticos-whatsapp-salon">recordatorios automáticos por WhatsApp</IL>.</p>
       </>
     ),
   },
@@ -464,7 +469,7 @@ export const ARTICLES: Record<string, Article> = {
         <p>Los videos de transformaciones (antes y después) en TikTok e Instagram Reels tienen el mayor alcance orgánico de todas las redes sociales. Un video de 30 segundos mostrando un corte + barba puede llegar a 10.000-50.000 personas en Bogotá, Medellín o Cali sin gastar nada en pauta. Publica 3-4 videos por semana con música de moda.</p>
 
         <h2>4. Consigue reseñas de Google sistemáticamente</h2>
-        <p>Como explicamos en otro artículo, un salón con 4.7+ estrellas y más de 50 reseñas aparece primero en búsquedas locales. Enviar un mensaje de WhatsApp post-visita pidiendo la reseña es la estrategia de adquisición de clientes más subutilizada en Colombia.</p>
+        <p>Como <IL href="/blog/resenas-google-salon-de-belleza">explicamos en nuestra guía de reseñas Google</IL>, un salón con 4.7+ estrellas y más de 50 reseñas aparece primero en búsquedas locales. Enviar un <IL href="/blog/recordatorios-automaticos-whatsapp-salon">mensaje de WhatsApp post-visita</IL> pidiendo la reseña es la estrategia de adquisición de clientes más subutilizada en Colombia.</p>
 
         <h2>5. Ofrece un servicio de entrada de bajo precio</h2>
         <p>Un corte express a precio reducido o una consulta gratis funciona como "prueba" para nuevos clientes que no se animan a pagar por el servicio completo la primera vez. Una vez entran, el 60% regresa al precio completo. El primer servicio no tiene que ser rentable — tiene que crear el hábito.</p>
@@ -473,7 +478,7 @@ export const ARTICLES: Record<string, Article> = {
         <p>Gimnasios, tiendas de ropa, restaurantes y cafés cercanos tienen clientes que son exactamente tu público. Un acuerdo de referidos mutuos — tu pones flyers en su negocio, ellos ponen en el tuyo — puede generar 5-15 clientes nuevos al mes sin inversión.</p>
 
         <h2>7. WhatsApp Status y grupos de vecinos</h2>
-        <p>Los grupos de vecindad en WhatsApp (Conjunto X, Barrio Y) y tus estados de WhatsApp son los canales más subutilizados del marketing local en Colombia. Publicar en tu estado de WhatsApp con fotos de trabajos recientes, precios y tu link de reservas llega exactamente a las personas que te conocen — la audiencia más propensa a visitar tu negocio.</p>
+        <p>Los grupos de vecindad en WhatsApp (Conjunto X, Barrio Y) y tus estados de WhatsApp son los canales más subutilizados del marketing local en Colombia. Publicar en tu estado de WhatsApp con fotos de trabajos recientes, precios y tu <IL href="/features">link de reservas</IL> llega exactamente a las personas que te conocen — la audiencia más propensa a visitar tu negocio.</p>
       </>
     ),
   },
