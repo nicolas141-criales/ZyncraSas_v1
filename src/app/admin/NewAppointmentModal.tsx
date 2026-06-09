@@ -45,7 +45,7 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
 
   const [clientId, setClientId] = useState("");
   const [clientSearch, setClientSearch] = useState("");
-  const [selectedClient, setSelectedClient] = useState<{ id: string; name: string; phone: string } | null>(null);
+  const [selectedClient, setSelectedClient] = useState<{ id: string; name: string; phone: string; email?: string | null } | null>(null);
   const [serviceId, setServiceId] = useState("");
   const [profId, setProfId] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
@@ -72,7 +72,7 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
     setCalYear(now.getFullYear()); setCalMonth(now.getMonth());
 
     Promise.all([
-      supabase.from("clients").select("id,name,phone").eq("tenant_id", tenantId).order("name"),
+      supabase.from("clients").select("id,name,phone,email").eq("tenant_id", tenantId).order("name"),
       supabase.from("services").select("id,name").eq("tenant_id", tenantId).order("name"),
       supabase.from("professionals").select("id,name,schedule").eq("tenant_id", tenantId).eq("is_active", true).order("name"),
       supabase.from("tenants").select("settings").eq("id", tenantId).maybeSingle(),
@@ -178,14 +178,41 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
       setError("Completa todos los campos requeridos."); return;
     }
     setSaving(true); setError(null);
-    const { error: err } = await supabase.from("appointments").insert({
+    const { data: insertData, error: err } = await supabase.from("appointments").insert({
       tenant_id: tenantId, client_id: clientId,
       service_id: serviceId || null, professional_id: profId,
       appointment_date: selectedDate, appointment_time: to24h(selectedTime),
       status: "confirmed",
-    });
+    }).select("id, manage_token").single();
     setSaving(false);
     if (err) { setError("Error: " + err.message); return; }
+
+    if (selectedClient?.email && (insertData as any)?.manage_token) {
+      const { data: branding } = await supabase
+        .from("branding")
+        .select("business_name, primary_color")
+        .eq("tenant_id", tenantId)
+        .maybeSingle();
+      const svcName  = services.find((s: any) => s.id === serviceId)?.name ?? "";
+      const profName = profs.find((p: any) => p.id === profId)?.name ?? "";
+      fetch("/api/send-confirmation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email:        selectedClient.email,
+          clientName:   selectedClient.name,
+          businessName: (branding as any)?.business_name ?? "",
+          service:      svcName,
+          professional: profName,
+          date:         selectedDate,
+          time:         to24h(selectedTime),
+          primaryColor: (branding as any)?.primary_color ?? "#fb0f05",
+          manageToken:  (insertData as any).manage_token,
+          type:         "confirmation",
+        }),
+      }).catch(() => {});
+    }
+
     onCreated();
     onClose();
   };

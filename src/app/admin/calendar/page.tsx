@@ -15,7 +15,8 @@ interface Appointment {
   appointment_date: string;
   appointment_time: string;
   status: string;
-  clients: { name: string } | null;
+  manage_token: string;
+  clients: { name: string; email?: string | null } | null;
   services: { name: string } | null;
   professionals: { name: string } | null;
 }
@@ -73,6 +74,7 @@ export default function CalendarPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [aptFields, setAptFields] = useState<{ name: string; value: string }[]>([]);
   const [showNewAppt, setShowNewAppt] = useState(false);
+  const [branding, setBranding] = useState<{ business_name?: string; primary_color?: string } | null>(null);
 
   const weekDays = getWeekDays(weekRef);
   const todayStr = toISO(new Date());
@@ -80,11 +82,13 @@ export default function CalendarPage() {
   const startDate = view === "week" ? toISO(weekDays[0]) : toISO(dayRef);
   const endDate   = view === "week" ? toISO(weekDays[6]) : toISO(dayRef);
 
-  // Fetch professionals
+  // Fetch professionals + branding
   useEffect(() => {
     if (!tenantId) return;
     supabase.from("professionals").select("id, name").eq("tenant_id", tenantId).eq("is_active", true).order("name")
       .then(({ data }) => setProfs(data ?? []));
+    supabase.from("branding").select("business_name, primary_color").eq("tenant_id", tenantId).maybeSingle()
+      .then(({ data }) => setBranding(data ?? null));
   }, [tenantId]);
 
   // Build indicator set: which (client_id, service_id) pairs have field values
@@ -110,7 +114,7 @@ export default function CalendarPage() {
     setLoading(true);
     const { data } = await supabase
       .from("appointments")
-      .select("id,client_id,service_id,professional_id,appointment_date,appointment_time,status,clients(name),services(name),professionals(name)")
+      .select("id,client_id,service_id,professional_id,appointment_date,appointment_time,status,manage_token,clients(name,email),services(name),professionals(name)")
       .eq("tenant_id", tid).gte("appointment_date", s).lte("appointment_date", e)
       .order("appointment_date").order("appointment_time");
     const apts = (data ?? []) as unknown as Appointment[];
@@ -166,8 +170,38 @@ export default function CalendarPage() {
     const { error } = await supabase.from("appointments")
       .update({ appointment_date: editForm.date, appointment_time: editForm.time, status: editForm.status })
       .eq("id", selectedApt.id);
-    if (!error) { setSelectedApt(null); fetchAppointments(tenantId!, startDate, endDate); }
-    else alert("Error al actualizar la cita.");
+    if (!error) {
+      const clientEmail = (selectedApt.clients as any)?.email as string | null | undefined;
+      const manageToken = selectedApt.manage_token;
+      if (clientEmail && manageToken) {
+        const dateChanged = editForm.date !== selectedApt.appointment_date
+                         || editForm.time !== selectedApt.appointment_time.substring(0, 5);
+        const wasCancelled = editForm.status === "cancelled" && selectedApt.status !== "cancelled";
+        const emailType = wasCancelled ? "cancellation" : dateChanged ? "modification" : null;
+        if (emailType) {
+          fetch("/api/send-confirmation", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email:        clientEmail,
+              clientName:   (selectedApt.clients as any)?.name ?? "",
+              businessName: branding?.business_name ?? "",
+              service:      (selectedApt.services as any)?.name ?? "",
+              professional: (selectedApt.professionals as any)?.name ?? "",
+              date:         editForm.date,
+              time:         editForm.time,
+              primaryColor: branding?.primary_color ?? "#fb0f05",
+              manageToken,
+              type:         emailType,
+            }),
+          }).catch(() => {});
+        }
+      }
+      setSelectedApt(null);
+      fetchAppointments(tenantId!, startDate, endDate);
+    } else {
+      alert("Error al actualizar la cita.");
+    }
     setIsSaving(false);
   };
 

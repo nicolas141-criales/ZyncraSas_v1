@@ -61,6 +61,33 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
       .eq("id", appt.id);
 
     if (updErr) return NextResponse.json({ error: updErr.message }, { status: 500 });
+
+    if (appt.clients?.email) {
+      const { data: branding } = await db()
+        .from("branding")
+        .select("business_name, primary_color")
+        .eq("tenant_id", appt.tenant_id)
+        .maybeSingle();
+
+      const base = (process.env.NEXT_PUBLIC_APP_URL ?? "https://zyncra.app").replace(/\/$/, "");
+      fetch(`${base}/api/send-confirmation`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email:        appt.clients.email,
+          clientName:   appt.clients.name,
+          businessName: branding?.business_name ?? "",
+          service:      appt.services?.name      ?? "",
+          professional: appt.professionals?.name ?? "",
+          date:         appt.appointment_date,
+          time:         appt.appointment_time,
+          primaryColor: branding?.primary_color  ?? "#fb0f05",
+          manageToken:  token,
+          type:         "cancellation",
+        }),
+      }).catch(() => {});
+    }
+
     return NextResponse.json({ ok: true, action: "cancelled" });
   }
 
