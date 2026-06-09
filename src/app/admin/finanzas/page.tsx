@@ -1,16 +1,18 @@
 "use client";
 import { useState } from "react";
-import TabResumen  from "./TabResumen";
-import TabCaja     from "./TabCaja";
-import TabVentas   from "./TabVentas";
-import TabReportes from "./TabReportes";
+import TabResumen      from "./TabResumen";
+import TabCaja         from "./TabCaja";
+import TabVentas       from "./TabVentas";
+import TabReportes     from "./TabReportes";
+import TabRentabilidad from "./TabRentabilidad";
 
-type Tab = "resumen" | "caja" | "ventas" | "reportes";
+type Tab = "resumen" | "caja" | "ventas" | "reportes" | "rentabilidad";
 const TABS: { id: Tab; label: string }[] = [
-  { id: "resumen",  label: "Resumen"  },
-  { id: "caja",     label: "Caja"     },
-  { id: "ventas",   label: "Ventas"   },
-  { id: "reportes", label: "Reportes" },
+  { id: "resumen",       label: "Resumen"       },
+  { id: "caja",          label: "Caja"          },
+  { id: "ventas",        label: "Ventas"        },
+  { id: "reportes",      label: "Reportes"      },
+  { id: "rentabilidad",  label: "Rentabilidad"  },
 ];
 
 export default function FinanzasPage() {
@@ -36,10 +38,11 @@ export default function FinanzasPage() {
         ))}
       </div>
 
-      {tab === "resumen"  && <TabResumen  />}
-      {tab === "caja"     && <TabCaja     />}
-      {tab === "ventas"   && <TabVentas   />}
-      {tab === "reportes" && <TabReportes />}
+      {tab === "resumen"      && <TabResumen      />}
+      {tab === "caja"         && <TabCaja         />}
+      {tab === "ventas"       && <TabVentas       />}
+      {tab === "reportes"     && <TabReportes     />}
+      {tab === "rentabilidad" && <TabRentabilidad />}
     </div>
   );
 }
