@@ -75,14 +75,18 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('products', 'products', true)
 ON CONFLICT (id) DO NOTHING;
 
-CREATE POLICY IF NOT EXISTS "products_public_read" ON storage.objects
-  FOR SELECT USING (bucket_id = 'products');
-
-CREATE POLICY IF NOT EXISTS "products_auth_insert" ON storage.objects
-  FOR INSERT WITH CHECK (bucket_id = 'products' AND auth.role() = 'authenticated');
-
-CREATE POLICY IF NOT EXISTS "products_auth_update" ON storage.objects
-  FOR UPDATE USING (bucket_id = 'products' AND auth.role() = 'authenticated');
-
-CREATE POLICY IF NOT EXISTS "products_auth_delete" ON storage.objects
-  FOR DELETE USING (bucket_id = 'products' AND auth.role() = 'authenticated');
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'products_public_read' AND tablename = 'objects') THEN
+    CREATE POLICY "products_public_read" ON storage.objects FOR SELECT USING (bucket_id = 'products');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'products_auth_insert' AND tablename = 'objects') THEN
+    CREATE POLICY "products_auth_insert" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'products' AND auth.role() = 'authenticated');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'products_auth_update' AND tablename = 'objects') THEN
+    CREATE POLICY "products_auth_update" ON storage.objects FOR UPDATE USING (bucket_id = 'products' AND auth.role() = 'authenticated');
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'products_auth_delete' AND tablename = 'objects') THEN
+    CREATE POLICY "products_auth_delete" ON storage.objects FOR DELETE USING (bucket_id = 'products' AND auth.role() = 'authenticated');
+  END IF;
+END $$;
