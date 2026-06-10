@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkAIAuth, serviceDb } from "@/lib/ai-auth";
+import { phoneOrFilter } from "@/lib/phone";
 
 export async function POST(req: NextRequest) {
   const authErr = checkAIAuth(req);
@@ -12,16 +13,11 @@ export async function POST(req: NextRequest) {
 
   const db = serviceDb();
 
-  // Try multiple phone normalizations
-  const digits = phone.replace(/\D/g, "");
-  const local  = digits.startsWith("57") ? digits.slice(2) : digits;
-  const col    = `57${local}`;
-
   const { data: client } = await db
     .from("clients")
     .select("id, name, email, phone")
     .eq("tenant_id", tenant_id)
-    .or(`phone.eq.${phone},phone.eq.${local},phone.eq.${col}`)
+    .or(phoneOrFilter(phone))
     .maybeSingle();
 
   if (!client) {

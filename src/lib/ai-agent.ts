@@ -7,8 +7,10 @@ export const BOOKING_TOOLS = [
       name: "get_client",
       description:
         "Busca al cliente por su número de teléfono. " +
-        "Retorna sus datos y próximas citas si existe. " +
-        "SIEMPRE llama primero, antes de cualquier otra acción.",
+        "Retorna sus datos y próximas citas activas. " +
+        "OBLIGATORIO: llama esta herramienta como PRIMERA ACCIÓN ante cualquier mensaje del usuario. " +
+        "El teléfono ya está disponible en el contexto del sistema. " +
+        "NUNCA pidas el teléfono ni el nombre al cliente antes de llamar esta herramienta.",
       parameters: {
         type: "object",
         required: ["tenant_id", "phone"],
@@ -120,6 +122,24 @@ export const BOOKING_TOOLS = [
   },
 ];
 
+// ── Ollama fetch with 1 retry on non-200 ─────────────────────────────────────
+
+async function fetchOllama(url: string, body: string): Promise<any> {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    if (attempt > 0) await new Promise(r => setTimeout(r, 5000));
+    const res = await fetch(url, {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      signal:  AbortSignal.timeout(300_000),
+    });
+    if (res.ok) return res.json();
+    const errText = await res.text();
+    console.error(`[ollama] attempt ${attempt + 1} failed — ${res.status}: ${errText.slice(0, 200)}`);
+    if (attempt === 1) throw new Error(`Ollama ${res.status}: ${errText.slice(0, 200)}`);
+  }
+}
+
 // ── Tool execution (calls internal Zyncra API) ─────────────────────────────────
 
 const TOOL_PATHS: Record<string, string> = {
@@ -151,7 +171,7 @@ async function executeTool(
         "Authorization": `Bearer ${secret}`,
       },
       body:   JSON.stringify({ ...args, tenant_id: tenantId }),
-      signal: AbortSignal.timeout(15_000),
+      signal: AbortSignal.timeout(30_000),
     });
     const data = await res.json();
     return data;
@@ -194,32 +214,19 @@ export async function runAgentLoop(
   const history   = [...messages];
 
   for (let round = 0; round < 12; round++) {
-    const res = await fetch(`${ollamaUrl}/api/chat`, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model,
-        messages: history,
-        tools:    BOOKING_TOOLS,
-        stream:   false,
-        think:    false,   // disable extended reasoning — keeps responses fast on CPU
-        options: {
-          temperature:    0.2,
-          top_p:          0.9,
-          num_ctx:        32768,
-          repeat_penalty: 1.1,
-        },
-      }),
-      signal: AbortSignal.timeout(300_000), // 5 min — large models on CPU can be slow
-    });
-
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error(`[agent round ${round}] Ollama error ${res.status}:`, errText);
-      throw new Error(`Ollama ${res.status}: ${errText}`);
-    }
-
-    const data = await res.json();
+    const data = await fetchOllama(`${ollamaUrl}/api/chat`, JSON.stringify({
+      model,
+      messages: history,
+      tools:    BOOKING_TOOLS,
+      stream:   false,
+      think:    false,   // disable extended reasoning — keeps responses fast on CPU
+      options: {
+        temperature:    0.2,
+        top_p:          0.9,
+        num_ctx:        32768,
+        repeat_penalty: 1.1,
+      },
+    }));
     const msg  = data.message as any;
     console.log(`[agent round ${round}] role=${msg?.role} tool_calls=${msg?.tool_calls?.length ?? 0} content_len=${msg?.content?.length ?? 0}`);
     if (!msg) throw new Error("Ollama no retornó mensaje");

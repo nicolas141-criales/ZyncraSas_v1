@@ -25,6 +25,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "tenant_id, service_id y date son requeridos" }, { status: 400 });
   }
 
+  // Reject past dates
+  const todayBogota = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Bogota" }))
+    .toISOString().slice(0, 10);
+  if (date < todayBogota) {
+    return NextResponse.json({ error: "No se puede consultar disponibilidad para fechas pasadas", slots: [] }, { status: 400 });
+  }
+
   const db = serviceDb();
 
   const { data: service } = await db

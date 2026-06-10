@@ -10,6 +10,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "appointment_id, date, time y tenant_id son requeridos" }, { status: 400 });
   }
 
+  // Reject past dates
+  const todayBogota = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Bogota" }))
+    .toISOString().slice(0, 10);
+  if (date < todayBogota) {
+    return NextResponse.json({ error: "No se puede reagendar a una fecha pasada" }, { status: 400 });
+  }
+
   const db = serviceDb();
 
   const { data: appt } = await db

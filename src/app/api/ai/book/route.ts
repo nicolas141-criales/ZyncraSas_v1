@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { checkAIAuth, serviceDb } from "@/lib/ai-auth";
+import { phoneOrFilter } from "@/lib/phone";
 
 export async function POST(req: NextRequest) {
   const authErr = checkAIAuth(req);
@@ -50,15 +51,11 @@ export async function POST(req: NextRequest) {
   // Resolve client
   let resolvedClientId = client_id as string | null;
   if (!resolvedClientId && client_phone) {
-    const digits = client_phone.replace(/\D/g, "");
-    const local  = digits.startsWith("57") ? digits.slice(2) : digits;
-    const col    = `57${local}`;
-
     const { data: existing } = await db
       .from("clients")
       .select("id")
       .eq("tenant_id", tenant_id)
-      .or(`phone.eq.${client_phone},phone.eq.${local},phone.eq.${col}`)
+      .or(phoneOrFilter(client_phone))
       .maybeSingle();
 
     if (existing) {
@@ -92,6 +89,9 @@ export async function POST(req: NextRequest) {
     .select("id, manage_token, appointment_date, appointment_time")
     .single();
 
+  if (insertErr?.code === "23505") {
+    return NextResponse.json({ error: "Ese horario ya no está disponible. Por favor elige otro horario." }, { status: 409 });
+  }
   if (insertErr || !appt) {
     return NextResponse.json({ error: "Error al crear la cita" }, { status: 500 });
   }

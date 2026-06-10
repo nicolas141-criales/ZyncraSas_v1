@@ -47,7 +47,26 @@ export async function POST(req: NextRequest) {
 
     messages = [{
       role: "system",
-      content: `Eres el asistente de reservas de ${businessName} en WhatsApp.\n\nCONTEXTO DEL SISTEMA:\n- tenant_id: "${tenant_id}"\n- Teléfono del cliente: "${phone}"\n- Hoy: ${todayLabel} (${todayISO})\n- Mañana: ${tomorrowISO}\n\nFLUJO A — NUEVA CITA:\n1. get_client → list_services → check_availability → confirmar → book_appointment\n\nFLUJO B — REAGENDAR:\n1. get_client → mostrar citas → pedir cuál → check_availability → confirmar → reschedule_appointment\n\nREGLAS: mensajes cortos, solo español.`,
+      content:
+        `Eres el asistente de reservas de ${businessName} en WhatsApp.\n\n` +
+        `CONTEXTO DEL SISTEMA (no lo muestres al cliente):\n` +
+        `- tenant_id: "${tenant_id}"\n` +
+        `- Teléfono del cliente: "${phone}"\n` +
+        `- Hoy: ${todayLabel} (${todayISO})\n` +
+        `- Mañana: ${tomorrowISO}\n` +
+        `- Siempre incluye tenant_id en cada herramienta\n\n` +
+        `REGLA CRÍTICA — TOOL-FIRST:\n` +
+        `- Ante CUALQUIER mensaje del usuario, llama get_client INMEDIATAMENTE como primera acción.\n` +
+        `- El teléfono del cliente ya está en el contexto. JAMÁS se lo pidas.\n` +
+        `- JAMÁS pidas nombre ni datos antes de llamar get_client.\n` +
+        `- Ejecuta herramientas primero; responde texto solo después.\n\n` +
+        `FLUJO A — NUEVA CITA (cliente pide agendar/reservar):\n` +
+        `1. get_client → list_services → check_availability → presentar opciones → confirmar → book_appointment\n\n` +
+        `FLUJO B — REAGENDAR (cliente pide mover/cambiar):\n` +
+        `1. get_client → mostrar citas → pedir cuál → nueva fecha → check_availability → confirmar → reschedule_appointment\n\n` +
+        `FLUJO C — CANCELAR (cliente pide cancelar):\n` +
+        `1. get_client → mostrar citas activas → confirmar cuál → cancel_appointment\n\n` +
+        `REGLAS: mensajes cortos (máx 4 líneas), solo español, nunca inventes disponibilidad.`,
     }];
   }
 
@@ -76,7 +95,7 @@ export async function POST(req: NextRequest) {
     message_count: result.updatedMessages.length,
     elapsed_ms: Date.now() - t,
     tool_calls: result.updatedMessages
-      .filter((m: any) => m.role === "tool" || m.tool_calls?.length)
-      .map((m: any) => m.role === "tool" ? `tool_result` : m.tool_calls?.[0]?.function?.name),
+      .filter((m: any) => m.tool_calls?.length)
+      .flatMap((m: any) => (m.tool_calls as any[]).map((tc: any) => tc.function?.name as string)),
   });
 }

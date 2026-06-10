@@ -3,27 +3,35 @@ import { runAgentLoop } from "@/lib/ai-agent";
 
 const MAX_HISTORY = 24;
 
-async function loadHistory(tenantId: string, phone: string): Promise<any[]> {
+async function loadConversation(tenantId: string, phone: string) {
   const { data } = await serviceDb()
     .from("ai_conversations")
-    .select("messages")
+    .select("messages, last_wa_msg_id")
     .eq("tenant_id", tenantId)
     .eq("phone", phone)
     .maybeSingle();
-  return (data?.messages ?? []) as any[];
+  return {
+    messages:     (data?.messages ?? []) as any[],
+    lastWaMsgId:  (data as any)?.last_wa_msg_id as string | null ?? null,
+  };
 }
 
-async function saveHistory(tenantId: string, phone: string, messages: any[]) {
+async function saveHistory(tenantId: string, phone: string, messages: any[], waMessageId?: string) {
   const systemMsg = messages.find((m: any) => m.role === "system");
   const rest      = messages.filter((m: any) => m.role !== "system").slice(-MAX_HISTORY);
   const toSave    = systemMsg ? [systemMsg, ...rest] : rest;
 
+  const row: Record<string, any> = {
+    tenant_id:       tenantId,
+    phone,
+    messages:        toSave,
+    last_message_at: new Date().toISOString(),
+  };
+  if (waMessageId) row.last_wa_msg_id = waMessageId;
+
   await serviceDb()
     .from("ai_conversations")
-    .upsert(
-      { tenant_id: tenantId, phone, messages: toSave, last_message_at: new Date().toISOString() },
-      { onConflict: "tenant_id,phone" }
-    );
+    .upsert(row, { onConflict: "tenant_id,phone" });
 }
 
 function buildSystemMessage(tenantId: string, phone: string, businessName: string): any {
@@ -50,6 +58,12 @@ CONTEXTO DEL SISTEMA (no lo muestres al cliente):
 - Mañana: ${tomorrowISO}
 - Siempre incluye tenant_id en cada herramienta
 
+REGLA CRÍTICA — TOOL-FIRST:
+- Ante CUALQUIER mensaje del usuario, llama get_client INMEDIATAMENTE como primera acción.
+- El teléfono del cliente ya está en el contexto. JAMÁS se lo pidas.
+- JAMÁS pidas nombre ni datos antes de llamar get_client.
+- Ejecuta herramientas primero; responde texto solo después.
+
 FLUJO A — NUEVA CITA (cliente pide agendar/reservar):
 1. get_client(phone="${phone}") → identificar si el cliente existe
 2. list_services() → obtener el service_id según lo que pide el cliente
@@ -71,9 +85,16 @@ FLUJO B — REAGENDAR (cliente pide mover/cambiar una cita):
 8. Espera confirmación explícita
 9. reschedule_appointment(appointment_id, new_date, new_time) → solo después de confirmación
 
+FLUJO C — CANCELAR (cliente pide cancelar):
+1. get_client(phone="${phone}") → identifica al cliente y sus citas futuras activas
+   - Si no tiene citas activas, informa que no hay nada que cancelar
+2. Muestra la(s) cita(s) activa(s) y pregunta cuál desea cancelar
+3. Espera confirmación explícita del cliente
+4. cancel_appointment(appointment_id) → solo después de confirmación
+
 REGLAS:
 - NUNCA inventes horarios ni disponibilidad
-- NUNCA llames book_appointment ni reschedule_appointment sin confirmación previa
+- NUNCA llames book_appointment, reschedule_appointment ni cancel_appointment sin confirmación previa
 - Mensajes cortos (WhatsApp, máx 4 líneas)
 - Solo español
 - Usa ✅ para confirmaciones, 📅 para fechas`,
@@ -100,17 +121,25 @@ async function sendWA(phoneNumberId: string, to: string, text: string, token: st
 export async function processMessage({
   phone,
   text,
+  waMessageId,
   phoneNumberId,
   tenantId,
   accessToken,
 }: {
   phone:         string;
   text:          string;
+  waMessageId?:  string;
   phoneNumberId: string;
   tenantId:      string;
   accessToken:   string;
 }) {
-  const stored = await loadHistory(tenantId, phone);
+  const { messages: stored, lastWaMsgId } = await loadConversation(tenantId, phone);
+
+  // Dedup: skip if this exact WhatsApp message was already processed (retransmission)
+  if (waMessageId && lastWaMsgId === waMessageId) {
+    console.log(`[processor] skip duplicate wa_msg_id=${waMessageId} phone=${phone}`);
+    return;
+  }
 
   let messages: any[];
   if (stored.length === 0) {
@@ -138,7 +167,7 @@ export async function processMessage({
     updatedMessages = [...messages, { role: "assistant", content: reply }];
   }
 
-  await saveHistory(tenantId, phone, updatedMessages);
+  await saveHistory(tenantId, phone, updatedMessages, waMessageId);
 
   if (accessToken && phoneNumberId) {
     await sendWA(phoneNumberId, phone, reply, accessToken);
