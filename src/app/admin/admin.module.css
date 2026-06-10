@@ -4,7 +4,8 @@
 
 .adminLayout {
   display: flex;
-  min-height: 100dvh;
+  height: 100dvh;
+  overflow: hidden;
   background:
     radial-gradient(1000px 640px at 88% -12%, rgba(0, 39, 254, 0.055), transparent 62%),
     radial-gradient(840px 540px at -8% 112%, rgba(251, 15, 5, 0.05), transparent 62%),
@@ -166,6 +167,7 @@
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
+  height: 100%;
 }
 
 .header {
