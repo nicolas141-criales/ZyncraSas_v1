@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
@@ -25,7 +25,7 @@ const AVATAR_COLORS = ["#fb0f05","#0027fe","#0027fe","#10b981","#f59e0b","#ec489
 const avatarColor = (id: string) => AVATAR_COLORS[id.charCodeAt(0) % AVATAR_COLORS.length];
 
 const inp: React.CSSProperties = {
-  width: "100%", padding: "11px 14px", border: "1.5px solid #e8e6e2",
+  width: "100%", padding: "11px 14px", border: "1.5px solid rgba(20,15,30,0.08)",
   borderRadius: "11px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
   color: "#14111C", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
@@ -98,7 +98,7 @@ export default function ClientsPage() {
             <IconUserGroup size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Clientes</h1>
+            <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Clientes</h1>
             <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>
               {clients.length} cliente{clients.length !== 1 ? "s" : ""} registrados
             </p>
@@ -121,7 +121,7 @@ export default function ClientsPage() {
       </div>
 
       {/* List */}
-      <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden" }}>
+      <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden" }}>
         {loading ? (
           <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando clientes...</div>
         ) : filtered.length === 0 ? (
@@ -142,9 +142,9 @@ export default function ClientsPage() {
         ) : (
           <div style={{ overflowX: "auto" }}>
             {/* Table header */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", padding: "12px 20px", borderBottom: "1px solid #f0eeeb", background: "#fafaf8" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", padding: "12px 20px", borderBottom: "1px solid #f0eeeb", background: "rgba(20,15,30,0.025)" }}>
               {["Cliente","Teléfono","Correo","Acciones"].map(h => (
-                <div key={h} style={{ fontSize: "11px", fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>{h}</div>
+                <div key={h} style={{ fontSize: "9.5px", fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.09em", fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace" }}>{h}</div>
               ))}
             </div>
 
@@ -156,7 +156,7 @@ export default function ClientsPage() {
               >
                 {/* Name + avatar */}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.id)}, ${avatarColor(c.id)}aa)`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "12px", flexShrink: 0 }}>
+                  <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.id)}, ${avatarColor(c.id)}aa)`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: "12px", flexShrink: 0 }}>
                     {initials(c.name)}
                   </div>
                   <span style={{ fontWeight: 600, fontSize: "14px", color: "#14111C" }}>{c.name}</span>
@@ -177,7 +177,7 @@ export default function ClientsPage() {
                 {/* Actions */}
                 <div style={{ display: "flex", gap: "6px" }}>
                   <button onClick={() => openEdit(c)}
-                    style={{ padding: "6px 12px", borderRadius: "8px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
+                    style={{ padding: "6px 12px", borderRadius: "8px", border: "1.5px solid rgba(20,15,30,0.08)", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(20,15,30,0.08)"; e.currentTarget.style.color = "#3a3548"; }}>
                     Editar
@@ -197,16 +197,16 @@ export default function ClientsPage() {
 
       {/* Modal */}
       {showModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={e => { if (e.target === e.currentTarget) setShowModal(false); }}>
-          <div style={{ background: "white", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "440px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "440px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconUserGroup size={17} />
                 </div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>
+                <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#14111C" }}>
                   {editing ? "Editar cliente" : "Nuevo cliente"}
                 </h2>
               </div>

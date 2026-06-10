@@ -243,7 +243,7 @@ export default function WhatsappPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
             {/* Campaign name */}
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               <label style={labelStyle}>Nombre de la campaña</label>
               <input value={campaignName} onChange={e => setCampaignName(e.target.value)}
                 placeholder="Ej: Promo Octubre, Clientes inactivos..."
@@ -251,7 +251,7 @@ export default function WhatsappPage() {
             </div>
 
             {/* Segment */}
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               <label style={labelStyle}>Segmento de clientes</label>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {(["all", "active", "inactive"] as Segment[]).map(s => (
@@ -271,7 +271,7 @@ export default function WhatsappPage() {
             </div>
 
             {/* Message */}
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                 <label style={labelStyle}>Mensaje</label>
                 <span style={{ fontSize: 12, color: charCount > 1000 ? "#c62828" : "#9b9bb0" }}>{charCount} caracteres</span>
@@ -319,7 +319,7 @@ export default function WhatsappPage() {
 
           {/* Right: Preview */}
           <div style={{ position: "sticky", top: 20, height: "fit-content" }}>
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 700 }}>Vista previa</h3>
               {/* WhatsApp chat bubble */}
               <div style={{ background: "#e9fbe6", borderRadius: "0 12px 12px 12px", padding: "12px 14px", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", color: "#1a1a2e", minHeight: 80, wordBreak: "break-word" }}>
@@ -365,7 +365,7 @@ export default function WhatsappPage() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {templates.map(t => (
-                <div key={t.id} style={{ background: "white", borderRadius: 14, padding: 20, border: "1px solid #e8e6e2" }}>
+                <div key={t.id} style={{ background: "white", borderRadius: 14, padding: 20, border: "1px solid rgba(20,15,30,0.08)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>{t.name}</div>
@@ -406,7 +406,7 @@ export default function WhatsappPage() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {campaigns.map(c => (
-                <div key={c.id} style={{ background: "white", borderRadius: 14, padding: "16px 20px", border: "1px solid #e8e6e2" }}>
+                <div key={c.id} style={{ background: "white", borderRadius: 14, padding: "16px 20px", border: "1px solid rgba(20,15,30,0.08)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>{c.name}</div>
@@ -439,7 +439,7 @@ export default function WhatsappPage() {
 
       {/* ── Send Modal ─────────────────────────────────────────────────────── */}
       {sendModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div style={{ background: "white", borderRadius: 20, width: "100%", maxWidth: 560, maxHeight: "85vh", display: "flex", flexDirection: "column", overflow: "hidden" }}>
 
             {/* Modal header */}
@@ -508,7 +508,7 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em",
 };
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
+  width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
   fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
@@ -520,7 +520,7 @@ const btnPrimary: React.CSSProperties = {
 };
 const btnSecondary: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 6,
-  padding: "9px 20px", borderRadius: 10, border: "1px solid #e8e6e2",
+  padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(20,15,30,0.08)",
   background: "white", color: "#4a4a6a", fontWeight: 600, fontSize: 14,
   cursor: "pointer", textDecoration: "none",
 };

@@ -220,7 +220,7 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
   if (!open) return null;
 
   const inp: React.CSSProperties = {
-    width: "100%", padding: "10px 13px", border: "1.5px solid #e8e6e2",
+    width: "100%", padding: "10px 13px", border: "1.5px solid rgba(20,15,30,0.08)",
     borderRadius: "10px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
     color: "#14111C", boxSizing: "border-box",
     fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif", outline: "none",
@@ -231,9 +231,9 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
   };
 
   return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+    <div style={{ position: "fixed", inset: 0, zIndex: 400, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background: "white", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "520px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "92vh", overflowY: "auto" }}>
+      <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "520px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "92vh", overflowY: "auto" }}>
 
         {/* Header */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "22px" }}>
@@ -242,7 +242,7 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
               <IconPlus size={17} />
             </div>
             <div>
-              <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C", margin: 0 }}>Nueva cita</h2>
+              <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#14111C", margin: 0 }}>Nueva cita</h2>
               <p style={{ fontSize: "12px", color: "#8E879B", marginTop: "2px" }}>
                 {step === "form" ? "Paso 1 de 2 · Cliente, servicio y colaborador" : "Paso 2 de 2 · Fecha y hora disponible"}
               </p>
@@ -283,7 +283,7 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
 
                   {/* Resultados inline */}
                   {searchQuery.length >= 1 && (
-                    <div style={{ marginTop: "6px", border: "1.5px solid #e8e6e2", borderRadius: "11px", overflow: "hidden", background: "white" }}>
+                    <div style={{ marginTop: "6px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "11px", overflow: "hidden", background: "white" }}>
                       {filteredClients.length > 0 ? (
                         filteredClients.map((c, i) => (
                           <button key={c.id} type="button" onMouseDown={() => selectClient(c)}
@@ -337,16 +337,16 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
         {step === "datetime" && (
           <div>
             {/* Mini calendario */}
-            <div style={{ background: "rgba(20,15,30,0.02)", border: "1px solid #e8e6e2", borderRadius: "14px", padding: "16px", marginBottom: "18px" }}>
+            <div style={{ background: "rgba(20,15,30,0.02)", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "14px", padding: "16px", marginBottom: "18px" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
                 <button onClick={() => { if (calMonth === 0) { setCalYear(y => y-1); setCalMonth(11); } else setCalMonth(m => m-1); }}
                   disabled={calYear === now.getFullYear() && calMonth === now.getMonth()}
-                  style={{ background: "none", border: "1px solid #e8e6e2", borderRadius: "8px", width: 30, height: 30, cursor: "pointer", fontSize: "14px", color: "#3a3548" }}>‹</button>
+                  style={{ background: "none", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "8px", width: 30, height: 30, cursor: "pointer", fontSize: "14px", color: "#3a3548" }}>‹</button>
                 <span style={{ fontWeight: 700, fontSize: "14px", color: "#14111C", textTransform: "capitalize" }}>
                   {MONTHS_ES[calMonth]} {calYear}
                 </span>
                 <button onClick={() => { if (calMonth === 11) { setCalYear(y => y+1); setCalMonth(0); } else setCalMonth(m => m+1); }}
-                  style={{ background: "none", border: "1px solid #e8e6e2", borderRadius: "8px", width: 30, height: 30, cursor: "pointer", fontSize: "14px", color: "#3a3548" }}>›</button>
+                  style={{ background: "none", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "8px", width: 30, height: 30, cursor: "pointer", fontSize: "14px", color: "#3a3548" }}>›</button>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", marginBottom: "4px" }}>
                 {DAYS_SHORT.map(d => <div key={d} style={{ textAlign: "center", fontSize: "10px", fontWeight: 700, color: "#8E879B", padding: "3px 0" }}>{d}</div>)}
@@ -385,7 +385,7 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
                       const sel = selectedTime === slot;
                       return (
                         <button key={slot} onClick={() => !occupied && setSelectedTime(slot)} disabled={occupied}
-                          style={{ padding: "9px 4px", borderRadius: "9px", border: sel ? "2px solid #fb0f05" : "1px solid #e8e6e2", background: sel ? "#fb0f05" : occupied ? "#f7f5f2" : "white", color: sel ? "white" : occupied ? "#c0bdb9" : "#14111C", fontSize: "12px", fontWeight: sel ? 700 : 500, cursor: occupied ? "not-allowed" : "pointer", textDecoration: occupied ? "line-through" : "none", transition: "all .12s" }}>
+                          style={{ padding: "9px 4px", borderRadius: "9px", border: sel ? "2px solid #fb0f05" : "1px solid rgba(20,15,30,0.08)", background: sel ? "#fb0f05" : occupied ? "#f7f5f2" : "white", color: sel ? "white" : occupied ? "#c0bdb9" : "#14111C", fontSize: "12px", fontWeight: sel ? 700 : 500, cursor: occupied ? "not-allowed" : "pointer", textDecoration: occupied ? "line-through" : "none", transition: "all .12s" }}>
                           {slot}
                         </button>
                       );

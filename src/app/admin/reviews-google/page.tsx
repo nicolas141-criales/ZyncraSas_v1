@@ -230,7 +230,7 @@ export default function ReviewsGooglePage() {
             </ol>
           </div>
 
-          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
             <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700 }}>Link de Google Reviews</h3>
             <label style={labelStyle}>URL directa para dejar reseñas</label>
             <div style={{ display: "flex", gap: 8 }}>
@@ -244,7 +244,7 @@ export default function ReviewsGooglePage() {
             </div>
           </div>
 
-          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
             <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 700 }}>Mensaje de WhatsApp</h3>
             <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 14px" }}>
               Usa <code style={{ background: "#f0f0f5", padding: "1px 5px", borderRadius: 4 }}>{"{{nombre}}"}</code> y <code style={{ background: "#f0f0f5", padding: "1px 5px", borderRadius: 4 }}>{"{{link}}"}</code> como variables
@@ -276,7 +276,7 @@ export default function ReviewsGooglePage() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, maxWidth: 820 }}>
 
           {/* Client search */}
-          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
             <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 700 }}>Seleccionar cliente</h3>
             <input value={clientSearch} onChange={e => setClientSearch(e.target.value)}
               placeholder="Buscar por nombre o teléfono..."
@@ -303,7 +303,7 @@ export default function ReviewsGooglePage() {
 
           {/* Message preview + actions */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2", flex: 1 }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)", flex: 1 }}>
               <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 700 }}>Vista previa del mensaje</h3>
               {!selectedClient ? (
                 <div style={{ color: "#9b9bb0", fontSize: 13, textAlign: "center", padding: 30 }}>
@@ -356,13 +356,13 @@ export default function ReviewsGooglePage() {
             </div>
           ) : (
             <>
-              <div style={{ background: "white", borderRadius: 12, padding: "10px 20px", border: "1px solid #e8e6e2", marginBottom: 14, display: "flex", gap: 4 }}>
+              <div style={{ background: "white", borderRadius: 12, padding: "10px 20px", border: "1px solid rgba(20,15,30,0.08)", marginBottom: 14, display: "flex", gap: 4 }}>
                 <span style={{ fontSize: 13, color: "#6b7280" }}>Total solicitadas:</span>
                 <span style={{ fontSize: 13, fontWeight: 700, color: "#1a1a2e" }}>{requests.length}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {requests.map(r => (
-                  <div key={r.id} style={{ background: "white", borderRadius: 12, padding: "14px 20px", border: "1px solid #e8e6e2", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div key={r.id} style={{ background: "white", borderRadius: 12, padding: "14px 20px", border: "1px solid rgba(20,15,30,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
                       <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{r.client_name}</div>
                       <div style={{ fontSize: 12, color: "#9b9bb0" }}>{r.client_phone ?? "—"}</div>
@@ -393,7 +393,7 @@ const labelStyle: React.CSSProperties = {
   marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em",
 };
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
+  width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
   fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
@@ -405,7 +405,7 @@ const btnPrimary: React.CSSProperties = {
 };
 const btnSecondary: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 6,
-  padding: "9px 20px", borderRadius: 10, border: "1px solid #e8e6e2",
+  padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(20,15,30,0.08)",
   background: "white", color: "#4a4a6a", fontWeight: 600, fontSize: 14,
   cursor: "pointer", textDecoration: "none",
 };

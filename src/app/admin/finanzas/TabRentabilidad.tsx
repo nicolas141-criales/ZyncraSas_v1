@@ -27,7 +27,7 @@ const GREEN = "#10b981";
 const RED   = "#ef4444";
 
 const iStyle: React.CSSProperties = {
-  width:"100%", padding:"10px 12px", borderRadius:9, border:"1px solid #e8e6e2",
+  width:"100%", padding:"10px 12px", borderRadius:9, border:"1px solid rgba(20,15,30,0.08)",
   fontSize:13, color:"#14111C", background:"white", outline:"none",
   boxSizing:"border-box", fontFamily:FONT,
 };
@@ -193,7 +193,7 @@ export default function TabRentabilidad() {
 
   if (loading) return (
     <div style={{display:"flex",justifyContent:"center",padding:"60px 0"}}>
-      <div style={{width:36,height:36,border:"3px solid #e8e6e2",borderTopColor:"#fb0f05",borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
+      <div style={{width:36,height:36,border:"3px solid rgba(20,15,30,0.08)",borderTopColor:"#fb0f05",borderRadius:"50%",animation:"spin .8s linear infinite"}}/>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -204,13 +204,13 @@ export default function TabRentabilidad() {
 
       {/* Month nav + actions */}
       <div style={{display:"flex",alignItems:"center",gap:12,flexWrap:"wrap"}}>
-        <div style={{display:"flex",alignItems:"center",gap:8,background:"white",border:"1px solid #e8e6e2",borderRadius:12,padding:"8px 16px"}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,background:"white",border:"1px solid rgba(20,15,30,0.08)",borderRadius:12,padding:"8px 16px"}}>
           <button onClick={()=>setMonth(mAdd(month,-1))} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:"#564E66",padding:"0 6px",lineHeight:1}}>←</button>
           <span style={{fontWeight:700,fontSize:14,color:"#14111C",minWidth:150,textAlign:"center",textTransform:"capitalize"}}>{mLabel(month)}</span>
           <button onClick={()=>setMonth(mAdd(month,1))} disabled={isCurrentMonth} style={{background:"none",border:"none",cursor:isCurrentMonth?"default":"pointer",fontSize:16,color:isCurrentMonth?"#d1d0db":"#564E66",padding:"0 6px",lineHeight:1}}>→</button>
         </div>
         <div style={{marginLeft:"auto",display:"flex",gap:8}}>
-          <button onClick={()=>setShowTemplates(true)} style={{padding:"9px 18px",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",border:"1px solid #e8e6e2",background:"white",color:"#564E66",fontFamily:FONT}}>
+          <button onClick={()=>setShowTemplates(true)} style={{padding:"9px 18px",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",border:"1px solid rgba(20,15,30,0.08)",background:"white",color:"#564E66",fontFamily:FONT}}>
             Plantillas recurrentes
           </button>
           <button onClick={()=>setShowAddCost(true)} style={{padding:"9px 18px",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",border:"none",background:GRAD,color:"#fff",fontFamily:FONT}}>
@@ -221,14 +221,14 @@ export default function TabRentabilidad() {
 
       {/* KPI row */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14}}>
-        <div style={{background:"white",borderRadius:16,border:"1px solid #e8e6e2",padding:"20px 22px"}}>
+        <div style={{background:"white",borderRadius:16,border:"1px solid rgba(20,15,30,0.08)",padding:"20px 22px"}}>
           <div style={{fontSize:11,fontWeight:700,color:"#8E879B",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>Ingresos del mes</div>
-          <div style={{fontSize:22,fontWeight:800,background:GRAD,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{fmt(revenue)}</div>
+          <div style={{fontSize:22,fontWeight:700,background:GRAD,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>{fmt(revenue)}</div>
           <div style={{fontSize:12,color:"#8E879B",marginTop:4}}>Ventas POS registradas</div>
         </div>
-        <div style={{background:"white",borderRadius:16,border:"1px solid #e8e6e2",padding:"20px 22px"}}>
+        <div style={{background:"white",borderRadius:16,border:"1px solid rgba(20,15,30,0.08)",padding:"20px 22px"}}>
           <div style={{fontSize:11,fontWeight:700,color:"#8E879B",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>Costos totales</div>
-          <div style={{fontSize:22,fontWeight:800,color:"#14111C"}}>{fmt(totalCosts)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:"#14111C"}}>{fmt(totalCosts)}</div>
           <div style={{fontSize:12,color:"#8E879B",marginTop:4}}>
             {totalEntries} concepto{totalEntries!==1?"s":""}
             {commissions.length>0&&<span style={{marginLeft:6,background:"rgba(245,158,11,.12)",color:"#d97706",borderRadius:4,padding:"1px 5px",fontSize:10,fontWeight:700}}>{commissions.length} comisión{commissions.length>1?"es":""}</span>}
@@ -236,12 +236,12 @@ export default function TabRentabilidad() {
         </div>
         <div style={{background:"white",borderRadius:16,border:`1px solid ${profitable?"#d1fae5":"#fee2e2"}`,padding:"20px 22px"}}>
           <div style={{fontSize:11,fontWeight:700,color:"#8E879B",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>Utilidad neta</div>
-          <div style={{fontSize:22,fontWeight:800,color:profitable?GREEN:RED}}>{profit>=0?"+":""}{fmt(profit)}</div>
+          <div style={{fontSize:22,fontWeight:700,color:profitable?GREEN:RED}}>{profit>=0?"+":""}{fmt(profit)}</div>
           <div style={{fontSize:12,color:"#8E879B",marginTop:4}}>Ingresos − Costos</div>
         </div>
         <div style={{background:profitable?"#f0fdf4":"#fef2f2",borderRadius:16,border:`1px solid ${profitable?"#bbf7d0":"#fecaca"}`,padding:"20px 22px"}}>
           <div style={{fontSize:11,fontWeight:700,color:"#8E879B",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>Margen</div>
-          <div style={{fontSize:22,fontWeight:800,color:profitable?GREEN:RED}}>{margin.toFixed(1)}%</div>
+          <div style={{fontSize:22,fontWeight:700,color:profitable?GREEN:RED}}>{margin.toFixed(1)}%</div>
           <div style={{display:"flex",alignItems:"center",gap:6,marginTop:6}}>
             <div style={{width:8,height:8,borderRadius:"50%",background:profitable?GREEN:RED}}/>
             <span style={{fontSize:12,fontWeight:700,color:profitable?GREEN:RED}}>{profitable?"Rentable":"En pérdida"}</span>
@@ -274,13 +274,13 @@ export default function TabRentabilidad() {
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
 
         {/* Combined cost list */}
-        <div style={{background:"white",borderRadius:18,border:"1px solid #e8e6e2",overflow:"hidden"}}>
-          <div style={{padding:"16px 20px",borderBottom:"1px solid #e8e6e2",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+        <div style={{background:"white",borderRadius:18,border:"1px solid rgba(20,15,30,0.08)",overflow:"hidden"}}>
+          <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(20,15,30,0.08)",display:"flex",alignItems:"center",justifyContent:"space-between"}}>
             <div>
               <div style={{fontWeight:700,fontSize:14,color:"#14111C"}}>Costos del mes</div>
               <div style={{fontSize:12,color:"#8E879B",marginTop:2,textTransform:"capitalize"}}>{mLabel(month)}</div>
             </div>
-            <div style={{fontSize:14,fontWeight:800,color:"#14111C"}}>{fmt(totalCosts)}</div>
+            <div style={{fontSize:14,fontWeight:700,color:"#14111C"}}>{fmt(totalCosts)}</div>
           </div>
           <div style={{padding:"8px 0",maxHeight:360,overflowY:"auto"}}>
             {totalEntries===0 ? (
@@ -339,8 +339,8 @@ export default function TabRentabilidad() {
 
         {/* Right: category breakdown + fixed vs variable */}
         <div style={{display:"flex",flexDirection:"column",gap:14}}>
-          <div style={{background:"white",borderRadius:18,border:"1px solid #e8e6e2",overflow:"hidden"}}>
-            <div style={{padding:"16px 20px",borderBottom:"1px solid #e8e6e2"}}>
+          <div style={{background:"white",borderRadius:18,border:"1px solid rgba(20,15,30,0.08)",overflow:"hidden"}}>
+            <div style={{padding:"16px 20px",borderBottom:"1px solid rgba(20,15,30,0.08)"}}>
               <div style={{fontWeight:700,fontSize:14,color:"#14111C"}}>Costos por categoría</div>
             </div>
             <div style={{padding:"16px 20px"}}>
@@ -361,7 +361,7 @@ export default function TabRentabilidad() {
           </div>
 
           {totalEntries>0 && (
-            <div style={{background:"white",borderRadius:18,border:"1px solid #e8e6e2",padding:"16px 20px"}}>
+            <div style={{background:"white",borderRadius:18,border:"1px solid rgba(20,15,30,0.08)",padding:"16px 20px"}}>
               <div style={{fontWeight:700,fontSize:13,color:"#14111C",marginBottom:12}}>Desglose de costos</div>
               {([
                 ["manual","Costos manuales","#6366f1",manualTotal],
@@ -383,7 +383,7 @@ export default function TabRentabilidad() {
       </div>
 
       {/* Trend chart */}
-      <div style={{background:"white",borderRadius:18,border:"1px solid #e8e6e2",padding:"20px 22px"}}>
+      <div style={{background:"white",borderRadius:18,border:"1px solid rgba(20,15,30,0.08)",padding:"20px 22px"}}>
         <div style={{fontWeight:700,fontSize:14,color:"#14111C",marginBottom:4}}>Ingresos vs Costos — últimos 6 meses</div>
         <div style={{fontSize:12,color:"#8E879B",marginBottom:16}}>Costos incluyen comisiones pagadas + gastos manuales</div>
         <div style={{display:"flex",alignItems:"flex-end",gap:6,height:140}}>
@@ -405,9 +405,9 @@ export default function TabRentabilidad() {
 
       {/* Modal: Add Cost */}
       {showAddCost && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000}} onClick={()=>setShowAddCost(false)}>
-          <div style={{background:"white",borderRadius:20,padding:28,width:420,boxShadow:"0 20px 60px rgba(0,0,0,.15)"}} onClick={e=>e.stopPropagation()}>
-            <div style={{fontWeight:800,fontSize:16,color:"#14111C",marginBottom:20}}>Agregar costo</div>
+        <div style={{position:"fixed",inset:0,background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000}} onClick={()=>setShowAddCost(false)}>
+          <div style={{background:"rgba(255,255,255,0.88)",backdropFilter:"blur(32px) saturate(1.6)",WebkitBackdropFilter:"blur(32px) saturate(1.6)",border:"1px solid rgba(255,255,255,0.7)",borderRadius:20,padding:28,width:420,boxShadow:"0 20px 60px rgba(0,0,0,.15)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontWeight:700,fontSize:16,color:"#14111C",marginBottom:20}}>Agregar costo</div>
             {([
               ["Nombre","text",newCost.name,(v:string)=>setNewCost(p=>({...p,name:v})),"Ej: Arriendo local"],
               ["Monto","number",newCost.amount,(v:string)=>setNewCost(p=>({...p,amount:v})),"0"],
@@ -432,7 +432,7 @@ export default function TabRentabilidad() {
               </select>
             </div>
             <div style={{display:"flex",gap:10}}>
-              <button onClick={()=>setShowAddCost(false)} style={{flex:1,padding:"11px 0",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",border:"1px solid #e8e6e2",background:"white",color:"#564E66",fontFamily:FONT}}>Cancelar</button>
+              <button onClick={()=>setShowAddCost(false)} style={{flex:1,padding:"11px 0",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",border:"1px solid rgba(20,15,30,0.08)",background:"white",color:"#564E66",fontFamily:FONT}}>Cancelar</button>
               <button onClick={addCost} disabled={saving||!newCost.name||!newCost.amount} style={{flex:1,padding:"11px 0",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",border:"none",background:GRAD,color:"#fff",fontFamily:FONT,opacity:(!newCost.name||!newCost.amount)?0.5:1}}>
                 {saving?"Guardando...":"Guardar"}
               </button>
@@ -443,9 +443,9 @@ export default function TabRentabilidad() {
 
       {/* Modal: Templates */}
       {showTemplates && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000}} onClick={()=>setShowTemplates(false)}>
-          <div style={{background:"white",borderRadius:20,padding:28,width:500,maxHeight:"80vh",overflowY:"auto",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}} onClick={e=>e.stopPropagation()}>
-            <div style={{fontWeight:800,fontSize:16,color:"#14111C",marginBottom:4}}>Plantillas de costos recurrentes</div>
+        <div style={{position:"fixed",inset:0,background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000}} onClick={()=>setShowTemplates(false)}>
+          <div style={{background:"rgba(255,255,255,0.88)",backdropFilter:"blur(32px) saturate(1.6)",WebkitBackdropFilter:"blur(32px) saturate(1.6)",border:"1px solid rgba(255,255,255,0.7)",borderRadius:20,padding:28,width:500,maxHeight:"80vh",overflowY:"auto",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}} onClick={e=>e.stopPropagation()}>
+            <div style={{fontWeight:700,fontSize:16,color:"#14111C",marginBottom:4}}>Plantillas de costos recurrentes</div>
             <div style={{fontSize:12,color:"#8E879B",marginBottom:20}}>Define costos que se repiten cada mes y aplícalos con un clic.</div>
 
             <div style={{background:"#f7f7fa",borderRadius:14,padding:16,marginBottom:20}}>
@@ -495,7 +495,7 @@ export default function TabRentabilidad() {
               </div>
             ))}
 
-            <button onClick={()=>setShowTemplates(false)} style={{width:"100%",padding:"11px 0",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",border:"1px solid #e8e6e2",background:"white",color:"#564E66",fontFamily:FONT,marginTop:16}}>Cerrar</button>
+            <button onClick={()=>setShowTemplates(false)} style={{width:"100%",padding:"11px 0",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",border:"1px solid rgba(20,15,30,0.08)",background:"white",color:"#564E66",fontFamily:FONT,marginTop:16}}>Cerrar</button>
           </div>
         </div>
       )}

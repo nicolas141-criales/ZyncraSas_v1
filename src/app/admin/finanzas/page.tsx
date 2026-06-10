@@ -20,29 +20,31 @@ export default function FinanzasPage() {
   return (
     <div style={{ fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
       <div style={{
-        display: "flex", gap: 4, padding: 4,
-        background: "white", border: "1px solid #e8e6e2", borderRadius: 14,
-        width: "fit-content", marginBottom: 24,
+        display: "flex", gap: 2, padding: 3,
+        background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: 11,
+        width: "fit-content", marginBottom: 22, maxWidth: "100%", overflowX: "auto",
       }}>
         {TABS.map(t => (
           <button key={t.id} onClick={() => setTab(t.id)} style={{
-            padding: "9px 22px", borderRadius: 11, fontSize: 13, fontWeight: 600,
-            cursor: "pointer", border: "none", transition: "all 0.15s",
+            padding: "7px 18px", borderRadius: 8, fontSize: 12.5, fontWeight: 600,
+            cursor: "pointer", border: "none", whiteSpace: "nowrap",
+            transition: "background .16s ease, color .16s ease",
             fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
-            background: tab === t.id ? "linear-gradient(135deg,#fb0f05,#0027fe)" : "transparent",
+            background: tab === t.id ? "#14111C" : "transparent",
             color: tab === t.id ? "#fff" : "#564E66",
-            boxShadow: tab === t.id ? "0 2px 10px rgba(251,15,5,.2)" : "none",
           }}>
             {t.label}
           </button>
         ))}
       </div>
 
-      {tab === "resumen"      && <TabResumen      />}
-      {tab === "caja"         && <TabCaja         />}
-      {tab === "ventas"       && <TabVentas       />}
-      {tab === "reportes"     && <TabReportes     />}
-      {tab === "rentabilidad" && <TabRentabilidad />}
+      <div key={tab} style={{ animation: "znFadeUp .35s cubic-bezier(.22,1,.36,1) both" }}>
+        {tab === "resumen"      && <TabResumen      />}
+        {tab === "caja"         && <TabCaja         />}
+        {tab === "ventas"       && <TabVentas       />}
+        {tab === "reportes"     && <TabReportes     />}
+        {tab === "rentabilidad" && <TabRentabilidad />}
+      </div>
     </div>
   );
 }

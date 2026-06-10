@@ -1,15 +1,18 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import styles from "./admin.module.css";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "./admin-context";
 import {
-  IconBanknotes, IconCalendar, IconBell, IconUsers, IconChartBar,
+  IconCalendar, IconBell, IconUsers, IconChartBar,
   IconCreditCard, IconTrendUp, IconTrendDown, IconClock, IconPercent,
-  IconRefresh, IconPlus, IconZap, IconChat,
+  IconRefresh, IconPlus, IconDownload,
 } from "./ZyncraIcons";
 import NewAppointmentModal from "./NewAppointmentModal";
+import {
+  Spark, AreaChart, Bars, Donut, RankBars, Empty, Skel, useCountUp,
+  MONO, SANS, SERIF, INK, DIM, MUTE, LINE, RED, GRAD,
+} from "./charts";
 
 // ─── Types ───────────────────────────────────────────────
 interface DashboardData {
@@ -41,179 +44,183 @@ const EMPTY: DashboardData = {
 const toISO = (dt: Date) =>
   `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
 
-// ─── Sparkline ────────────────────────────────────────────
-function Sparkline({ data, color = "#fb0f05" }: { data: number[]; color?: string }) {
-  if (data.length < 2) return null;
-  const max = Math.max(...data, 1);
-  const w = 72, h = 28;
-  const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - (v / max) * (h - 2) - 1}`).join(" ");
+// ─── Layout CSS (grids responsivas + hover de filas) ─────
+const PAGE_CSS = `
+.znGridHero{display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(min-width:1140px){.znGridHero{grid-template-columns:1.6fr 1fr 1fr 1fr}}
+@media(max-width:620px){.znGridHero{grid-template-columns:1fr}}
+.znGridCharts{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:1020px){.znGridCharts{grid-template-columns:1.65fr 1fr}}
+.znGridSplit{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:1020px){.znGridSplit{grid-template-columns:1fr 1fr}}
+.znGridLists{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:1020px){.znGridLists{grid-template-columns:1.5fr 1fr}}
+.znStrip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:hidden}
+@media(max-width:860px){.znStrip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.znStrip>div{border-left:1px solid rgba(20,15,30,.06);border-top:1px solid rgba(20,15,30,.06);margin-left:-1px;margin-top:-1px}
+.znRow{transition:background .13s ease}
+.znRow:hover{background:rgba(20,15,30,.022)}
+`;
+
+// ─── Primitivas de tarjeta ────────────────────────────────
+function Card({ children, style, delay = 0 }: { children: React.ReactNode; style?: React.CSSProperties; delay?: number }) {
   return (
-    <svg width={w} height={h} style={{ opacity: 0.7 }}>
-      <defs>
-        <linearGradient id={`sg-${color.replace("#","")}`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor={color} />
-          <stop offset="100%" stopColor="#0027fe" />
-        </linearGradient>
-      </defs>
-      <polyline points={pts} fill="none"
-        stroke={`url(#sg-${color.replace("#","")})`}
-        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
+    <div style={{
+      background: "white", borderRadius: 16, border: `1px solid ${LINE}`,
+      boxShadow: "0 1px 2px rgba(20,15,30,0.03)", overflow: "hidden",
+      animation: `znFadeUp .5s cubic-bezier(.22,1,.36,1) both ${delay}s`,
+      ...style,
+    }}>
+      {children}
+    </div>
   );
 }
 
-// ─── Bar Chart ────────────────────────────────────────────
-function BarChart({ data, fmtVal }: {
-  data: { label: string; value: number; color?: string }[];
-  fmtVal?: (v: number) => string;
-}) {
-  const max = Math.max(...data.map(d => d.value), 1);
-  const [hov, setHov] = useState<number | null>(null);
+function CardHead({ title, sub, aside }: { title: string; sub?: string; aside?: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: "5px", height: "72px" }}>
-      {data.map((d, i) => (
-        <div
-          key={i}
-          style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: "5px", position: "relative" }}
-          onMouseEnter={() => d.value > 0 && setHov(i)}
-          onMouseLeave={() => setHov(null)}
-        >
-          {hov === i && (
-            <div style={{
-              position: "absolute", bottom: "calc(100% - 18px)", left: "50%",
-              transform: "translateX(-50%)",
-              background: "#14111C", color: "white",
-              fontSize: "11px", fontWeight: 700, letterSpacing: "-0.2px",
-              padding: "4px 9px", borderRadius: "7px",
-              whiteSpace: "nowrap", pointerEvents: "none", zIndex: 20,
-              boxShadow: "0 4px 12px rgba(0,0,0,0.18)",
-            }}>
-              {fmtVal ? fmtVal(d.value) : String(d.value)}
-              {/* Caret */}
-              <div style={{
-                position: "absolute", top: "100%", left: "50%", transform: "translateX(-50%)",
-                width: 0, height: 0,
-                borderLeft: "5px solid transparent",
-                borderRight: "5px solid transparent",
-                borderTop: "5px solid #14111C",
-              }} />
-            </div>
-          )}
-          <div style={{
-            width: "100%", borderRadius: "5px 5px 0 0",
-            height: `${Math.max((d.value / max) * 60, 3)}px`,
-            background: hov === i
-              ? (d.color?.includes("gradient") ? d.color : d.color ? d.color : "linear-gradient(to top, #fb0f05, #0027fe)")
-              : (d.color || "linear-gradient(to top, #fb0f05, #0027fe)"),
-            opacity: hov !== null && hov !== i ? 0.45 : 1,
-            transition: "opacity 0.15s, height 0.5s ease",
-            cursor: "pointer",
-          }} />
-          <span style={{ fontSize: "9px", color: hov === i ? "#14111C" : "#8E879B", fontWeight: hov === i ? 700 : 400, textAlign: "center", lineHeight: 1, transition: "color 0.15s" }}>{d.label}</span>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", borderBottom: `1px solid ${LINE}` }}>
+      <span style={{ width: 7, height: 7, borderRadius: 2.5, background: GRAD, flexShrink: 0 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: 13, color: INK, letterSpacing: "-0.01em" }}>{title}</div>
+        {sub && <div style={{ fontSize: 10.5, color: MUTE, marginTop: 1 }}>{sub}</div>}
+      </div>
+      {aside && (
+        <div style={{ flexShrink: 0, fontFamily: MONO, fontSize: 9.5, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".09em" }}>
+          {aside}
         </div>
-      ))}
+      )}
     </div>
+  );
+}
+
+function TrendChip({ trend, children }: { trend: "up" | "down" | "neutral"; children: React.ReactNode }) {
+  const tone = trend === "up"
+    ? { bg: "rgba(16,185,129,0.09)", color: "#059669" }
+    : trend === "down"
+      ? { bg: "rgba(239,68,68,0.08)", color: "#dc2626" }
+      : { bg: "rgba(20,15,30,0.05)", color: MUTE };
+  return (
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 4, padding: "2.5px 8px",
+      borderRadius: 6, fontSize: 10.5, fontWeight: 600, fontFamily: MONO,
+      background: tone.bg, color: tone.color, whiteSpace: "nowrap",
+    }}>
+      {trend === "up" ? <IconTrendUp size={11} /> : trend === "down" ? <IconTrendDown size={11} /> : null}
+      {children}
+    </span>
   );
 }
 
 // ─── Metric Card ─────────────────────────────────────────
 interface MetricCardProps {
   label: string;
-  value: string;
+  raw: number;
+  fmt: (n: number) => string;
   sub?: string;
   icon: React.ReactNode;
-  iconColor?: string;
   trend?: "up" | "down" | "neutral";
   trendVal?: string;
   alert?: boolean;
   spark?: number[];
-  gradient?: boolean;
+  delay?: number;
 }
 
-function MetricCard({ label, value, sub, icon, iconColor = "#fb0f05", trend, trendVal, alert, spark, gradient = true }: MetricCardProps) {
-  const bg = iconColor === "#fb0f05" ? "rgba(251,15,5,0.08)"
-    : iconColor === "#10b981" ? "rgba(16,185,129,0.1)"
-    : iconColor === "#f59e0b" ? "rgba(245,158,11,0.1)"
-    : "rgba(251,15,5,0.08)";
-
+function MetricCard({ label, raw, fmt, sub, icon, trend, trendVal, alert, spark, delay = 0 }: MetricCardProps) {
+  const [hov, setHov] = useState(false);
+  const v = useCountUp(raw);
   return (
-    <div style={{
-      background: "white",
-      borderRadius: "18px",
-      padding: "20px 22px",
-      border: alert ? "1px solid rgba(251,15,5,0.3)" : "1px solid #e8e6e2",
-      display: "flex",
-      flexDirection: "column",
-      gap: "6px",
-      position: "relative",
-      overflow: "hidden",
-      transition: "box-shadow 0.2s",
-    }}>
-      {alert && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "2px", background: "linear-gradient(90deg, #fb0f05, #f97316)" }} />}
-
-      {/* Icon + Sparkline row */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "8px" }}>
-        <div style={{
-          width: "40px", height: "40px", borderRadius: "11px",
-          background: bg,
-          display: "flex", alignItems: "center", justifyContent: "center",
-          flexShrink: 0,
-          color: iconColor,
-        }}>
-          {icon}
-        </div>
-        {spark && <Sparkline data={spark} color={iconColor} />}
-      </div>
-
-      {/* Value */}
-      <div style={gradient ? {
-        fontSize: "28px", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-1px",
-        background: alert ? "#ef4444" : "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
-        WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text",
-      } : {
-        fontSize: "28px", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-1px",
-        color: alert ? "var(--error)" : "#14111C",
+    <div
+      onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)}
+      style={{
+        background: "white", borderRadius: 16, padding: "16px 18px 15px",
+        border: alert ? "1px solid rgba(251,15,5,0.32)" : `1px solid ${LINE}`,
+        position: "relative", overflow: "hidden",
+        boxShadow: hov ? "0 12px 32px rgba(20,15,30,0.09)" : "0 1px 2px rgba(20,15,30,0.03)",
+        transform: hov ? "translateY(-2px)" : "none",
+        transition: "transform .2s ease, box-shadow .2s ease",
+        animation: `znFadeUp .5s cubic-bezier(.22,1,.36,1) both ${delay}s`,
+        display: "flex", flexDirection: "column",
       }}>
-        {value}
+      {alert && <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2.5, background: "linear-gradient(90deg,#fb0f05,#f97316)" }} />}
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+        <span style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".1em" }}>
+          {label}
+        </span>
+        <span style={{ color: alert ? RED : "#c4bfce", display: "inline-flex", flexShrink: 0 }}>{icon}</span>
       </div>
 
-      {/* Label */}
-      <div style={{ fontSize: "12px", fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-        {label}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 10, marginTop: 11 }}>
+        <span style={{
+          fontSize: 25, fontWeight: 700, lineHeight: 1, letterSpacing: "-0.8px",
+          color: alert ? "#dc2626" : INK, fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
+        }}>
+          {fmt(v)}
+        </span>
+        {spark && spark.some(s => s > 0) && <Spark data={spark} w={76} h={26} />}
       </div>
 
-      {/* Trend / sub */}
       {(trendVal || sub) && (
-        <div style={{ display: "flex", gap: "6px", alignItems: "center", fontSize: "12px", marginTop: "2px", flexWrap: "wrap" }}>
-          {trendVal && trend && (
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: "3px",
-              color: trend === "up" ? "#10b981" : trend === "down" ? "#ef4444" : "#8E879B",
-              fontWeight: 700,
-            }}>
-              {trend === "up" ? <IconTrendUp size={13} color="#10b981" /> : trend === "down" ? <IconTrendDown size={13} color="#ef4444" /> : "—"}
-              {trendVal}
-            </span>
-          )}
-          {sub && <span style={{ color: "#8E879B" }}>{sub}</span>}
+        <div style={{ display: "flex", gap: 7, alignItems: "center", marginTop: 10, flexWrap: "wrap", minHeight: 18 }}>
+          {trendVal && trend && <TrendChip trend={trend}>{trendVal}</TrendChip>}
+          {sub && <span style={{ color: MUTE, fontSize: 11.5 }}>{sub}</span>}
         </div>
       )}
     </div>
   );
 }
 
-// ─── Section Header ───────────────────────────────────────
-function SectionHeader({ title, sub, icon }: { title: string; sub?: string; icon?: React.ReactNode }) {
+// ─── Hero Card (ingresos) ─────────────────────────────────
+function HeroCard({ label, raw, fmt, trend, trendVal, sub, spark, tag }: {
+  label: string; raw: number; fmt: (n: number) => string;
+  trend?: "up" | "down" | "neutral"; trendVal?: string; sub?: string;
+  spark: number[]; tag: string;
+}) {
+  const v = useCountUp(raw, 800);
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
-      {icon && (
-        <div style={{ width: "32px", height: "32px", borderRadius: "9px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", flexShrink: 0 }}>
-          {icon}
+    <div style={{
+      background: "#0C0C14", borderRadius: 16, padding: "18px 20px 17px",
+      position: "relative", overflow: "hidden", color: "white",
+      animation: "znFadeUp .5s cubic-bezier(.22,1,.36,1) both",
+      display: "flex", flexDirection: "column", justifyContent: "space-between", minHeight: 132,
+    }}>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: GRAD }} />
+      <div style={{ position: "absolute", right: -70, top: -70, width: 230, height: 230, borderRadius: "50%", background: "radial-gradient(circle, rgba(0,39,254,0.42), transparent 65%)", pointerEvents: "none" }} />
+      <div style={{ position: "absolute", left: -50, bottom: -80, width: 190, height: 190, borderRadius: "50%", background: "radial-gradient(circle, rgba(251,15,5,0.22), transparent 65%)", pointerEvents: "none" }} />
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
+        <span style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 600, color: "rgba(255,255,255,0.55)", textTransform: "uppercase", letterSpacing: ".12em" }}>
+          {label}
+        </span>
+        <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.38)", textTransform: "uppercase", letterSpacing: ".1em", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 5, padding: "2px 7px" }}>
+          {tag}
+        </span>
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", gap: 12, position: "relative", marginTop: 14 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{
+            fontSize: "clamp(26px, 2.6vw, 33px)", fontWeight: 700, lineHeight: 1,
+            letterSpacing: "-1.2px", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap",
+          }}>
+            {fmt(v)}
+          </div>
+          <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 10, flexWrap: "wrap" }}>
+            {trendVal && trend && (
+              <span style={{
+                display: "inline-flex", alignItems: "center", gap: 4, padding: "2.5px 8px", borderRadius: 6,
+                fontSize: 10.5, fontWeight: 600, fontFamily: MONO,
+                background: trend === "down" ? "rgba(239,68,68,0.2)" : "rgba(16,185,129,0.16)",
+                color: trend === "down" ? "#fca5a5" : "#6ee7b7",
+              }}>
+                {trend === "up" ? <IconTrendUp size={11} /> : trend === "down" ? <IconTrendDown size={11} /> : null}
+                {trendVal}
+              </span>
+            )}
+            {sub && <span style={{ color: "rgba(255,255,255,0.45)", fontSize: 11.5 }}>{sub}</span>}
+          </div>
         </div>
-      )}
-      <div>
-        <div style={{ fontWeight: 700, fontSize: "13px", color: "#14111C" }}>{title}</div>
-        {sub && <div style={{ fontSize: "11px", color: "#8E879B", marginTop: "1px" }}>{sub}</div>}
+        {spark.some(s => s > 0) && <Spark data={spark} w={104} h={34} light />}
       </div>
     </div>
   );
@@ -222,15 +229,19 @@ function SectionHeader({ title, sub, icon }: { title: string; sub?: string; icon
 // ─── Status Pill ─────────────────────────────────────────
 function StatusPill({ status }: { status: string }) {
   const map: Record<string, { bg: string; color: string; label: string }> = {
-    confirmed: { bg: "rgba(16,185,129,0.1)", color: "#10b981", label: "Confirmada" },
-    pending:   { bg: "rgba(245,158,11,0.1)", color: "#f59e0b", label: "Pendiente" },
-    completed: { bg: "rgba(100,116,139,0.1)", color: "#64748b", label: "Completada" },
-    cancelled: { bg: "rgba(239,68,68,0.1)", color: "#ef4444", label: "Cancelada" },
-    no_show:   { bg: "rgba(239,68,68,0.08)", color: "#dc2626", label: "No se presentó" },
+    confirmed: { bg: "rgba(16,185,129,0.1)", color: "#059669", label: "Confirmada" },
+    pending:   { bg: "rgba(245,158,11,0.12)", color: "#b45309", label: "Pendiente" },
+    completed: { bg: "rgba(100,116,139,0.1)", color: "#475569", label: "Completada" },
+    cancelled: { bg: "rgba(239,68,68,0.1)", color: "#dc2626", label: "Cancelada" },
+    no_show:   { bg: "rgba(239,68,68,0.08)", color: "#b91c1c", label: "No se presentó" },
   };
   const s = map[status] || map.pending;
   return (
-    <span style={{ padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, background: s.bg, color: s.color }}>
+    <span style={{
+      display: "inline-flex", alignItems: "center", gap: 5, padding: "3px 9px",
+      borderRadius: 20, fontSize: 10.5, fontWeight: 600, background: s.bg, color: s.color, whiteSpace: "nowrap",
+    }}>
+      <span style={{ width: 5, height: 5, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
       {s.label}
     </span>
   );
@@ -239,7 +250,6 @@ function StatusPill({ status }: { status: string }) {
 // ─── Date Range Picker ────────────────────────────────────
 const MONTHS_CAL = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const DAYS_CAL   = ["Lu","Ma","Mi","Ju","Vi","Sá","Do"];
-const MONTHS_SHORT = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
 function DateRangePicker({ start, end, onApply }: {
   start: string; end: string; onApply: (s: string, e: string) => void;
@@ -253,10 +263,6 @@ function DateRangePicker({ start, end, onApply }: {
 
   const isoOf = (y: number, m: number, d: number) =>
     `${y}-${String(m + 1).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
-  const fmtDisplay = (iso: string) => {
-    const [y, m, d] = iso.split("-");
-    return `${parseInt(d)} ${MONTHS_SHORT[parseInt(m) - 1]} ${y}`;
-  };
 
   const rawFirst  = new Date(cy, cm, 1).getDay();
   const firstDay  = rawFirst === 0 ? 6 : rawFirst - 1;
@@ -281,20 +287,31 @@ function DateRangePicker({ start, end, onApply }: {
   const prevMo = () => { if (cm === 0) { setCy(y => y-1); setCm(11); } else setCm(m => m-1); };
   const nextMo = () => { if (cm === 11) { setCy(y => y+1); setCm(0); } else setCm(m => m+1); };
 
-  return (
-    <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: 18, padding: "16px 18px", display: "inline-block", boxShadow: "0 12px 40px rgba(0,0,0,0.12)", marginTop: 8 }}>
+  const navBtn: React.CSSProperties = {
+    background: "white", border: `1px solid ${LINE}`, borderRadius: 9, width: 30, height: 30,
+    cursor: "pointer", fontSize: 15, color: DIM, display: "flex", alignItems: "center", justifyContent: "center",
+    transition: "border-color .15s, color .15s",
+  };
 
+  return (
+    <div style={{
+      background: "rgba(255,255,255,0.82)",
+      backdropFilter: "blur(24px) saturate(1.6)", WebkitBackdropFilter: "blur(24px) saturate(1.6)",
+      border: "1px solid rgba(255,255,255,0.7)", borderRadius: 16, padding: "15px 16px",
+      display: "inline-block", boxShadow: "0 16px 48px rgba(20,15,30,0.16)", marginTop: 8,
+      animation: "znFadeUp .22s cubic-bezier(.22,1,.36,1) both",
+    }}>
       {/* Month nav */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-        <button onClick={prevMo} style={{ background: "none", border: "1.5px solid #e8e6e2", borderRadius: 9, width: 32, height: 32, cursor: "pointer", fontSize: 16, color: "#3a3548", display:"flex",alignItems:"center",justifyContent:"center" }}>‹</button>
-        <span style={{ fontWeight: 800, fontSize: 14, color: "#14111C", letterSpacing: "-0.3px" }}>{MONTHS_CAL[cm]} {cy}</span>
-        <button onClick={nextMo} style={{ background: "none", border: "1.5px solid #e8e6e2", borderRadius: 9, width: 32, height: 32, cursor: "pointer", fontSize: 16, color: "#3a3548", display:"flex",alignItems:"center",justifyContent:"center" }}>›</button>
+        <button onClick={prevMo} style={navBtn}>‹</button>
+        <span style={{ fontWeight: 700, fontSize: 13.5, color: INK, letterSpacing: "-0.3px" }}>{MONTHS_CAL[cm]} {cy}</span>
+        <button onClick={nextMo} style={navBtn}>›</button>
       </div>
 
       {/* Day headers */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", marginBottom: 4 }}>
         {DAYS_CAL.map(d => (
-          <div key={d} style={{ textAlign: "center", fontSize: 10, fontWeight: 700, color: "#8E879B", padding: "2px 0" }}>{d}</div>
+          <div key={d} style={{ textAlign: "center", fontSize: 9, fontWeight: 600, fontFamily: MONO, color: MUTE, padding: "2px 0", textTransform: "uppercase" }}>{d}</div>
         ))}
       </div>
 
@@ -312,7 +329,7 @@ function DateRangePicker({ start, end, onApply }: {
           return (
             <div key={day}
               style={{
-                background: mid ? "rgba(251,15,5,0.09)" : "transparent",
+                background: mid ? "rgba(20,15,30,0.05)" : "transparent",
                 borderRadius: start ? "8px 0 0 8px" : end ? "0 8px 8px 0" : 0,
               }}>
               <button
@@ -322,13 +339,14 @@ function DateRangePicker({ start, end, onApply }: {
                 style={{
                   width: "100%", padding: "7px 0", border: "none",
                   borderRadius: isEdge ? 8 : 0,
-                  background: isEdge ? "#fb0f05" : "transparent",
-                  color: isEdge ? "white" : isToday ? "#fb0f05" : "#14111C",
-                  fontSize: 13, fontWeight: isEdge ? 800 : isToday ? 700 : 400,
+                  background: isEdge ? INK : "transparent",
+                  color: isEdge ? "white" : isToday ? RED : INK,
+                  fontSize: 12.5, fontFamily: MONO,
+                  fontWeight: isEdge ? 700 : isToday ? 700 : 400,
                   cursor: "pointer",
-                  outline: isToday && !isEdge ? "2px solid rgba(251,15,5,0.35)" : "none",
+                  outline: isToday && !isEdge ? "1.5px solid rgba(251,15,5,0.4)" : "none",
                   outlineOffset: -2,
-                  transition: "background 0.1s",
+                  transition: "background 0.12s",
                 }}>
                 {day}
               </button>
@@ -340,11 +358,11 @@ function DateRangePicker({ start, end, onApply }: {
       {/* Apply / Clear */}
       <div style={{ display: "flex", gap: 8, marginTop: 14 }}>
         <button onClick={() => { setDs(""); setDe(""); setHov(""); }}
-          style={{ padding: "7px 12px", borderRadius: 8, border: "1.5px solid #e8e6e2", background: "white", color: "#8E879B", fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
+          style={{ padding: "7px 12px", borderRadius: 8, border: `1px solid ${LINE}`, background: "white", color: MUTE, fontWeight: 600, fontSize: 12, cursor: "pointer", fontFamily: SANS }}>
           Limpiar
         </button>
         <button onClick={() => canApply && onApply(ds, de)} disabled={!canApply}
-          style={{ flex: 1, padding: "7px 14px", borderRadius: 8, border: "none", background: canApply ? "linear-gradient(135deg,#fb0f05,#0027fe)" : "rgba(20,15,30,.07)", color: canApply ? "white" : "#8E879B", fontWeight: 700, fontSize: 12, cursor: canApply ? "pointer" : "not-allowed", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
+          style={{ flex: 1, padding: "7px 14px", borderRadius: 8, border: "none", background: canApply ? GRAD : "rgba(20,15,30,.07)", color: canApply ? "white" : MUTE, fontWeight: 700, fontSize: 12, cursor: canApply ? "pointer" : "not-allowed", fontFamily: SANS, boxShadow: canApply ? "0 4px 14px rgba(0,39,254,0.25)" : "none", transition: "box-shadow .2s" }}>
           Aplicar
         </button>
       </div>
@@ -352,17 +370,35 @@ function DateRangePicker({ start, end, onApply }: {
   );
 }
 
-// ─── Filter Button ────────────────────────────────────────
-function FilterBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+// ─── Controles del encabezado ─────────────────────────────
+function SegBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  const [hov, setHov] = useState(false);
   return (
-    <button onClick={onClick} style={{
-      padding: "7px 16px", borderRadius: "9px", fontSize: "13px", fontWeight: 600, cursor: "pointer",
-      border: active ? "1.5px solid rgba(251,15,5,0.4)" : "1.5px solid #e8e6e2",
-      background: active ? "rgba(251,15,5,0.06)" : "white",
-      color: active ? "#fb0f05" : "#564E66",
-      transition: "all 0.15s",
+    <button onClick={onClick} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{
+      padding: "6px 13px", borderRadius: 8, fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+      border: "none", fontFamily: SANS, whiteSpace: "nowrap",
+      background: active ? INK : hov ? "rgba(20,15,30,0.05)" : "transparent",
+      color: active ? "white" : DIM,
+      transition: "background .16s ease, color .16s ease",
     }}>
       {children}
+    </button>
+  );
+}
+
+function ToolBtn({ onClick, title, children, label }: { onClick: () => void; title: string; children: React.ReactNode; label?: string }) {
+  const [hov, setHov] = useState(false);
+  return (
+    <button onClick={onClick} title={title} onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{
+      height: 34, padding: label ? "0 13px" : 0, width: label ? undefined : 34,
+      borderRadius: 9, border: `1px solid ${hov ? "rgba(20,15,30,0.22)" : LINE}`,
+      background: "white", color: hov ? INK : DIM, cursor: "pointer",
+      display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+      fontSize: 12, fontWeight: 600, fontFamily: SANS,
+      transition: "border-color .15s ease, color .15s ease",
+    }}>
+      {children}
+      {label}
     </button>
   );
 }
@@ -376,21 +412,10 @@ export default function AdminOverview() {
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
   const [showNewAppt, setShowNewAppt] = useState(false);
-  const [showBlock, setShowBlock] = useState(false);
-  const [showWA, setShowWA] = useState(false);
   const [showRangePicker, setShowRangePicker] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const hasLoadedOnce = useRef(false);
   const rangePickerRef = useRef<HTMLDivElement>(null);
-  const [apptClients, setApptClients] = useState<any[]>([]);
-  const [apptServices, setApptServices] = useState<any[]>([]);
-  const [apptProfs, setApptProfs] = useState<any[]>([]);
-  const [apptForm, setApptForm] = useState({ client_id: "", service_id: "", professional_id: "", date: "", time: "" });
-  const [apptSaving, setApptSaving] = useState(false);
-  const [apptMsg, setApptMsg] = useState("");
-  const [blockForm, setBlockForm] = useState({ date: "", start: "", end: "", reason: "" });
-  const [blockSaving, setBlockSaving] = useState(false);
-  const [blockMsg, setBlockMsg] = useState("");
   const [profFilter, setProfFilter] = useState("");
   const [profOptions, setProfOptions] = useState<{ id: string; name: string }[]>([]);
 
@@ -517,38 +542,6 @@ export default function AdminOverview() {
     setRefreshing(false);
   }, []);
 
-  const openNewAppt = useCallback(async () => {
-    if (!tenantId) return;
-    const [{ data: cls }, { data: svs }, { data: prs }] = await Promise.all([
-      supabase.from("clients").select("id,name,phone").eq("tenant_id", tenantId).order("name"),
-      supabase.from("services").select("id,name,price").eq("tenant_id", tenantId).order("name"),
-      supabase.from("professionals").select("id,name").eq("tenant_id", tenantId).eq("is_active", true).order("name"),
-    ]);
-    setApptClients(cls || []); setApptServices(svs || []); setApptProfs(prs || []);
-    setApptForm({ client_id: "", service_id: "", professional_id: "", date: "", time: "" });
-    setApptMsg(""); setShowNewAppt(true);
-  }, [tenantId]);
-
-  const handleCreateAppt = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tenantId) return;
-    setApptSaving(true);
-    const { error } = await supabase.from("appointments").insert({ tenant_id: tenantId, client_id: apptForm.client_id, service_id: apptForm.service_id || null, professional_id: apptForm.professional_id || null, appointment_date: apptForm.date, appointment_time: apptForm.time, status: "confirmed" });
-    setApptSaving(false);
-    if (error) { setApptMsg("Error: " + error.message); }
-    else { setApptMsg("Cita creada con éxito"); setTimeout(() => { setShowNewAppt(false); fetchAll(tenantId, filter, customStart, customEnd, profFilter); }, 1200); }
-  };
-
-  const handleBlockSlot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tenantId) return;
-    setBlockSaving(true);
-    const { error } = await supabase.from("blocked_slots").insert({ tenant_id: tenantId, blocked_date: blockForm.date, start_time: blockForm.start, end_time: blockForm.end, reason: blockForm.reason || null });
-    setBlockSaving(false);
-    if (error) setBlockMsg("Error: " + error.message);
-    else { setBlockMsg("Horario bloqueado"); setTimeout(() => setShowBlock(false), 1200); }
-  };
-
   useEffect(() => {
     if (tenantId) fetchAll(tenantId, filter, customStart, customEnd, profFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -584,7 +577,6 @@ export default function AdminOverview() {
     const noShowCount    = apts.filter(a => a.status === "no_show").length;
     const completedCount = apts.filter(a => a.status === "completed").length;
     const confirmedCount = apts.filter(a => a.status === "confirmed").length;
-    const MONS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
 
     // ── SVG vertical bar chart ──────────────────────────────────────────────
     function vBars(
@@ -602,7 +594,7 @@ export default function AdminOverview() {
         return (
           (bh > 0
             ? `<rect x="${x}" y="${BH - bh}" width="${BW}" height="${bh}" rx="5" fill="url(#${gid})"/>`
-            : `<rect x="${x}" y="${BH - 2}" width="${BW}" height="2" rx="1" fill="#e8e6e2"/>`) +
+            : `<rect x="${x}" y="${BH - 2}" width="${BW}" height="2" rx="1" fill="rgba(20,15,30,0.08)"/>`) +
           (item.value > 0
             ? `<text x="${x + BW / 2}" y="${BH - bh - 5}" text-anchor="middle" font-size="9" fill="#8E879B" font-family="Segoe UI,sans-serif">${fmtV(item.value)}</text>`
             : "") +
@@ -706,7 +698,7 @@ export default function AdminOverview() {
         `<div style="display:flex;align-items:center;gap:8px">` +
         `<div style="width:9px;height:9px;border-radius:50%;background:${si.color};flex-shrink:0"></div>` +
         `<span style="font-size:12px;color:#3a3548">${si.label}</span>` +
-        `<span style="font-size:13px;font-weight:800;color:#14111C;margin-left:6px">${si.count}</span>` +
+        `<span style="font-size:13px;font-weight:700;color:#14111C;margin-left:6px">${si.count}</span>` +
         `<span style="font-size:10px;color:#b0abc0">${dTotal > 0 ? ((si.count / dTotal) * 100).toFixed(0) + "%" : ""}</span>` +
         `</div>`
       ).join("") +
@@ -744,17 +736,17 @@ export default function AdminOverview() {
   body{font-family:'Segoe UI',Arial,sans-serif;color:#14111C;background:#f0eff5;print-color-adjust:exact;-webkit-print-color-adjust:exact}
   .page{max-width:960px;margin:0 auto;padding:32px}
   .hdr{background:linear-gradient(135deg,#14111C 0%,#2a1018 100%);border-radius:16px;padding:22px 28px;margin-bottom:22px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-  .hdr h1{color:white;font-size:20px;font-weight:800;letter-spacing:-.5px}
+  .hdr h1{color:white;font-size:20px;font-weight:700;letter-spacing:-.5px}
   .hdr-sub{color:rgba(255,255,255,.4);font-size:11px;margin-top:2px}
   .hdr-right{text-align:right}
-  .period-pill{display:inline-block;background:#fb0f05;color:white;padding:3px 11px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.04em;margin-bottom:5px}
+  .period-pill{display:inline-block;background:#fb0f05;color:white;padding:3px 11px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.04em;margin-bottom:5px}
   .date-txt{color:rgba(255,255,255,.4);font-size:10px}
   .print-btn{background:rgba(255,255,255,.1);color:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.18);padding:5px 13px;border-radius:7px;font-size:11px;font-weight:600;cursor:pointer;margin-top:7px;display:inline-block}
   .st{font-size:10px;color:#8E879B;text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin:18px 0 7px}
   .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
   .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   .metric{background:white;border-radius:11px;padding:13px 16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-  .mv{font-size:20px;font-weight:800;background:linear-gradient(135deg,#fb0f05,#0027fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15}
+  .mv{font-size:20px;font-weight:700;background:linear-gradient(135deg,#fb0f05,#0027fe);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.15}
   .mv.alert{background:none;-webkit-text-fill-color:#ef4444}
   .ml{font-size:9px;color:#8E879B;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
   .ms{font-size:10px;color:#b0abc0;margin-top:2px}
@@ -850,264 +842,314 @@ export default function AdminOverview() {
     URL.revokeObjectURL(url);
   };
 
-  const inputSt: React.CSSProperties = { width: "100%", padding: "10px 12px", border: "1px solid #e8e6e2", borderRadius: "10px", fontSize: "14px", background: "rgba(20,15,30,0.025)", color: "#14111C", boxSizing: "border-box", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" };
-
+  // ─── Skeleton ───
   if (loading) {
     return (
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh", flexDirection: "column", gap: "16px" }}>
-        <div style={{ width: "40px", height: "40px", border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-        <p style={{ color: "#8E879B", fontSize: "13px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>Cargando panel...</p>
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: SANS }}>
+        <style>{PAGE_CSS}</style>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 14 }}>
+          <div>
+            <Skel w={170} h={26} />
+            <Skel w={230} h={14} style={{ marginTop: 9 }} />
+          </div>
+          <Skel w={330} h={34} r={10} />
+        </div>
+        <div className="znGridHero">
+          {[0, 1, 2, 3].map(i => <Skel key={i} h={132} r={16} />)}
+        </div>
+        <Skel h={76} r={16} />
+        <div className="znGridCharts">
+          <Skel h={252} r={16} />
+          <Skel h={252} r={16} />
+        </div>
+        <div className="znGridSplit">
+          <Skel h={210} r={16} />
+          <Skel h={210} r={16} />
+        </div>
       </div>
     );
   }
 
+  const hourNow = new Date().getHours();
+  const greeting = hourNow < 12 ? "Buen día" : hourNow < 19 ? "Buena tarde" : "Buena noche";
+  const todayRaw = new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" });
+  const todayLong = todayRaw.charAt(0).toUpperCase() + todayRaw.slice(1);
+  const periodTag = filter === "hoy" ? "Hoy" : filter === "semana" ? "7 días" : filter === "mes" ? "30 días" : "Rango";
+  const maxStaffRev = Math.max(...data.staffPerf.map(s => s.revenue), 1);
+  const posTotal = data.paymentData.reduce((s, p) => s + p.amount, 0);
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", position: "relative" }}>
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes progress { 0%{width:0%} 80%{width:85%} 100%{width:100%} }
-      `}</style>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20, fontFamily: SANS, position: "relative", color: INK }}>
+      <style>{PAGE_CSS}</style>
+
       {/* Barra de progreso sutil al refrescar — no borra el contenido */}
       {refreshing && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: "3px", zIndex: 9999, overflow: "hidden" }}>
-          <div style={{ height: "100%", background: "linear-gradient(90deg,#fb0f05,#0027fe)", animation: "progress 1.2s ease-out forwards" }} />
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, height: 3, zIndex: 9999, overflow: "hidden" }}>
+          <div style={{ height: "100%", background: GRAD, animation: "znProgress 1.2s ease-out forwards" }} />
         </div>
       )}
 
       {/* ─── Header ─── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "14px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 14, animation: "znFadeUp .45s cubic-bezier(.22,1,.36,1) both" }}>
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: 800, margin: 0, letterSpacing: "-0.5px", color: "#14111C" }}>
-            Buen día 👋
+          <h1 style={{ fontSize: 23, fontWeight: 700, margin: 0, letterSpacing: "-0.6px", color: INK, lineHeight: 1.15 }}>
+            {greeting}
           </h1>
-          <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "3px", textTransform: "capitalize" }}>
-            {new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" })}
+          <p style={{
+            fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: DIM,
+            margin: "3px 0 0", letterSpacing: "0.01em",
+          }}>
+            {todayLong}
           </p>
         </div>
 
-        <div style={{ display: "flex", gap: "6px", alignItems: "center", flexWrap: "wrap" }}>
-          {(["hoy", "semana", "mes"] as const).map(f => (
-            <FilterBtn key={f} active={filter === f} onClick={() => { setFilter(f); setShowRangePicker(false); fetchAll(tenantId!, f, undefined, undefined, profFilter); }}>
-              {f === "hoy" ? "Hoy" : f === "semana" ? "7 días" : "30 días"}
-            </FilterBtn>
-          ))}
-
-          {/* Rango personalizado — botón + popup */}
-          <div ref={rangePickerRef} style={{ position: "relative" }}>
-            <FilterBtn active={filter === "custom"} onClick={() => { setFilter("custom"); setShowRangePicker(s => !s); if (customStart && customEnd) fetchAll(tenantId!, "custom", customStart, customEnd, profFilter); }}>
-              {customStart && customEnd ? `${customStart.slice(5)} → ${customEnd.slice(5)}` : "Rango"}
-            </FilterBtn>
-            {showRangePicker && (
-              <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 200 }}>
-                <DateRangePicker
-                  start={customStart}
-                  end={customEnd}
-                  onApply={(s, e) => {
-                    setCustomStart(s); setCustomEnd(e);
-                    fetchAll(tenantId!, "custom", s, e, profFilter);
-                    setShowRangePicker(false);
-                  }}
-                />
-              </div>
-            )}
+        <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+          {/* Segmented period control */}
+          <div style={{ display: "flex", gap: 2, padding: 3, background: "white", border: `1px solid ${LINE}`, borderRadius: 11 }}>
+            {(["hoy", "semana", "mes"] as const).map(f => (
+              <SegBtn key={f} active={filter === f} onClick={() => { setFilter(f); setShowRangePicker(false); fetchAll(tenantId!, f, undefined, undefined, profFilter); }}>
+                {f === "hoy" ? "Hoy" : f === "semana" ? "7 días" : "30 días"}
+              </SegBtn>
+            ))}
+            <div ref={rangePickerRef} style={{ position: "relative" }}>
+              <SegBtn active={filter === "custom"} onClick={() => { setFilter("custom"); setShowRangePicker(s => !s); if (customStart && customEnd) fetchAll(tenantId!, "custom", customStart, customEnd, profFilter); }}>
+                {customStart && customEnd
+                  ? <span style={{ fontFamily: MONO, fontSize: 11 }}>{customStart.slice(5)} → {customEnd.slice(5)}</span>
+                  : "Rango"}
+              </SegBtn>
+              {showRangePicker && (
+                <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 200 }}>
+                  <DateRangePicker
+                    start={customStart}
+                    end={customEnd}
+                    onApply={(s, e) => {
+                      setCustomStart(s); setCustomEnd(e);
+                      fetchAll(tenantId!, "custom", s, e, profFilter);
+                      setShowRangePicker(false);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
-          <button onClick={() => fetchAll(tenantId!, filter, customStart, customEnd, profFilter)}
-            style={{ width: "34px", height: "34px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#564E66", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <IconRefresh size={15} />
-          </button>
-          <button onClick={downloadHTML}
-            style={{ height: "34px", padding: "0 14px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#564E66", cursor: "pointer", display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
-            ⬇ HTML
+          {/* Filtro de miembro */}
+          {profOptions.length > 0 && (
+            <select
+              value={profFilter}
+              onChange={e => { setProfFilter(e.target.value); fetchAll(tenantId!, filter, customStart, customEnd, e.target.value); }}
+              style={{
+                height: 34, padding: "0 11px", borderRadius: 9,
+                border: profFilter ? "1px solid rgba(20,15,30,0.3)" : `1px solid ${LINE}`,
+                background: "white",
+                color: profFilter ? INK : DIM,
+                fontSize: 12.5, fontWeight: 600, cursor: "pointer",
+                fontFamily: SANS, outline: "none", maxWidth: 170,
+              }}>
+              <option value="">Todo el equipo</option>
+              {profOptions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+            </select>
+          )}
+
+          <ToolBtn onClick={() => fetchAll(tenantId!, filter, customStart, customEnd, profFilter)} title="Actualizar datos">
+            <span style={{ display: "inline-flex", animation: refreshing ? "znSpin .8s linear infinite" : "none" }}>
+              <IconRefresh size={15} />
+            </span>
+          </ToolBtn>
+          <ToolBtn onClick={downloadHTML} title="Descargar reporte" label="Reporte">
+            <IconDownload size={14} />
+          </ToolBtn>
+
+          <button onClick={() => setShowNewAppt(true)} style={{
+            height: 34, padding: "0 15px", borderRadius: 9, border: "none",
+            background: GRAD, color: "white", cursor: "pointer",
+            display: "inline-flex", alignItems: "center", gap: 6,
+            fontSize: 12.5, fontWeight: 700, fontFamily: SANS,
+            boxShadow: "0 4px 14px rgba(0,39,254,0.28)",
+            transition: "transform .15s ease, box-shadow .2s ease",
+          }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 7px 20px rgba(0,39,254,0.34)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 4px 14px rgba(0,39,254,0.28)"; }}>
+            <IconPlus size={14} />
+            Nueva cita
           </button>
         </div>
-
-        {/* Filtro de miembro */}
-        {profOptions.length > 0 && (
-          <select
-            value={profFilter}
-            onChange={e => { setProfFilter(e.target.value); fetchAll(tenantId!, filter, customStart, customEnd, e.target.value); }}
-            style={{
-              height: "34px", padding: "0 12px", borderRadius: "9px",
-              border: profFilter ? "1.5px solid rgba(251,15,5,0.4)" : "1.5px solid #e8e6e2",
-              background: profFilter ? "rgba(251,15,5,0.06)" : "white",
-              color: profFilter ? "#fb0f05" : "#564E66",
-              fontSize: "13px", fontWeight: 600, cursor: "pointer",
-              fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
-              outline: "none",
-            }}>
-            <option value="">Todo el equipo</option>
-            {profOptions.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-          </select>
-        )}
       </div>
 
-      {/* ─── Primary Metrics ─── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: "14px" }}>
-        <MetricCard
-          icon={<IconBanknotes size={20} />} iconColor="#fb0f05"
+      {/* ─── Hero + métricas principales ─── */}
+      <div className="znGridHero">
+        <HeroCard
           label={filter === "hoy" ? "Ingresos de hoy" : "Ingresos del período"}
-          value={fmt(data.todayRevenue)}
-          trendVal={filter === "hoy" ? `${Math.abs(revDiff) > 0 ? fmt(Math.abs(revDiff)) : "igual"} vs ayer` : undefined}
+          raw={data.todayRevenue}
+          fmt={fmt}
+          tag={periodTag}
           trend={filter === "hoy" ? revTrend : undefined}
+          trendVal={filter === "hoy" ? `${Math.abs(revDiff) > 0 ? fmt(Math.abs(revDiff)) : "igual"} vs ayer` : undefined}
+          sub={filter !== "hoy" ? periodLabel : undefined}
           spark={data.weeklyRevenue.map(d => d.revenue)}
         />
         <MetricCard
-          icon={<IconCalendar size={20} />} iconColor="#fb0f05"
+          icon={<IconCalendar size={17} />}
           label={filter === "hoy" ? "Citas hoy" : "Total de citas"}
-          value={String(data.todayCount)}
-          sub={filter === "hoy" ? `${data.occupancyRate.toFixed(0)}% ocupación` : periodLabel}
+          raw={data.todayCount} fmt={v => String(Math.round(v))}
+          sub={`${data.occupancyRate.toFixed(0)}% ocupación`}
           trend={data.todayCount >= 5 ? "up" : "neutral"}
           trendVal={data.todayCount >= 5 ? "buen ritmo" : undefined}
           spark={data.hourlyData.map(h => h.count)}
+          delay={0.05}
         />
         <MetricCard
-          icon={<IconBell size={20} />} iconColor={data.pending > 3 ? "#ef4444" : "#f59e0b"}
+          icon={<IconBell size={17} />}
           label="Pendientes"
-          value={String(data.pending)}
+          raw={data.pending} fmt={v => String(Math.round(v))}
           sub="requieren acción"
           alert={data.pending > 3}
-          trend={data.pending > 0 ? "down" : "neutral"}
-          trendVal={data.pending > 3 ? "Atención" : undefined}
+          trend={data.pending > 3 ? "down" : "neutral"}
+          trendVal={data.pending > 3 ? "atención" : undefined}
+          delay={0.1}
         />
         <MetricCard
-          icon={<IconPercent size={20} />} iconColor={data.noShowRate > 15 ? "#ef4444" : "#fb0f05"}
+          icon={<IconPercent size={17} />}
           label="Inasistencias"
-          value={`${data.noShowRate.toFixed(1)}%`}
+          raw={data.noShowRate} fmt={v => `${v.toFixed(1)}%`}
           sub={periodLabel.toLowerCase()}
           alert={data.noShowRate > 15}
-          trend={data.noShowRate > 10 ? "down" : "up"}
-          trendVal={data.noShowRate > 15 ? "Alto — activa depósitos" : "Bajo control"}
+          trend={data.noShowRate > 15 ? "down" : "up"}
+          trendVal={data.noShowRate > 15 ? "activa depósitos" : "bajo control"}
+          delay={0.15}
         />
       </div>
 
-      {/* ─── Secondary Metrics ─── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: "14px" }}>
-        <MetricCard icon={<IconCreditCard size={18} />} iconColor="#fb0f05" label="Ticket promedio" value={fmt(data.avgTicket)} sub="por servicio" />
-        <MetricCard icon={<IconRefresh size={18} />} iconColor="#fb0f05" label="Clientes recurrentes" value={`${data.returningPct.toFixed(0)}%`} sub={periodLabel.toLowerCase()} trend={data.returningPct > 50 ? "up" : "neutral"} />
-        <MetricCard icon={<IconUsers size={18} />} iconColor="#10b981" label={filter === "hoy" ? "Nuevos hoy" : "Nuevos clientes"} value={String(data.newClientsToday)} sub={filter === "hoy" ? "registrados hoy" : "en el período"} />
-        <MetricCard icon={<IconChartBar size={18} />} iconColor="#fb0f05" label="Ocupación" value={`${data.occupancyRate.toFixed(0)}%`} sub={`capacidad ${periodLabel.toLowerCase()}`} trend={data.occupancyRate > 70 ? "up" : "neutral"} />
-      </div>
-
-      {/* ─── Charts Row ─── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "14px", alignItems: "start" }}>
-        <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader title={filter === "hoy" ? "Ingresos por hora — hoy" : `Ingresos — ${periodLabel.toLowerCase()}`} icon={<IconBanknotes size={16} />} />
-          <div style={{ padding: "16px 20px 20px" }}>
-            <BarChart
-              data={data.weeklyRevenue.map(d => ({ label: d.day, value: d.revenue }))}
-              fmtVal={fmt}
-            />
-          </div>
-        </div>
-
-        <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader title={filter === "hoy" ? "Citas por hora — hoy" : "Citas por hora del período"} icon={<IconClock size={16} />} />
-          <div style={{ padding: "16px 20px 20px" }}>
-            <BarChart
-              data={data.hourlyData.map(h => ({ label: h.hour.replace(":00", "h"), value: h.count, color: "linear-gradient(to top, #10b981, #6ee7b7)" }))}
-              fmtVal={v => `${v} cita${v !== 1 ? "s" : ""}`}
-            />
-          </div>
-        </div>
-
-        <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader title="Top 5 servicios" icon={<IconChartBar size={16} />} />
-          <div style={{ padding: "16px 20px 20px" }}>
-            {data.topServices.length === 0 ? (
-              <p style={{ color: "#8E879B", fontSize: "13px" }}>Sin datos aún.</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {data.topServices.map((s, i) => {
-                  const maxCount = data.topServices[0].count;
-                  return (
-                    <div key={i}>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "12px", marginBottom: "4px" }}>
-                        <span style={{ fontWeight: 600, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "130px", color: "#3a3548" }}>{s.name}</span>
-                        <span style={{ color: "#8E879B", fontWeight: 500 }}>{s.count}</span>
-                      </div>
-                      <div style={{ height: "5px", borderRadius: "3px", background: "rgba(20,15,30,0.04)", overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${(s.count / maxCount) * 100}%`, background: "linear-gradient(90deg, #fb0f05, #0027fe)", borderRadius: "3px", transition: "width 0.6s ease" }} />
-                      </div>
-                    </div>
-                  );
-                })}
+      {/* ─── Strip de métricas secundarias ─── */}
+      <Card delay={0.18}>
+        <div className="znStrip">
+          {[
+            { label: "Ticket promedio", value: fmt(data.avgTicket), sub: "por servicio", icon: <IconCreditCard size={15} /> },
+            { label: "Recurrentes", value: `${data.returningPct.toFixed(0)}%`, sub: periodLabel.toLowerCase(), pct: data.returningPct, icon: <IconRefresh size={15} /> },
+            { label: filter === "hoy" ? "Nuevos hoy" : "Nuevos clientes", value: String(data.newClientsToday), sub: "registrados", icon: <IconUsers size={15} /> },
+            { label: "Ocupación", value: `${data.occupancyRate.toFixed(0)}%`, sub: "de capacidad", pct: data.occupancyRate, icon: <IconChartBar size={15} /> },
+          ].map((s, i) => (
+            <div key={i} style={{ padding: "14px 18px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".1em" }}>{s.label}</span>
+                <span style={{ color: "#c4bfce", display: "inline-flex" }}>{s.icon}</span>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Medios de pago */}
-        <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader title="Medios de pago" icon={<IconCreditCard size={16} />} />
-          <div style={{ padding: "16px 20px 20px" }}>
-            {data.paymentData.length === 0 ? (
-              <p style={{ color: "#8E879B", fontSize: "13px" }}>Sin ventas POS en este período.</p>
-            ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                {data.paymentData.map((pm, i) => {
-                  const maxAmt = data.paymentData[0].amount;
-                  return (
-                    <div key={i}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: "12px", marginBottom: "4px" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: pm.color, flexShrink: 0 }} />
-                          <span style={{ fontWeight: 600, color: "#3a3548" }}>{pm.label}</span>
-                        </div>
-                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                          <span style={{ color: "#8E879B", fontSize: "11px" }}>{pm.count} venta{pm.count !== 1 ? "s" : ""}</span>
-                          <span style={{ fontWeight: 700, color: pm.color }}>{fmt(pm.amount)}</span>
-                        </div>
-                      </div>
-                      <div style={{ height: "5px", borderRadius: "3px", background: "rgba(20,15,30,0.04)", overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${(pm.amount / maxAmt) * 100}%`, background: pm.color, borderRadius: "3px", transition: "width 0.6s ease" }} />
-                      </div>
-                    </div>
-                  );
-                })}
-                <div style={{ marginTop: "4px", fontSize: "11px", color: "#8E879B", borderTop: "1px solid #f0eeeb", paddingTop: "8px" }}>
-                  Total POS: <strong style={{ color: "#14111C" }}>{fmt(data.paymentData.reduce((s, p) => s + p.amount, 0))}</strong>
+              <div style={{ fontSize: 19, fontWeight: 700, color: INK, letterSpacing: "-0.5px", marginTop: 7, fontVariantNumeric: "tabular-nums" }}>
+                {s.value}
+              </div>
+              {typeof s.pct === "number" ? (
+                <div style={{ height: 3, borderRadius: 2, background: "rgba(20,15,30,0.06)", marginTop: 8, overflow: "hidden" }}>
+                  <div style={{
+                    height: "100%", width: `${Math.min(s.pct, 100)}%`, borderRadius: 2, background: GRAD,
+                    animation: "znGrow .8s cubic-bezier(.22,1,.36,1) both .3s", transformOrigin: "left",
+                  }} />
                 </div>
-              </div>
-            )}
-          </div>
+              ) : (
+                <div style={{ fontSize: 10.5, color: MUTE, marginTop: 7 }}>{s.sub}</div>
+              )}
+            </div>
+          ))}
         </div>
+      </Card>
+
+      {/* ─── Gráficas principales ─── */}
+      <div className="znGridCharts">
+        <Card delay={0.22}>
+          <CardHead
+            title={filter === "hoy" ? "Ingresos por hora" : "Evolución de ingresos"}
+            sub={filter === "hoy" ? "Hoy, por franja horaria" : periodLabel}
+            aside={periodTag}
+          />
+          <div style={{ padding: "14px 16px 10px" }}>
+            <AreaChart data={data.weeklyRevenue.map(d => ({ label: d.day, value: d.revenue }))} fmt={fmt} />
+          </div>
+        </Card>
+
+        <Card delay={0.26}>
+          <CardHead title="Citas por hora" sub="Distribución de la agenda" aside={<IconClock size={13} />} />
+          <div style={{ padding: "16px 18px 14px" }}>
+            <Bars
+              data={data.hourlyData.map(h => ({ label: h.hour.replace(":00", "h"), value: h.count }))}
+              fmt={v => `${v} cita${v !== 1 ? "s" : ""}`}
+              accent="green"
+            />
+          </div>
+        </Card>
       </div>
 
-      {/* ─── Appointments + Staff ─── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: "14px" }}>
+      <div className="znGridSplit">
+        <Card delay={0.3}>
+          <CardHead title="Top 5 servicios" sub="Los más solicitados del período" />
+          <div style={{ padding: "16px 18px" }}>
+            <RankBars
+              items={data.topServices.map(s => ({
+                label: s.name, value: s.count,
+                sub: data.todayCount > 0 ? `${((s.count / data.todayCount) * 100).toFixed(0)}%` : undefined,
+              }))}
+              fmt={v => `${Math.round(v)}`}
+            />
+          </div>
+        </Card>
 
-        {/* Citas del período */}
-        <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader
+        <Card delay={0.34}>
+          <CardHead
+            title="Medios de pago"
+            sub="Ventas POS del período"
+            aside={posTotal > 0 ? fmt(posTotal) : undefined}
+          />
+          <div style={{ padding: "16px 18px" }}>
+            <Donut
+              data={data.paymentData.map(p => ({ label: p.label, value: p.amount, color: p.color }))}
+              fmt={fmt}
+              centerLabel="total POS"
+            />
+          </div>
+        </Card>
+      </div>
+
+      {/* ─── Citas + Equipo ─── */}
+      <div className="znGridLists">
+        <Card delay={0.38}>
+          <CardHead
             title={filter === "hoy" ? "Citas de hoy" : "Citas del período"}
             sub={`${data.todayCount} agendada${data.todayCount !== 1 ? "s" : ""}`}
-            icon={<IconCalendar size={16} />}
+            aside={<IconCalendar size={13} />}
           />
-          <div style={{ maxHeight: 360, overflowY: "auto" }}>
+          <div style={{ maxHeight: 372, overflowY: "auto" }}>
             {data.upcomingApts.length === 0 ? (
-              <div style={{ padding: "36px 20px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>
-                Sin citas en este período.
-              </div>
+              <Empty
+                msg="Sin citas en este período."
+                action={
+                  <button onClick={() => setShowNewAppt(true)} style={{
+                    padding: "8px 16px", borderRadius: 9, border: "none", background: GRAD, color: "white",
+                    fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: SANS,
+                    boxShadow: "0 4px 14px rgba(0,39,254,0.25)",
+                  }}>
+                    + Agendar la primera
+                  </button>
+                }
+              />
             ) : (
               data.upcomingApts.map((apt, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 20px", borderBottom: i < data.upcomingApts.length - 1 ? "1px solid #f0eeeb" : "none" }}>
-                  <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                    {/* Date + time badge */}
-                    <div style={{ background: "rgba(251,15,5,0.07)", borderRadius: "9px", padding: "6px 10px", minWidth: "52px", textAlign: "center" }}>
+                <div key={i} className="znRow" style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10,
+                  padding: "10px 18px",
+                  borderBottom: i < data.upcomingApts.length - 1 ? `1px solid rgba(20,15,30,0.05)` : "none",
+                }}>
+                  <div style={{ display: "flex", gap: 12, alignItems: "center", minWidth: 0 }}>
+                    <div style={{ background: INK, color: "white", borderRadius: 9, padding: "6px 9px", minWidth: 52, textAlign: "center", flexShrink: 0 }}>
                       {filter !== "hoy" && (
-                        <div style={{ fontSize: "10px", color: "#8E879B", lineHeight: 1, marginBottom: "2px" }}>
+                        <div style={{ fontSize: 8.5, fontFamily: MONO, color: "rgba(255,255,255,0.55)", lineHeight: 1, marginBottom: 3 }}>
                           {apt.appointment_date?.slice(5).replace("-", "/")}
                         </div>
                       )}
-                      <div style={{ fontWeight: 800, fontSize: "12px", color: "#fb0f05", lineHeight: 1 }}>
+                      <div style={{ fontFamily: MONO, fontWeight: 600, fontSize: 11.5, lineHeight: 1 }}>
                         {apt.appointment_time?.slice(0, 5)}
                       </div>
                     </div>
-                    <div>
-                      <div style={{ fontWeight: 700, fontSize: "13px", color: "#14111C" }}>{apt.clients?.name || "—"}</div>
-                      <div style={{ fontSize: "11px", color: "#8E879B", marginTop: "2px" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 13, color: INK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{apt.clients?.name || "—"}</div>
+                      <div style={{ fontSize: 11, color: MUTE, marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {apt.services?.name || "—"} · {apt.professionals?.name || "Cualquiera"}
                       </div>
                     </div>
@@ -1117,37 +1159,58 @@ export default function AdminOverview() {
               ))
             )}
           </div>
-        </div>
+        </Card>
 
-        {/* Rendimiento del Equipo */}
-        <div style={{ background: "white", borderRadius: "18px", border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <SectionHeader title="Rendimiento del equipo" icon={<IconUsers size={16} />} />
+        <Card delay={0.42}>
+          <CardHead title="Rendimiento del equipo" sub="Ingresos por colaborador" aside={<IconUsers size={13} />} />
           {data.staffPerf.length === 0 ? (
-            <div style={{ padding: "36px 20px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Sin datos aún.</div>
+            <Empty msg="Sin datos del equipo aún." />
           ) : (
             data.staffPerf.map((s, i) => (
-              <div key={i} style={{ padding: "12px 20px", borderBottom: i < data.staffPerf.length - 1 ? "1px solid #f0eeeb" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                  <div style={{
-                    width: "34px", height: "34px", borderRadius: "50%",
-                    background: "linear-gradient(135deg, #fb0f05, #0027fe)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: "#fff", fontWeight: 800, fontSize: "11px", flexShrink: 0,
-                  }}>
-                    {s.name.substring(0, 2).toUpperCase()}
+              <div key={i} className="znRow" style={{
+                padding: "11px 18px",
+                borderBottom: i < data.staffPerf.length - 1 ? `1px solid rgba(20,15,30,0.05)` : "none",
+              }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
+                  <div style={{ display: "flex", gap: 10, alignItems: "center", minWidth: 0 }}>
+                    <div style={{
+                      width: 32, height: 32, borderRadius: "50%", flexShrink: 0,
+                      background: i === 0 ? GRAD : "rgba(20,15,30,0.06)",
+                      color: i === 0 ? "white" : DIM,
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontWeight: 700, fontSize: 10.5,
+                    }}>
+                      {s.name.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 12.5, color: INK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</div>
+                      <div style={{ fontSize: 10.5, color: MUTE, marginTop: 1, fontFamily: MONO }}>{s.count} cita{s.count !== 1 ? "s" : ""}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: "13px", color: "#14111C" }}>{s.name}</div>
-                    <div style={{ fontSize: "11px", color: "#8E879B", marginTop: "1px" }}>{s.count} citas</div>
-                  </div>
+                  <div style={{ fontFamily: MONO, fontWeight: 600, fontSize: 12.5, color: INK, flexShrink: 0 }}>{fmt(s.revenue)}</div>
                 </div>
-                <div style={{ fontWeight: 800, fontSize: "13px", color: "#fb0f05" }}>{fmt(s.revenue)}</div>
+                <div style={{ height: 3, borderRadius: 2, background: "rgba(20,15,30,0.05)", marginTop: 8, overflow: "hidden" }}>
+                  <div style={{
+                    height: "100%", width: `${(s.revenue / maxStaffRev) * 100}%`, borderRadius: 2,
+                    background: i === 0 ? GRAD : "rgba(20,15,30,0.2)",
+                    animation: `znGrow .7s cubic-bezier(.22,1,.36,1) both ${0.45 + i * 0.06}s`, transformOrigin: "left",
+                  }} />
+                </div>
               </div>
             ))
           )}
-        </div>
+        </Card>
       </div>
 
+      {/* ─── Modal nueva cita ─── */}
+      {tenantId && (
+        <NewAppointmentModal
+          tenantId={tenantId}
+          open={showNewAppt}
+          onClose={() => setShowNewAppt(false)}
+          onCreated={() => { setShowNewAppt(false); fetchAll(tenantId, filter, customStart, customEnd, profFilter); }}
+        />
+      )}
     </div>
   );
 }

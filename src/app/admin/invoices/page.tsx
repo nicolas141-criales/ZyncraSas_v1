@@ -350,7 +350,7 @@ export default function InvoicesPage() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, maxWidth: 860 }}>
 
           {/* Factus credentials */}
-          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2", gridColumn: "1 / -1" }}>
+          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)", gridColumn: "1 / -1" }}>
             <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>
               Credenciales Factus
             </h3>
@@ -381,7 +381,7 @@ export default function InvoicesPage() {
           </div>
 
           {/* Emisor data */}
-          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2", gridColumn: "1 / -1" }}>
+          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)", gridColumn: "1 / -1" }}>
             <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>
               Datos del Emisor
             </h3>
@@ -427,7 +427,7 @@ export default function InvoicesPage() {
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
             {/* Customer */}
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>Datos del Cliente</h3>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
@@ -462,7 +462,7 @@ export default function InvoicesPage() {
             </div>
 
             {/* Items */}
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>Ítems / Servicios</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {items.map((item, i) => (
@@ -502,7 +502,7 @@ export default function InvoicesPage() {
             </div>
 
             {/* Notes */}
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               <label style={labelStyle}>Notas / Observaciones</label>
               <textarea value={notes} onChange={e => setNotes(e.target.value)}
                 placeholder="Observaciones para la factura (opcional)"
@@ -512,7 +512,7 @@ export default function InvoicesPage() {
 
           {/* Right column — summary */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2", position: "sticky", top: 20 }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)", position: "sticky", top: 20 }}>
               <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>Resumen</h3>
 
               <div style={{ marginBottom: 16 }}>
@@ -559,7 +559,7 @@ export default function InvoicesPage() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {invoices.map(inv => (
-                <div key={inv.id} style={{ background: "white", borderRadius: 14, border: "1px solid #e8e6e2", overflow: "hidden" }}>
+                <div key={inv.id} style={{ background: "white", borderRadius: 14, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
                   <div onClick={() => setExpandedId(expandedId === inv.id ? null : inv.id)}
                     style={{ padding: "14px 20px", display: "grid", gridTemplateColumns: "90px 1fr auto auto auto", gap: 12, alignItems: "center", cursor: "pointer" }}>
                     <div style={{ fontWeight: 700, color: "#fb0f05", fontSize: 14 }}>#{inv.number || "—"}</div>
@@ -608,7 +608,7 @@ export default function InvoicesPage() {
 
       {/* ── Success Modal ──────────────────────────────────────────────────── */}
       {successModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div style={{ background: "white", borderRadius: 20, padding: 32, maxWidth: 480, width: "100%", textAlign: "center" }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>✅</div>
             <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1a1a2e", margin: "0 0 8px" }}>¡Factura emitida!</h2>
@@ -674,7 +674,7 @@ const labelStyle: React.CSSProperties = {
 };
 
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
+  width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
   fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box", outline: "none",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
@@ -688,7 +688,7 @@ const btnPrimary: React.CSSProperties = {
 
 const btnSecondary: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 6,
-  padding: "9px 20px", borderRadius: 10, border: "1px solid #e8e6e2",
+  padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(20,15,30,0.08)",
   background: "white", color: "#4a4a6a", fontWeight: 600, fontSize: 14,
   cursor: "pointer", textDecoration: "none",
 };

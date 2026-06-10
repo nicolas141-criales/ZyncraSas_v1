@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
@@ -41,11 +41,11 @@ const EGRESO_CATS  = ["Arriendo", "Nómina", "Insumos", "Servicios públicos", "
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const card: React.CSSProperties = {
-  background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden",
+  background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden",
 };
 
 const inp: React.CSSProperties = {
-  width: "100%", padding: "10px 13px", border: "1.5px solid #e8e6e2",
+  width: "100%", padding: "10px 13px", border: "1.5px solid rgba(20,15,30,0.08)",
   borderRadius: 10, fontSize: 14, background: "rgba(20,15,30,0.025)", color: "#14111C",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none", boxSizing: "border-box",
 };
@@ -62,9 +62,9 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     <button onClick={onClick} style={{
       padding: "8px 18px", borderRadius: 10, fontSize: 13, fontWeight: 600,
       cursor: "pointer", border: "none", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-      background: active ? "linear-gradient(135deg, #fb0f05, #0027fe)" : "transparent",
+      background: active ? "#14111C" : "transparent",
       color: active ? "#fff" : "#564E66",
-      boxShadow: active ? "0 2px 8px rgba(251,15,5,0.25)" : "none",
+      boxShadow: active ? "0 2px 8px rgba(20,15,30,0.18)" : "none",
       transition: "all 0.15s",
     }}>
       {children}
@@ -76,11 +76,11 @@ function MetricCard({ label, value, color = "#fb0f05", gradient = false }: {
   label: string; value: string; color?: string; gradient?: boolean;
 }) {
   return (
-    <div style={{ background: "white", borderRadius: 16, border: "1px solid #e8e6e2", padding: "18px 20px" }}>
+    <div style={{ background: "white", borderRadius: 16, border: "1px solid rgba(20,15,30,0.08)", padding: "18px 20px" }}>
       <div style={{
-        fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 4,
+        fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", marginBottom: 4,
         ...(gradient
-          ? { background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }
+          ? { color: "#14111C" }
           : { color }),
       }}>
         {value}
@@ -94,7 +94,7 @@ function MetricCard({ label, value, color = "#fb0f05", gradient = false }: {
 
 function SectionHeader({ title, sub }: { title: string; sub?: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid rgba(20,15,30,0.08)" }}>
       <div style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", flexShrink: 0 }}>
         <IconBanknotes size={16} />
       </div>
@@ -302,7 +302,7 @@ export default function CajaPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, margin: 0, letterSpacing: "-0.5px", color: "#14111C" }}>Sistema de Caja</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, letterSpacing: "-0.5px", color: "#14111C" }}>Sistema de Caja</h1>
           <p style={{ color: "#8E879B", fontSize: 13, marginTop: 3 }}>Control de ingresos y egresos del día.</p>
         </div>
         <div style={{ display: "flex", gap: 4, background: "rgba(20,15,30,0.04)", padding: 4, borderRadius: 14 }}>
@@ -315,16 +315,16 @@ export default function CajaPage() {
       {tab === "caja" && (
         loadingSession ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "40vh" }}>
-            <div style={{ width: 36, height: 36, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+            <div style={{ width: 36, height: 36, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
           </div>
         ) : !session ? (
           /* ── CAJA CERRADA ── */
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ background: "white", borderRadius: 24, border: "1px solid #e8e6e2", padding: "40px 36px", maxWidth: 420, width: "100%", textAlign: "center" }}>
+            <div style={{ background: "white", borderRadius: 24, border: "1px solid rgba(20,15,30,0.08)", padding: "40px 36px", maxWidth: 420, width: "100%", textAlign: "center" }}>
               <div style={{ width: 64, height: 64, borderRadius: 20, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", color: "#fb0f05" }}>
                 <IconBanknotes size={32} />
               </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#14111C", marginBottom: 6 }}>Caja cerrada</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#14111C", marginBottom: 6 }}>Caja cerrada</div>
               <div style={{ fontSize: 13, color: "#8E879B", marginBottom: 28 }}>Abre la caja para empezar a registrar movimientos.</div>
 
               <div style={{ textAlign: "left", marginBottom: 14 }}>
@@ -377,8 +377,8 @@ export default function CajaPage() {
             </div>
 
             {/* Desglose por método de pago */}
-            <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
-              <div style={{ padding: "14px 20px", borderBottom: "1px solid #e8e6e2", fontWeight: 700, fontSize: 13, color: "#14111C" }}>
+            <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
+              <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(20,15,30,0.08)", fontWeight: 700, fontSize: 13, color: "#14111C" }}>
                 Saldo por método de pago
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)" }}>
@@ -392,7 +392,7 @@ export default function CajaPage() {
                       <span style={{ fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>{pm.label}</span>
                     </div>
                     <div style={{
-                      fontSize: 20, fontWeight: 800, letterSpacing: "-0.5px",
+                      fontSize: 20, fontWeight: 700, letterSpacing: "-0.5px",
                       color: pm.total < 0 ? "#ef4444" : pm.color,
                     }}>
                       {fmt(pm.total)}
@@ -436,7 +436,7 @@ export default function CajaPage() {
                         background: m.type === "ingreso" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
                         display: "flex", alignItems: "center", justifyContent: "center",
                         color: m.type === "ingreso" ? "#10b981" : "#ef4444",
-                        fontSize: 16, fontWeight: 800,
+                        fontSize: 16, fontWeight: 700,
                       }}>
                         {m.type === "ingreso" ? "+" : "-"}
                       </div>
@@ -456,7 +456,7 @@ export default function CajaPage() {
                         </div>
                       </div>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: 15, color: m.type === "ingreso" ? "#10b981" : "#ef4444" }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: m.type === "ingreso" ? "#10b981" : "#ef4444" }}>
                       {m.type === "ingreso" ? "+" : "-"}{fmt(Number(m.amount))}
                     </div>
                   </div>
@@ -473,7 +473,7 @@ export default function CajaPage() {
           <SectionHeader title="Sesiones anteriores" sub="Últimas 30 sesiones cerradas" />
           {loadingHistory ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
-              <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
+              <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : sessions.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>
@@ -506,7 +506,7 @@ export default function CajaPage() {
                     <div style={{ textAlign: "right", fontSize: 13, color: "#564E66", fontWeight: 600 }}>{fmt(s.opening_amount)}</div>
                     <div style={{ textAlign: "right", fontSize: 13, color: "#10b981", fontWeight: 700 }}>+{fmt(s.ingresos)}</div>
                     <div style={{ textAlign: "right", fontSize: 13, color: "#ef4444", fontWeight: 700 }}>-{fmt(s.egresos)}</div>
-                    <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    <div style={{ textAlign: "right", fontWeight: 700, fontSize: 14, color: "#14111C" }}>
                       {fmt(bal)}
                     </div>
                   </div>
@@ -519,11 +519,11 @@ export default function CajaPage() {
 
       {/* ── Modal: Registrar Movimiento ── */}
       {showMov && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setShowMov(false); }}>
-          <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 22, padding: 28, width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-              <div style={{ fontWeight: 800, fontSize: 17, color: "#14111C" }}>Registrar Movimiento</div>
+              <div style={{ fontWeight: 700, fontSize: 17, color: "#14111C" }}>Registrar Movimiento</div>
               <button onClick={() => setShowMov(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}><IconX size={18} /></button>
             </div>
 
@@ -579,16 +579,16 @@ export default function CajaPage() {
 
       {/* ── Modal: Cerrar Caja ── */}
       {showCierre && session && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setShowCierre(false); }}>
-          <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 22, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 17, color: "#14111C" }}>Cerrar Caja</div>
+              <div style={{ fontWeight: 700, fontSize: 17, color: "#14111C" }}>Cerrar Caja</div>
               <button onClick={() => setShowCierre(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}><IconX size={18} /></button>
             </div>
 
             {/* Summary */}
-            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid #e8e6e2", borderRadius: 14, padding: "16px 18px", marginBottom: 18 }}>
+            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid rgba(20,15,30,0.08)", borderRadius: 14, padding: "16px 18px", marginBottom: 18 }}>
               {[
                 ["Fondo inicial",   fmt(session.opening_amount), "#564E66"],
                 ["Total ingresos",  fmt(totalIngresos),          "#10b981"],
@@ -599,9 +599,9 @@ export default function CajaPage() {
                   <span style={{ fontWeight: 700, color: c }}>{v}</span>
                 </div>
               ))}
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, borderTop: "1px solid #e8e6e2", paddingTop: 10, marginTop: 4 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, borderTop: "1px solid rgba(20,15,30,0.08)", paddingTop: 10, marginTop: 4 }}>
                 <span style={{ fontWeight: 700, color: "#14111C" }}>Balance esperado</span>
-                <span style={{ fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                <span style={{ fontWeight: 700, color: "#14111C" }}>
                   {fmt(balance)}
                 </span>
               </div>
@@ -620,7 +620,7 @@ export default function CajaPage() {
             {cierreAmount && (
               <div style={{ marginBottom: 18, padding: "10px 14px", borderRadius: 10, background: "rgba(251,15,5,0.05)", border: "1px solid rgba(251,15,5,0.15)" }}>
                 <div style={{ fontSize: 12, color: "#564E66", marginBottom: 2 }}>Diferencia</div>
-                <div style={{ fontWeight: 800, fontSize: 16, color: parseFloat(cierreAmount) - balance >= 0 ? "#10b981" : "#ef4444" }}>
+                <div style={{ fontWeight: 700, fontSize: 16, color: parseFloat(cierreAmount) - balance >= 0 ? "#10b981" : "#ef4444" }}>
                   {fmt(parseFloat(cierreAmount) - balance)}
                   <span style={{ fontSize: 12, fontWeight: 600, color: "#8E879B", marginLeft: 6 }}>
                     {parseFloat(cierreAmount) - balance >= 0 ? "sobrante" : "faltante"}

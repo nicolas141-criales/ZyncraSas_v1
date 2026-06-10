@@ -53,7 +53,7 @@ const STATUS_MAP: Record<string, { label: string; bg: string; color: string; bor
 };
 
 const inp: React.CSSProperties = {
-  width: "100%", padding: "10px 13px", border: "1.5px solid #e8e6e2",
+  width: "100%", padding: "10px 13px", border: "1.5px solid rgba(20,15,30,0.08)",
   borderRadius: "10px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
   color: "#14111C", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
   boxSizing: "border-box",
@@ -247,7 +247,7 @@ export default function CalendarPage() {
             <IconCalendar size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Calendario</h1>
+            <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Calendario</h1>
             <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px", textTransform: "capitalize" }}>
               {monthLabel} · {totalApts} cita{totalApts !== 1 ? "s" : ""}
             </p>
@@ -261,10 +261,10 @@ export default function CalendarPage() {
           </button>
 
           {/* View selector */}
-          <div style={{ display: "flex", border: "1.5px solid #e8e6e2", borderRadius: "10px", overflow: "hidden" }}>
+          <div style={{ display: "flex", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", overflow: "hidden" }}>
             {([["week","Semana"],["day","Día"],["professional","Colaborador"]] as const).map(([v, label]) => (
               <button key={v} onClick={() => setView(v)}
-                style={{ padding: "7px 14px", border: "none", borderRight: v !== "professional" ? "1px solid #e8e6e2" : "none", cursor: "pointer", background: view === v ? "#fb0f05" : "white", color: view === v ? "white" : "#564E66", fontSize: "12px", fontWeight: 600, fontFamily: "inherit", transition: "all .15s" }}>
+                style={{ padding: "7px 14px", border: "none", borderRight: v !== "professional" ? "1px solid rgba(20,15,30,0.08)" : "none", cursor: "pointer", background: view === v ? "#fb0f05" : "white", color: view === v ? "white" : "#564E66", fontSize: "12px", fontWeight: 600, fontFamily: "inherit", transition: "all .15s" }}>
                 {label}
               </button>
             ))}
@@ -273,36 +273,36 @@ export default function CalendarPage() {
           {/* Navigation */}
           {view === "week" ? (
             <>
-              <button onClick={prevWeek} style={{ width: "36px", height: "36px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "16px", color: "#3a3548" }}>‹</button>
-              <button onClick={goToday} style={{ height: "36px", padding: "0 16px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "#3a3548", fontFamily: "inherit" }}>Hoy</button>
-              <button onClick={nextWeek} style={{ width: "36px", height: "36px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "16px", color: "#3a3548" }}>›</button>
+              <button onClick={prevWeek} style={{ width: "36px", height: "36px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "16px", color: "#3a3548" }}>‹</button>
+              <button onClick={goToday} style={{ height: "36px", padding: "0 16px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "#3a3548", fontFamily: "inherit" }}>Hoy</button>
+              <button onClick={nextWeek} style={{ width: "36px", height: "36px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "16px", color: "#3a3548" }}>›</button>
             </>
           ) : (
             <>
-              <button onClick={prevDay} style={{ width: "36px", height: "36px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "16px", color: "#3a3548" }}>‹</button>
-              <button onClick={goToday} style={{ height: "36px", padding: "0 16px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "#3a3548", fontFamily: "inherit" }}>Hoy</button>
-              <button onClick={nextDay} style={{ width: "36px", height: "36px", border: "1.5px solid #e8e6e2", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "16px", color: "#3a3548" }}>›</button>
+              <button onClick={prevDay} style={{ width: "36px", height: "36px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "16px", color: "#3a3548" }}>‹</button>
+              <button onClick={goToday} style={{ height: "36px", padding: "0 16px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "13px", fontWeight: 600, color: "#3a3548", fontFamily: "inherit" }}>Hoy</button>
+              <button onClick={nextDay} style={{ width: "36px", height: "36px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", background: "white", cursor: "pointer", fontSize: "16px", color: "#3a3548" }}>›</button>
             </>
           )}
         </div>
       </div>
 
       {/* Calendar grid */}
-      <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+      <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden", flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
         <div style={{ overflowX: "auto", flex: 1, display: "flex", flexDirection: "column" }}>
           <div style={{ minWidth: view === "professional" ? `${56 + (profs.length + 1) * 130}px` : "700px", display: "flex", flexDirection: "column", flex: 1 }}>
 
             {/* ── WEEK VIEW ── */}
             {view === "week" && (
               <>
-                <div style={{ display: "grid", gridTemplateColumns: "56px repeat(7, 1fr)", borderBottom: "1px solid #f0eeeb", flexShrink: 0, background: "#fafaf8" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "56px repeat(7, 1fr)", borderBottom: "1px solid #f0eeeb", flexShrink: 0, background: "rgba(20,15,30,0.025)" }}>
                   <div style={{ borderRight: "1px solid #f0eeeb" }} />
                   {weekDays.map((day, i) => {
                     const isToday = toISO(day) === todayStr;
                     return (
                       <div key={i} style={{ padding: "12px 8px", textAlign: "center", borderRight: "1px solid #f0eeeb", background: isToday ? "rgba(251,15,5,0.04)" : undefined }}>
                         <div style={{ fontSize: "11px", fontWeight: 700, color: isToday ? "#fb0f05" : "#8E879B", letterSpacing: "0.05em" }}>{DAYS_SHORT[i]}</div>
-                        <div style={{ fontSize: "20px", fontWeight: 800, color: isToday ? "#fb0f05" : "#14111C", lineHeight: 1.2, marginTop: "2px" }}>{day.getDate()}</div>
+                        <div style={{ fontSize: "20px", fontWeight: 700, color: isToday ? "#fb0f05" : "#14111C", lineHeight: 1.2, marginTop: "2px" }}>{day.getDate()}</div>
                         {isToday && <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#fb0f05", margin: "4px auto 0" }} />}
                       </div>
                     );
@@ -332,8 +332,8 @@ export default function CalendarPage() {
             {/* ── DAY VIEW ── */}
             {view === "day" && (
               <>
-                <div style={{ borderBottom: "1px solid #f0eeeb", padding: "14px 20px", background: "#fafaf8", flexShrink: 0 }}>
-                  <div style={{ fontSize: "14px", fontWeight: 800, color: toISO(dayRef) === todayStr ? "#fb0f05" : "#14111C", textTransform: "capitalize" }}>
+                <div style={{ borderBottom: "1px solid #f0eeeb", padding: "14px 20px", background: "rgba(20,15,30,0.025)", flexShrink: 0 }}>
+                  <div style={{ fontSize: "14px", fontWeight: 700, color: toISO(dayRef) === todayStr ? "#fb0f05" : "#14111C", textTransform: "capitalize" }}>
                     {dayRef.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" })}
                   </div>
                   <div style={{ fontSize: "12px", color: "#8E879B", marginTop: "2px" }}>
@@ -362,11 +362,11 @@ export default function CalendarPage() {
             {view === "professional" && (
               <>
                 {/* Header with prof names */}
-                <div style={{ display: "grid", gridTemplateColumns: `56px repeat(${profs.length}, minmax(130px, 1fr))`, borderBottom: "1px solid #f0eeeb", flexShrink: 0, background: "#fafaf8" }}>
+                <div style={{ display: "grid", gridTemplateColumns: `56px repeat(${profs.length}, minmax(130px, 1fr))`, borderBottom: "1px solid #f0eeeb", flexShrink: 0, background: "rgba(20,15,30,0.025)" }}>
                   <div style={{ borderRight: "1px solid #f0eeeb" }} />
                   {profs.map(p => (
                     <div key={p.id} style={{ padding: "12px 8px", textAlign: "center", borderRight: "1px solid #f0eeeb" }}>
-                      <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(251,15,5,0.10)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 4px", fontSize: "12px", fontWeight: 800, color: "#fb0f05" }}>
+                      <div style={{ width: "32px", height: "32px", borderRadius: "50%", background: "rgba(251,15,5,0.10)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 4px", fontSize: "12px", fontWeight: 700, color: "#fb0f05" }}>
                         {p.name.charAt(0).toUpperCase()}
                       </div>
                       <div style={{ fontSize: "11px", fontWeight: 700, color: "#14111C", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.name}</div>
@@ -404,13 +404,13 @@ export default function CalendarPage() {
 
       {/* Edit modal */}
       {selectedApt && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={e => { if (e.target === e.currentTarget) setSelectedApt(null); }}>
-          <div style={{ background: "white", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "90vh", overflowY: "auto" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "90vh", overflowY: "auto" }}>
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C", margin: 0 }}>Gestionar cita</h2>
+                <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#14111C", margin: 0 }}>Gestionar cita</h2>
                 <p style={{ fontSize: "13px", color: "#8E879B", marginTop: "3px" }}>
                   {(selectedApt.clients as any)?.name} · {(selectedApt.services as any)?.name}
                 </p>
@@ -419,13 +419,13 @@ export default function CalendarPage() {
             </div>
 
             {/* Info */}
-            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid #e8e6e2", borderRadius: "12px", padding: "12px 16px", marginBottom: "20px", fontSize: "13px", color: "#564E66", display: "flex", flexDirection: "column", gap: "4px" }}>
+            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "12px", padding: "12px 16px", marginBottom: "20px", fontSize: "13px", color: "#564E66", display: "flex", flexDirection: "column", gap: "4px" }}>
               <span><strong style={{ color: "#14111C" }}>Cliente:</strong> {(selectedApt.clients as any)?.name || "—"}</span>
               <span><strong style={{ color: "#14111C" }}>Servicio:</strong> {(selectedApt.services as any)?.name || "—"}</span>
               <span><strong style={{ color: "#14111C" }}>Colaborador:</strong> {(selectedApt.professionals as any)?.name || "Sin asignar"}</span>
               {aptFields.length > 0 && (
                 <>
-                  <div style={{ borderTop: "1px solid #e8e6e2", marginTop: "6px", paddingTop: "8px", fontSize: "10px", fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.07em" }}>
+                  <div style={{ borderTop: "1px solid rgba(20,15,30,0.08)", marginTop: "6px", paddingTop: "8px", fontSize: "10px", fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.07em" }}>
                     Información del servicio
                   </div>
                   {aptFields.map(f => (

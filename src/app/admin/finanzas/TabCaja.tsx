@@ -26,7 +26,7 @@ const PM_META: Record<string, { label: string; color: string; icon: string }> = 
 };
 
 const inp: React.CSSProperties = {
-  width: "100%", padding: "10px 13px", border: "1.5px solid #e8e6e2",
+  width: "100%", padding: "10px 13px", border: "1.5px solid rgba(20,15,30,0.08)",
   borderRadius: 10, fontSize: 14, background: "rgba(20,15,30,0.025)", color: "#14111C",
   fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif", outline: "none", boxSizing: "border-box",
 };
@@ -37,10 +37,10 @@ const lbl: React.CSSProperties = {
 
 function MetricCard({ label, value, color = "#14111C", gradient = false }: { label: string; value: string; color?: string; gradient?: boolean }) {
   return (
-    <div style={{ background: "white", borderRadius: 16, border: "1px solid #e8e6e2", padding: "18px 20px" }}>
+    <div style={{ background: "white", borderRadius: 16, border: "1px solid rgba(20,15,30,0.08)", padding: "18px 20px" }}>
       <div style={{
-        fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 4,
-        ...(gradient ? { background: "linear-gradient(135deg,#fb0f05,#0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" } : { color }),
+        fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", marginBottom: 4,
+        ...(gradient ? { color: "#14111C" } : { color }),
       }}>{value}</div>
       <div style={{ fontSize: 11, fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
     </div>
@@ -165,9 +165,9 @@ export default function TabCaja() {
         {(["caja", "historial"] as const).map(t => (
           <button key={t} onClick={() => setSubTab(t)} style={{
             padding: "7px 18px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: FONT, transition: "all 0.15s",
-            background: subTab === t ? "linear-gradient(135deg,#fb0f05,#0027fe)" : "transparent",
+            background: subTab === t ? "#14111C" : "transparent",
             color: subTab === t ? "#fff" : "#564E66",
-            boxShadow: subTab === t ? "0 2px 8px rgba(251,15,5,.25)" : "none",
+            boxShadow: subTab === t ? "0 2px 8px rgba(20,15,30,0.18)" : "none",
           }}>{t.charAt(0).toUpperCase() + t.slice(1)}</button>
         ))}
       </div>
@@ -176,15 +176,15 @@ export default function TabCaja() {
       {subTab === "caja" && (
         loadingSession ? (
           <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-            <div style={{ width: 36, height: 36, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+            <div style={{ width: 36, height: 36, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
           </div>
         ) : !session ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ background: "white", borderRadius: 24, border: "1px solid #e8e6e2", padding: "40px 36px", maxWidth: 420, width: "100%", textAlign: "center" }}>
+            <div style={{ background: "white", borderRadius: 24, border: "1px solid rgba(20,15,30,0.08)", padding: "40px 36px", maxWidth: 420, width: "100%", textAlign: "center" }}>
               <div style={{ width: 64, height: 64, borderRadius: 20, background: "rgba(251,15,5,.08)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", color: "#fb0f05" }}>
                 <IconBanknotes size={32} />
               </div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: "#14111C", marginBottom: 6 }}>Caja cerrada</div>
+              <div style={{ fontSize: 20, fontWeight: 700, color: "#14111C", marginBottom: 6 }}>Caja cerrada</div>
               <div style={{ fontSize: 13, color: "#8E879B", marginBottom: 28 }}>Abre la caja para registrar movimientos del día.</div>
               <div style={{ textAlign: "left", marginBottom: 14 }}>
                 <label style={lbl}>Fondo inicial ({currency}) *</label>
@@ -216,8 +216,8 @@ export default function TabCaja() {
             </div>
 
             {/* Payment method breakdown */}
-            <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
-              <div style={{ padding: "14px 20px", borderBottom: "1px solid #e8e6e2", fontWeight: 700, fontSize: 13, color: "#14111C" }}>Saldo por método de pago</div>
+            <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
+              <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(20,15,30,0.08)", fontWeight: 700, fontSize: 13, color: "#14111C" }}>Saldo por método de pago</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)" }}>
                 {pmBreakdown.map((pm, i) => (
                   <div key={pm.key} style={{ padding: "18px 20px", borderRight: i < pmBreakdown.length - 1 ? "1px solid #f0eeeb" : "none" }}>
@@ -225,7 +225,7 @@ export default function TabCaja() {
                       <span style={{ fontSize: 16 }}>{pm.icon}</span>
                       <span style={{ fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em" }}>{pm.label}</span>
                     </div>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: pm.total < 0 ? "#ef4444" : pm.color }}>{fmt(pm.total)}</div>
+                    <div style={{ fontSize: 20, fontWeight: 700, color: pm.total < 0 ? "#ef4444" : pm.color }}>{fmt(pm.total)}</div>
                   </div>
                 ))}
               </div>
@@ -244,8 +244,8 @@ export default function TabCaja() {
             </div>
 
             {/* Movements */}
-            <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
-              <div style={{ padding: "14px 20px", borderBottom: "1px solid #e8e6e2", fontWeight: 700, fontSize: 13, color: "#14111C" }}>
+            <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
+              <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(20,15,30,0.08)", fontWeight: 700, fontSize: 13, color: "#14111C" }}>
                 Movimientos del día <span style={{ color: "#8E879B", fontWeight: 500, fontSize: 12 }}>· {movements.length} registros</span>
               </div>
               {movements.length === 0
@@ -253,7 +253,7 @@ export default function TabCaja() {
                 : movements.map((m, i) => (
                   <div key={m.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "13px 20px", borderBottom: i < movements.length - 1 ? "1px solid #f7f7fa" : "none" }}>
                     <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                      <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: m.type === "ingreso" ? "rgba(16,185,129,.1)" : "rgba(239,68,68,.1)", display: "flex", alignItems: "center", justifyContent: "center", color: m.type === "ingreso" ? "#10b981" : "#ef4444", fontSize: 16, fontWeight: 800 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: m.type === "ingreso" ? "rgba(16,185,129,.1)" : "rgba(239,68,68,.1)", display: "flex", alignItems: "center", justifyContent: "center", color: m.type === "ingreso" ? "#10b981" : "#ef4444", fontSize: 16, fontWeight: 700 }}>
                         {m.type === "ingreso" ? "+" : "−"}
                       </div>
                       <div>
@@ -265,7 +265,7 @@ export default function TabCaja() {
                         </div>
                       </div>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: 15, color: m.type === "ingreso" ? "#10b981" : "#ef4444" }}>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: m.type === "ingreso" ? "#10b981" : "#ef4444" }}>
                       {m.type === "ingreso" ? "+" : "−"}{fmt(Number(m.amount))}
                     </div>
                   </div>
@@ -277,10 +277,10 @@ export default function TabCaja() {
 
       {/* ── Tab: Historial ── */}
       {subTab === "historial" && (
-        <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <div style={{ padding: "14px 20px", borderBottom: "1px solid #e8e6e2", fontWeight: 700, fontSize: 13, color: "#14111C" }}>Sesiones anteriores <span style={{ color: "#8E879B", fontWeight: 500, fontSize: 12 }}>· últimas 30</span></div>
+        <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
+          <div style={{ padding: "14px 20px", borderBottom: "1px solid rgba(20,15,30,0.08)", fontWeight: 700, fontSize: 13, color: "#14111C" }}>Sesiones anteriores <span style={{ color: "#8E879B", fontWeight: 500, fontSize: 12 }}>· últimas 30</span></div>
           {loadingHistory
-            ? <div style={{ padding: "40px 20px", textAlign: "center" }}><div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} /></div>
+            ? <div style={{ padding: "40px 20px", textAlign: "center" }}><div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} /></div>
             : sessions.length === 0
               ? <div style={{ padding: "36px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>Sin sesiones cerradas.</div>
               : <>
@@ -298,7 +298,7 @@ export default function TabCaja() {
                       <div style={{ textAlign: "right", fontSize: 13, color: "#564E66", fontWeight: 600 }}>{fmt(s.opening_amount)}</div>
                       <div style={{ textAlign: "right", fontSize: 13, color: "#10b981", fontWeight: 700 }}>+{fmt(s.ingresos)}</div>
                       <div style={{ textAlign: "right", fontSize: 13, color: "#ef4444", fontWeight: 700 }}>−{fmt(s.egresos)}</div>
-                      <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg,#fb0f05,#0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{fmt(bal)}</div>
+                      <div style={{ textAlign: "right", fontWeight: 700, fontSize: 14, color: "#14111C" }}>{fmt(bal)}</div>
                     </div>
                   );
                 })}
@@ -309,9 +309,9 @@ export default function TabCaja() {
       {/* ── Modal: Movimiento ── */}
       {showMov && (
         <div style={modalOverlay} onClick={e => { if (e.target === e.currentTarget) setShowMov(false); }}>
-          <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,.18)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 22, padding: 28, width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-              <div style={{ fontWeight: 800, fontSize: 17, color: "#14111C" }}>Registrar Movimiento</div>
+              <div style={{ fontWeight: 700, fontSize: 17, color: "#14111C" }}>Registrar Movimiento</div>
               <button onClick={() => setShowMov(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}><IconX size={18} /></button>
             </div>
             <div style={{ display: "flex", gap: 8, marginBottom: 18, background: "rgba(20,15,30,.04)", padding: 4, borderRadius: 12 }}>
@@ -347,14 +347,14 @@ export default function TabCaja() {
       {/* ── Modal: Cerrar Caja ── */}
       {showCierre && (
         <div style={modalOverlay} onClick={e => { if (e.target === e.currentTarget) setShowCierre(false); }}>
-          <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,.18)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 22, padding: 28, width: "100%", maxWidth: 440, boxShadow: "0 24px 64px rgba(0,0,0,.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <div style={{ fontWeight: 800, fontSize: 17, color: "#14111C" }}>Cerrar Caja</div>
+              <div style={{ fontWeight: 700, fontSize: 17, color: "#14111C" }}>Cerrar Caja</div>
               <button onClick={() => setShowCierre(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}><IconX size={18} /></button>
             </div>
             <div style={{ background: "rgba(20,15,30,.03)", borderRadius: 12, padding: "14px 16px", marginBottom: 20, display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
               {[["Fondo inicial", fmt(session?.opening_amount || 0)], ["Ingresos", fmt(totalIngresos)], ["Balance esperado", fmt(balance)]].map(([l, v]) => (
-                <div key={l}><div style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", marginBottom: 3 }}>{l}</div><div style={{ fontWeight: 800, fontSize: 14, color: "#14111C" }}>{v}</div></div>
+                <div key={l}><div style={{ fontSize: 10, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", marginBottom: 3 }}>{l}</div><div style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>{v}</div></div>
               ))}
             </div>
             <div style={{ marginBottom: 14 }}>

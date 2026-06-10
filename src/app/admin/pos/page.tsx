@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
@@ -64,7 +64,7 @@ const PAYMENT_METHODS = [
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const inp: React.CSSProperties = {
-  width: "100%", padding: "10px 13px", border: "1.5px solid #e8e6e2",
+  width: "100%", padding: "10px 13px", border: "1.5px solid rgba(20,15,30,0.08)",
   borderRadius: 10, fontSize: 14, background: "rgba(20,15,30,0.025)", color: "#14111C",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none", boxSizing: "border-box",
 };
@@ -286,7 +286,7 @@ export default function PosPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, margin: 0, letterSpacing: "-0.5px", color: "#14111C" }}>Sistema POS</h1>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, letterSpacing: "-0.5px", color: "#14111C" }}>Sistema POS</h1>
           <p style={{ color: "#8E879B", fontSize: 13, marginTop: 3 }}>Cobra servicios y productos en el mostrador.</p>
         </div>
         <div style={{ display: "flex", gap: 4, background: "rgba(20,15,30,0.04)", padding: 4, borderRadius: 14 }}>
@@ -294,9 +294,9 @@ export default function PosPage() {
             <button key={t} onClick={() => setTab(t)} style={{
               padding: "8px 18px", borderRadius: 10, fontSize: 13, fontWeight: 600,
               cursor: "pointer", border: "none", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-              background: tab === t ? "linear-gradient(135deg, #fb0f05, #0027fe)" : "transparent",
+              background: tab === t ? "#14111C" : "transparent",
               color: tab === t ? "#fff" : "#564E66",
-              boxShadow: tab === t ? "0 2px 8px rgba(251,15,5,0.25)" : "none",
+              boxShadow: tab === t ? "0 2px 8px rgba(20,15,30,0.18)" : "none",
               transition: "all 0.15s",
             }}>
               {t === "cobrar" ? "Cobrar" : "Historial"}
@@ -315,14 +315,14 @@ export default function PosPage() {
       {/* ── TAB: Cobrar ── */}
       {tab === "cobrar" && openSession === "loading" && (
         <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-          <div style={{ width: 36, height: 36, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+          <div style={{ width: 36, height: 36, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
         </div>
       )}
       {tab === "cobrar" && openSession === null && (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <div style={{ background: "white", borderRadius: 24, border: "1px solid #e8e6e2", padding: "48px 36px", maxWidth: 420, width: "100%", textAlign: "center" }}>
+          <div style={{ background: "white", borderRadius: 24, border: "1px solid rgba(20,15,30,0.08)", padding: "48px 36px", maxWidth: 420, width: "100%", textAlign: "center" }}>
             <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
-            <div style={{ fontSize: 20, fontWeight: 800, color: "#14111C", marginBottom: 8 }}>Caja no abierta</div>
+            <div style={{ fontSize: 20, fontWeight: 700, color: "#14111C", marginBottom: 8 }}>Caja no abierta</div>
             <p style={{ color: "#8E879B", fontSize: 14, lineHeight: 1.6, marginBottom: 28 }}>
               Para poder cobrar debes abrir primero el turno en el Sistema de Caja.
             </p>
@@ -359,7 +359,7 @@ export default function PosPage() {
             {/* Services grid */}
             {loadingServices ? (
               <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
-                <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+                <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
               </div>
             ) : filtered.length === 0 ? (
               <div style={{ textAlign: "center", padding: "40px 20px", color: "#8E879B", fontSize: 14 }}>
@@ -372,13 +372,13 @@ export default function PosPage() {
                   return (
                     <button key={svc.id} onClick={() => addToCart(svc)} style={{
                       background: "white", borderRadius: 16, padding: "16px 18px",
-                      border: inCart ? "2px solid rgba(251,15,5,0.4)" : "1.5px solid #e8e6e2",
+                      border: inCart ? "2px solid rgba(251,15,5,0.4)" : "1.5px solid rgba(20,15,30,0.08)",
                       cursor: "pointer", textAlign: "left", transition: "all 0.15s",
                       boxShadow: inCart ? "0 0 0 3px rgba(251,15,5,0.08)" : "none",
                       fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
                     }}>
                       <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C", marginBottom: 6 }}>{svc.name}</div>
-                      <div style={{ fontSize: 18, fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: "#14111C" }}>
                         {fmt(svc.price)}
                       </div>
                       <div style={{ fontSize: 11, color: "#8E879B", marginTop: 4 }}>{svc.duration_minutes} min</div>
@@ -395,9 +395,9 @@ export default function PosPage() {
           </div>
 
           {/* Right: Cart */}
-          <div style={{ background: "white", borderRadius: 20, border: "1px solid #e8e6e2", overflow: "hidden", position: "sticky", top: 20 }}>
+          <div style={{ background: "white", borderRadius: 20, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden", position: "sticky", top: 20 }}>
             {/* Cart header */}
-            <div style={{ padding: "16px 20px", borderBottom: "1px solid #e8e6e2", display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(20,15,30,0.08)", display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                 <IconCreditCard size={16} />
               </div>
@@ -434,7 +434,7 @@ export default function PosPage() {
               <div style={{ position: "relative" }} ref={clientRef}>
                 <label style={lbl}>Cliente (opcional)</label>
                 {client ? (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 12px", borderRadius: 10, background: "rgba(20,15,30,0.025)", border: "1.5px solid #e8e6e2" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 12px", borderRadius: 10, background: "rgba(20,15,30,0.025)", border: "1.5px solid rgba(20,15,30,0.08)" }}>
                     <div>
                       <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{client.name}</div>
                       <div style={{ fontSize: 11, color: "#8E879B" }}>{client.phone}</div>
@@ -450,7 +450,7 @@ export default function PosPage() {
                       onBlur={() => setTimeout(() => setShowClientDrop(false), 200)}
                       placeholder="Nombre o teléfono..." style={inp} />
                     {showClientDrop && clientResults.length > 0 && (
-                      <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "white", border: "1px solid #e8e6e2", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 50, overflow: "hidden", marginTop: 4 }}>
+                      <div style={{ position: "absolute", top: "100%", left: 0, right: 0, background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: 10, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", zIndex: 50, overflow: "hidden", marginTop: 4 }}>
                         {clientResults.map(c => (
                           <button key={c.id} onMouseDown={() => { setClient(c); setClientSearch(""); setShowClientDrop(false); }}
                             style={{ display: "block", width: "100%", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", textAlign: "left", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", borderBottom: "1px solid #f0eeeb" }}>
@@ -478,9 +478,9 @@ export default function PosPage() {
                         <div style={{ fontSize: 11, color: "#8E879B" }}>{fmt(item.price)} c/u</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
+                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid rgba(20,15,30,0.08)", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
                         <span style={{ fontSize: 13, fontWeight: 700, color: "#14111C", minWidth: 18, textAlign: "center" }}>{item.qty}</span>
-                        <button onClick={() => updateQty(item.key, 1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid #e8e6e2", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                        <button onClick={() => updateQty(item.key, 1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid rgba(20,15,30,0.08)", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                         <button onClick={() => removeItem(item.key)} style={{ width: 26, height: 26, borderRadius: 7, border: "none", background: "rgba(239,68,68,0.08)", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <IconX size={12} />
                         </button>
@@ -529,9 +529,9 @@ export default function PosPage() {
                       <span style={{ fontWeight: 600, color: "#ef4444" }}>-{fmt(discountAmount)}</span>
                     </div>
                   )}
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, fontWeight: 800, marginTop: 4 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, fontWeight: 700, marginTop: 4 }}>
                     <span style={{ color: "#14111C" }}>Total</span>
-                    <span style={{ background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    <span style={{ color: "#14111C" }}>
                       {fmt(total)}
                     </span>
                   </div>
@@ -547,7 +547,7 @@ export default function PosPage() {
                       <button key={pm.key} onClick={() => setPaymentMethod(pm.key)} style={{
                         padding: "9px", borderRadius: 10, fontSize: 12, fontWeight: 700,
                         cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-                        border: paymentMethod === pm.key ? `1.5px solid ${pm.color}` : "1.5px solid #e8e6e2",
+                        border: paymentMethod === pm.key ? `1.5px solid ${pm.color}` : "1.5px solid rgba(20,15,30,0.08)",
                         background: paymentMethod === pm.key ? `${pm.color}15` : "white",
                         color: paymentMethod === pm.key ? pm.color : "#564E66",
                         transition: "all 0.15s",
@@ -571,7 +571,7 @@ export default function PosPage() {
               {/* Charge button */}
               <button onClick={handleCharge} disabled={cart.length === 0 || charging}
                 style={{
-                  width: "100%", padding: 14, borderRadius: 12, border: "none", fontSize: 15, fontWeight: 800,
+                  width: "100%", padding: 14, borderRadius: 12, border: "none", fontSize: 15, fontWeight: 700,
                   cursor: (cart.length === 0 || charging) ? "not-allowed" : "pointer",
                   background: (cart.length === 0 || charging) ? "rgba(20,15,30,0.08)" : "linear-gradient(135deg, #fb0f05, #0027fe)",
                   color: (cart.length === 0 || charging) ? "#8E879B" : "#fff",
@@ -588,8 +588,8 @@ export default function PosPage() {
 
       {/* ── TAB: Historial ── */}
       {tab === "historial" && (
-        <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
+        <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid rgba(20,15,30,0.08)" }}>
             <div style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
               <IconCreditCard size={16} />
             </div>
@@ -597,7 +597,7 @@ export default function PosPage() {
           </div>
           {loadingHistory ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
-              <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
+              <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : sales.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>
@@ -634,7 +634,7 @@ export default function PosPage() {
                     <div style={{ textAlign: "center", fontSize: 13, fontWeight: 700, color: "#14111C" }}>
                       {s.pos_sale_items?.length || 0}
                     </div>
-                    <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    <div style={{ textAlign: "right", fontWeight: 700, fontSize: 14, color: "#14111C" }}>
                       {fmt(s.total)}
                     </div>
                   </div>
@@ -664,11 +664,11 @@ export default function PosPage() {
 
       {/* ── Modal: Ítem libre ── */}
       {showFreeItem && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setShowFreeItem(false); }}>
-          <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 22, padding: 28, width: "100%", maxWidth: 380, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 16, color: "#14111C" }}>Ítem libre</div>
+              <div style={{ fontWeight: 700, fontSize: 16, color: "#14111C" }}>Ítem libre</div>
               <button onClick={() => setShowFreeItem(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}><IconX size={18} /></button>
             </div>
             <div style={{ marginBottom: 14 }}>

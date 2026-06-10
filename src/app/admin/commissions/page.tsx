@@ -77,14 +77,14 @@ function getMonthRange() {
 const card: React.CSSProperties = {
   background: "white",
   borderRadius: "18px",
-  border: "1px solid #e8e6e2",
+  border: "1px solid rgba(20,15,30,0.08)",
   overflow: "hidden",
 };
 
 const inp: React.CSSProperties = {
   width: "100%",
   padding: "10px 13px",
-  border: "1.5px solid #e8e6e2",
+  border: "1.5px solid rgba(20,15,30,0.08)",
   borderRadius: "10px",
   fontSize: "14px",
   background: "rgba(20,15,30,0.025)",
@@ -112,7 +112,7 @@ function Avatar({ name }: { name: string }) {
       width: 40, height: 40, borderRadius: "50%", flexShrink: 0,
       background: "linear-gradient(135deg, #fb0f05, #0027fe)",
       display: "flex", alignItems: "center", justifyContent: "center",
-      color: "#fff", fontWeight: 800, fontSize: 13,
+      color: "#fff", fontWeight: 700, fontSize: 13,
     }}>
       {name.substring(0, 2).toUpperCase()}
     </div>
@@ -124,9 +124,9 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     <button onClick={onClick} style={{
       padding: "8px 18px", borderRadius: "10px", fontSize: "13px", fontWeight: 600,
       cursor: "pointer", border: "none", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-      background: active ? "linear-gradient(135deg, #fb0f05, #0027fe)" : "transparent",
+      background: active ? "#14111C" : "transparent",
       color: active ? "#fff" : "#564E66",
-      boxShadow: active ? "0 2px 8px rgba(251,15,5,0.25)" : "none",
+      boxShadow: active ? "0 2px 8px rgba(20,15,30,0.18)" : "none",
       transition: "all 0.15s",
     }}>
       {children}
@@ -138,7 +138,7 @@ function PeriodBtn({ active, onClick, children }: { active: boolean; onClick: ()
   return (
     <button onClick={onClick} style={{
       padding: "7px 16px", borderRadius: "9px", fontSize: "12px", fontWeight: 600,
-      cursor: "pointer", border: active ? "1.5px solid rgba(251,15,5,0.4)" : "1.5px solid #e8e6e2",
+      cursor: "pointer", border: active ? "1.5px solid rgba(251,15,5,0.4)" : "1.5px solid rgba(20,15,30,0.08)",
       background: active ? "rgba(251,15,5,0.06)" : "white",
       color: active ? "#fb0f05" : "#564E66",
       fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s",
@@ -150,7 +150,7 @@ function PeriodBtn({ active, onClick, children }: { active: boolean; onClick: ()
 
 function SectionHeader({ title, sub, icon }: { title: string; sub?: string; icon?: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "16px 20px", borderBottom: "1px solid rgba(20,15,30,0.08)" }}>
       {icon && (
         <div style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", flexShrink: 0 }}>
           {icon}
@@ -325,7 +325,7 @@ export default function CommissionsPage() {
       {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 14 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, margin: 0, letterSpacing: "-0.5px", color: "#14111C" }}>
+          <h1 style={{ fontSize: 20, fontWeight: 700, margin: 0, letterSpacing: "-0.5px", color: "#14111C" }}>
             Comisiones
           </h1>
           <p style={{ color: "#8E879B", fontSize: 13, marginTop: 3 }}>
@@ -368,11 +368,11 @@ export default function CommissionsPage() {
               { label: "Revenue total", value: fmt(totalRevenue), icon: <IconBanknotes size={18} /> },
               { label: "Comisiones totales", value: fmt(totalCommission), icon: <IconChartBar size={18} /> },
             ].map((m, i) => (
-              <div key={i} style={{ background: "white", borderRadius: 16, border: "1px solid #e8e6e2", padding: "18px 20px" }}>
+              <div key={i} style={{ background: "white", borderRadius: 16, border: "1px solid rgba(20,15,30,0.08)", padding: "18px 20px" }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", marginBottom: 10 }}>
                   {m.icon}
                 </div>
-                <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: "-0.5px", background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                <div style={{ fontSize: 22, fontWeight: 700, letterSpacing: "-0.5px", color: "#14111C" }}>
                   {m.value}
                 </div>
                 <div style={{ fontSize: 11, fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em", marginTop: 4 }}>{m.label}</div>
@@ -389,7 +389,7 @@ export default function CommissionsPage() {
             />
             {loadingSummary ? (
               <div style={{ padding: "40px 20px", textAlign: "center" }}>
-                <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
+                <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
               </div>
             ) : summaries.length === 0 ? (
               <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>Sin profesionales activos.</div>
@@ -423,7 +423,7 @@ export default function CommissionsPage() {
                     <div style={{ textAlign: "right", fontWeight: 600, fontSize: 13, color: "#3a3548" }}>{fmt(s.revenue)}</div>
                     <div style={{ textAlign: "right" }}>
                       {s.rule ? (
-                        <span style={{ fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                        <span style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>
                           {fmt(s.commission)}
                         </span>
                       ) : (
@@ -458,7 +458,7 @@ export default function CommissionsPage() {
           <SectionHeader title="Reglas de comisi-n" sub="Una regla por profesional activo" icon={<IconPercent size={16} />} />
           {loadingRules ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
-              <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
+              <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : professionals.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>
@@ -509,7 +509,7 @@ export default function CommissionsPage() {
           <SectionHeader title="Historial de liquidaciones" sub="-ltimas 50 liquidaciones" icon={<IconBanknotes size={16} />} />
           {loadingPayments ? (
             <div style={{ padding: "40px 20px", textAlign: "center" }}>
-              <div style={{ width: 32, height: 32, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
+              <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite", margin: "0 auto" }} />
             </div>
           ) : payments.length === 0 ? (
             <div style={{ padding: "40px 20px", textAlign: "center", color: "#8E879B", fontSize: 14 }}>
@@ -536,7 +536,7 @@ export default function CommissionsPage() {
                   </div>
                   <div style={{ fontSize: 12, color: "#564E66" }}>{periodLabel(p.period_start, p.period_end, locale)}</div>
                   <div style={{ textAlign: "center", fontWeight: 700, fontSize: 13, color: "#14111C" }}>{p.appointments_count}</div>
-                  <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  <div style={{ textAlign: "right", fontWeight: 700, fontSize: 14, color: "#14111C" }}>
                     {fmt(p.commission_amount)}
                   </div>
                   <div style={{ textAlign: "right", fontSize: 12, color: "#8E879B" }}>
@@ -551,14 +551,14 @@ export default function CommissionsPage() {
 
       {/* -"-"- Modal: Editar Regla -"-"- */}
       {editingProf && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setEditingProf(null); }}>
-          <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 22, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <Avatar name={editingProf.name} />
                 <div>
-                  <div style={{ fontWeight: 800, fontSize: 16, color: "#14111C" }}>Regla de comisi-n</div>
+                  <div style={{ fontWeight: 700, fontSize: 16, color: "#14111C" }}>Regla de comisi-n</div>
                   <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>{editingProf.name}</div>
                 </div>
               </div>
@@ -607,17 +607,17 @@ export default function CommissionsPage() {
 
       {/* -"-"- Modal: Liquidar -"-"- */}
       {liquidarTarget && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
           onClick={e => { if (e.target === e.currentTarget) setLiquidarTarget(null); }}>
-          <div style={{ background: "white", borderRadius: 22, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 22, padding: 28, width: "100%", maxWidth: 420, boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-              <div style={{ fontWeight: 800, fontSize: 17, color: "#14111C" }}>Confirmar liquidaci-n</div>
+              <div style={{ fontWeight: 700, fontSize: 17, color: "#14111C" }}>Confirmar liquidaci-n</div>
               <button onClick={() => setLiquidarTarget(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B" }}>
                 <IconX size={18} />
               </button>
             </div>
 
-            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid #e8e6e2", borderRadius: 14, padding: "16px 18px", marginBottom: 18 }}>
+            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid rgba(20,15,30,0.08)", borderRadius: 14, padding: "16px 18px", marginBottom: 18 }}>
               <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 14 }}>
                 <Avatar name={liquidarTarget.prof.name} />
                 <div>
@@ -634,9 +634,9 @@ export default function CommissionsPage() {
                   <span style={{ fontWeight: 600, color: "#14111C" }}>{v}</span>
                 </div>
               ))}
-              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, borderTop: "1px solid #e8e6e2", paddingTop: 10, marginTop: 4 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, borderTop: "1px solid rgba(20,15,30,0.08)", paddingTop: 10, marginTop: 4 }}>
                 <span style={{ fontWeight: 700, color: "#14111C" }}>A pagar</span>
-                <span style={{ fontWeight: 800, background: "linear-gradient(135deg, #fb0f05, #0027fe)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                <span style={{ fontWeight: 700, color: "#14111C" }}>
                   {fmt(liquidarTarget.commission)}
                 </span>
               </div>

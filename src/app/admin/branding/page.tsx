@@ -21,7 +21,7 @@ const DEFAULT_CONFIG: BrandingConfig = {
 const MAX_FILE_SIZE = 2 * 1024 * 1024;
 
 const inp: React.CSSProperties = {
-  width: "100%", padding: "11px 14px", border: "1.5px solid #e8e6e2",
+  width: "100%", padding: "11px 14px", border: "1.5px solid rgba(20,15,30,0.08)",
   borderRadius: "11px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
   color: "#14111C", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
@@ -100,13 +100,13 @@ export default function BrandingPage() {
           <IconPalette size={20} />
         </div>
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Mi Marca</h1>
+          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Mi Marca</h1>
           <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>Personaliza la apariencia de tu página de reservas</p>
         </div>
       </div>
 
       {/* Booking link card */}
-      <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", padding: "18px 22px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "14px" }}>
+      <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", padding: "18px 22px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "14px" }}>
         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
           <div style={{ width: "38px", height: "38px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", flexShrink: 0 }}>
             <IconStorefront size={17} />
@@ -116,7 +116,7 @@ export default function BrandingPage() {
             <div style={{ fontFamily: "monospace", fontSize: "12px", color: "#fb0f05", wordBreak: "break-all" }}>{bookingLink}</div>
           </div>
         </div>
-        <button onClick={handleCopyLink} style={{ display: "flex", alignItems: "center", gap: "7px", padding: "9px 18px", borderRadius: "10px", border: "1.5px solid #e8e6e2", background: copied ? "rgba(16,185,129,0.08)" : "white", color: copied ? "#10b981" : "#3a3548", fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.2s", flexShrink: 0 }}>
+        <button onClick={handleCopyLink} style={{ display: "flex", alignItems: "center", gap: "7px", padding: "9px 18px", borderRadius: "10px", border: "1.5px solid rgba(20,15,30,0.08)", background: copied ? "rgba(16,185,129,0.08)" : "white", color: copied ? "#10b981" : "#3a3548", fontWeight: 600, fontSize: "13px", cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.2s", flexShrink: 0 }}>
           {copied ? <><IconCheck size={14} color="#10b981" /> Copiado</> : "Copiar link"}
         </button>
       </div>
@@ -125,8 +125,8 @@ export default function BrandingPage() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", alignItems: "start" }}>
 
         {/* Form */}
-        <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden" }}>
-          <div style={{ padding: "18px 22px", borderBottom: "1px solid #e8e6e2" }}>
+        <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden" }}>
+          <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(20,15,30,0.08)" }}>
             <div style={{ fontWeight: 700, fontSize: "14px", color: "#14111C" }}>Identidad visual</div>
             <div style={{ fontSize: "12px", color: "#8E879B", marginTop: "2px" }}>Estos datos aparecen en tu página pública de citas</div>
           </div>
@@ -141,12 +141,12 @@ export default function BrandingPage() {
             </div>
 
             {/* Logo */}
-            <div style={{ marginBottom: "20px", background: "rgba(20,15,30,0.025)", padding: "16px", borderRadius: "14px", border: "1px solid #e8e6e2" }}>
+            <div style={{ marginBottom: "20px", background: "rgba(20,15,30,0.025)", padding: "16px", borderRadius: "14px", border: "1px solid rgba(20,15,30,0.08)" }}>
               <label style={lbl}>Logo del negocio</label>
               <input type="file" accept="image/*" onChange={handleLogoFileChange} style={{ ...inp, padding: "9px", marginBottom: "8px" }} />
               <p style={{ fontSize: "11px", color: "#8E879B", margin: "0 0 12px" }}>Máx. 2MB · PNG con fondo transparente recomendado</p>
               {logoPreview && (
-                <div style={{ borderTop: "1px solid #e8e6e2", paddingTop: "14px", display: "flex", gap: "14px", flexWrap: "wrap" }}>
+                <div style={{ borderTop: "1px solid rgba(20,15,30,0.08)", paddingTop: "14px", display: "flex", gap: "14px", flexWrap: "wrap" }}>
                   <div style={{ flex: 1, minWidth: "180px" }}>
                     <label style={{ ...lbl, marginBottom: "8px" }}>Tamaño — {config.logo_size}%</label>
                     <input type="range" min="30" max="150" value={config.logo_size} onChange={e => setConfig({ ...config, logo_size: parseInt(e.target.value) })} style={{ width: "100%", accentColor: "#fb0f05" }} />
@@ -170,14 +170,14 @@ export default function BrandingPage() {
               <div>
                 <label style={lbl}>Color primario</label>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  <input type="color" value={config.primary_color} onChange={e => setConfig({ ...config, primary_color: e.target.value })} style={{ width: "42px", height: "42px", border: "1.5px solid #e8e6e2", borderRadius: "10px", cursor: "pointer", padding: "3px", background: "white" }} />
+                  <input type="color" value={config.primary_color} onChange={e => setConfig({ ...config, primary_color: e.target.value })} style={{ width: "42px", height: "42px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", cursor: "pointer", padding: "3px", background: "white" }} />
                   <input value={config.primary_color} onChange={e => setConfig({ ...config, primary_color: e.target.value })} style={{ ...inp, flex: 1 }} />
                 </div>
               </div>
               <div>
                 <label style={lbl}>Color secundario</label>
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                  <input type="color" value={config.secondary_color} onChange={e => setConfig({ ...config, secondary_color: e.target.value })} style={{ width: "42px", height: "42px", border: "1.5px solid #e8e6e2", borderRadius: "10px", cursor: "pointer", padding: "3px", background: "white" }} />
+                  <input type="color" value={config.secondary_color} onChange={e => setConfig({ ...config, secondary_color: e.target.value })} style={{ width: "42px", height: "42px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", cursor: "pointer", padding: "3px", background: "white" }} />
                   <input value={config.secondary_color} onChange={e => setConfig({ ...config, secondary_color: e.target.value })} style={{ ...inp, flex: 1 }} />
                 </div>
               </div>
@@ -202,14 +202,14 @@ export default function BrandingPage() {
         {/* Live Preview */}
         <div>
           <div style={{ fontWeight: 700, fontSize: "13px", color: "#564E66", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "12px" }}>Vista previa en vivo</div>
-          <div style={{ border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
+          <div style={{ border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
 
             {/* Browser bar mockup */}
-            <div style={{ background: "#f0eee9", padding: "10px 14px", display: "flex", alignItems: "center", gap: "8px", borderBottom: "1px solid #e8e6e2" }}>
+            <div style={{ background: "#f0eee9", padding: "10px 14px", display: "flex", alignItems: "center", gap: "8px", borderBottom: "1px solid rgba(20,15,30,0.08)" }}>
               <div style={{ display: "flex", gap: "5px" }}>
                 {["#ff5f57","#ffbd2e","#28c840"].map(c => <div key={c} style={{ width: "9px", height: "9px", borderRadius: "50%", background: c }} />)}
               </div>
-              <div style={{ flex: 1, background: "white", border: "1px solid #e8e6e2", borderRadius: "5px", padding: "3px 9px", fontSize: "10px", color: "#8E879B", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ flex: 1, background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "5px", padding: "3px 9px", fontSize: "10px", color: "#8E879B", fontFamily: "monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 zyncra.app/book/{tenantSlug}
               </div>
             </div>
@@ -220,16 +220,16 @@ export default function BrandingPage() {
               {/* Header */}
               <div style={{ textAlign: "center", marginBottom: "16px" }}>
                 {logoPreview ? (
-                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "white", border: "2px solid #e8e6e2", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", margin: "0 auto 8px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
+                  <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "white", border: "2px solid rgba(20,15,30,0.08)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", margin: "0 auto 8px", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
                     <img src={logoPreview} alt="logo" style={{ width: `${config.logo_size}%`, height: `${config.logo_size}%`, objectFit: "contain", objectPosition: config.logo_object_position }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                   </div>
                 ) : (
-                  <div style={{ fontSize: "16px", fontWeight: 800, letterSpacing: "-0.3px", marginBottom: "4px", background: `linear-gradient(135deg,${config.primary_color},${config.secondary_color})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  <div style={{ fontSize: "16px", fontWeight: 700, letterSpacing: "-0.3px", marginBottom: "4px", background: `linear-gradient(135deg,${config.primary_color},${config.secondary_color})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                     {config.business_name}
                   </div>
                 )}
                 {logoPreview && (
-                  <div style={{ fontSize: "13px", fontWeight: 800, color: "#14111C", marginBottom: "2px" }}>{config.business_name}</div>
+                  <div style={{ fontSize: "13px", fontWeight: 700, color: "#14111C", marginBottom: "2px" }}>{config.business_name}</div>
                 )}
                 <div style={{ fontSize: "11px", color: "#564E66" }}>{config.welcome_message}</div>
               </div>
@@ -254,8 +254,8 @@ export default function BrandingPage() {
               </div>
 
               {/* Card preview */}
-              <div style={{ background: "white", borderRadius: "16px", border: "1px solid #e8e6e2", padding: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
-                <div style={{ fontSize: "12px", fontWeight: 800, color: "#14111C", marginBottom: "12px" }}>¿Qué servicio necesitas?</div>
+              <div style={{ background: "white", borderRadius: "16px", border: "1px solid rgba(20,15,30,0.08)", padding: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: "#14111C", marginBottom: "12px" }}>¿Qué servicio necesitas?</div>
 
                 {/* Service row examples */}
                 {[
@@ -272,7 +272,7 @@ export default function BrandingPage() {
                       <div style={{ fontSize: "11px", fontWeight: 700, color: "#14111C" }}>{svc.name}</div>
                       <div style={{ fontSize: "10px", color: "#564E66", marginTop: "2px" }}>{svc.dur}</div>
                     </div>
-                    <div style={{ fontSize: "13px", fontWeight: 800, color: config.primary_color, flexShrink: 0 }}>{svc.price}</div>
+                    <div style={{ fontSize: "13px", fontWeight: 700, color: config.primary_color, flexShrink: 0 }}>{svc.price}</div>
                     {svc.selected && (
                       <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: config.primary_color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5"/></svg>

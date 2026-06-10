@@ -53,7 +53,7 @@ export default function TabVentas() {
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
         <div style={{ display: "flex", gap: 4, background: "rgba(20,15,30,.04)", padding: 4, borderRadius: 12 }}>
           {["7", "30", "90"].map(d => (
-            <button key={d} onClick={() => setDays(d)} style={{ padding: "7px 16px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: FONT, transition: "all .15s", background: days === d ? "linear-gradient(135deg,#fb0f05,#0027fe)" : "transparent", color: days === d ? "#fff" : "#564E66" }}>
+            <button key={d} onClick={() => setDays(d)} style={{ padding: "7px 16px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: FONT, transition: "all .15s", background: days === d ? "#14111C" : "transparent", color: days === d ? "#fff" : "#564E66" }}>
               {d === "7" ? "7 días" : d === "30" ? "30 días" : "90 días"}
             </button>
           ))}
@@ -71,10 +71,10 @@ export default function TabVentas() {
       </div>
 
       {/* Table */}
-      <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
+      <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
         {loading ? (
           <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-            <div style={{ width: 36, height: 36, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+            <div style={{ width: 36, height: 36, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
           </div>
         ) : sales.length === 0 ? (
           <div style={{ padding: "48px 20px", textAlign: "center" }}>
@@ -111,12 +111,12 @@ export default function TabVentas() {
                         {pm.charAt(0).toUpperCase() + pm.slice(1)}
                       </span>
                     </div>
-                    <div style={{ textAlign: "right", fontWeight: 800, fontSize: 14, color: "#14111C" }}>{fmt(Number(s.total))}</div>
+                    <div style={{ textAlign: "right", fontWeight: 700, fontSize: 14, color: "#14111C" }}>{fmt(Number(s.total))}</div>
                     <div style={{ textAlign: "center", fontSize: 14, color: "#8E879B", transition: "transform .15s", transform: isOpen ? "rotate(180deg)" : "none" }}>▾</div>
                   </div>
 
                   {isOpen && (
-                    <div style={{ padding: "0 20px 16px 20px", background: "rgba(0,39,254,.015)", borderBottom: "1px solid #e8e6e2" }}>
+                    <div style={{ padding: "0 20px 16px 20px", background: "rgba(0,39,254,.015)", borderBottom: "1px solid rgba(20,15,30,0.08)" }}>
                       <div style={{ paddingTop: 12 }}>
                         {s.pos_sale_items?.map((item: any, j: number) => (
                           <div key={j} style={{ display: "flex", justifyContent: "space-between", padding: "6px 0", borderBottom: j < s.pos_sale_items.length - 1 ? "1px solid #f0eeeb" : "none", fontSize: 13, color: "#14111C" }}>

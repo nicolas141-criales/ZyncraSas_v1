@@ -174,7 +174,7 @@ export default function ReviewsSitePage() {
 
           {/* Star distribution */}
           {approved.length > 0 && (
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2", marginBottom: 20 }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)", marginBottom: 20 }}>
               <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700 }}>Distribución de calificaciones</h3>
               {starCounts.map(({ n, count, pct }) => (
                 <div key={n} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
@@ -190,7 +190,7 @@ export default function ReviewsSitePage() {
 
           {/* Recent approved reviews */}
           {approved.length > 0 && (
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700 }}>Reseñas destacadas</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
                 {approved.slice(0, 4).map(r => (
@@ -234,7 +234,7 @@ export default function ReviewsSitePage() {
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               {filtered.map(r => (
-                <div key={r.id} style={{ background: "white", borderRadius: 14, padding: 20, border: "1px solid #e8e6e2" }}>
+                <div key={r.id} style={{ background: "white", borderRadius: 14, padding: 20, border: "1px solid rgba(20,15,30,0.08)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                     <div>
                       <span style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>{r.client_name}</span>
@@ -252,7 +252,7 @@ export default function ReviewsSitePage() {
                       <div style={{ display: "flex", gap: 8 }}>
                         <button onClick={() => updateStatus(r.id, "rejected")}
                           disabled={updatingId === r.id}
-                          style={{ padding: "5px 14px", borderRadius: 8, border: "1px solid #e8e6e2", background: "white", color: "#c62828", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+                          style={{ padding: "5px 14px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)", background: "white", color: "#c62828", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
                           Rechazar
                         </button>
                         <button onClick={() => updateStatus(r.id, "approved")}
@@ -265,7 +265,7 @@ export default function ReviewsSitePage() {
                     {r.status === "approved" && (
                       <button onClick={() => updateStatus(r.id, "rejected")}
                         disabled={updatingId === r.id}
-                        style={{ padding: "5px 14px", borderRadius: 8, border: "1px solid #e8e6e2", background: "white", color: "#c62828", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
+                        style={{ padding: "5px 14px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)", background: "white", color: "#c62828", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
                         Retirar
                       </button>
                     )}
@@ -288,7 +288,7 @@ export default function ReviewsSitePage() {
       {tab === "config" && (
         <div style={{ maxWidth: 560, display: "flex", flexDirection: "column", gap: 16 }}>
 
-          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
             <h3 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 700 }}>Link público de reseñas</h3>
             <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 14px" }}>
               Comparte este link con tus clientes para que dejen su reseña. Cada reseña queda pendiente hasta que la apruebes.
@@ -305,7 +305,7 @@ export default function ReviewsSitePage() {
             </a>
           </div>
 
-          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e8e6e2" }}>
+          <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
             <h3 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 700 }}>Mostrar en página de agendamiento</h3>
             <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 14px" }}>
               Las reseñas aprobadas aparecerán visibles para los clientes en tu página de reservas.
@@ -351,7 +351,7 @@ function KpiCard({ label, value, sub, children, highlight }: {
   return (
     <div style={{ background: highlight ? "#fffbeb" : "white", borderRadius: 14, padding: "20px 22px", border: `1px solid ${highlight ? "#fcd34d" : "rgba(20,15,30,0.08)"}` }}>
       <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 800, color: "#1a1a2e", lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 28, fontWeight: 700, color: "#1a1a2e", lineHeight: 1 }}>{value}</div>
       {children && <div style={{ marginTop: 4 }}>{children}</div>}
       <div style={{ fontSize: 12, color: "#9b9bb0", marginTop: 4 }}>{sub}</div>
     </div>
@@ -374,7 +374,7 @@ function ReviewCard({ review }: { review: SiteReview }) {
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid #e8e6e2",
+  width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
   fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
@@ -386,7 +386,7 @@ const btnPrimary: React.CSSProperties = {
 };
 const btnSecondary: React.CSSProperties = {
   display: "inline-flex", alignItems: "center", gap: 6,
-  padding: "9px 20px", borderRadius: 10, border: "1px solid #e8e6e2",
+  padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(20,15,30,0.08)",
   background: "white", color: "#4a4a6a", fontWeight: 600, fontSize: 14,
   cursor: "pointer",
 };

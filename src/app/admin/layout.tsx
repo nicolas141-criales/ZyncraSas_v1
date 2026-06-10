@@ -4,15 +4,47 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
+import { Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import styles from "./admin.module.css";
 import { supabase } from "@/lib/supabase";
 import { AdminContext } from "./admin-context";
 import {
   IconGrid, IconCalendar, IconBell, IconChat, IconCreditCard,
   IconBanknotes, IconDocument, IconChartBar, IconStar, IconStorefront,
-  IconSliders, IconUsers, IconUserGroup, IconPalette,
+  IconUsers, IconUserGroup, IconPalette,
   IconCog, IconLogout, IconX, IconServiceBell,
 } from "./ZyncraIcons";
+
+const instrumentSerif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: ["400"],
+  style: ["normal", "italic"],
+  variable: "--font-instrument-serif",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+// Keyframes globales del panel — usados por charts.tsx y las páginas
+const ZN_KEYFRAMES = `
+@keyframes znFade { from { opacity: 0 } to { opacity: 1 } }
+@keyframes znFadeUp { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+@keyframes znRise { from { transform: scaleY(0) } to { transform: scaleY(1) } }
+@keyframes znGrow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
+@keyframes znDraw { from { stroke-dashoffset: 1 } to { stroke-dashoffset: 0 } }
+@keyframes znShimmer { from { background-position: 200% 0 } to { background-position: -200% 0 } }
+@keyframes znSpin { to { transform: rotate(360deg) } }
+@keyframes znProgress { 0% { width: 0% } 80% { width: 85% } 100% { width: 100% } }
+@keyframes znPulse { 0%,100% { opacity: .4 } 50% { opacity: 1 } }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+`;
 
 // Nav item types
 interface NavItem {
@@ -119,12 +151,39 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return "Panel";
   })();
 
+  const currentGroupLabel = (() => {
+    for (const group of NAV_GROUPS) {
+      for (const item of group.items) {
+        if (item.href === pathname) return group.label;
+      }
+    }
+    return "Panel";
+  })();
+
   if (loadingAuth) {
     return (
-      <div style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 14, background: "#F4F4F9" }}>
-        <div style={{ width: 40, height: 40, border: "3px solid rgba(20,15,30,0.10)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
-        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
-        <p style={{ color: "#8E879B", fontSize: 13 }}>Cargando...</p>
+      <div className={`${instrumentSerif.variable} ${jetbrainsMono.variable}`}
+        style={{ display: "flex", height: "100vh", alignItems: "center", justifyContent: "center", flexDirection: "column", gap: 22, background: "#F4F4F9" }}>
+        <style>{ZN_KEYFRAMES}</style>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, animation: "znFadeUp .5s ease both" }}>
+          <Image src="/zyncra-icon.png" alt="Zyncra" height={34} width={34} style={{ height: 34, width: "auto" }} />
+          <span style={{
+            fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+            fontWeight: 700, fontSize: 23, color: "#14111C", letterSpacing: "-0.6px",
+          }}>Zyncra</span>
+        </div>
+        <div style={{ width: 148, height: 3, borderRadius: 2, background: "rgba(20,15,30,0.07)", overflow: "hidden" }}>
+          <div style={{
+            height: "100%", width: "40%", borderRadius: 2,
+            background: "linear-gradient(90deg,#fb0f05,#0027fe)",
+            animation: "znLoader 1.1s cubic-bezier(.45,0,.55,1) infinite",
+          }} />
+        </div>
+        <style>{`@keyframes znLoader { 0% { margin-left: -40% } 100% { margin-left: 100% } }`}</style>
+        <p style={{
+          color: "#8E879B", fontSize: 13, margin: 0,
+          fontFamily: "var(--font-instrument-serif),'Instrument Serif',serif", fontStyle: "italic",
+        }}>Preparando tu negocio…</p>
       </div>
     );
   }
@@ -137,7 +196,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <AdminContext.Provider value={{ tenantId: tenantInfo.id, tenantSlug: tenantInfo.slug, businessName: tenantInfo.name, logoUrl: tenantInfo.logoUrl, currency: tenantInfo.currency, locale: tenantInfo.locale, refreshCurrency }}>
-      <div className={styles.adminLayout}>
+      <div className={`${styles.adminLayout} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
+        <style>{ZN_KEYFRAMES}</style>
 
         {/* Mobile overlay */}
         <div className={`${styles.overlay} ${sidebarOpen ? styles.open : ""}`} onClick={() => setSidebarOpen(false)} />
@@ -150,13 +210,20 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <div className={styles.brand}>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
-                  <Image src="/zyncra-icon.png" alt="Zyncra" height={30} width={30}
-                    style={{ height: 30, width: "auto" }} />
+                  <Image src="/zyncra-icon.png" alt="Zyncra" height={28} width={28}
+                    style={{ height: 28, width: "auto" }} />
                   <span style={{
                     fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
-                    fontWeight: 800, fontSize: 20, color: "white",
-                    letterSpacing: "-0.6px", lineHeight: 1,
+                    fontWeight: 700, fontSize: 19, color: "white",
+                    letterSpacing: "-0.5px", lineHeight: 1,
                   }}>Zyncra</span>
+                  <span style={{
+                    fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
+                    fontSize: 8.5, fontWeight: 600, letterSpacing: "0.14em",
+                    color: "rgba(255,255,255,0.4)", textTransform: "uppercase",
+                    border: "1px solid rgba(255,255,255,0.16)", borderRadius: 5,
+                    padding: "2.5px 6px", marginLeft: 2,
+                  }}>Panel</span>
                 </div>
                 <button onClick={() => setSidebarOpen(false)}
                   style={{ background: "none", border: "none", color: "rgba(255,255,255,.4)", cursor: "pointer", padding: 4, display: "none" }}
@@ -197,6 +264,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* ── Main ── */}
         <div className={styles.mainContent}>
+          <main className={styles.contentArea}>
           <header className={styles.header}>
             <button className={styles.menuToggle} onClick={() => setSidebarOpen(o => !o)} aria-label="Menú">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -204,22 +272,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </svg>
             </button>
 
-            <div className={styles.headerTitle}>{currentPageLabel}</div>
+            <div className={styles.headerTitle}>
+              <span className={styles.headerCrumb}>{currentGroupLabel} /</span>
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{currentPageLabel}</span>
+            </div>
 
             <div className={styles.headerRight}>
               <span className={`${styles.tenantBadge} ${styles.hideMobile}`}>{tenantInfo.name}</span>
               {tenantInfo.logoUrl ? (
-                <img src={tenantInfo.logoUrl} alt={tenantInfo.name}
-                  style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: "2px solid #e8e6e2" }}
-                  onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                <span className={styles.avatarRing}>
+                  <img src={tenantInfo.logoUrl} alt={tenantInfo.name}
+                    onError={e => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                </span>
               ) : (
                 <div className={styles.avatar}>{initials}</div>
               )}
             </div>
           </header>
 
-          <main className={styles.contentArea}>
-            <div className={styles.contentWrap}>{children}</div>
+            <div key={pathname} className={styles.contentWrap}>{children}</div>
           </main>
         </div>
       </div>

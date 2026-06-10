@@ -139,14 +139,14 @@ const card: React.CSSProperties = {
   background: "white",
   borderRadius: 14,
   padding: "20px 24px",
-  border: "1px solid #e8e6e2",
+  border: "1px solid rgba(20,15,30,0.08)",
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
   padding: "8px 12px",
   borderRadius: 8,
-  border: "1px solid #e8e6e2",
+  border: "1px solid rgba(20,15,30,0.08)",
   fontSize: 14,
   color: "#1a1a2e",
   background: "white",
@@ -174,7 +174,7 @@ const btnGhost: React.CSSProperties = {
   gap: 6,
   padding: "7px 14px",
   borderRadius: 10,
-  border: "1px solid #e8e6e2",
+  border: "1px solid rgba(20,15,30,0.08)",
   background: "white",
   color: "#6b7280",
   fontWeight: 600,
@@ -496,7 +496,7 @@ export default function RemindersPage() {
               WhatsApp
             </span>
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: "#1a1a2e", margin: "0 0 6px", letterSpacing: "-0.03em" }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#1a1a2e", margin: "0 0 6px", letterSpacing: "-0.03em" }}>
             Recordatorios
           </h1>
           <p style={{ color: "#6b7280", fontSize: 14, margin: 0 }}>
@@ -535,7 +535,7 @@ export default function RemindersPage() {
               display: "flex", gap: 8, marginBottom: 20,
               alignItems: "center", flexWrap: "wrap",
               background: "white", borderRadius: 12, padding: "12px 16px",
-              border: "1px solid #e8e6e2",
+              border: "1px solid rgba(20,15,30,0.08)",
             }}>
               <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>
                 {"Período"}
@@ -599,9 +599,9 @@ export default function RemindersPage() {
                       textTransform: "uppercase", letterSpacing: "0.07em",
                       display: "flex", alignItems: "center", gap: 8,
                     }}>
-                      <span style={{ display: "inline-block", width: 28, height: 2, background: "#e8e6e2", borderRadius: 2 }} />
+                      <span style={{ display: "inline-block", width: 28, height: 2, background: "rgba(20,15,30,0.08)", borderRadius: 2 }} />
                       {fmtApptDate(date)}
-                      <span style={{ display: "inline-block", flex: 1, height: 2, background: "#e8e6e2", borderRadius: 2 }} />
+                      <span style={{ display: "inline-block", flex: 1, height: 2, background: "rgba(20,15,30,0.08)", borderRadius: 2 }} />
                     </div>
                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                       {appts.map(appt => {
@@ -775,7 +775,7 @@ export default function RemindersPage() {
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {["{{nombre}}", "{{servicio}}", "{{fecha}}", "{{hora}}", "{{profesional}}"].map(v => (
-                  <code key={v} style={{ background: "white", border: "1px solid #e8e6e2", padding: "2px 8px", borderRadius: 6, fontSize: 12, color: "#1a1a2e", fontFamily: "monospace" }}>
+                  <code key={v} style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", padding: "2px 8px", borderRadius: 6, fontSize: 12, color: "#1a1a2e", fontFamily: "monospace" }}>
                     {v}
                   </code>
                 ))}
@@ -793,7 +793,7 @@ export default function RemindersPage() {
                     onClick={() => setActiveTemplate(t.key)}
                     style={{
                       padding: "12px 10px", borderRadius: 12, cursor: "pointer",
-                      border: isActive ? `2px solid ${t.color}` : "2px solid #e8e6e2",
+                      border: isActive ? `2px solid ${t.color}` : "2px solid rgba(20,15,30,0.08)",
                       background: isActive ? `${t.color}0d` : "white",
                       textAlign: "center", transition: "all .15s",
                     }}
@@ -891,7 +891,7 @@ export default function RemindersPage() {
               display: "flex", gap: 8, marginBottom: 20,
               alignItems: "center", flexWrap: "wrap",
               background: "white", borderRadius: 12, padding: "12px 16px",
-              border: "1px solid #e8e6e2",
+              border: "1px solid rgba(20,15,30,0.08)",
             }}>
               <input
                 type="text"
@@ -917,17 +917,17 @@ export default function RemindersPage() {
             {filteredLogs.length > 0 && (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 20 }}>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: "#1a1a2e", letterSpacing: "-1px" }}>{filteredLogs.length}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: "#1a1a2e", letterSpacing: "-1px" }}>{filteredLogs.length}</div>
                   <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Total"}</div>
                 </div>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: "#25D366", letterSpacing: "-1px" }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: "#25D366", letterSpacing: "-1px" }}>
                     {filteredLogs.filter(l => l.sent_via.startsWith("whatsapp")).length}
                   </div>
                   <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"WhatsApp"}</div>
                 </div>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
-                  <div style={{ fontSize: 28, fontWeight: 800, color: "#3b82f6", letterSpacing: "-1px" }}>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: "#3b82f6", letterSpacing: "-1px" }}>
                     {filteredLogs.filter(l => l.sent_via.startsWith("email")).length}
                   </div>
                   <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Email"}</div>
@@ -997,17 +997,17 @@ export default function RemindersPage() {
       {/* ── Bulk modal ──────────────────────────────────────────────────────── */}
       {bulkOpen && (
         <div style={{
-          position: "fixed", inset: 0, background: "rgba(0,0,0,.55)", zIndex: 1000,
+          position: "fixed", inset: 0, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", zIndex: 1000,
           display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
         }}>
-          <div style={{ background: "white", borderRadius: 20, padding: 28, maxWidth: 440, width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,.25)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 28, maxWidth: 440, width: "100%", boxShadow: "0 24px 64px rgba(0,0,0,.25)" }}>
 
             {/* Step 0 — pick template */}
             {!bulkTemplate ? (
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                   <div>
-                    <div style={{ fontWeight: 800, fontSize: 17, color: "#1a1a2e" }}>{"¿Qué mensaje enviar?"}</div>
+                    <div style={{ fontWeight: 700, fontSize: 17, color: "#1a1a2e" }}>{"¿Qué mensaje enviar?"}</div>
                     <div style={{ fontSize: 13, color: "#6b7280", marginTop: 3 }}>
                       {`A ${bulkQueue.length} cliente${bulkQueue.length !== 1 ? "s" : ""} con teléfono`}
                     </div>
@@ -1070,7 +1070,7 @@ export default function RemindersPage() {
                       <IconCheck size={28} color="#10b981" />
                     </div>
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "#1a1a2e" }}>{"¡Todo enviado!"}</div>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#1a1a2e" }}>{"¡Todo enviado!"}</div>
                   <div style={{ fontSize: 14, color: "#6b7280", marginTop: 6 }}>
                     {`Se enviaron ${bulkQueue.length} recordatorio${bulkQueue.length !== 1 ? "s" : ""} por WhatsApp.`}
                   </div>

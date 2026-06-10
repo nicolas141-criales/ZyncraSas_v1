@@ -2,7 +2,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
-import { IconTrendUp, IconBanknotes, IconCreditCard, IconChartBar, IconRefresh } from "../ZyncraIcons";
+import { IconRefresh } from "../ZyncraIcons";
+import { AreaChart, Donut, RankBars, Empty, Skel, useCountUp, MONO, SANS, INK, DIM, MUTE, LINE, GRAD } from "../charts";
 
 interface Sale {
   id: string; total: number; payment_method: string; created_at: string;
@@ -11,60 +12,26 @@ interface Sale {
 }
 interface Session { id: string; opening_amount: number; opened_at: string; }
 
-const FONT = "var(--font-space-grotesk),'Space Grotesk',sans-serif";
-const GRAD = "linear-gradient(135deg,#fb0f05,#0027fe)";
-
 const PM_COLOR: Record<string, string> = {
   efectivo: "#10b981", tarjeta: "#6366f1", nequi: "#0027fe", daviplata: "#f59e0b",
 };
 
-function kpiCard(label: string, value: string, sub: string, gradient = false) {
+function KpiCard({ label, raw, fmt, sub, delay = 0 }: {
+  label: string; raw: number; fmt: (n: number) => string; sub: string; delay?: number;
+}) {
+  const [hov, setHov] = useState(false);
+  const v = useCountUp(raw);
   return (
-    <div style={{ background: "white", borderRadius: 16, border: "1px solid #e8e6e2", padding: "20px 22px" }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>{label}</div>
-      <div style={{
-        fontSize: 24, fontWeight: 800, letterSpacing: "-0.5px", marginBottom: 4,
-        ...(gradient
-          ? { background: GRAD, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }
-          : { color: "#14111C" }),
-      }}>{value}</div>
-      <div style={{ fontSize: 12, color: "#8E879B" }}>{sub}</div>
-    </div>
-  );
-}
-
-// Bar chart with flex divs — no external library
-function BarChart({ days, fmt }: { days: { label: string; value: number }[]; fmt: (n: number) => string }) {
-  const max = Math.max(...days.map(d => d.value), 1);
-  return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 80, padding: "0 4px" }}>
-      {days.map((d, i) => (
-        <div key={i} title={`${d.label}: ${fmt(d.value)}`} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-          <div style={{
-            width: "100%", minHeight: 2,
-            height: `${Math.max((d.value / max) * 68, d.value > 0 ? 4 : 1)}px`,
-            background: d.value > 0 ? GRAD : "#f0eff8",
-            borderRadius: "3px 3px 0 0", transition: "height 0.4s",
-          }} />
-          <div style={{ fontSize: 8, color: "#a0a0b0", textAlign: "center", lineHeight: 1 }}>{d.label}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Horizontal payment method bars
-function PayBar({ label, value, total, color }: { label: string; value: number; total: number; color: string }) {
-  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
-  return (
-    <div style={{ marginBottom: 12 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: "#14111C" }}>{label}</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color }}>{pct}%</span>
-      </div>
-      <div style={{ height: 6, background: "#f0eff8", borderRadius: 3, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 3, transition: "width 0.5s" }} />
-      </div>
+    <div onMouseEnter={() => setHov(true)} onMouseLeave={() => setHov(false)} style={{
+      background: "white", borderRadius: 16, border: `1px solid ${LINE}`, padding: "16px 18px",
+      boxShadow: hov ? "0 12px 32px rgba(20,15,30,0.09)" : "0 1px 2px rgba(20,15,30,0.03)",
+      transform: hov ? "translateY(-2px)" : "none",
+      transition: "transform .2s ease, box-shadow .2s ease",
+      animation: `znFadeUp .5s cubic-bezier(.22,1,.36,1) both ${delay}s`,
+    }}>
+      <div style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 10 }}>{label}</div>
+      <div style={{ fontSize: 23, fontWeight: 700, letterSpacing: "-0.7px", color: INK, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{fmt(v)}</div>
+      <div style={{ fontSize: 11.5, color: MUTE, marginTop: 7 }}>{sub}</div>
     </div>
   );
 }
@@ -114,9 +81,18 @@ export default function TabResumen() {
   useEffect(() => { load(); }, [tenantId]); // eslint-disable-line
 
   if (loading) return (
-    <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-      <div style={{ width: 36, height: 36, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, fontFamily: SANS }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14 }}>
+        {[0, 1, 2, 3].map(i => <Skel key={i} h={106} r={16} />)}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 14 }}>
+        <Skel h={250} r={16} />
+        <Skel h={250} r={16} />
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <Skel h={220} r={16} />
+        <Skel h={220} r={16} />
+      </div>
     </div>
   );
 
@@ -148,6 +124,13 @@ export default function TabResumen() {
     pmTotals[pm] = (pmTotals[pm] || 0) + Number(s.total);
   });
   const pmTotal = Object.values(pmTotals).reduce((a, b) => a + b, 0);
+  const pmData = Object.entries(pmTotals)
+    .sort((a, b) => b[1] - a[1])
+    .map(([pm, val]) => ({
+      label: pm.charAt(0).toUpperCase() + pm.slice(1),
+      value: val,
+      color: PM_COLOR[pm] || "#8E879B",
+    }));
 
   // Top 5 services
   const svcMap: Record<string, number> = {};
@@ -155,123 +138,123 @@ export default function TabResumen() {
     svcMap[item.name] = (svcMap[item.name] || 0) + Number(item.price) * Number(item.quantity);
   }));
   const topServices = Object.entries(svcMap).sort((a, b) => b[1] - a[1]).slice(0, 5);
-  const maxSvc = topServices[0]?.[1] || 1;
 
   const recentSales = sales30.slice(0, 8);
 
+  const cardSt: React.CSSProperties = {
+    background: "white", borderRadius: 16, border: `1px solid ${LINE}`,
+    boxShadow: "0 1px 2px rgba(20,15,30,0.03)", overflow: "hidden",
+  };
+  const headSt: React.CSSProperties = {
+    display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", borderBottom: `1px solid ${LINE}`,
+  };
+
+  const head = (title: string, sub: string, aside?: React.ReactNode) => (
+    <div style={headSt}>
+      <span style={{ width: 7, height: 7, borderRadius: 2.5, background: GRAD, flexShrink: 0 }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontWeight: 700, fontSize: 13, color: INK }}>{title}</div>
+        <div style={{ fontSize: 10.5, color: MUTE, marginTop: 1 }}>{sub}</div>
+      </div>
+      {aside}
+    </div>
+  );
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    <div style={{ display: "flex", flexDirection: "column", gap: 16, fontFamily: SANS }}>
 
       {/* ── KPI cards ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
-        {kpiCard("Ingresos hoy", fmt(sum(todaySales)), `${todaySales.length} venta${todaySales.length !== 1 ? "s" : ""}`)}
-        {kpiCard("Esta semana", fmt(sum(weekSales)), `${weekSales.length} ventas`, false)}
-        {kpiCard("Este mes", fmt(sum(monthSales)), `${monthSales.length} ventas`, false)}
-        <div style={{ background: "white", borderRadius: 16, border: "1px solid #e8e6e2", padding: "20px 22px" }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Caja</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 14 }}>
+        <KpiCard label="Ingresos hoy" raw={sum(todaySales)} fmt={fmt} sub={`${todaySales.length} venta${todaySales.length !== 1 ? "s" : ""}`} />
+        <KpiCard label="Esta semana" raw={sum(weekSales)} fmt={fmt} sub={`${weekSales.length} ventas`} delay={0.05} />
+        <KpiCard label="Este mes" raw={sum(monthSales)} fmt={fmt} sub={`${monthSales.length} ventas`} delay={0.1} />
+
+        {/* Estado de caja */}
+        <div style={{ ...cardSt, padding: "16px 18px", overflow: "visible", animation: "znFadeUp .5s cubic-bezier(.22,1,.36,1) both .15s" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <span style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".1em" }}>Caja</span>
+            <span style={{
+              display: "inline-flex", alignItems: "center", gap: 5, padding: "2.5px 8px", borderRadius: 20,
+              fontSize: 10, fontWeight: 700, fontFamily: MONO, textTransform: "uppercase", letterSpacing: ".05em",
+              background: openSession ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.08)",
+              color: openSession ? "#059669" : "#dc2626",
+            }}>
+              <span style={{
+                width: 5, height: 5, borderRadius: "50%", background: "currentcolor",
+                animation: openSession ? "znPulse 1.6s ease-in-out infinite" : "none",
+              }} />
+              {openSession ? "Abierta" : "Cerrada"}
+            </span>
+          </div>
           {openSession ? (
             <>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", boxShadow: "0 0 0 2px rgba(16,185,129,.2)" }} />
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#10b981" }}>Abierta</span>
-              </div>
-              <div style={{ fontSize: 22, fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px" }}>{fmt(sessionBalance)}</div>
-              <div style={{ fontSize: 11, color: "#8E879B", marginTop: 2 }}>balance actual</div>
+              <div style={{ fontSize: 23, fontWeight: 700, color: INK, letterSpacing: "-0.7px", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{fmt(sessionBalance)}</div>
+              <div style={{ fontSize: 11.5, color: MUTE, marginTop: 7 }}>balance actual</div>
             </>
           ) : (
-            <>
-              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 4 }}>
-                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ef4444" }} />
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#ef4444" }}>Cerrada</span>
-              </div>
-              <div style={{ fontSize: 13, color: "#8E879B" }}>Abre la caja desde la pestaña Caja.</div>
-            </>
+            <div style={{ fontSize: 12.5, color: MUTE, lineHeight: 1.5 }}>Abre la caja desde la pestaña <strong style={{ color: DIM }}>Caja</strong>.</div>
           )}
         </div>
       </div>
 
       {/* ── Chart + payment methods ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 16 }}>
-        {/* Bar chart */}
-        <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", padding: "20px 22px" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>Ingresos últimos 14 días</div>
-              <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>Ventas del POS por día</div>
-            </div>
-            <button onClick={load} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B", padding: 4 }}>
-              <IconRefresh size={15} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 14 }}>
+        <div style={{ ...cardSt, animation: "znFadeUp .5s cubic-bezier(.22,1,.36,1) both .18s" }}>
+          {head("Ingresos últimos 14 días", "Ventas del POS por día",
+            <button onClick={load} title="Actualizar" style={{ background: "none", border: "none", cursor: "pointer", color: MUTE, padding: 4, display: "inline-flex" }}>
+              <IconRefresh size={14} />
             </button>
+          )}
+          <div style={{ padding: "14px 16px 10px" }}>
+            <AreaChart data={chartDays} fmt={fmt} height={185} />
           </div>
-          <BarChart days={chartDays} fmt={fmt} />
         </div>
 
-        {/* Payment methods */}
-        <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", padding: "20px 22px" }}>
-          <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C", marginBottom: 4 }}>Método de pago</div>
-          <div style={{ fontSize: 12, color: "#8E879B", marginBottom: 16 }}>Últimos 30 días · {fmt(pmTotal)}</div>
-          {Object.entries(pmTotals).length === 0
-            ? <div style={{ fontSize: 13, color: "#8E879B" }}>Sin ventas registradas.</div>
-            : Object.entries(pmTotals).sort((a, b) => b[1] - a[1]).map(([pm, val]) => (
-              <PayBar key={pm} label={pm.charAt(0).toUpperCase() + pm.slice(1)} value={val} total={pmTotal} color={PM_COLOR[pm] || "#8E879B"} />
-            ))}
+        <div style={{ ...cardSt, animation: "znFadeUp .5s cubic-bezier(.22,1,.36,1) both .22s" }}>
+          {head("Medios de pago", `Últimos 30 días · ${fmt(pmTotal)}`)}
+          <div style={{ padding: "16px 18px" }}>
+            <Donut data={pmData} fmt={fmt} centerLabel="total" />
+          </div>
         </div>
       </div>
 
       {/* ── Top services + recent sales ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-        {/* Top services */}
-        <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <div style={{ padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
-            <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>Top servicios</div>
-            <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>Por ingresos · últimos 30 días</div>
-          </div>
-          <div style={{ padding: "4px 0" }}>
-            {topServices.length === 0
-              ? <div style={{ padding: "24px 20px", color: "#8E879B", fontSize: 13 }}>Sin datos disponibles.</div>
-              : topServices.map(([name, val], i) => (
-                <div key={name} style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < topServices.length - 1 ? "1px solid #f7f7fa" : "none" }}>
-                  <div style={{ width: 24, height: 24, borderRadius: 8, background: "linear-gradient(135deg,rgba(251,15,5,.08),rgba(0,39,254,.08))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: "#564E66", flexShrink: 0 }}>
-                    {i + 1}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: "#14111C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</div>
-                    <div style={{ height: 4, background: "#f0eff8", borderRadius: 2, marginTop: 4, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${(val / maxSvc) * 100}%`, background: GRAD, borderRadius: 2 }} />
-                    </div>
-                  </div>
-                  <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C", flexShrink: 0 }}>{fmt(val)}</div>
-                </div>
-              ))}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: 14 }}>
+        <div style={{ ...cardSt, animation: "znFadeUp .5s cubic-bezier(.22,1,.36,1) both .26s" }}>
+          {head("Top servicios", "Por ingresos · últimos 30 días")}
+          <div style={{ padding: "16px 18px" }}>
+            <RankBars items={topServices.map(([name, val]) => ({ label: name, value: val }))} fmt={fmt} />
           </div>
         </div>
 
-        {/* Recent sales */}
-        <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
-          <div style={{ padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
-            <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>Ventas recientes</div>
-            <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>Últimas 8 transacciones</div>
-          </div>
+        <div style={{ ...cardSt, animation: "znFadeUp .5s cubic-bezier(.22,1,.36,1) both .3s" }}>
+          {head("Ventas recientes", "Últimas 8 transacciones")}
           <div>
             {recentSales.length === 0
-              ? <div style={{ padding: "24px 20px", color: "#8E879B", fontSize: 13 }}>Sin ventas recientes.</div>
+              ? <Empty msg="Sin ventas recientes." />
               : recentSales.map((s, i) => {
                 const pm = s.payment_method || "efectivo";
                 const time = new Date(s.created_at).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
                 const clientName = (s.clients as any)?.name || "Sin cliente";
                 return (
-                  <div key={s.id} style={{ padding: "11px 20px", display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: i < recentSales.length - 1 ? "1px solid #f7f7fa" : "none" }}>
-                    <div>
-                      <div style={{ fontSize: 13, fontWeight: 600, color: "#14111C" }}>{clientName}</div>
-                      <div style={{ fontSize: 11, color: "#8E879B", marginTop: 2, display: "flex", gap: 6, alignItems: "center" }}>
-                        <span>{time}</span>
-                        <span style={{ padding: "1px 7px", borderRadius: 20, background: `${PM_COLOR[pm] || "#8E879B"}15`, color: PM_COLOR[pm] || "#8E879B", fontWeight: 700, fontSize: 10 }}>
-                          {pm.charAt(0).toUpperCase() + pm.slice(1)}
+                  <div key={s.id} style={{
+                    padding: "10px 18px", display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10,
+                    borderBottom: i < recentSales.length - 1 ? "1px solid rgba(20,15,30,0.05)" : "none",
+                  }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: INK, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{clientName}</div>
+                      <div style={{ fontSize: 11, color: MUTE, marginTop: 2, display: "flex", gap: 6, alignItems: "center" }}>
+                        <span style={{ fontFamily: MONO }}>{time}</span>
+                        <span style={{
+                          padding: "1px 7px", borderRadius: 20, fontWeight: 600, fontSize: 9.5,
+                          fontFamily: MONO, textTransform: "uppercase", letterSpacing: ".04em",
+                          background: `${PM_COLOR[pm] || "#8E879B"}15`, color: PM_COLOR[pm] || "#8E879B",
+                        }}>
+                          {pm}
                         </span>
                       </div>
                     </div>
-                    <div style={{ fontWeight: 800, fontSize: 14, color: "#14111C" }}>{fmt(Number(s.total))}</div>
+                    <div style={{ fontFamily: MONO, fontWeight: 600, fontSize: 13, color: INK, flexShrink: 0 }}>{fmt(Number(s.total))}</div>
                   </div>
                 );
               })}

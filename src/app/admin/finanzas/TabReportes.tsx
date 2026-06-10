@@ -40,7 +40,7 @@ function BarChart({ days, fmt }: { days: { label: string; value: number }[]; fmt
 
 function SectionTitle({ title, sub }: { title: string; sub?: string }) {
   return (
-    <div style={{ padding: "16px 20px", borderBottom: "1px solid #e8e6e2" }}>
+    <div style={{ padding: "16px 20px", borderBottom: "1px solid rgba(20,15,30,0.08)" }}>
       <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>{title}</div>
       {sub && <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>{sub}</div>}
     </div>
@@ -78,7 +78,7 @@ export default function TabReportes() {
 
   if (loading) return (
     <div style={{ display: "flex", justifyContent: "center", padding: "60px 0" }}>
-      <div style={{ width: 36, height: 36, border: "3px solid #e8e6e2", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+      <div style={{ width: 36, height: 36, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -134,7 +134,7 @@ export default function TabReportes() {
       {/* Period selector */}
       <div style={{ display: "flex", gap: 4, background: "rgba(20,15,30,.04)", padding: 4, borderRadius: 12, width: "fit-content" }}>
         {(["7", "30", "90"] as const).map(p => (
-          <button key={p} onClick={() => setPeriod(p)} style={{ padding: "8px 20px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: FONT, transition: "all .15s", background: period === p ? GRAD : "transparent", color: period === p ? "#fff" : "#564E66", boxShadow: period === p ? "0 2px 10px rgba(251,15,5,.2)" : "none" }}>
+          <button key={p} onClick={() => setPeriod(p)} style={{ padding: "8px 20px", borderRadius: 9, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "none", fontFamily: FONT, transition: "all .15s", background: period === p ? "#14111C" : "transparent", color: period === p ? "#fff" : "#564E66", boxShadow: period === p ? "0 2px 8px rgba(20,15,30,0.18)" : "none" }}>
             {p === "7" ? "7 días" : p === "30" ? "30 días" : "90 días"}
           </button>
         ))}
@@ -147,16 +147,16 @@ export default function TabReportes() {
           ["Ticket promedio",  fmt(avgTicket),    "Por transacción"],
           ["Mejor día",        fmt(bestDay.value), `Día ${bestDay.label}`],
         ].map(([l, v, s]) => (
-          <div key={l} style={{ background: "white", borderRadius: 16, border: "1px solid #e8e6e2", padding: "20px 22px" }}>
+          <div key={l} style={{ background: "white", borderRadius: 16, border: "1px solid rgba(20,15,30,0.08)", padding: "20px 22px" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>{l}</div>
-            <div style={{ fontSize: 24, fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", marginBottom: 4, background: GRAD, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{v}</div>
+            <div style={{ fontSize: 24, fontWeight: 700, color: "#14111C", letterSpacing: "-0.5px", marginBottom: 4, background: GRAD, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{v}</div>
             <div style={{ fontSize: 12, color: "#8E879B" }}>{s}</div>
           </div>
         ))}
       </div>
 
       {/* Revenue chart */}
-      <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", padding: "20px 22px" }}>
+      <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", padding: "20px 22px" }}>
         <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C", marginBottom: 4 }}>Ingresos por día</div>
         <div style={{ fontSize: 12, color: "#8E879B", marginBottom: 16 }}>Últimos {period} días · total {fmt(totalRevenue)}</div>
         <BarChart days={chartDays} fmt={fmt} />
@@ -166,14 +166,14 @@ export default function TabReportes() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
 
         {/* Top services */}
-        <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
+        <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
           <SectionTitle title="Top servicios por ingresos" sub={`Últimos ${period} días`} />
           <div style={{ padding: "8px 0" }}>
             {topSvc.length === 0
               ? <div style={{ padding: "24px 20px", color: "#8E879B", fontSize: 13 }}>Sin datos.</div>
               : topSvc.map(([name, data], i) => (
                 <div key={name} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < topSvc.length - 1 ? "1px solid #f7f7fa" : "none" }}>
-                  <div style={{ width: 22, height: 22, borderRadius: 7, background: "linear-gradient(135deg,rgba(251,15,5,.08),rgba(0,39,254,.08))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "#564E66", flexShrink: 0 }}>{i + 1}</div>
+                  <div style={{ width: 22, height: 22, borderRadius: 7, background: "linear-gradient(135deg,rgba(251,15,5,.08),rgba(0,39,254,.08))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 700, color: "#564E66", flexShrink: 0 }}>{i + 1}</div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 12, fontWeight: 600, color: "#14111C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</div>
                     <div style={{ marginTop: 3, height: 4, background: "#f0eff8", borderRadius: 2, overflow: "hidden" }}>
@@ -193,7 +193,7 @@ export default function TabReportes() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
           {/* Payment methods */}
-          <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
+          <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
             <SectionTitle title="Métodos de pago" sub={`Total ${fmt(pmTotal)}`} />
             <div style={{ padding: "16px 20px" }}>
               {pmSorted.length === 0
@@ -220,14 +220,14 @@ export default function TabReportes() {
           </div>
 
           {/* Revenue by professional */}
-          <div style={{ background: "white", borderRadius: 18, border: "1px solid #e8e6e2", overflow: "hidden" }}>
+          <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
             <SectionTitle title="Revenue por profesional" sub="Ventas vinculadas a citas" />
             <div style={{ padding: "8px 0" }}>
               {proList.length === 0
                 ? <div style={{ padding: "16px 20px", color: "#8E879B", fontSize: 13 }}>Sin datos (las ventas deben estar vinculadas a citas).</div>
                 : proList.map(([name, data], i) => (
                   <div key={name} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < proList.length - 1 ? "1px solid #f7f7fa" : "none" }}>
-                    <div style={{ width: 32, height: 32, borderRadius: 10, background: GRAD, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: 10, background: GRAD, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#fff", flexShrink: 0 }}>
                       {name.substring(0, 2).toUpperCase()}
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>

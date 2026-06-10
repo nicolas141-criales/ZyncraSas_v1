@@ -35,7 +35,7 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const EMPTY_FORM = { name: "", role: "" };
 
 const inp: React.CSSProperties = {
-  width: "100%", padding: "11px 14px", border: "1.5px solid #e8e6e2",
+  width: "100%", padding: "11px 14px", border: "1.5px solid rgba(20,15,30,0.08)",
   borderRadius: "11px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
   color: "#14111C", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
@@ -207,7 +207,7 @@ export default function ProfessionalsPage() {
             <IconUserGroup size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Equipo</h1>
+            <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Equipo</h1>
             <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>
               {professionals.length} miembro{professionals.length !== 1 ? "s" : ""} · {active} activo{active !== 1 ? "s" : ""}
             </p>
@@ -222,7 +222,7 @@ export default function ProfessionalsPage() {
       {loading ? (
         <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando equipo...</div>
       ) : professionals.length === 0 ? (
-        <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "22px", padding: "64px 32px", textAlign: "center" }}>
+        <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "22px", padding: "64px 32px", textAlign: "center" }}>
           <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "rgba(251,15,5,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", margin: "0 auto 16px" }}>
             <IconUserGroup size={26} />
           </div>
@@ -233,16 +233,16 @@ export default function ProfessionalsPage() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: "14px" }}>
           {professionals.map(prof => (
-            <div key={prof.id} style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", padding: "22px", display: "flex", flexDirection: "column", gap: "14px", transition: "box-shadow 0.2s" }}
+            <div key={prof.id} style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", padding: "22px", display: "flex", flexDirection: "column", gap: "14px", transition: "box-shadow 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.07)")}
               onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}>
 
               {/* Avatar + status */}
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 {prof.avatar_url ? (
-                  <img src={prof.avatar_url} alt={prof.name} style={{ width: "56px", height: "56px", borderRadius: "50%", objectFit: "cover", border: "2px solid #e8e6e2" }} />
+                  <img src={prof.avatar_url} alt={prof.name} style={{ width: "56px", height: "56px", borderRadius: "50%", objectFit: "cover", border: "2px solid rgba(20,15,30,0.08)" }} />
                 ) : (
-                  <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "linear-gradient(135deg, #fb0f05, #0027fe)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 800, fontSize: "18px", flexShrink: 0 }}>
+                  <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "linear-gradient(135deg, #fb0f05, #0027fe)", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: "18px", flexShrink: 0 }}>
                     {initials(prof.name)}
                   </div>
                 )}
@@ -271,18 +271,18 @@ export default function ProfessionalsPage() {
                     Editar
                   </button>
                   <button onClick={() => openScheduleModal(prof)}
-                    style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
+                    style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid rgba(20,15,30,0.08)", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3548"; }}>
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(20,15,30,0.08)"; e.currentTarget.style.color = "#3a3548"; }}>
                     Horario
                   </button>
                 </div>
                 {/* Activate / delete */}
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button onClick={() => handleToggleActive(prof)}
-                    style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
+                    style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid rgba(20,15,30,0.08)", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
-                    onMouseLeave={e => { e.currentTarget.style.borderColor = "#e8e6e2"; e.currentTarget.style.color = "#3a3548"; }}>
+                    onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(20,15,30,0.08)"; e.currentTarget.style.color = "#3a3548"; }}>
                     {prof.is_active ? "Desactivar" : "Activar"}
                   </button>
                   <button onClick={() => handleDelete(prof.id)}
@@ -300,16 +300,16 @@ export default function ProfessionalsPage() {
 
       {/* ── Add / Edit Modal ── */}
       {showModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={e => { if (e.target === e.currentTarget) { setShowModal(false); setEditingProf(null); } }}>
-          <div style={{ background: "white", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "460px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "460px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)" }}>
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconUserGroup size={17} />
                 </div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C" }}>
+                <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#14111C" }}>
                   {editingProf ? "Editar profesional" : "Añadir profesional"}
                 </h2>
               </div>
@@ -329,8 +329,8 @@ export default function ProfessionalsPage() {
                     backgroundSize: "cover", backgroundPosition: "center",
                     background: avatarPreview ? undefined : "linear-gradient(135deg, rgba(251,15,5,0.1), rgba(0,39,254,0.1))",
                     display: "flex", alignItems: "center", justifyContent: "center",
-                    fontSize: avatarPreview ? undefined : "18px", color: "white", fontWeight: 800,
-                    border: "2px solid #e8e6e2",
+                    fontSize: avatarPreview ? undefined : "18px", color: "white", fontWeight: 700,
+                    border: "2px solid rgba(20,15,30,0.08)",
                   }}>
                     {!avatarPreview && (editingProf ? initials(editingProf.name) : "·")}
                   </div>
@@ -369,13 +369,13 @@ export default function ProfessionalsPage() {
 
       {/* ── Schedule Modal ── */}
       {scheduleProf && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={e => { if (e.target === e.currentTarget) setScheduleProf(null); }}>
-          <div style={{ background: "white", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "480px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "90vh", overflowY: "auto" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "480px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "90vh", overflowY: "auto" }}>
 
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "22px" }}>
               <div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C", margin: 0 }}>Horario de {scheduleProf.name}</h2>
+                <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#14111C", margin: 0 }}>Horario de {scheduleProf.name}</h2>
                 <p style={{ fontSize: "13px", color: "#8E879B", marginTop: "4px", margin: 0 }}>Configura sus días y horas de disponibilidad</p>
               </div>
               <button onClick={() => setScheduleProf(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B", flexShrink: 0 }}>
@@ -391,7 +391,7 @@ export default function ProfessionalsPage() {
                     display: "flex", alignItems: "center", gap: "12px",
                     padding: "11px 14px", borderRadius: "12px",
                     background: day.open ? "rgba(16,185,129,0.04)" : "rgba(20,15,30,0.02)",
-                    border: `1px solid ${day.open ? "rgba(16,185,129,0.18)" : "#e8e6e2"}`,
+                    border: `1px solid ${day.open ? "rgba(16,185,129,0.18)" : "rgba(20,15,30,0.08)"}`,
                     transition: "all 0.15s",
                   }}>
                     <button onClick={() => setDayField(key, "open", !day.open)}
@@ -404,10 +404,10 @@ export default function ProfessionalsPage() {
                     {day.open ? (
                       <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1 }}>
                         <input type="time" value={day.start} onChange={e => setDayField(key, "start", e.target.value)}
-                          style={{ padding: "5px 9px", border: "1.5px solid #e8e6e2", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "var(--font-space-grotesk), sans-serif", flex: 1 }} />
+                          style={{ padding: "5px 9px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "var(--font-space-grotesk), sans-serif", flex: 1 }} />
                         <span style={{ fontSize: "12px", color: "#8E879B", flexShrink: 0 }}>–</span>
                         <input type="time" value={day.end} onChange={e => setDayField(key, "end", e.target.value)}
-                          style={{ padding: "5px 9px", border: "1.5px solid #e8e6e2", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "var(--font-space-grotesk), sans-serif", flex: 1 }} />
+                          style={{ padding: "5px 9px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "var(--font-space-grotesk), sans-serif", flex: 1 }} />
                       </div>
                     ) : (
                       <span style={{ fontSize: "12px", color: "#8E879B", fontWeight: 600, flex: 1 }}>Libre / No disponible</span>

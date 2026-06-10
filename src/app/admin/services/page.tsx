@@ -23,7 +23,7 @@ const MAX_FILE_SIZE = 2 * 1024 * 1024;
 const fmt = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
 const inp: React.CSSProperties = {
-  width: "100%", padding: "11px 14px", border: "1.5px solid #e8e6e2",
+  width: "100%", padding: "11px 14px", border: "1.5px solid rgba(20,15,30,0.08)",
   borderRadius: "11px", fontSize: "14px", background: "rgba(20,15,30,0.025)",
   color: "#14111C", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
@@ -165,7 +165,7 @@ export default function ServicesPage() {
             <IconServiceBell size={20} />
           </div>
           <div>
-            <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Servicios</h1>
+            <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Servicios</h1>
             <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>{services.length} servicio{services.length !== 1 ? "s" : ""} disponibles</p>
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function ServicesPage() {
       {loading ? (
         <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando servicios...</div>
       ) : services.length === 0 ? (
-        <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "22px", padding: "64px 32px", textAlign: "center" }}>
+        <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "22px", padding: "64px 32px", textAlign: "center" }}>
           <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "rgba(251,15,5,0.07)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", margin: "0 auto 16px" }}>
             <IconServiceBell size={26} />
           </div>
@@ -189,7 +189,7 @@ export default function ServicesPage() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "14px" }}>
           {services.map(s => (
-            <div key={s.id} style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden", transition: "box-shadow 0.2s" }}
+            <div key={s.id} style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden", transition: "box-shadow 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.08)")}
               onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}>
               {s.image_url ? (
@@ -209,7 +209,7 @@ export default function ServicesPage() {
                   </div>
                 )}
                 <div style={{ display: "flex", gap: "6px", marginBottom: "14px", flexWrap: "wrap" }}>
-                  <span style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600, background: "rgba(20,15,30,0.025)", color: "#564E66", border: "1px solid #e8e6e2" }}>
+                  <span style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600, background: "rgba(20,15,30,0.025)", color: "#564E66", border: "1px solid rgba(20,15,30,0.08)" }}>
                     <IconClock size={11} /> {s.duration_minutes} min
                   </span>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, background: "rgba(251,15,5,0.08)", color: "#fb0f05" }}>
@@ -217,7 +217,7 @@ export default function ServicesPage() {
                   </span>
                 </div>
                 <div style={{ display: "flex", gap: "8px", borderTop: "1px solid #f0eeeb", paddingTop: "12px" }}>
-                  <button onClick={() => openEdit(s)} style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid #e8e6e2", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}
+                  <button onClick={() => openEdit(s)} style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid rgba(20,15,30,0.08)", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = "rgba(20,15,30,0.08)"; e.currentTarget.style.color = "#3a3548"; }}>
                     Editar
@@ -236,9 +236,9 @@ export default function ServicesPage() {
 
       {/* Modal */}
       {showModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(17,17,24,0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={e => { if (e.target === e.currentTarget) setShowModal(false); }}>
-          <div style={{ background: "white", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "500px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "92vh", overflowY: "auto" }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "500px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "92vh", overflowY: "auto" }}>
 
             {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
@@ -246,7 +246,7 @@ export default function ServicesPage() {
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconServiceBell size={17} />
                 </div>
-                <h2 style={{ fontSize: "17px", fontWeight: 800, color: "#14111C", margin: 0 }}>{editingService ? "Editar servicio" : "Nuevo servicio"}</h2>
+                <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#14111C", margin: 0 }}>{editingService ? "Editar servicio" : "Nuevo servicio"}</h2>
               </div>
               <button onClick={() => setShowModal(false)} style={{ background: "none", border: "none", cursor: "pointer", color: "#8E879B", display: "flex", alignItems: "center" }}>
                 <IconX size={20} />
@@ -312,7 +312,7 @@ export default function ServicesPage() {
 
                 {/* Formulario inline para nuevo campo */}
                 {showFieldForm && (
-                  <div style={{ background: "rgba(20,15,30,0.025)", border: "1.5px solid #e8e6e2", borderRadius: "14px", padding: "16px", marginBottom: "14px" }}>
+                  <div style={{ background: "rgba(20,15,30,0.025)", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "14px", padding: "16px", marginBottom: "14px" }}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                       <div>
                         <label style={lbl}>Nombre del campo</label>
@@ -342,7 +342,7 @@ export default function ServicesPage() {
                       )}
                       {fieldError && <div style={{ fontSize: "12px", color: "#d90d04", fontWeight: 500 }}>{fieldError}</div>}
                       <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end" }}>
-                        <button type="button" onClick={() => setShowFieldForm(false)} style={{ padding: "7px 16px", borderRadius: "8px", border: "1px solid #e8e6e2", background: "white", color: "#564E66", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancelar</button>
+                        <button type="button" onClick={() => setShowFieldForm(false)} style={{ padding: "7px 16px", borderRadius: "8px", border: "1px solid rgba(20,15,30,0.08)", background: "white", color: "#564E66", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancelar</button>
                         <button type="button" onClick={addServiceField} disabled={savingField}
                           style={{ padding: "7px 16px", borderRadius: "8px", border: "none", background: "#fb0f05", color: "white", fontSize: "12px", fontWeight: 700, cursor: "pointer", fontFamily: "inherit", opacity: savingField ? 0.7 : 1 }}>
                           {savingField ? "Guardando..." : "Guardar campo"}
@@ -360,7 +360,7 @@ export default function ServicesPage() {
                 ) : (
                   serviceFields.map((f, i) => (
                     <div key={f.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 0", borderBottom: i < serviceFields.length - 1 ? "1px solid #f0eeeb" : "none" }}>
-                      <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "#f8fafc", border: "1px solid #e8e6e2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700, color: "#fb0f05", flexShrink: 0 }}>
+                      <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "#f8fafc", border: "1px solid rgba(20,15,30,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700, color: "#fb0f05", flexShrink: 0 }}>
                         {TYPE_ICONS[f.field_type]}
                       </div>
                       <div style={{ flex: 1 }}>
@@ -368,7 +368,7 @@ export default function ServicesPage() {
                         <span style={{ fontSize: "11px", color: "#8E879B", marginLeft: "7px" }}>{TYPE_LABELS[f.field_type]}</span>
                         {f.required && <span style={{ fontSize: "10px", fontWeight: 700, marginLeft: "6px", padding: "1px 6px", borderRadius: "20px", background: "rgba(251,15,5,0.08)", color: "#fb0f05" }}>Obligatorio</span>}
                       </div>
-                      <button onClick={() => removeServiceField(f.id)} style={{ width: "28px", height: "28px", borderRadius: "7px", border: "1px solid #e8e6e2", background: "#f8fafc", cursor: "pointer", fontSize: "12px", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <button onClick={() => removeServiceField(f.id)} style={{ width: "28px", height: "28px", borderRadius: "7px", border: "1px solid rgba(20,15,30,0.08)", background: "#f8fafc", cursor: "pointer", fontSize: "12px", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <IconX size={12} />
                       </button>
                     </div>

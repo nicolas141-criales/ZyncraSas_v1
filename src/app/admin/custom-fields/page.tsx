@@ -217,7 +217,7 @@ export default function CustomFieldsPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#1e293b", margin: 0 }}>Campos Personalizados</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1e293b", margin: 0 }}>Campos Personalizados</h1>
           <p style={{ color: "#64748b", fontSize: 14, margin: "4px 0 0" }}>Define campos adicionales para clientes y citas</p>
         </div>
         {tab === "fields" && (
@@ -382,9 +382,9 @@ export default function CustomFieldsPage() {
 
       {/* Modal create/edit */}
       {modal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div style={{ background: "white", borderRadius: 20, padding: 28, maxWidth: 480, width: "100%", border: "1px solid #e2e8f0", maxHeight: "90vh", overflowY: "auto" }}>
-            <h2 style={{ margin: "0 0 20px", fontSize: 17, fontWeight: 800, color: "#1e293b" }}>
+        <div style={{ position: "fixed", inset: 0, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
+          <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 28, maxWidth: 480, width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
+            <h2 style={{ margin: "0 0 20px", fontSize: 17, fontWeight: 700, color: "#1e293b" }}>
               {editing ? "Editar campo" : "Nuevo campo personalizado"}
             </h2>
 

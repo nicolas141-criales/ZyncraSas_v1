@@ -51,8 +51,8 @@ function SettingRow({ title, description, children }: { title: string; descripti
 
 function SectionCard({ icon, title, subtitle, children }: { icon: React.ReactNode; title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden" }}>
-      <div style={{ padding: "18px 22px", borderBottom: "1px solid #e8e6e2", display: "flex", alignItems: "center", gap: "12px" }}>
+    <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden" }}>
+      <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(20,15,30,0.08)", display: "flex", alignItems: "center", gap: "12px" }}>
         <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", flexShrink: 0 }}>
           {icon}
         </div>
@@ -140,7 +140,7 @@ export default function SettingsPage() {
           <IconCog size={20} />
         </div>
         <div>
-          <h1 style={{ fontSize: "20px", fontWeight: 800, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Configuración</h1>
+          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Configuración</h1>
           <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px" }}>Ajusta el comportamiento de tu negocio</p>
         </div>
       </div>
@@ -165,10 +165,10 @@ export default function SettingsPage() {
         </SettingRow>
         {requireDeposit && (
           <div style={{ paddingBottom: "16px" }}>
-            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid #e8e6e2", borderRadius: "12px", padding: "16px", display: "flex", gap: "14px", alignItems: "center" }}>
+            <div style={{ background: "rgba(20,15,30,0.025)", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "12px", padding: "16px", display: "flex", gap: "14px", alignItems: "center" }}>
               <label style={{ fontWeight: 600, fontSize: "13px", color: "#3a3548", whiteSpace: "nowrap" }}>Monto del depósito ($)</label>
               <input type="number" value={depositAmount} onChange={e => setDepositAmount(e.target.value)}
-                style={{ flex: 1, maxWidth: "120px", padding: "9px 12px", border: "1.5px solid #e8e6e2", borderRadius: "10px", fontSize: "14px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", background: "white", color: "#14111C", outline: "none" }} />
+                style={{ flex: 1, maxWidth: "120px", padding: "9px 12px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", fontSize: "14px", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", background: "white", color: "#14111C", outline: "none" }} />
             </div>
           </div>
         )}
@@ -188,10 +188,10 @@ export default function SettingsPage() {
               {h.open ? (
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginLeft: "auto" }}>
                   <input type="time" value={h.start} onChange={e => setDay(day, { start: e.target.value })}
-                    style={{ padding: "6px 10px", border: "1.5px solid #e8e6e2", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "inherit", outline: "none" }} />
+                    style={{ padding: "6px 10px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "inherit", outline: "none" }} />
                   <span style={{ fontSize: "12px", color: "#8E879B" }}>—</span>
                   <input type="time" value={h.end} onChange={e => setDay(day, { end: e.target.value })}
-                    style={{ padding: "6px 10px", border: "1.5px solid #e8e6e2", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "inherit", outline: "none" }} />
+                    style={{ padding: "6px 10px", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "8px", fontSize: "13px", color: "#14111C", background: "white", fontFamily: "inherit", outline: "none" }} />
                 </div>
               ) : (
                 <span style={{ marginLeft: "auto", fontSize: "12px", color: "#8E879B", fontWeight: 500 }}>Cerrado</span>
@@ -202,8 +202,8 @@ export default function SettingsPage() {
       </SectionCard>
 
       {/* Enlace rápido a Mi Marca */}
-      <div style={{ background: "white", border: "1px solid #e8e6e2", borderRadius: "18px", overflow: "hidden" }}>
-        <div style={{ padding: "18px 22px", borderBottom: "1px solid #e8e6e2", display: "flex", alignItems: "center", gap: "12px" }}>
+      <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden" }}>
+        <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(20,15,30,0.08)", display: "flex", alignItems: "center", gap: "12px" }}>
           <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", flexShrink: 0 }}>
             <IconPalette size={17} />
           </div>
@@ -216,7 +216,7 @@ export default function SettingsPage() {
           <p style={{ fontSize: "13px", color: "#564E66", lineHeight: 1.6, margin: 0, maxWidth: "480px" }}>
             Personaliza cómo ven tu negocio tus clientes cuando llegan a reservar. Cambia el logo, los colores de marca y el mensaje de bienvenida.
           </p>
-          <Link href="/admin/branding" style={{ display: "flex", alignItems: "center", gap: "6px", padding: "9px 18px", borderRadius: "10px", border: "1.5px solid #e8e6e2", background: "white", color: "#fb0f05", fontWeight: 700, fontSize: "13px", textDecoration: "none", whiteSpace: "nowrap", marginLeft: "20px", flexShrink: 0, transition: "all 0.15s" }}>
+          <Link href="/admin/branding" style={{ display: "flex", alignItems: "center", gap: "6px", padding: "9px 18px", borderRadius: "10px", border: "1.5px solid rgba(20,15,30,0.08)", background: "white", color: "#fb0f05", fontWeight: 700, fontSize: "13px", textDecoration: "none", whiteSpace: "nowrap", marginLeft: "20px", flexShrink: 0, transition: "all 0.15s" }}>
             Ir a Mi Marca <IconArrowRight size={14} color="#fb0f05" />
           </Link>
         </div>
