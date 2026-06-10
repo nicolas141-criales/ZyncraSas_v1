@@ -30,13 +30,23 @@ interface CashMovement {
   created_at: string;
 }
 
+interface PosItem {
+  sale_id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  item_type: string;
+}
+
+interface SaleDetail {
+  clientName: string | null;
+  items: PosItem[];
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const INGRESO_CATS = ["Servicio", "Producto", "Propina", "Otro"];
 const EGRESO_CATS  = ["Arriendo", "Nómina", "Insumos", "Servicios públicos", "Otro"];
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
@@ -119,6 +129,7 @@ export default function CajaPage() {
   const [session, setSession] = useState<CashSession | null>(null);
   const [movements, setMovements] = useState<CashMovement[]>([]);
   const [loadingSession, setLoadingSession] = useState(true);
+  const [saleDetails, setSaleDetails] = useState<Record<string, SaleDetail>>({});
 
   // Historial
   const [sessions, setSessions] = useState<(CashSession & { ingresos: number; egresos: number })[]>([]);
@@ -163,9 +174,40 @@ export default function CajaPage() {
         .select("*")
         .eq("session_id", sess.id)
         .order("created_at", { ascending: false });
-      setMovements(movs || []);
+
+      const movList: CashMovement[] = movs || [];
+      setMovements(movList);
+
+      // Fetch items for POS sales
+      const saleIds = movList.filter(m => m.pos_sale_id).map(m => m.pos_sale_id as string);
+      if (saleIds.length > 0) {
+        const [{ data: items }, { data: sales }] = await Promise.all([
+          supabase
+            .from("pos_sale_items")
+            .select("sale_id, name, price, quantity, item_type")
+            .in("sale_id", saleIds),
+          supabase
+            .from("pos_sales")
+            .select("id, clients(name)")
+            .in("id", saleIds),
+        ]);
+
+        const details: Record<string, SaleDetail> = {};
+        for (const sid of saleIds) {
+          const saleItems = (items || []).filter((i: any) => i.sale_id === sid);
+          const sale = (sales || []).find((s: any) => s.id === sid);
+          details[sid] = {
+            clientName: (sale?.clients as any)?.name ?? null,
+            items: saleItems,
+          };
+        }
+        setSaleDetails(details);
+      } else {
+        setSaleDetails({});
+      }
     } else {
       setMovements([]);
+      setSaleDetails({});
     }
     setLoadingSession(false);
   }, []);
@@ -217,7 +259,7 @@ export default function CajaPage() {
     }).select().single();
     setOpeningSaving(false);
     if (error) { setOpeningMsg("Error: " + error.message); return; }
-    setSession(data); setMovements([]);
+    setSession(data); setMovements([]); setSaleDetails({});
     setOpenAmount(""); setOpenNote("");
   };
 
@@ -258,7 +300,7 @@ export default function CajaPage() {
     if (error) { setCierreMsg("Error: " + error.message); return; }
     setCierreMsg("Caja cerrada con éxito.");
     setTimeout(() => {
-      setShowCierre(false); setSession(null); setMovements([]);
+      setShowCierre(false); setSession(null); setMovements([]); setSaleDetails({});
       setCierreAmount(""); setCierreNote(""); setCierreMsg("");
     }, 900);
   };
@@ -268,8 +310,6 @@ export default function CajaPage() {
   const totalEgresos  = movements.filter(m => m.type === "egreso").reduce((s, m) => s + Number(m.amount), 0);
   const balance = session ? Number(session.opening_amount) + totalIngresos - totalEgresos : 0;
 
-  // Desglose por método de pago
-  // Efectivo = fondo inicial + ingresos sin método (manuales) + ingresos POS efectivo − todos los egresos
   const PM_META: Record<string, { label: string; color: string; icon: string }> = {
     efectivo:  { label: "Efectivo",   color: "#10b981", icon: "💵" },
     tarjeta:   { label: "Tarjeta",    color: "#6366f1", icon: "💳" },
@@ -425,42 +465,99 @@ export default function CajaPage() {
                   Sin movimientos aún. Registra el primero.
                 </div>
               ) : (
-                movements.map((m, i) => (
-                  <div key={m.id} style={{
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                    padding: "13px 20px", borderBottom: i < movements.length - 1 ? "1px solid #f0eeeb" : "none",
-                  }}>
-                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                      <div style={{
-                        width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                        background: m.type === "ingreso" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        color: m.type === "ingreso" ? "#10b981" : "#ef4444",
-                        fontSize: 16, fontWeight: 700,
-                      }}>
-                        {m.type === "ingreso" ? "+" : "-"}
-                      </div>
-                      <div>
-                        <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>{m.description}</div>
-                        <div style={{ fontSize: 11, color: "#8E879B", marginTop: 2, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                          {m.payment_method && PM_META[m.payment_method] && (
-                            <span style={{ padding: "2px 8px", borderRadius: 20, fontWeight: 700, fontSize: 10, background: `${PM_META[m.payment_method].color}15`, color: PM_META[m.payment_method].color }}>
-                              {PM_META[m.payment_method].icon} {PM_META[m.payment_method].label}
-                            </span>
-                          )}
-                          {m.category && m.category !== "POS" && <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(20,15,30,0.04)", color: "#564E66" }}>{m.category}</span>}
-                          {m.category === "POS" && !m.payment_method && <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(20,15,30,0.04)", color: "#564E66" }}>POS</span>}
-                          <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                            <IconClock size={11} /> {fmtTime(m.created_at)}
-                          </span>
+                movements.map((m, i) => {
+                  const detail = m.pos_sale_id ? saleDetails[m.pos_sale_id] : null;
+                  const isPOS = !!m.pos_sale_id;
+                  return (
+                    <div key={m.id} style={{
+                      padding: "14px 20px",
+                      borderBottom: i < movements.length - 1 ? "1px solid #f0eeeb" : "none",
+                    }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                        {/* Left: icon + info */}
+                        <div style={{ display: "flex", gap: 12, alignItems: "flex-start", flex: 1, minWidth: 0 }}>
+                          <div style={{
+                            width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                            background: m.type === "ingreso" ? "rgba(16,185,129,0.1)" : "rgba(239,68,68,0.1)",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: m.type === "ingreso" ? "#10b981" : "#ef4444",
+                            fontSize: 16, fontWeight: 700, marginTop: 1,
+                          }}>
+                            {m.type === "ingreso" ? "+" : "-"}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            {/* Description line */}
+                            <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C" }}>
+                              {m.description}
+                            </div>
+                            {/* Badges + time */}
+                            <div style={{ fontSize: 11, color: "#8E879B", marginTop: 3, display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+                              {isPOS && (
+                                <span style={{ padding: "2px 8px", borderRadius: 20, fontWeight: 700, fontSize: 10, background: "rgba(0,39,254,0.08)", color: "#0027fe" }}>
+                                  POS
+                                </span>
+                              )}
+                              {m.payment_method && PM_META[m.payment_method] && (
+                                <span style={{ padding: "2px 8px", borderRadius: 20, fontWeight: 700, fontSize: 10, background: `${PM_META[m.payment_method].color}15`, color: PM_META[m.payment_method].color }}>
+                                  {PM_META[m.payment_method].icon} {PM_META[m.payment_method].label}
+                                </span>
+                              )}
+                              {m.category && m.category !== "POS" && (
+                                <span style={{ padding: "2px 8px", borderRadius: 20, background: "rgba(20,15,30,0.04)", color: "#564E66" }}>{m.category}</span>
+                              )}
+                              <span style={{ display: "flex", alignItems: "center", gap: 3 }}>
+                                <IconClock size={11} /> {fmtTime(m.created_at)}
+                              </span>
+                            </div>
+
+                            {/* POS item breakdown */}
+                            {isPOS && detail && detail.items.length > 0 && (
+                              <div style={{
+                                marginTop: 8,
+                                padding: "8px 10px",
+                                background: "rgba(20,15,30,0.025)",
+                                borderRadius: 8,
+                                border: "1px solid rgba(20,15,30,0.06)",
+                              }}>
+                                {detail.clientName && (
+                                  <div style={{ fontSize: 11, fontWeight: 700, color: "#564E66", marginBottom: 5, display: "flex", alignItems: "center", gap: 4 }}>
+                                    <span style={{ fontSize: 10 }}>👤</span> {detail.clientName}
+                                  </div>
+                                )}
+                                <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                                  {detail.items.map((item, idx) => (
+                                    <div key={idx} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11 }}>
+                                      <span style={{
+                                        padding: "1px 6px", borderRadius: 4, fontSize: 10, fontWeight: 700,
+                                        background: item.item_type === "product" ? "rgba(99,102,241,0.1)" : "rgba(16,185,129,0.1)",
+                                        color: item.item_type === "product" ? "#6366f1" : "#10b981",
+                                        flexShrink: 0,
+                                      }}>
+                                        {item.item_type === "product" ? "Prod" : "Serv"}
+                                      </span>
+                                      <span style={{ color: "#14111C", fontWeight: 600, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                        {item.quantity > 1 && <span style={{ color: "#8E879B", marginRight: 2 }}>{item.quantity}×</span>}
+                                        {item.name}
+                                      </span>
+                                      <span style={{ fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace", color: "#564E66", flexShrink: 0, fontWeight: 600 }}>
+                                        {fmt(item.price * item.quantity)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Right: amount */}
+                        <div style={{ fontWeight: 700, fontSize: 15, color: m.type === "ingreso" ? "#10b981" : "#ef4444", flexShrink: 0, paddingTop: 1 }}>
+                          {m.type === "ingreso" ? "+" : "-"}{fmt(Number(m.amount))}
                         </div>
                       </div>
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: 15, color: m.type === "ingreso" ? "#10b981" : "#ef4444" }}>
-                      {m.type === "ingreso" ? "+" : "-"}{fmt(Number(m.amount))}
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
