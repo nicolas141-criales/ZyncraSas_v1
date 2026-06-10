@@ -1,4 +1,6 @@
-// ── Tool definitions (Ollama / OpenAI function-calling format) ─────────────────
+import { callLLM } from "./llm-provider";
+
+// ── Tool definitions (provider-agnostic — same format for Ollama and OpenAI) ──
 
 export const BOOKING_TOOLS = [
   {
@@ -122,25 +124,7 @@ export const BOOKING_TOOLS = [
   },
 ];
 
-// ── Ollama fetch with 1 retry on non-200 ─────────────────────────────────────
-
-async function fetchOllama(url: string, body: string): Promise<any> {
-  for (let attempt = 0; attempt < 2; attempt++) {
-    if (attempt > 0) await new Promise(r => setTimeout(r, 5000));
-    const res = await fetch(url, {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body,
-      signal:  AbortSignal.timeout(300_000),
-    });
-    if (res.ok) return res.json();
-    const errText = await res.text();
-    console.error(`[ollama] attempt ${attempt + 1} failed — ${res.status}: ${errText.slice(0, 200)}`);
-    if (attempt === 1) throw new Error(`Ollama ${res.status}: ${errText.slice(0, 200)}`);
-  }
-}
-
-// ── Tool execution (calls internal Zyncra API) ─────────────────────────────────
+// ── Tool execution (calls internal Zyncra API endpoints) ──────────────────────
 
 const TOOL_PATHS: Record<string, string> = {
   get_client:             "/api/ai/client",
@@ -166,111 +150,77 @@ async function executeTool(
   try {
     const res = await fetch(`${base}${path}`, {
       method:  "POST",
-      headers: {
-        "Content-Type":  "application/json",
-        "Authorization": `Bearer ${secret}`,
-      },
-      body:   JSON.stringify({ ...args, tenant_id: tenantId }),
-      signal: AbortSignal.timeout(30_000),
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${secret}` },
+      body:    JSON.stringify({ ...args, tenant_id: tenantId }),
+      signal:  AbortSignal.timeout(30_000),
     });
-    const data = await res.json();
-    return data;
+    return await res.json();
   } catch (err) {
     console.error(`[tool:${name}] error:`, err);
     return { error: `Error ejecutando ${name}: ${String(err)}` };
   }
 }
 
-// ── Tool call normalizer ───────────────────────────────────────────────────────
-// Handles two formats:
-//  A) proper:  msg.tool_calls = [{ function: { name, arguments } }]
-//  B) content: msg.content = '{"name":"fn","arguments":{...}}'  (qwen2.5-coder)
-
-function normalizeToolCalls(msg: any): { function: { name: string; arguments: any } }[] {
-  if (msg.tool_calls?.length) return msg.tool_calls;
-
-  const raw = (msg.content ?? "").trim();
-  if (!raw.startsWith("{") && !raw.startsWith("[")) return [];
-
-  try {
-    const parsed = JSON.parse(raw);
-    const items = Array.isArray(parsed) ? parsed : [parsed];
-    const calls = items.filter((x: any) => typeof x.name === "string");
-    if (!calls.length) return [];
-    return calls.map((c: any) => ({ function: { name: c.name, arguments: c.arguments ?? c.args ?? {} } }));
-  } catch {
-    return [];
-  }
-}
-
 // ── Agentic loop ───────────────────────────────────────────────────────────────
+
+export interface AgentResult {
+  reply: string;
+  updatedMessages: any[];
+  usage: { promptTokens: number; completionTokens: number };
+}
 
 export async function runAgentLoop(
   messages: any[],
   tenantId: string,
-): Promise<{ reply: string; updatedMessages: any[] }> {
-  const ollamaUrl = (process.env.OLLAMA_BASE_URL ?? "http://localhost:11434").replace(/\/$/, "");
-  const model     = process.env.OLLAMA_MODEL ?? "qwen3:14b";
-  const history   = [...messages];
+  providerOverride?: string,
+): Promise<AgentResult> {
+  const history: any[]  = [...messages];
+  let promptTokens      = 0;
+  let completionTokens  = 0;
 
   for (let round = 0; round < 12; round++) {
-    const data = await fetchOllama(`${ollamaUrl}/api/chat`, JSON.stringify({
-      model,
-      messages: history,
-      tools:    BOOKING_TOOLS,
-      stream:   false,
-      think:    false,   // disable extended reasoning — keeps responses fast on CPU
-      options: {
-        temperature:    0.2,
-        top_p:          0.9,
-        num_ctx:        32768,
-        repeat_penalty: 1.1,
-      },
-    }));
-    const msg  = data.message as any;
-    console.log(`[agent round ${round}] role=${msg?.role} tool_calls=${msg?.tool_calls?.length ?? 0} content_len=${msg?.content?.length ?? 0}`);
-    if (!msg) throw new Error("Ollama no retornó mensaje");
+    const response = await callLLM(history, BOOKING_TOOLS, providerOverride);
+    promptTokens     += response.usage.promptTokens;
+    completionTokens += response.usage.completionTokens;
 
-    history.push(msg);
+    console.log(`[agent round ${round}] tool_calls=${response.toolCalls.length} content_len=${response.content?.length ?? 0} prompt_tok=${response.usage.promptTokens} compl_tok=${response.usage.completionTokens}`);
 
-    // Normalize tool calls: some models (qwen2.5-coder) put them in content as JSON
-    const toolCalls = normalizeToolCalls(msg);
+    // Store in internal format: arguments as object, id present, tool_call_id present.
+    // llm-provider converts to each provider's wire format before sending.
+    const assistantMsg: any = { role: "assistant", content: response.content ?? "" };
+    if (response.toolCalls.length) {
+      assistantMsg.tool_calls = response.toolCalls.map(tc => ({
+        id:       tc.id,
+        function: { name: tc.function.name, arguments: tc.function.arguments },
+      }));
+    }
+    history.push(assistantMsg);
 
-    // No tool calls → final response
-    if (!toolCalls.length) {
-      const reply = (msg.content ?? "")
+    // No tool calls → final text response
+    if (!response.toolCalls.length) {
+      const reply = (response.content ?? "")
         .replace(/<think>[\s\S]*?<\/think>/gi, "")
         .trim();
-      return { reply, updatedMessages: history };
+      return { reply, updatedMessages: history, usage: { promptTokens, completionTokens } };
     }
 
-    // Execute every tool call in this round
-    for (const tc of toolCalls) {
-      const toolName = tc.function?.name ?? "";
-      const rawArgs  = tc.function?.arguments ?? {};
-
-      let args: Record<string, unknown>;
-      try {
-        args = typeof rawArgs === "string" ? JSON.parse(rawArgs) : rawArgs;
-      } catch (parseErr) {
-        console.error(`[AI tool] JSON.parse failed for ${toolName}:`, rawArgs);
-        history.push({ role: "tool", content: JSON.stringify({ error: "Argumentos inválidos" }) });
-        continue;
-      }
-
-      console.log(`[AI → tool] ${toolName}`, JSON.stringify(args));
-      const result = await executeTool(toolName, args, tenantId);
-      console.log(`[AI ← tool] ${toolName}`, JSON.stringify(result));
+    // Execute each tool call and push results
+    for (const tc of response.toolCalls) {
+      console.log(`[AI → tool] ${tc.function.name}`, JSON.stringify(tc.function.arguments));
+      const result = await executeTool(tc.function.name, tc.function.arguments, tenantId);
+      console.log(`[AI ← tool] ${tc.function.name}`, JSON.stringify(result));
 
       history.push({
-        role:    "tool",
-        content: JSON.stringify(result),
+        role:         "tool",
+        tool_call_id: tc.id,   // Required by Groq; ignored by Ollama
+        content:      JSON.stringify(result),
       });
     }
   }
 
   return {
-    reply: "Disculpa, no pude completar la acción. ¿Puedes intentarlo de nuevo?",
+    reply:           "Disculpa, no pude completar la acción. ¿Puedes intentarlo de nuevo?",
     updatedMessages: history,
+    usage:           { promptTokens, completionTokens },
   };
 }

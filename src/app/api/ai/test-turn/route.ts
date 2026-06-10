@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkAIAuth, serviceDb } from "@/lib/ai-auth";
 import { runAgentLoop } from "@/lib/ai-agent";
 
-// Diagnostic endpoint: runs one turn synchronously and returns the full result
+// Diagnostic endpoint: runs one turn synchronously and returns the full result.
+// Optional `provider` field overrides LLM_PROVIDER env var — used by benchmark scripts.
 export async function POST(req: NextRequest) {
   const authErr = checkAIAuth(req);
   if (authErr) return authErr;
 
-  const { tenant_id, phone, text, reset } = await req.json();
+  const { tenant_id, phone, text, reset, provider } = await req.json();
   if (!tenant_id || !phone || !text) {
     return NextResponse.json({ error: "tenant_id, phone, text required" }, { status: 400 });
   }
@@ -73,9 +74,9 @@ export async function POST(req: NextRequest) {
   messages.push({ role: "user", content: text });
 
   const t = Date.now();
-  let result: { reply: string; updatedMessages: any[] };
+  let result: Awaited<ReturnType<typeof runAgentLoop>>;
   try {
-    result = await runAgentLoop(messages, tenant_id);
+    result = await runAgentLoop(messages, tenant_id, provider ?? undefined);
   } catch (err: any) {
     return NextResponse.json({ ok: false, error: String(err), elapsed_ms: Date.now() - t });
   }
@@ -90,10 +91,11 @@ export async function POST(req: NextRequest) {
   );
 
   return NextResponse.json({
-    ok: true,
-    reply: result.reply,
+    ok:            true,
+    reply:         result.reply,
     message_count: result.updatedMessages.length,
-    elapsed_ms: Date.now() - t,
+    elapsed_ms:    Date.now() - t,
+    usage:         result.usage,
     tool_calls: result.updatedMessages
       .filter((m: any) => m.tool_calls?.length)
       .flatMap((m: any) => (m.tool_calls as any[]).map((tc: any) => tc.function?.name as string)),
