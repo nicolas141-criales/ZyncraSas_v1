@@ -1,0 +1,59 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  OpenClaw Agent Configuration — Zyncra Booking Assistant
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: zyncra-booking-assistant
+version: "1.0.0"
+description: "Asistente de reservas para negocios de belleza y estética"
+
+# ── LLM backend ───────────────────────────────────────────────────────────────
+model:
+  provider: ollama
+  primary:  qwen3:14b
+  fallback: qwen3:8b
+  endpoint: "${OLLAMA_BASE_URL:-http://ollama:11434}"
+  parameters:
+    temperature:    0.2
+    top_p:          0.9
+    num_ctx:        32768
+    repeat_penalty: 1.1
+    stop:
+      - "<|im_end|>"
+      - "</tool_call>"
+
+# ── Agent API ─────────────────────────────────────────────────────────────────
+server:
+  host: 0.0.0.0
+  port: 8080
+  auth:
+    type:   bearer
+    secret: "${OPENCLAW_API_SECRET}"
+
+# ── Chat endpoint accepted by webhook ─────────────────────────────────────────
+# POST /v1/chat/completions
+# Body: { model, messages }
+# Response: { choices: [{ message: { role, content } }] }
+api:
+  format: openai_compatible   # follows OpenAI chat completions shape
+
+# ── Tool execution ─────────────────────────────────────────────────────────────
+tools:
+  file:    /app/config/tools.yaml
+  timeout: 20s
+  retry:
+    attempts: 2
+    delay:    1s
+
+# ── System prompt ──────────────────────────────────────────────────────────────
+system_prompt:
+  file: /app/config/system-prompt.txt
+
+# ── Memory / session (external — managed by Zyncra webhook) ───────────────────
+memory:
+  type: none   # Conversation history is injected via the messages array
+
+# ── Logging ───────────────────────────────────────────────────────────────────
+logging:
+  level:  info
+  format: json
+  file:   /app/data/openclaw.log

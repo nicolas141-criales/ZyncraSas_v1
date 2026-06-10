@@ -1,0 +1,195 @@
+# ─────────────────────────────────────────────────────────────────────────────
+#  OpenClaw Tool Definitions — Zyncra Booking Assistant
+#  All tools call internal Zyncra API endpoints.
+#  tenant_id must always be present in the body; the LLM extracts it from
+#  the system message injected by the webhook.
+# ─────────────────────────────────────────────────────────────────────────────
+
+tools:
+
+  # ── 1. check_availability ───────────────────────────────────────────────────
+  - name: check_availability
+    description: >
+      Consulta los horarios disponibles para un servicio en una fecha específica.
+      Úsala antes de agendar para mostrar opciones reales al cliente.
+      Devuelve lista de horarios disponibles con el profesional asignado.
+    parameters:
+      type: object
+      required: [tenant_id, service_id, date]
+      properties:
+        tenant_id:
+          type: string
+          description: "ID del negocio (inyectado en el system prompt)"
+        service_id:
+          type: string
+          description: "ID del servicio que el cliente quiere"
+        date:
+          type: string
+          description: "Fecha en formato YYYY-MM-DD (ej: 2026-06-15)"
+        professional_id:
+          type: string
+          description: "ID del profesional preferido (opcional)"
+    endpoint:
+      url:    "${ZYNCRA_API_URL}/api/ai/availability"
+      method: POST
+      headers:
+        Authorization: "Bearer ${AI_API_SECRET}"
+        Content-Type:  "application/json"
+
+  # ── 2. list_services ────────────────────────────────────────────────────────
+  - name: list_services
+    description: >
+      Lista todos los servicios disponibles del negocio con su nombre,
+      duración y precio. Úsala cuando el cliente pregunta qué servicios
+      ofrecen o cuánto cuesta algo.
+    parameters:
+      type: object
+      required: [tenant_id]
+      properties:
+        tenant_id:
+          type: string
+          description: "ID del negocio"
+    endpoint:
+      url:    "${ZYNCRA_API_URL}/api/ai/services"
+      method: POST
+      headers:
+        Authorization: "Bearer ${AI_API_SECRET}"
+        Content-Type:  "application/json"
+
+  # ── 3. list_professionals ───────────────────────────────────────────────────
+  - name: list_professionals
+    description: >
+      Lista los profesionales disponibles del negocio.
+      Úsala cuando el cliente pregunta por un especialista específico
+      o quiere saber con quién puede agendar.
+    parameters:
+      type: object
+      required: [tenant_id]
+      properties:
+        tenant_id:
+          type: string
+          description: "ID del negocio"
+    endpoint:
+      url:    "${ZYNCRA_API_URL}/api/ai/professionals"
+      method: POST
+      headers:
+        Authorization: "Bearer ${AI_API_SECRET}"
+        Content-Type:  "application/json"
+
+  # ── 4. get_client ───────────────────────────────────────────────────────────
+  - name: get_client
+    description: >
+      Busca un cliente registrado por su número de teléfono.
+      Devuelve sus datos y sus próximas citas pendientes.
+      Úsala al inicio de la conversación para personalizar la atención.
+    parameters:
+      type: object
+      required: [tenant_id, phone]
+      properties:
+        tenant_id:
+          type: string
+          description: "ID del negocio"
+        phone:
+          type: string
+          description: "Número de teléfono del cliente (con o sin código de país)"
+    endpoint:
+      url:    "${ZYNCRA_API_URL}/api/ai/client"
+      method: POST
+      headers:
+        Authorization: "Bearer ${AI_API_SECRET}"
+        Content-Type:  "application/json"
+
+  # ── 5. book_appointment ─────────────────────────────────────────────────────
+  - name: book_appointment
+    description: >
+      Crea una cita nueva. SIEMPRE pide confirmación al cliente antes de
+      llamar esta herramienta. Verifica disponibilidad primero con
+      check_availability. Si el cliente no existe se crea automáticamente.
+    parameters:
+      type: object
+      required: [tenant_id, service_id, professional_id, date, time]
+      properties:
+        tenant_id:
+          type: string
+          description: "ID del negocio"
+        service_id:
+          type: string
+          description: "ID del servicio"
+        professional_id:
+          type: string
+          description: "ID del profesional"
+        date:
+          type: string
+          description: "Fecha en formato YYYY-MM-DD"
+        time:
+          type: string
+          description: "Hora en formato HH:MM (24h, ej: 14:30)"
+        client_id:
+          type: string
+          description: "ID del cliente si ya existe en el sistema"
+        client_phone:
+          type: string
+          description: "Teléfono del cliente (si no tiene client_id)"
+        client_name:
+          type: string
+          description: "Nombre del cliente (si se va a crear)"
+        client_email:
+          type: string
+          description: "Email del cliente (opcional, para enviar confirmación)"
+    endpoint:
+      url:    "${ZYNCRA_API_URL}/api/ai/book"
+      method: POST
+      headers:
+        Authorization: "Bearer ${AI_API_SECRET}"
+        Content-Type:  "application/json"
+
+  # ── 6. reschedule_appointment ───────────────────────────────────────────────
+  - name: reschedule_appointment
+    description: >
+      Cambia la fecha y hora de una cita existente.
+      SIEMPRE pide confirmación antes de ejecutar.
+      Verifica disponibilidad del nuevo horario primero.
+    parameters:
+      type: object
+      required: [tenant_id, appointment_id, date, time]
+      properties:
+        tenant_id:
+          type: string
+          description: "ID del negocio"
+        appointment_id:
+          type: string
+          description: "ID de la cita a reagendar"
+        date:
+          type: string
+          description: "Nueva fecha YYYY-MM-DD"
+        time:
+          type: string
+          description: "Nueva hora HH:MM (24h)"
+    endpoint:
+      url:    "${ZYNCRA_API_URL}/api/ai/reschedule"
+      method: POST
+      headers:
+        Authorization: "Bearer ${AI_API_SECRET}"
+        Content-Type:  "application/json"
+
+  # ── 7. cancel_appointment ───────────────────────────────────────────────────
+  - name: cancel_appointment
+    description: >
+      Cancela una cita. SIEMPRE confirma con el cliente antes de ejecutar.
+      Esta acción no se puede deshacer.
+    parameters:
+      type: object
+      required: [tenant_id, appointment_id]
+      properties:
+        tenant_id:
+          type: string
+          description: "ID del negocio"
+        appointment_id:
+          type: string
+          description: "ID de la cita a cancelar"
+    endpoint:
+      url:    "${ZYNCRA_API_URL}/api/ai/cancel"
+      method: POST
+      headers:
+        Authorization: "Bearer ${AI_API_SECRET}"
+        Content-Type:  "application/json"
