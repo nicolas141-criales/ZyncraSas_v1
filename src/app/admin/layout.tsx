@@ -11,7 +11,7 @@ import { AdminContext } from "./admin-context";
 import {
   IconGrid, IconCalendar, IconBell, IconChat, IconCreditCard,
   IconBanknotes, IconDocument, IconChartBar, IconStar, IconStorefront,
-  IconUsers, IconUserGroup, IconPalette,
+  IconUsers, IconUserGroup, IconPalette, IconPackage,
   IconCog, IconLogout, IconX, IconServiceBell,
 } from "./ZyncraIcons";
 
@@ -77,6 +77,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/finanzas",   label: "Módulo Financiero",   icon: <IconChartBar size={17} /> },
       { href: "/admin/pos",        label: "Sistema POS",         icon: <IconCreditCard size={17} /> },
+      { href: "/admin/inventario", label: "Inventario",          icon: <IconPackage size={17} /> },
       { href: "/admin/caja",       label: "Sistema de Caja",     icon: <IconBanknotes size={17} /> },
       { href: "/admin/invoices",   label: "Factura Electrónica", icon: <IconDocument size={17} /> },
       { href: "/admin/commissions",label: "Comisiones",          icon: <IconChartBar size={17} /> },

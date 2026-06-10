@@ -23,6 +23,18 @@ interface Service {
   duration_minutes: number;
 }
 
+interface Product {
+  id: string;
+  name: string;
+  sku: string | null;
+  sale_price: number;
+  cost_price: number;
+  discount_type: "percent" | "fixed" | null;
+  discount_value: number;
+  stock_quantity: number;
+  photo_url: string | null;
+}
+
 interface Client {
   id: string;
   name: string;
@@ -32,9 +44,17 @@ interface Client {
 interface CartItem {
   key: string;
   serviceId: string | null;
+  productId: string | null;
+  itemType: "service" | "product" | "free";
   name: string;
   price: number;
   qty: number;
+}
+
+function productEffectivePrice(p: Product): number {
+  if (!p.discount_value || p.discount_value <= 0) return p.sale_price;
+  if (p.discount_type === "percent") return p.sale_price * (1 - p.discount_value / 100);
+  return Math.max(0, p.sale_price - p.discount_value);
 }
 
 interface Sale {
@@ -85,8 +105,11 @@ export default function PosPage() {
   const [openSession, setOpenSession] = useState<{ id: string } | null | "loading">("loading");
 
   // Catalog
+  const [catalogTab, setCatalogTab] = useState<"servicios" | "productos">("servicios");
   const [services, setServices] = useState<Service[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [search, setSearch] = useState("");
 
   // Cart
@@ -123,6 +146,15 @@ export default function PosPage() {
       .then(({ data }) => { setServices(data || []); setLoadingServices(false); });
   }, [tenantId]);
 
+  // ── Load products ──
+  useEffect(() => {
+    if (!tenantId) return;
+    supabase.from("products")
+      .select("id,name,sku,sale_price,cost_price,discount_type,discount_value,stock_quantity,photo_url")
+      .eq("tenant_id", tenantId).eq("is_active", true).order("name")
+      .then(({ data }) => { setProducts((data as any) || []); setLoadingProducts(false); });
+  }, [tenantId]);
+
   // ── Verify open cash session ──────────────────────────────────────────────
   useEffect(() => {
     if (!tenantId) return;
@@ -146,7 +178,7 @@ export default function PosPage() {
       if (!data) return;
       if (data.clients) setClient({ id: data.clients.id, name: data.clients.name, phone: data.clients.phone });
       if (data.services) {
-        setCart([{ key: data.services.id, serviceId: data.services.id, name: data.services.name, price: data.services.price, qty: 1 }]);
+        setCart([{ key: data.services.id, serviceId: data.services.id, productId: null, itemType: "service", name: data.services.name, price: data.services.price, qty: 1 }]);
       }
       setLinkedApt({
         id: aptId,
@@ -195,7 +227,21 @@ export default function PosPage() {
     setCart(prev => {
       const existing = prev.find(i => i.serviceId === svc.id);
       if (existing) return prev.map(i => i.serviceId === svc.id ? { ...i, qty: i.qty + 1 } : i);
-      return [...prev, { key: svc.id, serviceId: svc.id, name: svc.name, price: svc.price, qty: 1 }];
+      return [...prev, { key: svc.id, serviceId: svc.id, productId: null, itemType: "service", name: svc.name, price: svc.price, qty: 1 }];
+    });
+  };
+
+  const addProductToCart = (prod: Product) => {
+    if (prod.stock_quantity <= 0) return;
+    const effPrice = productEffectivePrice(prod);
+    setCart(prev => {
+      const existing = prev.find(i => i.productId === prod.id);
+      if (existing) {
+        const inCart = existing.qty;
+        if (inCart >= prod.stock_quantity) return prev; // no more stock
+        return prev.map(i => i.productId === prod.id ? { ...i, qty: i.qty + 1 } : i);
+      }
+      return [...prev, { key: `prod-${prod.id}`, serviceId: null, productId: prod.id, itemType: "product", name: prod.name, price: effPrice, qty: 1 }];
     });
   };
 
@@ -203,7 +249,7 @@ export default function PosPage() {
     const price = parseFloat(freeItemPrice.replace(/[^0-9.]/g, ""));
     if (!freeItemName.trim() || isNaN(price) || price <= 0) return;
     const key = `free-${Date.now()}`;
-    setCart(prev => [...prev, { key, serviceId: null, name: freeItemName.trim(), price, qty: 1 }]);
+    setCart(prev => [...prev, { key, serviceId: null, productId: null, itemType: "free", name: freeItemName.trim(), price, qty: 1 }]);
     setFreeItemName(""); setFreeItemPrice(""); setShowFreeItem(false);
   };
 
@@ -242,8 +288,37 @@ export default function PosPage() {
     if (error || !sale) { setCharging(false); return; }
 
     await supabase.from("pos_sale_items").insert(
-      cart.map(i => ({ sale_id: sale.id, service_id: i.serviceId, name: i.name, price: i.price, quantity: i.qty }))
+      cart.map(i => ({
+        sale_id:    sale.id,
+        service_id: i.itemType === "service" ? i.serviceId : null,
+        product_id: i.itemType === "product"  ? i.productId  : null,
+        item_type:  i.itemType === "free" ? "service" : i.itemType,
+        name:       i.name,
+        price:      i.price,
+        quantity:   i.qty,
+      }))
     );
+
+    // Descontar inventario por cada producto vendido
+    const productItems = cart.filter(i => i.itemType === "product" && i.productId);
+    if (productItems.length > 0) {
+      await supabase.from("inventory_movements").insert(
+        productItems.map(i => ({
+          tenant_id:  tenantId,
+          product_id: i.productId!,
+          type:       "sale",
+          quantity:   -i.qty,
+          reference:  sale.id,
+          notes:      `Venta POS${client ? ` · ${client.name}` : ""}`,
+        }))
+      );
+      // Actualizar estado local del stock
+      setProducts(prev => prev.map(p => {
+        const sold = productItems.find(i => i.productId === p.id);
+        if (!sold) return p;
+        return { ...p, stock_quantity: Math.max(0, p.stock_quantity - sold.qty) };
+      }));
+    }
 
     // Registrar ingreso automático en caja activa
     if (openSession && openSession !== "loading") {
@@ -337,16 +412,31 @@ export default function PosPage() {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 360px", gap: 20, alignItems: "start" }}>
 
           {/* Left: Catalog */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {/* Search + free item */}
-            <div style={{ display: "flex", gap: 10 }}>
-              <div style={{ flex: 1, position: "relative" }}>
-                <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#8E879B" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {/* Catalog tab + search + free item */}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+              {/* Servicios / Productos switcher */}
+              <div style={{ display: "flex", gap: 3, background: "rgba(20,15,30,0.04)", padding: 3, borderRadius: 10, flexShrink: 0 }}>
+                {(["servicios", "productos"] as const).map(t => (
+                  <button key={t} onClick={() => { setCatalogTab(t); setSearch(""); }} style={{
+                    padding: "6px 14px", borderRadius: 7, fontSize: 12, fontWeight: 700,
+                    cursor: "pointer", border: "none", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                    background: catalogTab === t ? "#14111C" : "transparent",
+                    color: catalogTab === t ? "#fff" : "#564E66",
+                    boxShadow: catalogTab === t ? "0 1px 6px rgba(20,15,30,0.18)" : "none",
+                    transition: "all 0.15s",
+                  }}>
+                    {t === "servicios" ? "Servicios" : "Productos"}
+                  </button>
+                ))}
+              </div>
+              <div style={{ flex: 1, position: "relative", minWidth: 140 }}>
+                <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#8E879B", pointerEvents: "none" }}>
                   <IconSearch size={15} />
                 </div>
                 <input
                   type="text" value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder="Buscar servicio..."
+                  placeholder={catalogTab === "servicios" ? "Buscar servicio..." : "Buscar producto..."}
                   style={{ ...inp, paddingLeft: 36 }}
                 />
               </div>
@@ -357,40 +447,89 @@ export default function PosPage() {
             </div>
 
             {/* Services grid */}
-            {loadingServices ? (
-              <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
-                <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
-              </div>
-            ) : filtered.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "40px 20px", color: "#8E879B", fontSize: 14 }}>
-                {search ? "Sin resultados." : "No hay servicios configurados."}
-              </div>
-            ) : (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
-                {filtered.map(svc => {
-                  const inCart = cart.find(i => i.serviceId === svc.id);
-                  return (
-                    <button key={svc.id} onClick={() => addToCart(svc)} style={{
-                      background: "white", borderRadius: 16, padding: "16px 18px",
-                      border: inCart ? "2px solid rgba(251,15,5,0.4)" : "1.5px solid rgba(20,15,30,0.08)",
-                      cursor: "pointer", textAlign: "left", transition: "all 0.15s",
-                      boxShadow: inCart ? "0 0 0 3px rgba(251,15,5,0.08)" : "none",
-                      fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-                    }}>
-                      <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C", marginBottom: 6 }}>{svc.name}</div>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: "#14111C" }}>
-                        {fmt(svc.price)}
-                      </div>
-                      <div style={{ fontSize: 11, color: "#8E879B", marginTop: 4 }}>{svc.duration_minutes} min</div>
-                      {inCart && (
-                        <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: "#fb0f05" }}>
-                          × {inCart.qty} en carrito
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
+            {catalogTab === "servicios" && (
+              loadingServices ? (
+                <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+                  <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+                </div>
+              ) : filtered.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 20px", color: "#8E879B", fontSize: 14 }}>
+                  {search ? "Sin resultados." : "No hay servicios configurados."}
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 12 }}>
+                  {filtered.map(svc => {
+                    const inCart = cart.find(i => i.serviceId === svc.id);
+                    return (
+                      <button key={svc.id} onClick={() => addToCart(svc)} style={{
+                        background: "white", borderRadius: 16, padding: "16px 18px",
+                        border: inCart ? "2px solid rgba(251,15,5,0.4)" : "1.5px solid rgba(20,15,30,0.08)",
+                        cursor: "pointer", textAlign: "left", transition: "all 0.15s",
+                        boxShadow: inCart ? "0 0 0 3px rgba(251,15,5,0.08)" : "none",
+                        fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                      }}>
+                        <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C", marginBottom: 6 }}>{svc.name}</div>
+                        <div style={{ fontSize: 18, fontWeight: 700, color: "#14111C" }}>{fmt(svc.price)}</div>
+                        <div style={{ fontSize: 11, color: "#8E879B", marginTop: 4 }}>{svc.duration_minutes} min</div>
+                        {inCart && <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: "#fb0f05" }}>× {inCart.qty} en carrito</div>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )
+            )}
+
+            {/* Products grid */}
+            {catalogTab === "productos" && (
+              loadingProducts ? (
+                <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+                  <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#0027fe", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+                </div>
+              ) : products.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.sku ?? "").toLowerCase().includes(search.toLowerCase())).length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 20px", color: "#8E879B", fontSize: 14 }}>
+                  {search ? "Sin resultados." : "No hay productos en inventario."}
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 12 }}>
+                  {products
+                    .filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.sku ?? "").toLowerCase().includes(search.toLowerCase()))
+                    .map(prod => {
+                      const effPrice = productEffectivePrice(prod);
+                      const inCart = cart.find(i => i.productId === prod.id);
+                      const outOfStock = prod.stock_quantity <= 0;
+                      return (
+                        <button key={prod.id} onClick={() => addProductToCart(prod)}
+                          disabled={outOfStock}
+                          style={{
+                            background: outOfStock ? "rgba(20,15,30,0.03)" : "white",
+                            borderRadius: 16, padding: "14px 16px",
+                            border: inCart ? "2px solid rgba(0,39,254,0.4)" : outOfStock ? "1.5px solid rgba(20,15,30,0.05)" : "1.5px solid rgba(20,15,30,0.08)",
+                            cursor: outOfStock ? "not-allowed" : "pointer", textAlign: "left", transition: "all 0.15s",
+                            boxShadow: inCart ? "0 0 0 3px rgba(0,39,254,0.08)" : "none",
+                            fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                            position: "relative", overflow: "hidden",
+                          }}>
+                          {/* Photo */}
+                          {prod.photo_url && (
+                            <div style={{ width: "100%", height: 80, borderRadius: 10, overflow: "hidden", marginBottom: 10, background: "rgba(20,15,30,0.04)" }}>
+                              <img src={prod.photo_url} alt={prod.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            </div>
+                          )}
+                          {prod.sku && <div style={{ fontSize: 9.5, fontFamily: "'JetBrains Mono',monospace", color: "#b0abc0", marginBottom: 3 }}>{prod.sku}</div>}
+                          <div style={{ fontWeight: 700, fontSize: 12.5, color: outOfStock ? "#b0abc0" : "#14111C", marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.name}</div>
+                          <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+                            <span style={{ fontSize: 16, fontWeight: 700, color: outOfStock ? "#b0abc0" : "#14111C" }}>{fmt(effPrice)}</span>
+                            {prod.discount_value > 0 && <span style={{ fontSize: 10, color: "#b0abc0", textDecoration: "line-through" }}>{fmt(prod.sale_price)}</span>}
+                          </div>
+                          <div style={{ marginTop: 6, fontSize: 10.5, fontWeight: 600, color: outOfStock ? "#ef4444" : prod.stock_quantity <= 5 ? "#f59e0b" : "#8E879B" }}>
+                            {outOfStock ? "Sin stock" : `${prod.stock_quantity} disponibles`}
+                          </div>
+                          {inCart && <div style={{ marginTop: 6, fontSize: 11, fontWeight: 700, color: "#0027fe" }}>× {inCart.qty} en carrito</div>}
+                        </button>
+                      );
+                    })}
+                </div>
+              )
             )}
           </div>
 
