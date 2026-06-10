@@ -913,7 +913,7 @@ export default function AdminOverview() {
       )}
 
       {/* ─── Header ─── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 14, animation: "znFadeUp .45s cubic-bezier(.22,1,.36,1) both" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 14, animation: "znFadeUp .45s cubic-bezier(.22,1,.36,1) both", position: "relative", zIndex: 50 }}>
         <div>
           <h1 style={{ fontSize: 23, fontWeight: 700, margin: 0, letterSpacing: "-0.6px", color: INK, lineHeight: 1.15 }}>
             {greeting}
@@ -941,7 +941,7 @@ export default function AdminOverview() {
                   : "Rango"}
               </SegBtn>
               {showRangePicker && (
-                <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 200 }}>
+                <div style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, zIndex: 9999 }}>
                   <DateRangePicker
                     start={customStart}
                     end={customEnd}
