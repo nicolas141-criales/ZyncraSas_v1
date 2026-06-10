@@ -31,6 +31,7 @@ interface DashboardData {
   hourlyData: { hour: string; count: number }[];
   weeklyRevenue: { day: string; revenue: number }[];
   paymentData: { method: string; label: string; color: string; amount: number; count: number }[];
+  clientSegments: { nuevos: number; recurrentes: number; perdidos: number };
 }
 
 const EMPTY: DashboardData = {
@@ -38,6 +39,7 @@ const EMPTY: DashboardData = {
   noShowRate: 0, avgTicket: 0, returningPct: 0, newClientsToday: 0,
   occupancyRate: 0, upcomingApts: [], staffPerf: [], topServices: [],
   hourlyData: [], weeklyRevenue: [], paymentData: [],
+  clientSegments: { nuevos: 0, recurrentes: 0, perdidos: 0 },
 };
 
 // ─── Date helpers ─────────────────────────────────────────
@@ -536,7 +538,28 @@ export default function AdminOverview() {
       color: PM_META[method]?.color ?? "#8E879B",
       ...v,
     })).sort((a, b) => b.amount - a.amount);
-    setData({ todayRevenue, prevDayRevenue, todayCount, pending, noShowRate, avgTicket, returningPct, newClientsToday: newClientsToday || 0, occupancyRate, upcomingApts, staffPerf, topServices, hourlyData, weeklyRevenue, paymentData });
+    // ── Segmentos de clientes (sobre toda la historia, no el período) ──────
+    const [{ data: allClientsRaw }, { data: allAptsRaw }] = await Promise.all([
+      supabase.from("clients").select("id").eq("tenant_id", tid),
+      supabase.from("appointments").select("client_id,appointment_date").eq("tenant_id", tid).not("status", "eq", "cancelled"),
+    ]);
+    const thirtyDAgo = toISO(new Date(Date.now() - 30 * 86400000));
+    const sixtyDAgo  = toISO(new Date(Date.now() - 60 * 86400000));
+    const lastByClient: Record<string, string> = {};
+    ((allAptsRaw as any[]) || []).forEach((a: any) => {
+      if (!lastByClient[a.client_id] || a.appointment_date > lastByClient[a.client_id])
+        lastByClient[a.client_id] = a.appointment_date;
+    });
+    let segNuevos = 0, segRecurrentes = 0, segPerdidos = 0;
+    ((allClientsRaw as any[]) || []).forEach((c: any) => {
+      const last = lastByClient[c.id];
+      if (last && last >= thirtyDAgo) segRecurrentes++;
+      else if (last && last < sixtyDAgo) segPerdidos++;
+      else segNuevos++;
+    });
+    const clientSegments = { nuevos: segNuevos, recurrentes: segRecurrentes, perdidos: segPerdidos };
+
+    setData({ todayRevenue, prevDayRevenue, todayCount, pending, noShowRate, avgTicket, returningPct, newClientsToday: newClientsToday || 0, occupancyRate, upcomingApts, staffPerf, topServices, hourlyData, weeklyRevenue, paymentData, clientSegments });
     hasLoadedOnce.current = true;
     setLoading(false);
     setRefreshing(false);
@@ -1106,6 +1129,26 @@ export default function AdminOverview() {
           </div>
         </Card>
       </div>
+
+      {/* ─── Segmentos de clientes ─── */}
+      <Card delay={0.36}>
+        <CardHead
+          title="Segmentos de clientes"
+          sub="Clasificación por actividad"
+          aside={<IconUsers size={13} />}
+        />
+        <div style={{ padding: "16px 18px" }}>
+          <Donut
+            data={[
+              { label: "Nuevos (1ª vez)",    value: data.clientSegments.nuevos,      color: "#0027fe" },
+              { label: "Recurrentes",         value: data.clientSegments.recurrentes, color: "#10b981" },
+              { label: "Perdidos (+60 días)", value: data.clientSegments.perdidos,    color: "#ef4444" },
+            ]}
+            fmt={v => String(Math.round(v))}
+            centerLabel="clientes"
+          />
+        </div>
+      </Card>
 
       {/* ─── Citas + Equipo ─── */}
       <div className="znGridLists">

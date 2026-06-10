@@ -23,15 +23,22 @@
   flex-direction: column;
   flex-shrink: 0;
   transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
 }
 
-.sidebar::-webkit-scrollbar { width: 5px; }
-.sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 3px; }
+/* Área scrollable del nav — el brand y el logout quedan fijos */
+.sidebarNav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.14) transparent;
+  padding: 8px 0;
+}
+
+.sidebarNav::-webkit-scrollbar { width: 5px; }
+.sidebarNav::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 3px; }
 
 .sidebarInner {
   display: flex;
@@ -41,9 +48,9 @@
 }
 
 .brand {
-  padding: 0 18px 18px;
+  padding: 20px 18px 18px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-  margin-bottom: 8px;
+  flex-shrink: 0;
 }
 
 /* ─── Nav groups ─── */

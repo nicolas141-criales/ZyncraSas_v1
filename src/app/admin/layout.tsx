@@ -204,36 +204,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
         {/* ── Sidebar ── */}
         <aside className={`${styles.sidebar} ${sidebarOpen ? styles.open : ""}`}>
-          <div className={styles.sidebarInner}>
 
-            {/* Logo */}
-            <div className={styles.brand}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
-                  <Image src="/zyncra-icon.png" alt="Zyncra" height={28} width={28}
-                    style={{ height: 28, width: "auto" }} />
-                  <span style={{
-                    fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
-                    fontWeight: 700, fontSize: 19, color: "white",
-                    letterSpacing: "-0.5px", lineHeight: 1,
-                  }}>Zyncra</span>
-                  <span style={{
-                    fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
-                    fontSize: 8.5, fontWeight: 600, letterSpacing: "0.14em",
-                    color: "rgba(255,255,255,0.4)", textTransform: "uppercase",
-                    border: "1px solid rgba(255,255,255,0.16)", borderRadius: 5,
-                    padding: "2.5px 6px", marginLeft: 2,
-                  }}>Panel</span>
-                </div>
-                <button onClick={() => setSidebarOpen(false)}
-                  style={{ background: "none", border: "none", color: "rgba(255,255,255,.4)", cursor: "pointer", padding: 4, display: "none" }}
-                  className={styles.menuToggle}>
-                  <IconX size={18} />
-                </button>
+          {/* Logo — fijo */}
+          <div className={styles.brand}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
+                <Image src="/zyncra-icon.png" alt="Zyncra" height={28} width={28}
+                  style={{ height: 28, width: "auto" }} />
+                <span style={{
+                  fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                  fontWeight: 700, fontSize: 19, color: "white",
+                  letterSpacing: "-0.5px", lineHeight: 1,
+                }}>Zyncra</span>
+                <span style={{
+                  fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
+                  fontSize: 8.5, fontWeight: 600, letterSpacing: "0.14em",
+                  color: "rgba(255,255,255,0.4)", textTransform: "uppercase",
+                  border: "1px solid rgba(255,255,255,0.16)", borderRadius: 5,
+                  padding: "2.5px 6px", marginLeft: 2,
+                }}>Panel</span>
               </div>
+              <button onClick={() => setSidebarOpen(false)}
+                style={{ background: "none", border: "none", color: "rgba(255,255,255,.4)", cursor: "pointer", padding: 4, display: "none" }}
+                className={styles.menuToggle}>
+                <IconX size={18} />
+              </button>
             </div>
+          </div>
 
-            {/* Nav groups */}
+          {/* Nav groups — scrollable */}
+          <div className={styles.sidebarNav}>
             {NAV_GROUPS.map(group => (
               <div key={group.label} className={styles.navGroup}>
                 <div className={styles.navGroupLabel}>{group.label}</div>
@@ -251,13 +251,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 })}
               </div>
             ))}
+          </div>
 
-            {/* Bottom: logout */}
-            <div className={styles.sidebarBottom}>
-              <div className={styles.navLogout} onClick={handleLogout}>
-                <IconLogout size={17} />
-                Cerrar sesión
-              </div>
+          {/* Cerrar sesión — fijo */}
+          <div className={styles.sidebarBottom}>
+            <div className={styles.navLogout} onClick={handleLogout}>
+              <IconLogout size={17} />
+              Cerrar sesión
             </div>
           </div>
         </aside>

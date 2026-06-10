@@ -9,7 +9,10 @@ interface Client {
   id: string; tenant_id: string; name: string; phone: string; email: string | null;
 }
 
+interface Segments { nuevos: number; recurrentes: number; perdidos: number; }
+
 const EMPTY_FORM = { name: "", phone: "", email: "" };
+const toISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 
 function formatPhone(raw: string) {
   const d = raw.replace(/\D/g, "");
@@ -45,10 +48,31 @@ export default function ClientsPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [segments, setSegments] = useState<Segments>({ nuevos: 0, recurrentes: 0, perdidos: 0 });
 
   const fetchClients = useCallback(async (tid: string) => {
-    const { data } = await supabase.from("clients").select("id,tenant_id,name,phone,email").eq("tenant_id", tid).order("name");
+    const [{ data }, { data: aptsData }] = await Promise.all([
+      supabase.from("clients").select("id,tenant_id,name,phone,email").eq("tenant_id", tid).order("name"),
+      supabase.from("appointments").select("client_id,appointment_date").eq("tenant_id", tid).not("status", "eq", "cancelled"),
+    ]);
     if (data) setClients(data);
+    if (data && aptsData) {
+      const thirtyDAgo = toISO(new Date(Date.now() - 30 * 86400000));
+      const sixtyDAgo  = toISO(new Date(Date.now() - 60 * 86400000));
+      const lastByClient: Record<string, string> = {};
+      (aptsData as any[]).forEach((a: any) => {
+        if (!lastByClient[a.client_id] || a.appointment_date > lastByClient[a.client_id])
+          lastByClient[a.client_id] = a.appointment_date;
+      });
+      let nuevos = 0, recurrentes = 0, perdidos = 0;
+      data.forEach(c => {
+        const last = lastByClient[c.id];
+        if (last && last >= thirtyDAgo) recurrentes++;
+        else if (last && last < sixtyDAgo) perdidos++;
+        else nuevos++;
+      });
+      setSegments({ nuevos, recurrentes, perdidos });
+    }
   }, []);
 
   useEffect(() => {
@@ -119,6 +143,28 @@ export default function ClientsPage() {
           </button>
         </div>
       </div>
+
+      {/* Segmentación */}
+      {!loading && clients.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: "12px", marginBottom: "24px" }}>
+          {[
+            { label: "Nuevos", sub: "Primera vez", value: segments.nuevos, color: "#0027fe", bg: "rgba(0,39,254,0.07)", dot: "#0027fe" },
+            { label: "Recurrentes", sub: "Últimos 30 días", value: segments.recurrentes, color: "#10b981", bg: "rgba(16,185,129,0.07)", dot: "#10b981" },
+            { label: "Perdidos", sub: "Más de 60 días", value: segments.perdidos, color: "#ef4444", bg: "rgba(239,68,68,0.07)", dot: "#ef4444" },
+          ].map(s => (
+            <div key={s.label} style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "16px", padding: "16px 18px", display: "flex", alignItems: "center", gap: "14px" }}>
+              <div style={{ width: 40, height: 40, borderRadius: "12px", background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ width: 10, height: 10, borderRadius: "50%", background: s.dot, display: "block" }} />
+              </div>
+              <div>
+                <div style={{ fontSize: "22px", fontWeight: 700, color: "#14111C", letterSpacing: "-0.6px", lineHeight: 1, fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace" }}>{s.value}</div>
+                <div style={{ fontSize: "12px", fontWeight: 700, color: s.color, marginTop: "3px" }}>{s.label}</div>
+                <div style={{ fontSize: "11px", color: "#8E879B", marginTop: "1px" }}>{s.sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* List */}
       <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden" }}>
