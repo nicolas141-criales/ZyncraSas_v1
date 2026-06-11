@@ -139,31 +139,31 @@ export default function PlatformBillingPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9", margin: 0 }}>Cobros</h1>
-          <p style={{ color: "#475569", fontSize: 14, margin: "4px 0 0" }}>Pagos de suscripción de clientes Zyncra</p>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,0.94)", margin: 0 }}>Cobros</h1>
+          <p style={{ color: "rgba(255,255,255,0.32)", fontSize: 14, margin: "4px 0 0" }}>Pagos de suscripción de clientes Zyncra</p>
         </div>
         <button onClick={() => setNewModal(true)}
-          style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#7c3aed", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+          style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#fb0f05", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
           + Nuevo cobro
         </button>
       </div>
 
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 24 }}>
-        <div style={{ background: "#1e293b", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
-          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Pendiente de cobro</div>
+        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Pendiente de cobro</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#fbbf24" }}>{fmt(pendingTotal)}</div>
-          <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>{payments.filter(p => p.status === "pending").length} facturas</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>{payments.filter(p => p.status === "pending").length} facturas</div>
         </div>
-        <div style={{ background: "#1e293b", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
-          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Recaudado (histórico)</div>
+        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Recaudado (histórico)</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#34d399" }}>{fmt(paidTotal)}</div>
-          <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>{payments.filter(p => p.status === "paid").length} pagos</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>{payments.filter(p => p.status === "paid").length} pagos</div>
         </div>
-        <div style={{ background: overdueCount > 0 ? "rgba(248,113,113,.08)" : "#1e293b", borderRadius: 14, padding: "18px 20px", border: `1px solid ${overdueCount > 0 ? "rgba(248,113,113,.2)" : "rgba(255,255,255,0.05)"}` }}>
-          <div style={{ fontSize: 11, color: "#64748b", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Vencidos</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: overdueCount > 0 ? "#f87171" : "#64748b" }}>{overdueCount}</div>
-          <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>con fecha de vencimiento pasada</div>
+        <div style={{ background: overdueCount > 0 ? "rgba(248,113,113,.08)" : "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: `1px solid ${overdueCount > 0 ? "rgba(248,113,113,.2)" : "rgba(255,255,255,0.05)"}` }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Vencidos</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: overdueCount > 0 ? "#f87171" : "rgba(255,255,255,0.42)" }}>{overdueCount}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>con fecha de vencimiento pasada</div>
         </div>
       </div>
 
@@ -171,13 +171,13 @@ export default function PlatformBillingPage() {
       <div style={{ display: "flex", gap: 10, marginBottom: 16, flexWrap: "wrap" }}>
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Buscar negocio..."
-          style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid #1e293b", background: "#1e293b", color: "#e2e8f0", fontSize: 13, width: 220, outline: "none" }} />
+          style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.92)", fontSize: 13, width: 220, outline: "none" }} />
         <div style={{ display: "flex", gap: 4 }}>
           {(["all", "pending", "paid", "failed"] as PayFilter[]).map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600,
-              background: filter === f ? "#7c3aed" : "#1e293b",
-              color: filter === f ? "white" : "#64748b",
+              background: filter === f ? "#fb0f05" : "rgba(255,255,255,0.08)",
+              color: filter === f ? "white" : "rgba(255,255,255,0.42)",
             }}>
               {f === "all" ? "Todos" : f === "pending" ? "Pendientes" : f === "paid" ? "Pagados" : "Fallidos"}
             </button>
@@ -187,46 +187,46 @@ export default function PlatformBillingPage() {
 
       {/* Table */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: 60, color: "#475569" }}>Cargando...</div>
+        <div style={{ textAlign: "center", padding: 60, color: "rgba(255,255,255,0.32)" }}>Cargando...</div>
       ) : (
-        <div style={{ background: "#1e293b", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
+        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: "#0f172a" }}>
+              <tr style={{ background: "#10101B" }}>
                 {["Negocio", "Monto", "Estado", "Vencimiento", "Pagado", "Método", ""].map(h => (
-                  <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
+                  <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "#475569" }}>Sin resultados</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "rgba(255,255,255,0.32)" }}>Sin resultados</td></tr>
               )}
               {filtered.map((p, i) => {
                 const isOverdue = p.status === "pending" && p.due_date && new Date(p.due_date) < new Date();
                 return (
                   <tr key={p.id} style={{ borderTop: "1px solid rgba(255,255,255,0.04)", background: isOverdue ? "rgba(248,113,113,0.03)" : i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
                     <td style={{ padding: "14px 16px" }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: "#f1f5f9" }}>{p.tenant_name}</div>
-                      {p.notes && <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>{p.notes}</div>}
+                      <div style={{ fontWeight: 700, fontSize: 14, color: "rgba(255,255,255,0.94)" }}>{p.tenant_name}</div>
+                      {p.notes && <div style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", marginTop: 2 }}>{p.notes}</div>}
                     </td>
-                    <td style={{ padding: "14px 16px", fontWeight: 800, fontSize: 15, color: "#a78bfa" }}>{fmt(p.amount)}</td>
+                    <td style={{ padding: "14px 16px", fontWeight: 800, fontSize: 15, color: "#ff7d72" }}>{fmt(p.amount)}</td>
                     <td style={{ padding: "14px 16px" }}>
                       <StatusBadge status={p.status} />
                       {isOverdue && <div style={{ fontSize: 10, color: "#f87171", marginTop: 4, fontWeight: 700 }}>VENCIDO</div>}
                     </td>
-                    <td style={{ padding: "14px 16px", fontSize: 13, color: isOverdue ? "#f87171" : "#64748b" }}>{fmtDate(p.due_date)}</td>
-                    <td style={{ padding: "14px 16px", fontSize: 13, color: "#64748b" }}>{fmtDate(p.paid_at)}</td>
-                    <td style={{ padding: "14px 16px", fontSize: 13, color: "#94a3b8" }}>{p.method ?? "—"}</td>
+                    <td style={{ padding: "14px 16px", fontSize: 13, color: isOverdue ? "#f87171" : "rgba(255,255,255,0.42)" }}>{fmtDate(p.due_date)}</td>
+                    <td style={{ padding: "14px 16px", fontSize: 13, color: "rgba(255,255,255,0.42)" }}>{fmtDate(p.paid_at)}</td>
+                    <td style={{ padding: "14px 16px", fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{p.method ?? "—"}</td>
                     <td style={{ padding: "14px 16px" }}>
                       {p.status === "pending" && (
                         <button onClick={() => { setPayModal(p); setPayMethod("transferencia"); }}
-                          style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#34d399", color: "#0f172a", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
+                          style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#34d399", color: "#10101B", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>
                           Marcar pagado
                         </button>
                       )}
                       {p.status === "paid" && p.reference && (
-                        <span style={{ fontSize: 11, color: "#475569" }}>Ref: {p.reference}</span>
+                        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.32)" }}>Ref: {p.reference}</span>
                       )}
                     </td>
                   </tr>
@@ -240,10 +240,10 @@ export default function PlatformBillingPage() {
       {/* Mark Paid Modal */}
       {payModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div style={{ background: "#1e293b", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%", border: "1px solid #334155" }}>
-            <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 800, color: "#f1f5f9" }}>Registrar pago</h2>
-            <p style={{ margin: "0 0 20px", fontSize: 13, color: "#64748b" }}>
-              {payModal.tenant_name} · <strong style={{ color: "#a78bfa" }}>{fmt(payModal.amount)}</strong>
+          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%", border: "1px solid rgba(255,255,255,0.14)" }}>
+            <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>Registrar pago</h2>
+            <p style={{ margin: "0 0 20px", fontSize: 13, color: "rgba(255,255,255,0.42)" }}>
+              {payModal.tenant_name} · <strong style={{ color: "#ff7d72" }}>{fmt(payModal.amount)}</strong>
             </p>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
@@ -262,8 +262,8 @@ export default function PlatformBillingPage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
-              <button onClick={() => setPayModal(null)} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #334155", background: "transparent", color: "#64748b", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Cancelar</button>
-              <button onClick={markPaid} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#34d399", color: "#0f172a", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+              <button onClick={() => setPayModal(null)} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.42)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={markPaid} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#34d399", color: "#10101B", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                 {saving ? "Guardando..." : "Confirmar pago"}
               </button>
             </div>
@@ -274,8 +274,8 @@ export default function PlatformBillingPage() {
       {/* New Payment Modal */}
       {newModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div style={{ background: "#1e293b", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%", border: "1px solid #334155" }}>
-            <h2 style={{ margin: "0 0 20px", fontSize: 17, fontWeight: 800, color: "#f1f5f9" }}>Nuevo cobro</h2>
+          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%", border: "1px solid rgba(255,255,255,0.14)" }}>
+            <h2 style={{ margin: "0 0 20px", fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>Nuevo cobro</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
                 <label style={lbl}>Negocio</label>
@@ -298,9 +298,9 @@ export default function PlatformBillingPage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
-              <button onClick={() => setNewModal(false)} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #334155", background: "transparent", color: "#64748b", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={() => setNewModal(false)} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.42)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Cancelar</button>
               <button onClick={createPayment} disabled={saving || !newTenant || !newAmount}
-                style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#7c3aed", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", opacity: (!newTenant || !newAmount) ? 0.5 : 1 }}>
+                style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#fb0f05", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", opacity: (!newTenant || !newAmount) ? 0.5 : 1 }}>
                 {saving ? "Guardando..." : "Crear cobro"}
               </button>
             </div>
@@ -312,11 +312,11 @@ export default function PlatformBillingPage() {
 }
 
 const lbl: React.CSSProperties = {
-  display: "block", fontSize: 11, fontWeight: 700, color: "#64748b",
+  display: "block", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.42)",
   marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em",
 };
 const inp: React.CSSProperties = {
-  width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #334155",
-  background: "#0f172a", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)",
+  background: "#10101B", color: "rgba(255,255,255,0.92)", fontSize: 14, boxSizing: "border-box",
+  fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
 };

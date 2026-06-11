@@ -488,7 +488,7 @@ export default function TabRentabilidad() {
                   <div style={{fontSize:13,fontWeight:600,color:t.active?"#14111C":"#a0a0b0",textDecoration:t.active?"none":"line-through"}}>{t.name}</div>
                   <div style={{fontSize:11,color:"#8E879B"}}>{t.category} · {t.type==="fixed"?"Fijo":"Variable"} · {fmt(t.amount)}</div>
                 </div>
-                <button onClick={()=>toggleTemplate(t.id,!t.active)} style={{padding:"4px 10px",borderRadius:7,fontSize:11,fontWeight:700,cursor:"pointer",border:"none",background:t.active?"#d1fae5":"#f3f4f6",color:t.active?"#059669":"#6b7280",fontFamily:FONT,flexShrink:0}}>
+                <button onClick={()=>toggleTemplate(t.id,!t.active)} style={{padding:"4px 10px",borderRadius:7,fontSize:11,fontWeight:700,cursor:"pointer",border:"none",background:t.active?"#d1fae5":"#f3f4f6",color:t.active?"#059669":"#564E66",fontFamily:FONT,flexShrink:0}}>
                   {t.active?"Activo":"Inactivo"}
                 </button>
                 <button onClick={()=>deleteTemplate(t.id)} style={{background:"none",border:"none",cursor:"pointer",color:"#d1d0db",fontSize:14,padding:"2px 4px",lineHeight:1,flexShrink:0}} title="Eliminar">✕</button>

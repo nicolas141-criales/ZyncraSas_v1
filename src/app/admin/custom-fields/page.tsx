@@ -217,8 +217,8 @@ export default function CustomFieldsPage() {
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1e293b", margin: 0 }}>Campos Personalizados</h1>
-          <p style={{ color: "#64748b", fontSize: 14, margin: "4px 0 0" }}>Define campos adicionales para clientes y citas</p>
+          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#14111C", margin: 0 }}>Campos Personalizados</h1>
+          <p style={{ color: "#564E66", fontSize: 14, margin: "4px 0 0" }}>Define campos adicionales para clientes y citas</p>
         </div>
         {tab === "fields" && (
           <button onClick={openCreate} style={btnPrimary}>+ Nuevo campo</button>
@@ -226,13 +226,13 @@ export default function CustomFieldsPage() {
       </div>
 
       {/* Tabs */}
-      <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: "1px solid #e2e8f0" }}>
+      <div style={{ display: "flex", gap: 4, marginBottom: 24, borderBottom: "1px solid rgba(20,15,30,0.08)" }}>
         {(["fields", "values"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             padding: "9px 18px", borderRadius: "8px 8px 0 0", border: "none", cursor: "pointer",
             fontSize: 13, fontWeight: 600,
-            background: tab === t ? "white" : "transparent",
-            color: tab === t ? "#fb0f05" : "#64748b",
+            background: tab === t ? "#14111C" : "transparent",
+            color: tab === t ? "#fb0f05" : "#564E66",
             borderBottom: tab === t ? "2px solid #fb0f05" : "2px solid transparent",
             marginBottom: -1,
           }}>
@@ -245,26 +245,26 @@ export default function CustomFieldsPage() {
       {tab === "fields" && (
         <>
           {loading ? (
-            <div style={{ textAlign: "center", padding: 60, color: "#94a3b8" }}>Cargando...</div>
+            <div style={{ textAlign: "center", padding: 60, color: "#8E879B" }}>Cargando...</div>
           ) : fields.length === 0 ? (
             <div style={{ textAlign: "center", padding: 60 }}>
               <div style={{ fontSize: 44, marginBottom: 12 }}>🗂️</div>
-              <div style={{ fontWeight: 700, color: "#334155", marginBottom: 4 }}>Sin campos aún</div>
-              <div style={{ fontSize: 13, color: "#94a3b8" }}>Crea tu primer campo personalizado</div>
+              <div style={{ fontWeight: 700, color: "#3a3548", marginBottom: 4 }}>Sin campos aún</div>
+              <div style={{ fontSize: 13, color: "#8E879B" }}>Crea tu primer campo personalizado</div>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {fields.map((f, i) => (
                 <div key={f.id} style={{
                   background: "white", borderRadius: 14, padding: "16px 20px",
-                  border: `1px solid ${f.active ? "#e2e8f0" : "#f1f5f9"}`,
+                  border: `1px solid ${f.active ? "rgba(20,15,30,0.08)" : "rgba(20,15,30,0.04)"}`,
                   opacity: f.active ? 1 : 0.6,
                   display: "flex", alignItems: "center", gap: 14,
                 }}>
                   {/* Type icon */}
                   <div style={{
-                    width: 36, height: 36, borderRadius: 10, background: "#f8fafc",
-                    border: "1px solid #e2e8f0", display: "flex", alignItems: "center",
+                    width: 36, height: 36, borderRadius: 10, background: "rgba(20,15,30,0.025)",
+                    border: "1px solid rgba(20,15,30,0.08)", display: "flex", alignItems: "center",
                     justifyContent: "center", fontSize: 15, fontWeight: 700, color: "#fb0f05",
                     flexShrink: 0,
                   }}>
@@ -274,17 +274,17 @@ export default function CustomFieldsPage() {
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <span style={{ fontWeight: 700, fontSize: 14, color: "#1e293b" }}>{f.name}</span>
+                      <span style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>{f.name}</span>
                       <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: f.applies_to === "client" ? "rgba(99,102,241,.1)" : "rgba(251,191,36,.15)", color: f.applies_to === "client" ? "#6366f1" : "#d97706" }}>
                         {f.applies_to === "client" ? "Cliente" : "Cita"}
                       </span>
                       {f.required && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(248,113,113,.1)", color: "#f87171" }}>Obligatorio</span>}
-                      {!f.active && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#f1f5f9", color: "#94a3b8" }}>Inactivo</span>}
+                      {!f.active && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "rgba(20,15,30,0.04)", color: "#8E879B" }}>Inactivo</span>}
                     </div>
-                    <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 2 }}>
+                    <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>
                       {TYPE_LABELS[f.field_type]}
                       {f.field_type === "select" && f.options.length > 0 && ` · ${f.options.join(", ")}`}
-                      <span style={{ color: "#cbd5e1", marginLeft: 8 }}>clave: {f.field_key}</span>
+                      <span style={{ color: "rgba(20,15,30,0.15)", marginLeft: 8 }}>clave: {f.field_key}</span>
                     </div>
                   </div>
 
@@ -296,7 +296,7 @@ export default function CustomFieldsPage() {
                       style={{ ...btnIcon, opacity: i === fields.length - 1 ? 0.3 : 1 }} title="Bajar">↓</button>
                     <button onClick={() => openEdit(f)} style={btnIcon}>✏️</button>
                     <button onClick={() => toggleActive(f)}
-                      style={{ ...btnIcon, color: f.active ? "#fb0f05" : "#94a3b8" }}
+                      style={{ ...btnIcon, color: f.active ? "#fb0f05" : "#8E879B" }}
                       title={f.active ? "Desactivar" : "Activar"}>
                       {f.active ? "●" : "○"}
                     </button>
@@ -313,7 +313,7 @@ export default function CustomFieldsPage() {
       {/* Tab: Values */}
       {tab === "values" && (
         <div>
-          <div style={{ background: "white", borderRadius: 14, padding: 20, border: "1px solid #e2e8f0", marginBottom: 20 }}>
+          <div style={{ background: "white", borderRadius: 14, padding: 20, border: "1px solid rgba(20,15,30,0.08)", marginBottom: 20 }}>
             <label style={lbl}>Seleccionar cliente</label>
             <select value={selectedClient} onChange={e => {
               setSelectedClient(e.target.value);
@@ -326,11 +326,11 @@ export default function CustomFieldsPage() {
           </div>
 
           {selectedClient && (
-            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid #e2e8f0" }}>
+            <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               {loadingValues ? (
-                <div style={{ textAlign: "center", padding: 40, color: "#94a3b8" }}>Cargando...</div>
+                <div style={{ textAlign: "center", padding: 40, color: "#8E879B" }}>Cargando...</div>
               ) : clientFields.length === 0 ? (
-                <div style={{ textAlign: "center", padding: 40, color: "#94a3b8" }}>
+                <div style={{ textAlign: "center", padding: 40, color: "#8E879B" }}>
                   No hay campos de tipo "Cliente" activos. Crea campos en la pestaña Campos.
                 </div>
               ) : (
@@ -341,7 +341,7 @@ export default function CustomFieldsPage() {
                         <label style={lbl}>
                           {f.name}
                           {f.required && <span style={{ color: "#f87171", marginLeft: 4 }}>*</span>}
-                          <span style={{ fontWeight: 400, color: "#cbd5e1", marginLeft: 6, textTransform: "none" }}>({TYPE_LABELS[f.field_type]})</span>
+                          <span style={{ fontWeight: 400, color: "rgba(20,15,30,0.15)", marginLeft: 6, textTransform: "none" }}>({TYPE_LABELS[f.field_type]})</span>
                         </label>
                         {f.field_type === "boolean" ? (
                           <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
@@ -349,7 +349,7 @@ export default function CustomFieldsPage() {
                               checked={clientValues[f.id] === "true"}
                               onChange={e => setClientValues(v => ({ ...v, [f.id]: e.target.checked ? "true" : "false" }))}
                               style={{ accentColor: "#fb0f05", width: 16, height: 16 }} />
-                            <span style={{ fontSize: 13, color: "#475569" }}>Sí</span>
+                            <span style={{ fontSize: 13, color: "#564E66" }}>Sí</span>
                           </label>
                         ) : f.field_type === "select" ? (
                           <select value={clientValues[f.id] ?? ""} onChange={e => setClientValues(v => ({ ...v, [f.id]: e.target.value }))} style={inp}>
@@ -384,7 +384,7 @@ export default function CustomFieldsPage() {
       {modal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 20, padding: 28, maxWidth: 480, width: "100%", maxHeight: "90vh", overflowY: "auto" }}>
-            <h2 style={{ margin: "0 0 20px", fontSize: 17, fontWeight: 700, color: "#1e293b" }}>
+            <h2 style={{ margin: "0 0 20px", fontSize: 17, fontWeight: 700, color: "#14111C" }}>
               {editing ? "Editar campo" : "Nuevo campo personalizado"}
             </h2>
 
@@ -393,7 +393,7 @@ export default function CustomFieldsPage() {
                 <label style={lbl}>Nombre del campo</label>
                 <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                   placeholder="Ej: Tipo de cabello, Alergia, Preferencia..." style={inp} />
-                {form.name && <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 4 }}>Clave: {slugify(form.name)}</div>}
+                {form.name && <div style={{ fontSize: 11, color: "#8E879B", marginTop: 4 }}>Clave: {slugify(form.name)}</div>}
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
@@ -426,13 +426,13 @@ export default function CustomFieldsPage() {
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                 <input type="checkbox" checked={form.required} onChange={e => setForm(f => ({ ...f, required: e.target.checked }))}
                   style={{ accentColor: "#fb0f05", width: 16, height: 16 }} />
-                <span style={{ fontSize: 13, color: "#475569" }}>Campo obligatorio</span>
+                <span style={{ fontSize: 13, color: "#564E66" }}>Campo obligatorio</span>
               </label>
 
               <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
                 <input type="checkbox" checked={form.active} onChange={e => setForm(f => ({ ...f, active: e.target.checked }))}
                   style={{ accentColor: "#fb0f05", width: 16, height: 16 }} />
-                <span style={{ fontSize: 13, color: "#475569" }}>Campo activo</span>
+                <span style={{ fontSize: 13, color: "#564E66" }}>Campo activo</span>
               </label>
             </div>
 
@@ -456,12 +456,12 @@ export default function CustomFieldsPage() {
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const lbl: React.CSSProperties = {
-  display: "block", fontSize: 11, fontWeight: 700, color: "#64748b",
+  display: "block", fontSize: 11, fontWeight: 700, color: "#564E66",
   marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em",
 };
 const inp: React.CSSProperties = {
-  width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #e2e8f0",
-  background: "#f8fafc", color: "#1e293b", fontSize: 14, boxSizing: "border-box",
+  width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
+  background: "rgba(20,15,30,0.025)", color: "#14111C", fontSize: 14, boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", outline: "none",
 };
 const btnPrimary: React.CSSProperties = {
@@ -470,11 +470,11 @@ const btnPrimary: React.CSSProperties = {
   color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer",
 };
 const btnSecondary: React.CSSProperties = {
-  padding: "9px 20px", borderRadius: 10, border: "1px solid #e2e8f0",
-  background: "transparent", color: "#64748b", fontWeight: 600, fontSize: 14, cursor: "pointer",
+  padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(20,15,30,0.08)",
+  background: "transparent", color: "#564E66", fontWeight: 600, fontSize: 14, cursor: "pointer",
 };
 const btnIcon: React.CSSProperties = {
-  width: 32, height: 32, borderRadius: 8, border: "1px solid #e2e8f0",
-  background: "#f8fafc", color: "#475569", fontSize: 13, cursor: "pointer",
+  width: 32, height: 32, borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
+  background: "rgba(20,15,30,0.025)", color: "#564E66", fontSize: 13, cursor: "pointer",
   display: "flex", alignItems: "center", justifyContent: "center",
 };

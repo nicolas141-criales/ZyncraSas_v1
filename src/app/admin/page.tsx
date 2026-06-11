@@ -233,7 +233,7 @@ function StatusPill({ status }: { status: string }) {
   const map: Record<string, { bg: string; color: string; label: string }> = {
     confirmed: { bg: "rgba(16,185,129,0.1)", color: "#059669", label: "Confirmada" },
     pending:   { bg: "rgba(245,158,11,0.12)", color: "#b45309", label: "Pendiente" },
-    completed: { bg: "rgba(100,116,139,0.1)", color: "#475569", label: "Completada" },
+    completed: { bg: "rgba(100,116,139,0.1)", color: "#564E66", label: "Completada" },
     cancelled: { bg: "rgba(239,68,68,0.1)", color: "#dc2626", label: "Cancelada" },
     no_show:   { bg: "rgba(239,68,68,0.08)", color: "#b91c1c", label: "No se presentó" },
   };
@@ -621,7 +621,7 @@ export default function AdminOverview() {
           (item.value > 0
             ? `<text x="${x + BW / 2}" y="${BH - bh - 5}" text-anchor="middle" font-size="9" fill="#8E879B" font-family="Segoe UI,sans-serif">${fmtV(item.value)}</text>`
             : "") +
-          `<text x="${x + BW / 2}" y="${BH + 14}" text-anchor="middle" font-size="10" fill="#64748b" font-family="Segoe UI,sans-serif" font-weight="600">${item.label}</text>` +
+          `<text x="${x + BW / 2}" y="${BH + 14}" text-anchor="middle" font-size="10" fill="#564E66" font-family="Segoe UI,sans-serif" font-weight="600">${item.label}</text>` +
           (item.sub ? `<text x="${x + BW / 2}" y="${BH + 26}" text-anchor="middle" font-size="9" fill="#b0abc0" font-family="Segoe UI,sans-serif">${item.sub}</text>` : "")
         );
       }).join("");
@@ -661,7 +661,7 @@ export default function AdminOverview() {
         HRS.map(h => `<div style="text-align:center;font-size:9px;color:#8E879B;font-weight:700">${h}h</div>`).join("") +
         DOW_ORDER.map(dow => {
           return (
-            `<div style="font-size:10px;color:#64748b;font-weight:700;white-space:nowrap">${DOW_LABELS[dow]}</div>` +
+            `<div style="font-size:10px;color:#564E66;font-weight:700;white-space:nowrap">${DOW_LABELS[dow]}</div>` +
             HRS.map(h => {
               const cnt = hmMatrix[dow][h];
               const op = cnt === 0 ? 0 : Math.max(0.08, (cnt / hmMax) * 0.92 + 0.08);
@@ -689,7 +689,7 @@ export default function AdminOverview() {
     // ── Donut de estados ──────────────────────────────────────────────────
     const statusItems = [
       { label: "Confirmada",    count: confirmedCount, color: "#10b981" },
-      { label: "Completada",    count: completedCount, color: "#64748b" },
+      { label: "Completada",    count: completedCount, color: "#564E66" },
       { label: "Pendiente",     count: data.pending,   color: "#f59e0b" },
       { label: "No se presentó",count: noShowCount,    color: "#dc2626" },
     ].filter(s => s.count > 0);
@@ -782,7 +782,7 @@ export default function AdminOverview() {
   .badge{display:inline-block;padding:2px 7px;border-radius:20px;font-size:9px;font-weight:700}
   .confirmed{background:rgba(16,185,129,.12);color:#059669}
   .pending{background:rgba(245,158,11,.12);color:#d97706}
-  .completed{background:rgba(100,116,139,.12);color:#475569}
+  .completed{background:rgba(100,116,139,.12);color:#564E66}
   .cancelled{background:rgba(239,68,68,.12);color:#dc2626}
   .no_show{background:rgba(220,38,38,.1);color:#b91c1c}
   .foot{margin-top:22px;text-align:center;font-size:10px;color:#c0bbc8;padding-bottom:4px}

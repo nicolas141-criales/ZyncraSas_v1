@@ -246,7 +246,7 @@ export default function ProfessionalsPage() {
                     {initials(prof.name)}
                   </div>
                 )}
-                <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, background: prof.is_active ? "rgba(16,185,129,0.1)" : "rgba(100,116,139,0.1)", color: prof.is_active ? "#10b981" : "#64748b" }}>
+                <span style={{ padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, background: prof.is_active ? "rgba(16,185,129,0.1)" : "rgba(100,116,139,0.1)", color: prof.is_active ? "#10b981" : "#564E66" }}>
                   {prof.is_active ? "Activo" : "Inactivo"}
                 </span>
               </div>

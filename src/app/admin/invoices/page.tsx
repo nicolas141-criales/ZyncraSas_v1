@@ -324,8 +324,8 @@ export default function InvoicesPage() {
     <div style={{ padding: "0 0 40px" }}>
       {/* Header */}
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Factura Electrónica DIAN</h1>
-        <p style={{ color: "#6b7280", fontSize: 14, margin: "4px 0 0" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#14111C", margin: 0 }}>Factura Electrónica DIAN</h1>
+        <p style={{ color: "#564E66", fontSize: 14, margin: "4px 0 0" }}>
           Emite facturas electrónicas validadas por la DIAN vía Factus
         </p>
       </div>
@@ -335,9 +335,9 @@ export default function InvoicesPage() {
         {(["config", "nueva", "historial"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             padding: "7px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
-            background: tab === t ? "white" : "transparent",
-            color: tab === t ? "#1a1a2e" : "#6b7280",
-            boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+            background: tab === t ? "#14111C" : "transparent",
+            color: tab === t ? "#fff" : "#564E66",
+            boxShadow: tab === t ? "0 2px 8px rgba(20,15,30,0.18)" : "none",
             transition: "all .2s",
           }}>
             {t === "config" ? "Configuración" : t === "nueva" ? "Nueva Factura" : "Historial"}
@@ -351,7 +351,7 @@ export default function InvoicesPage() {
 
           {/* Factus credentials */}
           <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)", gridColumn: "1 / -1" }}>
-            <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#14111C" }}>
               Credenciales Factus
             </h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -364,7 +364,7 @@ export default function InvoicesPage() {
                         flex: 1, padding: "8px 0", borderRadius: 8, border: "2px solid",
                         borderColor: settings.environment === env ? "#fb0f05" : "rgba(20,15,30,0.08)",
                         background: settings.environment === env ? "#fff5f5" : "white",
-                        color: settings.environment === env ? "#fb0f05" : "#6b7280",
+                        color: settings.environment === env ? "#fb0f05" : "#564E66",
                         fontWeight: 600, fontSize: 13, cursor: "pointer",
                       }}>
                       {env === "sandbox" ? "Sandbox (Pruebas)" : "Producción"}
@@ -382,7 +382,7 @@ export default function InvoicesPage() {
 
           {/* Emisor data */}
           <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)", gridColumn: "1 / -1" }}>
-            <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>
+            <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#14111C" }}>
               Datos del Emisor
             </h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
@@ -428,7 +428,7 @@ export default function InvoicesPage() {
 
             {/* Customer */}
             <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
-              <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>Datos del Cliente</h3>
+              <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#14111C" }}>Datos del Cliente</h3>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
                 <div>
                   <label style={labelStyle}>Tipo de documento</label>
@@ -463,7 +463,7 @@ export default function InvoicesPage() {
 
             {/* Items */}
             <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
-              <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>Ítems / Servicios</h3>
+              <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#14111C" }}>Ítems / Servicios</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {items.map((item, i) => (
                   <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 70px 110px 130px 28px", gap: 8, alignItems: "end" }}>
@@ -513,7 +513,7 @@ export default function InvoicesPage() {
           {/* Right column — summary */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
             <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)", position: "sticky", top: 20 }}>
-              <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#1a1a2e" }}>Resumen</h3>
+              <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700, color: "#14111C" }}>Resumen</h3>
 
               <div style={{ marginBottom: 16 }}>
                 <label style={labelStyle}>Método de pago</label>
@@ -553,7 +553,7 @@ export default function InvoicesPage() {
           ) : invoices.length === 0 ? (
             <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🧾</div>
-              <div style={{ fontWeight: 600, color: "#6b7280" }}>Sin facturas aún</div>
+              <div style={{ fontWeight: 600, color: "#564E66" }}>Sin facturas aún</div>
               <div style={{ fontSize: 13, marginTop: 4 }}>Las facturas emitidas aparecerán aquí</div>
             </div>
           ) : (
@@ -564,10 +564,10 @@ export default function InvoicesPage() {
                     style={{ padding: "14px 20px", display: "grid", gridTemplateColumns: "90px 1fr auto auto auto", gap: 12, alignItems: "center", cursor: "pointer" }}>
                     <div style={{ fontWeight: 700, color: "#fb0f05", fontSize: 14 }}>#{inv.number || "—"}</div>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{inv.customer_name}</div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "#14111C" }}>{inv.customer_name}</div>
                       <div style={{ fontSize: 12, color: "#9b9bb0" }}>{fmtDate(inv.created_at)}</div>
                     </div>
-                    <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>{fmt(inv.total)}</div>
+                    <div style={{ fontWeight: 700, fontSize: 15, color: "#14111C" }}>{fmt(inv.total)}</div>
                     <StatusBadge status={inv.status} />
                     <span style={{ color: "#9b9bb0", fontSize: 14 }}>{expandedId === inv.id ? "▲" : "▼"}</span>
                   </div>
@@ -575,13 +575,13 @@ export default function InvoicesPage() {
                     <div style={{ borderTop: "1px solid #f0f0f0", padding: "16px 20px", background: "#fafafa" }}>
                       {inv.cufe && (
                         <div style={{ marginBottom: 12 }}>
-                          <span style={{ fontSize: 12, fontWeight: 600, color: "#6b7280" }}>CUFE: </span>
-                          <span style={{ fontSize: 11, color: "#1a1a2e", wordBreak: "break-all", fontFamily: "monospace" }}>{inv.cufe}</span>
+                          <span style={{ fontSize: 12, fontWeight: 600, color: "#564E66" }}>CUFE: </span>
+                          <span style={{ fontSize: 11, color: "#14111C", wordBreak: "break-all", fontFamily: "monospace" }}>{inv.cufe}</span>
                         </div>
                       )}
                       {inv.invoice_items && inv.invoice_items.length > 0 && (
                         <div style={{ marginBottom: 12 }}>
-                          <div style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", marginBottom: 6 }}>Ítems:</div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "#564E66", marginBottom: 6 }}>Ítems:</div>
                           {inv.invoice_items.map((it, i) => (
                             <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: 13, color: "#4a4a6a", padding: "2px 0" }}>
                               <span>{it.name} × {it.quantity}</span>
@@ -611,18 +611,18 @@ export default function InvoicesPage() {
         <div style={{ position: "fixed", inset: 0, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
           <div style={{ background: "white", borderRadius: 20, padding: 32, maxWidth: 480, width: "100%", textAlign: "center" }}>
             <div style={{ fontSize: 48, marginBottom: 8 }}>✅</div>
-            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1a1a2e", margin: "0 0 8px" }}>¡Factura emitida!</h2>
-            <p style={{ color: "#6b7280", fontSize: 14, margin: "0 0 16px" }}>La factura fue enviada exitosamente a la DIAN.</p>
+            <h2 style={{ fontSize: 20, fontWeight: 700, color: "#14111C", margin: "0 0 8px" }}>¡Factura emitida!</h2>
+            <p style={{ color: "#564E66", fontSize: 14, margin: "0 0 16px" }}>La factura fue enviada exitosamente a la DIAN.</p>
             {successModal.number && (
               <div style={{ background: "#f0f9ff", borderRadius: 10, padding: "10px 16px", marginBottom: 12 }}>
-                <div style={{ fontSize: 12, color: "#6b7280" }}>Número de factura</div>
+                <div style={{ fontSize: 12, color: "#564E66" }}>Número de factura</div>
                 <div style={{ fontSize: 18, fontWeight: 700, color: "#1565c0" }}>#{successModal.number}</div>
               </div>
             )}
             {successModal.cufe && (
               <div style={{ background: "#f5f5f5", borderRadius: 10, padding: "10px 16px", marginBottom: 20 }}>
-                <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 4 }}>CUFE</div>
-                <div style={{ fontSize: 11, color: "#1a1a2e", wordBreak: "break-all", fontFamily: "monospace" }}>{successModal.cufe}</div>
+                <div style={{ fontSize: 12, color: "#564E66", marginBottom: 4 }}>CUFE</div>
+                <div style={{ fontSize: 11, color: "#14111C", wordBreak: "break-all", fontFamily: "monospace" }}>{successModal.cufe}</div>
               </div>
             )}
             <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
@@ -661,7 +661,7 @@ function Field({ label, value, onChange, type = "text" }: {
 
 function Row({ label, value, bold }: { label: string; value: string; bold?: boolean }) {
   return (
-    <div style={{ display: "flex", justifyContent: "space-between", fontSize: bold ? 15 : 13, fontWeight: bold ? 700 : 400, color: bold ? "#1a1a2e" : "#6b7280" }}>
+    <div style={{ display: "flex", justifyContent: "space-between", fontSize: bold ? 15 : 13, fontWeight: bold ? 700 : 400, color: bold ? "#14111C" : "#564E66" }}>
       <span>{label}</span><span>{value}</span>
     </div>
   );
@@ -670,12 +670,12 @@ function Row({ label, value, bold }: { label: string; value: string; bold?: bool
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const labelStyle: React.CSSProperties = {
-  display: "block", fontSize: 12, fontWeight: 600, color: "#6b7280", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em",
+  display: "block", fontSize: 12, fontWeight: 600, color: "#564E66", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em",
 };
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
-  fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box", outline: "none",
+  fontSize: 14, color: "#14111C", background: "white", boxSizing: "border-box", outline: "none",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
 

@@ -138,8 +138,8 @@ export default function ReviewsSitePage() {
   return (
     <div style={{ padding: "0 0 40px" }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Reseñas del Negocio</h1>
-        <p style={{ color: "#6b7280", fontSize: 14, margin: "4px 0 0" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#14111C", margin: 0 }}>Reseñas del Negocio</h1>
+        <p style={{ color: "#564E66", fontSize: 14, margin: "4px 0 0" }}>
           Reseñas internas de clientes verificados en tu página de agendamiento
         </p>
       </div>
@@ -149,9 +149,9 @@ export default function ReviewsSitePage() {
         {(["resumen", "resenas", "config"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             padding: "7px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
-            background: tab === t ? "white" : "transparent",
-            color: tab === t ? "#1a1a2e" : "#6b7280",
-            boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+            background: tab === t ? "#14111C" : "transparent",
+            color: tab === t ? "#fff" : "#564E66",
+            boxShadow: tab === t ? "0 2px 8px rgba(20,15,30,0.18)" : "none",
             transition: "all .2s",
           }}>
             {t === "resumen" ? "Resumen" : t === "resenas" ? `Reseñas${pending.length ? ` (${pending.length})` : ""}` : "Configuración"}
@@ -178,11 +178,11 @@ export default function ReviewsSitePage() {
               <h3 style={{ margin: "0 0 16px", fontSize: 15, fontWeight: 700 }}>Distribución de calificaciones</h3>
               {starCounts.map(({ n, count, pct }) => (
                 <div key={n} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                  <span style={{ fontSize: 13, color: "#6b7280", width: 30, textAlign: "right" }}>{n}★</span>
+                  <span style={{ fontSize: 13, color: "#564E66", width: 30, textAlign: "right" }}>{n}★</span>
                   <div style={{ flex: 1, background: "#f0f0f5", borderRadius: 6, height: 10, overflow: "hidden" }}>
                     <div style={{ width: `${pct}%`, height: "100%", background: "#f59e0b", borderRadius: 6, transition: "width .4s" }} />
                   </div>
-                  <span style={{ fontSize: 13, color: "#6b7280", width: 28 }}>{count}</span>
+                  <span style={{ fontSize: 13, color: "#564E66", width: 28 }}>{count}</span>
                 </div>
               ))}
             </div>
@@ -203,7 +203,7 @@ export default function ReviewsSitePage() {
           {approved.length === 0 && reviews.length === 0 && (
             <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>⭐</div>
-              <div style={{ fontWeight: 600, color: "#6b7280", marginBottom: 4 }}>Sin reseñas aún</div>
+              <div style={{ fontWeight: 600, color: "#564E66", marginBottom: 4 }}>Sin reseñas aún</div>
               <div style={{ fontSize: 13 }}>Comparte el link en la pestaña Configuración para empezar a recibir reseñas</div>
             </div>
           )}
@@ -219,8 +219,8 @@ export default function ReviewsSitePage() {
               <button key={f} onClick={() => setFilter(f)} style={{
                 padding: "5px 14px", borderRadius: 20, border: "none", cursor: "pointer",
                 fontSize: 12, fontWeight: 600,
-                background: filter === f ? "#1a1a2e" : "#f0f0f5",
-                color: filter === f ? "white" : "#6b7280",
+                background: filter === f ? "#14111C" : "#f0f0f5",
+                color: filter === f ? "white" : "#564E66",
               }}>
                 {f === "all" ? "Todas" : f === "pending" ? "Pendientes" : f === "approved" ? "Aprobadas" : "Rechazadas"}
               </button>
@@ -237,7 +237,7 @@ export default function ReviewsSitePage() {
                 <div key={r.id} style={{ background: "white", borderRadius: 14, padding: 20, border: "1px solid rgba(20,15,30,0.08)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
                     <div>
-                      <span style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>{r.client_name}</span>
+                      <span style={{ fontWeight: 700, fontSize: 15, color: "#14111C" }}>{r.client_name}</span>
                       {r.service && <span style={{ fontSize: 12, color: "#9b9bb0", marginLeft: 8 }}>· {r.service}</span>}
                     </div>
                     <StatusBadge status={r.status} />
@@ -290,11 +290,11 @@ export default function ReviewsSitePage() {
 
           <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
             <h3 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 700 }}>Link público de reseñas</h3>
-            <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 14px" }}>
+            <p style={{ color: "#564E66", fontSize: 13, margin: "0 0 14px" }}>
               Comparte este link con tus clientes para que dejen su reseña. Cada reseña queda pendiente hasta que la apruebes.
             </p>
             <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-              <input value={publicUrl} readOnly style={{ ...inputStyle, flex: 1, background: "#f9f9f9", color: "#6b7280" }} />
+              <input value={publicUrl} readOnly style={{ ...inputStyle, flex: 1, background: "#f9f9f9", color: "#564E66" }} />
               <button onClick={copyUrl} style={btnSecondary}>
                 {urlCopied ? "✓ Copiado" : "Copiar"}
               </button>
@@ -307,7 +307,7 @@ export default function ReviewsSitePage() {
 
           <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
             <h3 style={{ margin: "0 0 6px", fontSize: 15, fontWeight: 700 }}>Mostrar en página de agendamiento</h3>
-            <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 14px" }}>
+            <p style={{ color: "#564E66", fontSize: 13, margin: "0 0 14px" }}>
               Las reseñas aprobadas aparecerán visibles para los clientes en tu página de reservas.
             </p>
             <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
@@ -322,7 +322,7 @@ export default function ReviewsSitePage() {
                   transition: "left .2s", boxShadow: "0 1px 4px rgba(0,0,0,.2)",
                 }} />
               </div>
-              <span style={{ fontSize: 14, color: "#1a1a2e" }}>
+              <span style={{ fontSize: 14, color: "#14111C" }}>
                 {showOnBooking ? "Activado" : "Desactivado"}
               </span>
             </label>
@@ -350,8 +350,8 @@ function KpiCard({ label, value, sub, children, highlight }: {
 }) {
   return (
     <div style={{ background: highlight ? "#fffbeb" : "white", borderRadius: 14, padding: "20px 22px", border: `1px solid ${highlight ? "#fcd34d" : "rgba(20,15,30,0.08)"}` }}>
-      <div style={{ fontSize: 12, color: "#6b7280", fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
-      <div style={{ fontSize: 28, fontWeight: 700, color: "#1a1a2e", lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 12, color: "#564E66", fontWeight: 600, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</div>
+      <div style={{ fontSize: 28, fontWeight: 700, color: "#14111C", lineHeight: 1 }}>{value}</div>
       {children && <div style={{ marginTop: 4 }}>{children}</div>}
       <div style={{ fontSize: 12, color: "#9b9bb0", marginTop: 4 }}>{sub}</div>
     </div>
@@ -375,7 +375,7 @@ function ReviewCard({ review }: { review: SiteReview }) {
 
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
-  fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
+  fontSize: 14, color: "#14111C", background: "white", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
 const btnPrimary: React.CSSProperties = {

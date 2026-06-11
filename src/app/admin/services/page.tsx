@@ -329,7 +329,7 @@ export default function ServicesPage() {
                         <div style={{ display: "flex", alignItems: "flex-end", paddingBottom: "2px" }}>
                           <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
                             <input type="checkbox" checked={fieldForm.required} onChange={e => setFieldForm(f => ({ ...f, required: e.target.checked }))} style={{ accentColor: "#fb0f05", width: 15, height: 15 }} />
-                            <span style={{ fontSize: "13px", color: "#475569", fontWeight: 500 }}>Obligatorio</span>
+                            <span style={{ fontSize: "13px", color: "#564E66", fontWeight: 500 }}>Obligatorio</span>
                           </label>
                         </div>
                       </div>
@@ -360,7 +360,7 @@ export default function ServicesPage() {
                 ) : (
                   serviceFields.map((f, i) => (
                     <div key={f.id} style={{ display: "flex", alignItems: "center", gap: "10px", padding: "10px 0", borderBottom: i < serviceFields.length - 1 ? "1px solid #f0eeeb" : "none" }}>
-                      <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "#f8fafc", border: "1px solid rgba(20,15,30,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700, color: "#fb0f05", flexShrink: 0 }}>
+                      <div style={{ width: "28px", height: "28px", borderRadius: "7px", background: "rgba(20,15,30,0.025)", border: "1px solid rgba(20,15,30,0.08)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px", fontWeight: 700, color: "#fb0f05", flexShrink: 0 }}>
                         {TYPE_ICONS[f.field_type]}
                       </div>
                       <div style={{ flex: 1 }}>
@@ -368,7 +368,7 @@ export default function ServicesPage() {
                         <span style={{ fontSize: "11px", color: "#8E879B", marginLeft: "7px" }}>{TYPE_LABELS[f.field_type]}</span>
                         {f.required && <span style={{ fontSize: "10px", fontWeight: 700, marginLeft: "6px", padding: "1px 6px", borderRadius: "20px", background: "rgba(251,15,5,0.08)", color: "#fb0f05" }}>Obligatorio</span>}
                       </div>
-                      <button onClick={() => removeServiceField(f.id)} style={{ width: "28px", height: "28px", borderRadius: "7px", border: "1px solid rgba(20,15,30,0.08)", background: "#f8fafc", cursor: "pointer", fontSize: "12px", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <button onClick={() => removeServiceField(f.id)} style={{ width: "28px", height: "28px", borderRadius: "7px", border: "1px solid rgba(20,15,30,0.08)", background: "rgba(20,15,30,0.025)", cursor: "pointer", fontSize: "12px", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <IconX size={12} />
                       </button>
                     </div>

@@ -45,8 +45,8 @@ function StatusBadge({ status }: { status: string }) {
     active:    { label: "Activo",     bg: "rgba(52,211,153,.15)",  color: "#34d399" },
     trial:     { label: "Trial",      bg: "rgba(251,191,36,.15)",  color: "#fbbf24" },
     overdue:   { label: "Vencido",    bg: "rgba(248,113,113,.15)", color: "#f87171" },
-    suspended: { label: "Suspendido", bg: "rgba(148,163,184,.1)",  color: "#94a3b8" },
-    cancelled: { label: "Cancelado",  bg: "rgba(148,163,184,.1)",  color: "#94a3b8" },
+    suspended: { label: "Suspendido", bg: "rgba(148,163,184,.1)",  color: "rgba(255,255,255,0.55)" },
+    cancelled: { label: "Cancelado",  bg: "rgba(148,163,184,.1)",  color: "rgba(255,255,255,0.55)" },
   };
   const s = map[status] ?? map.trial;
   return (
@@ -177,21 +177,21 @@ export default function PlatformClientsPage() {
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 800, color: "#f1f5f9", margin: 0 }}>Clientes</h1>
-        <p style={{ color: "#475569", fontSize: 14, margin: "4px 0 0" }}>Todos los negocios registrados en Zyncra</p>
+        <h1 style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,0.94)", margin: 0 }}>Clientes</h1>
+        <p style={{ color: "rgba(255,255,255,0.32)", fontSize: 14, margin: "4px 0 0" }}>Todos los negocios registrados en Zyncra</p>
       </div>
 
       {/* Filters */}
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         <input value={search} onChange={e => setSearch(e.target.value)}
           placeholder="Buscar negocio..."
-          style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid #1e293b", background: "#1e293b", color: "#e2e8f0", fontSize: 13, width: 220, outline: "none" }} />
+          style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.92)", fontSize: 13, width: 220, outline: "none" }} />
         <div style={{ display: "flex", gap: 4 }}>
           {(["all", "active", "trial", "overdue", "suspended"] as StatusFilter[]).map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               padding: "7px 14px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600,
-              background: filter === f ? "#7c3aed" : "#1e293b",
-              color: filter === f ? "white" : "#64748b",
+              background: filter === f ? "#fb0f05" : "rgba(255,255,255,0.08)",
+              color: filter === f ? "white" : "rgba(255,255,255,0.42)",
             }}>
               {f === "all" ? "Todos" : f === "active" ? "Activos" : f === "trial" ? "Trial" : f === "overdue" ? "Vencidos" : "Suspendidos"}
             </button>
@@ -201,40 +201,40 @@ export default function PlatformClientsPage() {
 
       {/* Table */}
       {loading ? (
-        <div style={{ textAlign: "center", padding: 60, color: "#475569" }}>Cargando...</div>
+        <div style={{ textAlign: "center", padding: 60, color: "rgba(255,255,255,0.32)" }}>Cargando...</div>
       ) : (
-        <div style={{ background: "#1e293b", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
+        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: "#0f172a" }}>
+              <tr style={{ background: "#10101B" }}>
                 {["Negocio", "Estado", "Plan / Monto", "Clientes", "Citas", "Registrado", ""].map(h => (
-                  <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "#475569", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
+                  <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
               {filtered.length === 0 && (
-                <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "#475569" }}>Sin resultados</td></tr>
+                <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "rgba(255,255,255,0.32)" }}>Sin resultados</td></tr>
               )}
               {filtered.map((t, i) => (
                 <tr key={t.id} style={{ borderTop: "1px solid rgba(255,255,255,0.04)", background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
                   <td style={{ padding: "14px 16px" }}>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: "#f1f5f9" }}>{t.name}</div>
-                    <div style={{ fontSize: 11, color: "#475569", marginTop: 2 }}>/{t.slug}</div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: "rgba(255,255,255,0.94)" }}>{t.name}</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", marginTop: 2 }}>/{t.slug}</div>
                   </td>
                   <td style={{ padding: "14px 16px" }}>
                     <StatusBadge status={t.subscription?.status ?? "trial"} />
                   </td>
                   <td style={{ padding: "14px 16px" }}>
-                    <div style={{ fontSize: 13, color: "#94a3b8" }}>{t.subscription?.plan_name ?? "Sin plan"}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: "#a78bfa" }}>{t.subscription?.amount ? fmt(t.subscription.amount) + "/mes" : "—"}</div>
+                    <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{t.subscription?.plan_name ?? "Sin plan"}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#ff7d72" }}>{t.subscription?.amount ? fmt(t.subscription.amount) + "/mes" : "—"}</div>
                   </td>
-                  <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 600, color: "#e2e8f0", textAlign: "center" }}>{t.usage.clients}</td>
-                  <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 600, color: "#e2e8f0", textAlign: "center" }}>{t.usage.appointments}</td>
-                  <td style={{ padding: "14px 16px", fontSize: 12, color: "#64748b" }}>{fmtDate(t.created_at)}</td>
+                  <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.92)", textAlign: "center" }}>{t.usage.clients}</td>
+                  <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.92)", textAlign: "center" }}>{t.usage.appointments}</td>
+                  <td style={{ padding: "14px 16px", fontSize: 12, color: "rgba(255,255,255,0.42)" }}>{fmtDate(t.created_at)}</td>
                   <td style={{ padding: "14px 16px" }}>
                     <button onClick={() => openEdit(t)}
-                      style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid #334155", background: "transparent", color: "#a78bfa", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                      style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "#ff7d72", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                       Editar
                     </button>
                   </td>
@@ -248,9 +248,9 @@ export default function PlatformClientsPage() {
       {/* Edit Modal */}
       {editModal && selected && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div style={{ background: "#1e293b", borderRadius: 20, padding: 28, maxWidth: 460, width: "100%", border: "1px solid #334155" }}>
-            <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "#f1f5f9" }}>{selected.name}</h2>
-            <p style={{ margin: "0 0 20px", fontSize: 13, color: "#64748b" }}>Registrado el {fmtDate(selected.created_at)}</p>
+          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 28, maxWidth: 460, width: "100%", border: "1px solid rgba(255,255,255,0.14)" }}>
+            <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>{selected.name}</h2>
+            <p style={{ margin: "0 0 20px", fontSize: 13, color: "rgba(255,255,255,0.42)" }}>Registrado el {fmtDate(selected.created_at)}</p>
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
@@ -275,10 +275,10 @@ export default function PlatformClientsPage() {
             </div>
 
             <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
-              <button onClick={() => setEditModal(false)} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid #334155", background: "transparent", color: "#64748b", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+              <button onClick={() => setEditModal(false)} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.42)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
                 Cancelar
               </button>
-              <button onClick={saveEdit} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#7c3aed", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+              <button onClick={saveEdit} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#fb0f05", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
                 {saving ? "Guardando..." : "Guardar cambios"}
               </button>
             </div>
@@ -290,11 +290,11 @@ export default function PlatformClientsPage() {
 }
 
 const lbl: React.CSSProperties = {
-  display: "block", fontSize: 11, fontWeight: 700, color: "#64748b",
+  display: "block", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.42)",
   marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.06em",
 };
 const inp: React.CSSProperties = {
-  width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #334155",
-  background: "#0f172a", color: "#e2e8f0", fontSize: 14, boxSizing: "border-box",
-  fontFamily: "'Plus Jakarta Sans', sans-serif",
+  width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)",
+  background: "#10101B", color: "rgba(255,255,255,0.92)", fontSize: 14, boxSizing: "border-box",
+  fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
 };

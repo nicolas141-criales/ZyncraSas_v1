@@ -624,7 +624,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   /* ─── Loading ─── */
   if (loadingData) {
     return (
-      <main style={{ minHeight: "100vh", background: "#f7f5f2", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+      <main style={{ minHeight: "100vh", background: "#f7f5f2", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{
             width: "52px", height: "52px", borderRadius: "50%",
@@ -640,7 +640,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   /* ─── Not found ─── */
   if (notFound) {
     return (
-      <main style={{ minHeight: "100vh", background: "#f7f5f2", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Plus Jakarta Sans', sans-serif", padding: "24px" }}>
+      <main style={{ minHeight: "100vh", background: "#f7f5f2", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif", padding: "24px" }}>
         <div style={{ textAlign: "center", maxWidth: "360px" }}>
           <div style={{ fontSize: "48px", marginBottom: "16px" }}>🔍</div>
           <h2 style={{ fontSize: "20px", fontWeight: 800, color: "#111118", marginBottom: "8px" }}>Negocio no encontrado</h2>
@@ -733,10 +733,10 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                       onChange={e => setReviewComment(e.target.value)}
                       placeholder="Cuéntanos cómo fue (opcional)..."
                       rows={2}
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #e8e6e2", fontSize: 13, fontFamily: "'Plus Jakarta Sans', sans-serif", resize: "none", boxSizing: "border-box", outline: "none", marginBottom: 10 }}
+                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #e8e6e2", fontSize: 13, fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif", resize: "none", boxSizing: "border-box", outline: "none", marginBottom: 10 }}
                     />
                     <button onClick={handleReviewSubmit} disabled={submittingReview}
-                      style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+                      style={{ width: "100%", padding: "11px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${primaryColor}, ${secondaryColor})`, color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
                       {submittingReview ? "Enviando..." : "Enviar reseña"}
                     </button>
                   </>

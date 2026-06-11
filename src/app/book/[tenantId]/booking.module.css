@@ -773,3 +773,82 @@
     padding: 10px 2px;
   }
 }
+
+/* ─────────────────────────────────────────────────────
+   Capa de polish — tipografía Zyncra, glass y motion
+   (al final del archivo: gana a reglas de igual especificidad)
+   ───────────────────────────────────────────────────── */
+@keyframes bkFadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes bkPop { 0% { transform: scale(0.6); opacity: 0; } 65% { transform: scale(1.07); } 100% { transform: scale(1); opacity: 1; } }
+@keyframes bkRing { 0% { transform: scale(0.7); opacity: 0.8; } 100% { transform: scale(1.9); opacity: 0; } }
+
+.pageWrapper {
+  font-family: var(--font-space-grotesk), "Space Grotesk", "Plus Jakarta Sans", sans-serif;
+}
+
+.timeSlot { font-family: inherit; }
+
+.header { animation: bkFadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.progressBar { animation: bkFadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both 0.08s; }
+.logoWrap { box-shadow: 0 10px 36px rgba(0, 0, 0, 0.16); }
+.businessName { font-weight: 700; }
+.stepTitle { font-weight: 700; }
+
+/* Tarjeta de paso: vidrio sobre el lienzo tintado del negocio */
+.card {
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(22px) saturate(1.5);
+  -webkit-backdrop-filter: blur(22px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 8px 36px rgba(20, 15, 30, 0.07);
+  animation: bkFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both 0.1s;
+}
+
+/* Entrada escalonada de servicios */
+.serviceList .serviceRow:nth-child(1) { animation: bkFadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both 0.05s; }
+.serviceList .serviceRow:nth-child(2) { animation: bkFadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both 0.1s; }
+.serviceList .serviceRow:nth-child(3) { animation: bkFadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both 0.15s; }
+.serviceList .serviceRow:nth-child(4) { animation: bkFadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both 0.2s; }
+.serviceList .serviceRow:nth-child(5) { animation: bkFadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both 0.25s; }
+.serviceList .serviceRow:nth-child(n+6) { animation: bkFadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1) both 0.3s; }
+
+/* Feedback táctil al presionar */
+.serviceRow:active { transform: scale(0.985); }
+.timeSlot:active { transform: scale(0.95); }
+.profCard:active { transform: scale(0.97); }
+.calDay:active:not(:disabled) { transform: scale(0.92); }
+.calNavBtn:active:not(:disabled) { transform: scale(0.92); }
+.whatsappBtn:active, .bookAgainBtn:active { transform: scale(0.975); }
+
+/* Pop al seleccionar */
+.serviceRowSelected { animation: bkPop 0.26s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.timeSlotSel { animation: bkPop 0.22s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.profCardSel { animation: bkPop 0.26s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.calDaySelected { animation: bkPop 0.22s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* Inputs con halo del color de marca del negocio */
+.inputField { transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease; }
+.inputField:focus { box-shadow: 0 0 0 3px var(--accent-tint); }
+
+/* Confirmación: el momento de celebración */
+.confirmIcon { animation: bkPop 0.5s cubic-bezier(0.22, 1, 0.36, 1) both 0.1s; position: relative; }
+.confirmIcon::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-blue);
+  animation: bkRing 1s ease-out 0.4s both;
+  pointer-events: none;
+}
+.confirmTitle { animation: bkFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both 0.22s; }
+.confirmSubtitle { animation: bkFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both 0.3s; }
+.confirmSummary { animation: bkFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both 0.38s; }
+.confirmActions { animation: bkFadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both 0.46s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .header, .progressBar, .card, .serviceList .serviceRow,
+  .serviceRowSelected, .timeSlotSel, .profCardSel, .calDaySelected,
+  .confirmIcon, .confirmIcon::after, .confirmTitle, .confirmSubtitle,
+  .confirmSummary, .confirmActions { animation: none !important; }
+}

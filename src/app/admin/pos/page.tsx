@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconCreditCard, IconPlus, IconX, IconSearch } from "../ZyncraIcons";
+import { useCountUp, MONO } from "../charts";
 
 interface LinkedApt {
   id: string;
@@ -268,6 +269,7 @@ export default function PosPage() {
     ? (subtotal * Math.min(discountVal, 100)) / 100
     : Math.min(discountVal, subtotal);
   const total = Math.max(subtotal - discountAmount, 0);
+  const totalAnim = useCountUp(total, 420);
 
   // ── Charge ──
   const handleCharge = async () => {
@@ -461,17 +463,33 @@ export default function PosPage() {
                   {filtered.map(svc => {
                     const inCart = cart.find(i => i.serviceId === svc.id);
                     return (
-                      <button key={svc.id} onClick={() => addToCart(svc)} style={{
-                        background: "white", borderRadius: 16, padding: "16px 18px",
-                        border: inCart ? "2px solid rgba(251,15,5,0.4)" : "1.5px solid rgba(20,15,30,0.08)",
-                        cursor: "pointer", textAlign: "left", transition: "all 0.15s",
-                        boxShadow: inCart ? "0 0 0 3px rgba(251,15,5,0.08)" : "none",
-                        fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-                      }}>
+                      <button key={svc.id} onClick={() => addToCart(svc)}
+                        onMouseDown={e => { e.currentTarget.style.transform = "scale(0.965)"; }}
+                        onMouseUp={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = inCart ? "0 0 0 3px rgba(251,15,5,0.08), 0 8px 20px rgba(20,15,30,0.08)" : "0 8px 20px rgba(20,15,30,0.08)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = inCart ? "0 0 0 3px rgba(251,15,5,0.08)" : "none"; }}
+                        style={{
+                          background: "white", borderRadius: 16, padding: "16px 18px",
+                          border: inCart ? "2px solid rgba(251,15,5,0.4)" : "1.5px solid rgba(20,15,30,0.08)",
+                          cursor: "pointer", textAlign: "left",
+                          transition: "transform .14s ease, box-shadow .18s ease, border-color .15s",
+                          boxShadow: inCart ? "0 0 0 3px rgba(251,15,5,0.08)" : "none",
+                          fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                        }}>
                         <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C", marginBottom: 6 }}>{svc.name}</div>
-                        <div style={{ fontSize: 18, fontWeight: 700, color: "#14111C" }}>{fmt(svc.price)}</div>
-                        <div style={{ fontSize: 11, color: "#8E879B", marginTop: 4 }}>{svc.duration_minutes} min</div>
-                        {inCart && <div style={{ marginTop: 8, fontSize: 11, fontWeight: 700, color: "#fb0f05" }}>× {inCart.qty} en carrito</div>}
+                        <div style={{ fontSize: 18, fontWeight: 700, color: "#14111C", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.4px" }}>{fmt(svc.price)}</div>
+                        <div style={{ fontSize: 10.5, color: "#8E879B", marginTop: 4, fontFamily: MONO }}>{svc.duration_minutes} min</div>
+                        {inCart && (
+                          <div key={inCart.qty} style={{
+                            marginTop: 8, fontSize: 10, fontWeight: 700, color: "white",
+                            background: "linear-gradient(135deg, #fb0f05, #0027fe)",
+                            display: "inline-flex", alignItems: "center", gap: 4,
+                            padding: "3px 9px", borderRadius: 20, fontFamily: MONO,
+                            animation: "znPop .3s cubic-bezier(.22,1,.36,1) both",
+                          }}>
+                            × {inCart.qty} en carrito
+                          </div>
+                        )}
                       </button>
                     );
                   })}
@@ -540,8 +558,15 @@ export default function PosPage() {
               <div style={{ width: 32, height: 32, borderRadius: 9, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                 <IconCreditCard size={16} />
               </div>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>
-                Carrito {cart.length > 0 && <span style={{ color: "#fb0f05" }}>({cart.length})</span>}
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C", display: "flex", alignItems: "center", gap: 7 }}>
+                Carrito
+                {cart.length > 0 && (
+                  <span key={cart.length} style={{
+                    background: "#14111C", color: "white", fontFamily: MONO, fontSize: 10.5,
+                    fontWeight: 700, borderRadius: 20, padding: "2px 8px", lineHeight: 1.4,
+                    display: "inline-block", animation: "znPop .3s cubic-bezier(.22,1,.36,1) both",
+                  }}>{cart.length}</span>
+                )}
               </div>
             </div>
 
@@ -611,14 +636,14 @@ export default function PosPage() {
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {cart.map(item => (
-                    <div key={item.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, background: "rgba(20,15,30,0.025)" }}>
+                    <div key={item.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", borderRadius: 10, background: "rgba(20,15,30,0.025)", animation: "znFadeUp .28s cubic-bezier(.22,1,.36,1) both" }}>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 600, fontSize: 12, color: "#14111C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.name}</div>
-                        <div style={{ fontSize: 11, color: "#8E879B" }}>{fmt(item.price)} c/u</div>
+                        <div style={{ fontSize: 10.5, color: "#8E879B", fontFamily: MONO }}>{fmt(item.price)} c/u</div>
                       </div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid rgba(20,15,30,0.08)", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>-</button>
-                        <span style={{ fontSize: 13, fontWeight: 700, color: "#14111C", minWidth: 18, textAlign: "center" }}>{item.qty}</span>
+                        <button onClick={() => updateQty(item.key, -1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid rgba(20,15,30,0.08)", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center", transition: "border-color .12s" }}>-</button>
+                        <span key={item.qty} style={{ fontSize: 12.5, fontWeight: 700, color: "#14111C", minWidth: 18, textAlign: "center", fontFamily: MONO, display: "inline-block", animation: "znPop .25s cubic-bezier(.22,1,.36,1) both" }}>{item.qty}</span>
                         <button onClick={() => updateQty(item.key, 1)} style={{ width: 26, height: 26, borderRadius: 7, border: "1px solid rgba(20,15,30,0.08)", background: "white", cursor: "pointer", fontSize: 16, fontWeight: 700, color: "#564E66", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
                         <button onClick={() => removeItem(item.key)} style={{ width: 26, height: 26, borderRadius: 7, border: "none", background: "rgba(239,68,68,0.08)", cursor: "pointer", color: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
                           <IconX size={12} />
@@ -660,18 +685,18 @@ export default function PosPage() {
                 <div style={{ borderTop: "1px solid #f0eeeb", paddingTop: 14 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
                     <span style={{ color: "#564E66" }}>Subtotal</span>
-                    <span style={{ fontWeight: 600, color: "#14111C" }}>{fmt(subtotal)}</span>
+                    <span style={{ fontWeight: 600, color: "#14111C", fontFamily: MONO, fontSize: 12.5 }}>{fmt(subtotal)}</span>
                   </div>
                   {discountAmount > 0 && (
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13, marginBottom: 6 }}>
                       <span style={{ color: "#564E66" }}>Descuento</span>
-                      <span style={{ fontWeight: 600, color: "#ef4444" }}>-{fmt(discountAmount)}</span>
+                      <span style={{ fontWeight: 600, color: "#ef4444", fontFamily: MONO, fontSize: 12.5 }}>-{fmt(discountAmount)}</span>
                     </div>
                   )}
-                  <div style={{ display: "flex", justifyContent: "space-between", fontSize: 20, fontWeight: 700, marginTop: 4 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", fontSize: 20, fontWeight: 700, marginTop: 4 }}>
                     <span style={{ color: "#14111C" }}>Total</span>
-                    <span style={{ color: "#14111C" }}>
-                      {fmt(total)}
+                    <span style={{ color: "#14111C", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.5px" }}>
+                      {fmt(totalAnim)}
                     </span>
                   </div>
                 </div>

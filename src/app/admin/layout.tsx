@@ -41,6 +41,7 @@ const ZN_KEYFRAMES = `
 @keyframes znSpin { to { transform: rotate(360deg) } }
 @keyframes znProgress { 0% { width: 0% } 80% { width: 85% } 100% { width: 100% } }
 @keyframes znPulse { 0%,100% { opacity: .4 } 50% { opacity: 1 } }
+@keyframes znPop { 0% { transform: scale(.55); opacity: 0 } 65% { transform: scale(1.12) } 100% { transform: scale(1); opacity: 1 } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }

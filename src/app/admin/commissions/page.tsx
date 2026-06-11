@@ -486,7 +486,7 @@ export default function CommissionsPage() {
                         {rule.type === "percentage" ? `${rule.value}%` : `${fmt(rule.value)} / cita`}
                       </span>
                     ) : (
-                      <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "rgba(100,116,139,0.1)", color: "#94a3b8" }}>Sin configurar</span>
+                      <span style={{ padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: "rgba(100,116,139,0.1)", color: "#8E879B" }}>Sin configurar</span>
                     )}
                     <button onClick={() => openEdit(prof)} style={{
                       padding: "7px 16px", borderRadius: 9, border: "1.5px solid rgba(251,15,5,0.3)",

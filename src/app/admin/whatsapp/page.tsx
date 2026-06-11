@@ -214,8 +214,8 @@ export default function WhatsappPage() {
   return (
     <div style={{ padding: "0 0 40px" }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Marketing WhatsApp</h1>
-        <p style={{ color: "#6b7280", fontSize: 14, margin: "4px 0 0" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#14111C", margin: 0 }}>Marketing WhatsApp</h1>
+        <p style={{ color: "#564E66", fontSize: 14, margin: "4px 0 0" }}>
           Envía campañas segmentadas a tus clientes directamente por WhatsApp
         </p>
       </div>
@@ -225,9 +225,9 @@ export default function WhatsappPage() {
         {(["nueva", "plantillas", "historial"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             padding: "7px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
-            background: tab === t ? "white" : "transparent",
-            color: tab === t ? "#1a1a2e" : "#6b7280",
-            boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+            background: tab === t ? "#14111C" : "transparent",
+            color: tab === t ? "#fff" : "#564E66",
+            boxShadow: tab === t ? "0 2px 8px rgba(20,15,30,0.18)" : "none",
             transition: "all .2s",
           }}>
             {t === "nueva" ? "Nueva Campaña" : t === "plantillas" ? "Plantillas" : "Historial"}
@@ -258,7 +258,7 @@ export default function WhatsappPage() {
                   <label key={s} style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", padding: "10px 14px", borderRadius: 10, border: "2px solid", borderColor: segment === s ? "#fb0f05" : "rgba(20,15,30,0.08)", background: segment === s ? "#fff5f5" : "white", transition: "all .15s" }}>
                     <input type="radio" name="segment" value={s} checked={segment === s} onChange={() => setSegment(s)} style={{ accentColor: "#fb0f05" }} />
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "#14111C" }}>
                         {s === "all" ? "Todos los clientes" : s === "active" ? "Clientes activos" : "Clientes inactivos"}
                       </div>
                       <div style={{ fontSize: 12, color: "#9b9bb0" }}>
@@ -322,15 +322,15 @@ export default function WhatsappPage() {
             <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
               <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 700 }}>Vista previa</h3>
               {/* WhatsApp chat bubble */}
-              <div style={{ background: "#e9fbe6", borderRadius: "0 12px 12px 12px", padding: "12px 14px", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", color: "#1a1a2e", minHeight: 80, wordBreak: "break-word" }}>
+              <div style={{ background: "#e9fbe6", borderRadius: "0 12px 12px 12px", padding: "12px 14px", fontSize: 13, lineHeight: 1.7, whiteSpace: "pre-wrap", color: "#14111C", minHeight: 80, wordBreak: "break-word" }}>
                 {preview || <span style={{ color: "#9b9bb0" }}>Escribe un mensaje para ver la vista previa...</span>}
               </div>
               <div style={{ textAlign: "right", fontSize: 11, color: "#9b9bb0", marginTop: 4 }}>
                 Ahora ✓✓
               </div>
               <div style={{ marginTop: 16, padding: "10px 14px", background: "#f0f0f5", borderRadius: 10 }}>
-                <div style={{ fontSize: 11, fontWeight: 600, color: "#6b7280", marginBottom: 4 }}>Destinatarios</div>
-                <div style={{ fontSize: 13, color: "#1a1a2e" }}>{SEGMENT_LABEL[segment]}</div>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "#564E66", marginBottom: 4 }}>Destinatarios</div>
+                <div style={{ fontSize: 13, color: "#14111C" }}>{SEGMENT_LABEL[segment]}</div>
               </div>
             </div>
 
@@ -359,7 +359,7 @@ export default function WhatsappPage() {
           ) : templates.length === 0 ? (
             <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>📝</div>
-              <div style={{ fontWeight: 600, color: "#6b7280" }}>Sin plantillas</div>
+              <div style={{ fontWeight: 600, color: "#564E66" }}>Sin plantillas</div>
               <div style={{ fontSize: 13, marginTop: 4 }}>Guarda mensajes para reutilizarlos fácilmente</div>
             </div>
           ) : (
@@ -368,7 +368,7 @@ export default function WhatsappPage() {
                 <div key={t.id} style={{ background: "white", borderRadius: 14, padding: 20, border: "1px solid rgba(20,15,30,0.08)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>{t.name}</div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: "#14111C" }}>{t.name}</div>
                       <div style={{ fontSize: 12, color: "#9b9bb0" }}>{fmtDate(t.created_at)}</div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -400,7 +400,7 @@ export default function WhatsappPage() {
           ) : campaigns.length === 0 ? (
             <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>📣</div>
-              <div style={{ fontWeight: 600, color: "#6b7280" }}>Sin campañas aún</div>
+              <div style={{ fontWeight: 600, color: "#564E66" }}>Sin campañas aún</div>
               <div style={{ fontSize: 13, marginTop: 4 }}>Las campañas enviadas aparecerán aquí</div>
             </div>
           ) : (
@@ -409,7 +409,7 @@ export default function WhatsappPage() {
                 <div key={c.id} style={{ background: "white", borderRadius: 14, padding: "16px 20px", border: "1px solid rgba(20,15,30,0.08)" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                     <div>
-                      <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>{c.name}</div>
+                      <div style={{ fontWeight: 700, fontSize: 15, color: "#14111C" }}>{c.name}</div>
                       <div style={{ fontSize: 12, color: "#9b9bb0", marginTop: 2 }}>
                         {SEGMENT_LABEL[c.segment] ?? c.segment} · {fmtDate(c.created_at)}
                       </div>
@@ -427,7 +427,7 @@ export default function WhatsappPage() {
                       </span>
                     </div>
                   </div>
-                  <div style={{ marginTop: 10, background: "#f7f7fa", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#6b7280", whiteSpace: "pre-wrap", maxHeight: 60, overflow: "hidden" }}>
+                  <div style={{ marginTop: 10, background: "#f7f7fa", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#564E66", whiteSpace: "pre-wrap", maxHeight: 60, overflow: "hidden" }}>
                     {c.message}
                   </div>
                 </div>
@@ -447,7 +447,7 @@ export default function WhatsappPage() {
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
                   <h2 style={{ margin: 0, fontSize: 17, fontWeight: 700 }}>Enviar campaña</h2>
-                  <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>
+                  <p style={{ margin: "4px 0 0", fontSize: 13, color: "#564E66" }}>
                     {sentSet.size} de {sendModal.clients.length} enviados
                   </p>
                 </div>
@@ -468,7 +468,7 @@ export default function WhatsappPage() {
                 return (
                   <div key={client.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 0", borderBottom: "1px solid #f7f7f7" }}>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: sent ? "#9b9bb0" : "#1a1a2e" }}>{client.name}</div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: sent ? "#9b9bb0" : "#14111C" }}>{client.name}</div>
                       <div style={{ fontSize: 12, color: "#9b9bb0" }}>{client.phone}</div>
                     </div>
                     {sent ? (
@@ -504,12 +504,12 @@ export default function WhatsappPage() {
 // ── Styles ────────────────────────────────────────────────────────────────────
 
 const labelStyle: React.CSSProperties = {
-  display: "block", fontSize: 12, fontWeight: 600, color: "#6b7280",
+  display: "block", fontSize: 12, fontWeight: 600, color: "#564E66",
   marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em",
 };
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
-  fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
+  fontSize: 14, color: "#14111C", background: "white", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
 const btnPrimary: React.CSSProperties = {

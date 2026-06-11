@@ -148,7 +148,7 @@ const inputStyle: React.CSSProperties = {
   borderRadius: 8,
   border: "1px solid rgba(20,15,30,0.08)",
   fontSize: 14,
-  color: "#1a1a2e",
+  color: "#14111C",
   background: "white",
   boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
@@ -176,7 +176,7 @@ const btnGhost: React.CSSProperties = {
   borderRadius: 10,
   border: "1px solid rgba(20,15,30,0.08)",
   background: "white",
-  color: "#6b7280",
+  color: "#564E66",
   fontWeight: 600,
   fontSize: 13,
   cursor: "pointer",
@@ -496,10 +496,10 @@ export default function RemindersPage() {
               WhatsApp
             </span>
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#1a1a2e", margin: "0 0 6px", letterSpacing: "-0.03em" }}>
+          <h1 style={{ fontSize: 24, fontWeight: 700, color: "#14111C", margin: "0 0 6px", letterSpacing: "-0.03em" }}>
             Recordatorios
           </h1>
-          <p style={{ color: "#6b7280", fontSize: 14, margin: 0 }}>
+          <p style={{ color: "#564E66", fontSize: 14, margin: 0 }}>
             {"Envía recordatorios de cita a tus clientes por WhatsApp"}
           </p>
         </div>
@@ -515,9 +515,9 @@ export default function RemindersPage() {
               padding: "9px 0", borderRadius: 9, border: "none", cursor: "pointer",
               fontSize: 13, fontWeight: 600, transition: "all .2s",
               display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
-              background: tab === t ? "white" : "transparent",
-              color:      tab === t ? "#1a1a2e" : "#6b7280",
-              boxShadow:  tab === t ? "0 1px 4px rgba(0,0,0,.1)" : "none",
+              background: tab === t ? "#14111C" : "transparent",
+              color:      tab === t ? "#fff" : "#564E66",
+              boxShadow:  tab === t ? "0 2px 8px rgba(20,15,30,0.18)" : "none",
             }}>
               {t === "proximas"
                 ? <><IconCalendar size={13} /> Próximas</>
@@ -537,7 +537,7 @@ export default function RemindersPage() {
               background: "white", borderRadius: 12, padding: "12px 16px",
               border: "1px solid rgba(20,15,30,0.08)",
             }}>
-              <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>
+              <span style={{ fontSize: 12, color: "#564E66", fontWeight: 700, textTransform: "uppercase", letterSpacing: ".05em" }}>
                 {"Período"}
               </span>
               <div style={{ display: "flex", gap: 6 }}>
@@ -546,7 +546,7 @@ export default function RemindersPage() {
                     padding: "5px 14px", borderRadius: 20, border: "none", cursor: "pointer",
                     fontSize: 12, fontWeight: 600,
                     background: daysAhead === d ? "#fb0f05" : "#f0f0f5",
-                    color:      daysAhead === d ? "white"   : "#6b7280",
+                    color:      daysAhead === d ? "white"   : "#564E66",
                   }}>
                     {d === 0 ? "Hoy" : `${d} días`}
                   </button>
@@ -560,7 +560,7 @@ export default function RemindersPage() {
                   style={{
                     ...inputStyle, width: "auto", padding: "5px 10px", fontSize: 12,
                     fontWeight: 600, cursor: "pointer",
-                    color: profFilter === "all" ? "#6b7280" : "#1a1a2e",
+                    color: profFilter === "all" ? "#564E66" : "#14111C",
                   }}
                 >
                   <option value="all">{"Todos los profesionales"}</option>
@@ -585,9 +585,9 @@ export default function RemindersPage() {
             ) : filteredAppts.length === 0 ? (
               <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 12, opacity: 0.35 }}>
-                  <IconCalendar size={48} color="#6b7280" />
+                  <IconCalendar size={48} color="#564E66" />
                 </div>
-                <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>{"Sin citas próximas"}</div>
+                <div style={{ fontWeight: 700, color: "#564E66", fontSize: 15 }}>{"Sin citas próximas"}</div>
                 <div style={{ fontSize: 13, marginTop: 4 }}>{"No hay citas en el período seleccionado"}</div>
               </div>
             ) : (
@@ -595,7 +595,7 @@ export default function RemindersPage() {
                 {Object.entries(grouped).map(([date, appts]) => (
                   <div key={date}>
                     <div style={{
-                      fontSize: 11, fontWeight: 700, color: "#6b7280", marginBottom: 10,
+                      fontSize: 11, fontWeight: 700, color: "#564E66", marginBottom: 10,
                       textTransform: "uppercase", letterSpacing: "0.07em",
                       display: "flex", alignItems: "center", gap: 8,
                     }}>
@@ -617,7 +617,7 @@ export default function RemindersPage() {
                             {/* Client info */}
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 3, flexWrap: "wrap" }}>
-                                <span style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>
+                                <span style={{ fontWeight: 700, fontSize: 15, color: "#14111C" }}>
                                   {appt.clients?.name ?? "—"}
                                 </span>
                                 <span style={{ fontSize: 12, color: "#9b9bb0", fontWeight: 600 }}>
@@ -629,7 +629,7 @@ export default function RemindersPage() {
                                   </span>
                                 )}
                               </div>
-                              <div style={{ fontSize: 13, color: "#6b7280" }}>
+                              <div style={{ fontSize: 13, color: "#564E66" }}>
                                 {appt.services?.name ?? "—"}
                                 {appt.professionals?.name ? ` · ${appt.professionals.name}` : ""}
                               </div>
@@ -639,7 +639,7 @@ export default function RemindersPage() {
                                 </div>
                               )}
                               {hasEmail && (
-                                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                                <div style={{ fontSize: 12, color: "#564E66", marginTop: 2 }}>
                                   {appt.clients!.email}
                                 </div>
                               )}
@@ -748,10 +748,10 @@ export default function RemindersPage() {
           <div>
             {/* Anticipacion */}
             <div style={{ ...card, marginBottom: 16 }}>
-              <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e", marginBottom: 4 }}>
+              <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C", marginBottom: 4 }}>
                 {"Anticipación del recordatorio"}
               </div>
-              <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 12 }}>
+              <div style={{ fontSize: 12, color: "#564E66", marginBottom: 12 }}>
                 {"Cuántas horas antes se envía"}
               </div>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
@@ -760,7 +760,7 @@ export default function RemindersPage() {
                     padding: "6px 16px", borderRadius: 20, border: "none", cursor: "pointer",
                     fontSize: 13, fontWeight: 600,
                     background: settings.hours_before === h ? "#fb0f05" : "#f0f0f5",
-                    color:      settings.hours_before === h ? "white"   : "#6b7280",
+                    color:      settings.hours_before === h ? "white"   : "#564E66",
                   }}>
                     {`${h}h`}
                   </button>
@@ -770,12 +770,12 @@ export default function RemindersPage() {
 
             {/* Variables */}
             <div style={{ background: "#f8f7ff", borderRadius: 10, padding: "10px 14px", marginBottom: 16, border: "1px solid #e8e6f0" }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: "#564E66", marginBottom: 6, textTransform: "uppercase", letterSpacing: ".05em" }}>
                 {"Variables disponibles"}
               </div>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {["{{nombre}}", "{{servicio}}", "{{fecha}}", "{{hora}}", "{{profesional}}"].map(v => (
-                  <code key={v} style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", padding: "2px 8px", borderRadius: 6, fontSize: 12, color: "#1a1a2e", fontFamily: "monospace" }}>
+                  <code key={v} style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", padding: "2px 8px", borderRadius: 6, fontSize: 12, color: "#14111C", fontFamily: "monospace" }}>
                     {v}
                   </code>
                 ))}
@@ -799,7 +799,7 @@ export default function RemindersPage() {
                     }}
                   >
                     <div style={{ fontSize: 22, marginBottom: 4 }}>{t.icon}</div>
-                    <div style={{ fontSize: 13, fontWeight: 700, color: isActive ? t.color : "#1a1a2e" }}>{t.label}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: isActive ? t.color : "#14111C" }}>{t.label}</div>
                     <div style={{ fontSize: 11, color: "#9b9bb0", marginTop: 2 }}>{t.desc}</div>
                     <div style={{
                       display: "inline-flex", alignItems: "center", gap: 4, marginTop: 6,
@@ -818,10 +818,10 @@ export default function RemindersPage() {
             <div style={{ ...card, marginBottom: 16 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, paddingBottom: 14, borderBottom: "1px solid #f0f0f5" }}>
                 <div>
-                  <div style={{ fontWeight: 700, fontSize: 15, color: "#1a1a2e" }}>
+                  <div style={{ fontWeight: 700, fontSize: 15, color: "#14111C" }}>
                     {TEMPLATE_TABS.find(t => t.key === activeTemplate)?.label}
                   </div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>
+                  <div style={{ fontSize: 12, color: "#564E66", marginTop: 2 }}>
                     {TEMPLATE_TABS.find(t => t.key === activeTemplate)?.desc}
                   </div>
                 </div>
@@ -852,14 +852,14 @@ export default function RemindersPage() {
 
               {current.enabled && (
                 <div style={{ marginTop: 16, background: "#f0fdf4", borderRadius: 10, padding: "12px 16px", border: "1px solid #bbf7d0" }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", marginBottom: 8, textTransform: "uppercase", letterSpacing: ".05em" }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "#564E66", marginBottom: 8, textTransform: "uppercase", letterSpacing: ".05em" }}>
                     {"Vista previa"}
                   </div>
                   <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
                     <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#25D366", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                       <IconPhone size={14} color="white" />
                     </div>
-                    <div style={{ background: "#dcfce7", borderRadius: "4px 12px 12px 12px", padding: "10px 14px", fontSize: 13, color: "#1a1a2e", whiteSpace: "pre-wrap", lineHeight: 1.65, maxWidth: 300, wordBreak: "break-word" }}>
+                    <div style={{ background: "#dcfce7", borderRadius: "4px 12px 12px 12px", padding: "10px 14px", fontSize: 13, color: "#14111C", whiteSpace: "pre-wrap", lineHeight: 1.65, maxWidth: 300, wordBreak: "break-word" }}>
                       {previewMsg(current.value)}
                     </div>
                   </div>
@@ -905,8 +905,8 @@ export default function RemindersPage() {
                   <button key={v} onClick={() => setHistPeriod(v)} style={{
                     padding: "7px 14px", borderRadius: 20, border: "none", cursor: "pointer",
                     fontSize: 12, fontWeight: 600,
-                    background: histPeriod === v ? "#1a1a2e" : "#f0f0f5",
-                    color:      histPeriod === v ? "white"   : "#6b7280",
+                    background: histPeriod === v ? "#14111C" : "#f0f0f5",
+                    color:      histPeriod === v ? "white"   : "#564E66",
                   }}>
                     {label}
                   </button>
@@ -917,20 +917,20 @@ export default function RemindersPage() {
             {filteredLogs.length > 0 && (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 20 }}>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
-                  <div style={{ fontSize: 28, fontWeight: 700, color: "#1a1a2e", letterSpacing: "-1px" }}>{filteredLogs.length}</div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Total"}</div>
+                  <div style={{ fontSize: 28, fontWeight: 700, color: "#14111C", letterSpacing: "-1px" }}>{filteredLogs.length}</div>
+                  <div style={{ fontSize: 12, color: "#564E66", marginTop: 4, fontWeight: 600 }}>{"Total"}</div>
                 </div>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
                   <div style={{ fontSize: 28, fontWeight: 700, color: "#25D366", letterSpacing: "-1px" }}>
                     {filteredLogs.filter(l => l.sent_via.startsWith("whatsapp")).length}
                   </div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"WhatsApp"}</div>
+                  <div style={{ fontSize: 12, color: "#564E66", marginTop: 4, fontWeight: 600 }}>{"WhatsApp"}</div>
                 </div>
                 <div style={{ ...card, padding: "18px 24px", textAlign: "center" }}>
                   <div style={{ fontSize: 28, fontWeight: 700, color: "#3b82f6", letterSpacing: "-1px" }}>
                     {filteredLogs.filter(l => l.sent_via.startsWith("email")).length}
                   </div>
-                  <div style={{ fontSize: 12, color: "#6b7280", marginTop: 4, fontWeight: 600 }}>{"Email"}</div>
+                  <div style={{ fontSize: 12, color: "#564E66", marginTop: 4, fontWeight: 600 }}>{"Email"}</div>
                 </div>
               </div>
             )}
@@ -940,9 +940,9 @@ export default function RemindersPage() {
             ) : filteredLogs.length === 0 ? (
               <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 12, opacity: 0.35 }}>
-                  <IconBell size={48} color="#6b7280" />
+                  <IconBell size={48} color="#564E66" />
                 </div>
-                <div style={{ fontWeight: 700, color: "#6b7280", fontSize: 15 }}>
+                <div style={{ fontWeight: 700, color: "#564E66", fontSize: 15 }}>
                   {histSearch ? "Sin resultados para esa búsqueda" : "Sin recordatorios enviados"}
                 </div>
               </div>
@@ -955,13 +955,13 @@ export default function RemindersPage() {
                   return (
                     <div key={l.id} style={{ ...card, padding: "12px 18px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <div>
-                        <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{l.client_name}</div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: "#14111C" }}>{l.client_name}</div>
                         <div style={{ fontSize: 12, color: "#9b9bb0" }}>
                           {isEmail ? (l as any).client_email ?? l.client_phone ?? "—" : l.client_phone ?? "Sin teléfono"}
                         </div>
                       </div>
                       <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                        <div style={{ fontSize: 12, color: "#6b7280" }}>{fmtDate(l.created_at)}</div>
+                        <div style={{ fontSize: 12, color: "#564E66" }}>{fmtDate(l.created_at)}</div>
                         <div style={{ display: "flex", gap: 4, flexWrap: "wrap", justifyContent: "flex-end" }}>
                           {l.source === "auto" && (
                             <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: "#ede9fe", color: "#7c3aed" }}>
@@ -1007,8 +1007,8 @@ export default function RemindersPage() {
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
                   <div>
-                    <div style={{ fontWeight: 700, fontSize: 17, color: "#1a1a2e" }}>{"¿Qué mensaje enviar?"}</div>
-                    <div style={{ fontSize: 13, color: "#6b7280", marginTop: 3 }}>
+                    <div style={{ fontWeight: 700, fontSize: 17, color: "#14111C" }}>{"¿Qué mensaje enviar?"}</div>
+                    <div style={{ fontSize: 13, color: "#564E66", marginTop: 3 }}>
                       {`A ${bulkQueue.length} cliente${bulkQueue.length !== 1 ? "s" : ""} con teléfono`}
                     </div>
                   </div>
@@ -1039,10 +1039,10 @@ export default function RemindersPage() {
                           <span style={{ color: t.color }}>{t.icon}</span>
                         </div>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontWeight: 700, fontSize: 14, color: "#1a1a2e" }}>{t.label}</div>
-                          <div style={{ fontSize: 12, color: "#6b7280", marginTop: 1 }}>{t.desc}</div>
+                          <div style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>{t.label}</div>
+                          <div style={{ fontSize: 12, color: "#564E66", marginTop: 1 }}>{t.desc}</div>
                           <div style={{
-                            marginTop: 6, fontSize: 12, color: "#1a1a2e", lineHeight: 1.5,
+                            marginTop: 6, fontSize: 12, color: "#14111C", lineHeight: 1.5,
                             whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
                             opacity: 0.65,
                           }}>
@@ -1070,8 +1070,8 @@ export default function RemindersPage() {
                       <IconCheck size={28} color="#10b981" />
                     </div>
                   </div>
-                  <div style={{ fontSize: 18, fontWeight: 700, color: "#1a1a2e" }}>{"¡Todo enviado!"}</div>
-                  <div style={{ fontSize: 14, color: "#6b7280", marginTop: 6 }}>
+                  <div style={{ fontSize: 18, fontWeight: 700, color: "#14111C" }}>{"¡Todo enviado!"}</div>
+                  <div style={{ fontSize: 14, color: "#564E66", marginTop: 6 }}>
                     {`Se enviaron ${bulkQueue.length} recordatorio${bulkQueue.length !== 1 ? "s" : ""} por WhatsApp.`}
                   </div>
                 </div>
@@ -1084,7 +1084,7 @@ export default function RemindersPage() {
               <>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#6b7280" }}>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#564E66" }}>
                       {`${bulkIndex + 1} de ${bulkQueue.length}`}
                     </span>
                     {(() => {
@@ -1113,25 +1113,25 @@ export default function RemindersPage() {
                 </div>
 
                 <div style={{ ...card, marginBottom: 14, padding: "14px 18px" }}>
-                  <div style={{ fontWeight: 700, fontSize: 16, color: "#1a1a2e", marginBottom: 3 }}>
+                  <div style={{ fontWeight: 700, fontSize: 16, color: "#14111C", marginBottom: 3 }}>
                     {bulkCurrent.clients?.name}
                   </div>
-                  <div style={{ fontSize: 13, color: "#6b7280" }}>
+                  <div style={{ fontSize: 13, color: "#564E66" }}>
                     {`${fmtApptDate(bulkCurrent.appointment_date)} · ${fmt12(bulkCurrent.appointment_time)}`}
                   </div>
-                  <div style={{ fontSize: 13, color: "#6b7280" }}>
+                  <div style={{ fontSize: 13, color: "#564E66" }}>
                     {bulkCurrent.services?.name}
                     {bulkCurrent.professionals?.name ? ` · ${bulkCurrent.professionals.name}` : ""}
                   </div>
-                  <div style={{ fontSize: 13, color: "#1a1a2e", fontWeight: 600, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
-                    <IconPhone size={13} color="#6b7280" />
+                  <div style={{ fontSize: 13, color: "#14111C", fontWeight: 600, marginTop: 6, display: "flex", alignItems: "center", gap: 5 }}>
+                    <IconPhone size={13} color="#564E66" />
                     {bulkCurrent.clients?.phone}
                   </div>
                 </div>
 
                 <div style={{
                   background: "#dcfce7", borderRadius: "4px 12px 12px 12px",
-                  padding: "10px 14px", fontSize: 13, color: "#1a1a2e", whiteSpace: "pre-wrap",
+                  padding: "10px 14px", fontSize: 13, color: "#14111C", whiteSpace: "pre-wrap",
                   lineHeight: 1.65, maxHeight: 130, overflowY: "auto", marginBottom: 16,
                 }}>
                   {applyVars(tplMeta[bulkTemplate].value, bulkCurrent)}

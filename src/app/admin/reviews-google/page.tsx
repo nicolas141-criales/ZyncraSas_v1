@@ -192,8 +192,8 @@ export default function ReviewsGooglePage() {
   return (
     <div style={{ padding: "0 0 40px" }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1a1a2e", margin: 0 }}>Reseñas Google Maps</h1>
-        <p style={{ color: "#6b7280", fontSize: 14, margin: "4px 0 0" }}>
+        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#14111C", margin: 0 }}>Reseñas Google Maps</h1>
+        <p style={{ color: "#564E66", fontSize: 14, margin: "4px 0 0" }}>
           Solicita reseñas a tus clientes y mejora tu posicionamiento local
         </p>
       </div>
@@ -203,9 +203,9 @@ export default function ReviewsGooglePage() {
         {(["config", "solicitar", "historial"] as const).map(t => (
           <button key={t} onClick={() => setTab(t)} style={{
             padding: "7px 18px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 13, fontWeight: 600,
-            background: tab === t ? "white" : "transparent",
-            color: tab === t ? "#1a1a2e" : "#6b7280",
-            boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+            background: tab === t ? "#14111C" : "transparent",
+            color: tab === t ? "#fff" : "#564E66",
+            boxShadow: tab === t ? "0 2px 8px rgba(20,15,30,0.18)" : "none",
             transition: "all .2s",
           }}>
             {t === "config" ? "Configuración" : t === "solicitar" ? "Solicitar reseña" : "Historial"}
@@ -246,7 +246,7 @@ export default function ReviewsGooglePage() {
 
           <div style={{ background: "white", borderRadius: 14, padding: 24, border: "1px solid rgba(20,15,30,0.08)" }}>
             <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 700 }}>Mensaje de WhatsApp</h3>
-            <p style={{ color: "#6b7280", fontSize: 13, margin: "0 0 14px" }}>
+            <p style={{ color: "#564E66", fontSize: 13, margin: "0 0 14px" }}>
               Usa <code style={{ background: "#f0f0f5", padding: "1px 5px", borderRadius: 4 }}>{"{{nombre}}"}</code> y <code style={{ background: "#f0f0f5", padding: "1px 5px", borderRadius: 4 }}>{"{{link}}"}</code> como variables
             </p>
             <textarea value={settings.message_template}
@@ -294,7 +294,7 @@ export default function ReviewsGooglePage() {
                     background: selectedClient?.id === c.id ? "#fff5f5" : "white",
                     cursor: "pointer", textAlign: "left", width: "100%",
                   }}>
-                  <span style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{c.name}</span>
+                  <span style={{ fontWeight: 600, fontSize: 14, color: "#14111C" }}>{c.name}</span>
                   {c.phone && <span style={{ fontSize: 12, color: "#9b9bb0" }}>{c.phone}</span>}
                 </button>
               ))}
@@ -311,7 +311,7 @@ export default function ReviewsGooglePage() {
                 </div>
               ) : (
                 <>
-                  <div style={{ background: "#f0fdf4", borderRadius: 10, padding: 14, fontSize: 13, color: "#1a1a2e", lineHeight: 1.6, whiteSpace: "pre-wrap", marginBottom: 14, maxHeight: 200, overflow: "auto" }}>
+                  <div style={{ background: "#f0fdf4", borderRadius: 10, padding: 14, fontSize: 13, color: "#14111C", lineHeight: 1.6, whiteSpace: "pre-wrap", marginBottom: 14, maxHeight: 200, overflow: "auto" }}>
                     {composedMsg || "(Configura el mensaje y el link de Google primero)"}
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -351,28 +351,28 @@ export default function ReviewsGooglePage() {
           ) : requests.length === 0 ? (
             <div style={{ textAlign: "center", padding: 60, color: "#9b9bb0" }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>⭐</div>
-              <div style={{ fontWeight: 600, color: "#6b7280" }}>Sin solicitudes aún</div>
+              <div style={{ fontWeight: 600, color: "#564E66" }}>Sin solicitudes aún</div>
               <div style={{ fontSize: 13, marginTop: 4 }}>Las solicitudes enviadas aparecerán aquí</div>
             </div>
           ) : (
             <>
               <div style={{ background: "white", borderRadius: 12, padding: "10px 20px", border: "1px solid rgba(20,15,30,0.08)", marginBottom: 14, display: "flex", gap: 4 }}>
-                <span style={{ fontSize: 13, color: "#6b7280" }}>Total solicitadas:</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#1a1a2e" }}>{requests.length}</span>
+                <span style={{ fontSize: 13, color: "#564E66" }}>Total solicitadas:</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: "#14111C" }}>{requests.length}</span>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {requests.map(r => (
                   <div key={r.id} style={{ background: "white", borderRadius: 12, padding: "14px 20px", border: "1px solid rgba(20,15,30,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <div style={{ fontWeight: 600, fontSize: 14, color: "#1a1a2e" }}>{r.client_name}</div>
+                      <div style={{ fontWeight: 600, fontSize: 14, color: "#14111C" }}>{r.client_name}</div>
                       <div style={{ fontSize: 12, color: "#9b9bb0" }}>{r.client_phone ?? "—"}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div style={{ fontSize: 12, color: "#6b7280" }}>{fmtDate(r.created_at)}</div>
+                      <div style={{ fontSize: 12, color: "#564E66" }}>{fmtDate(r.created_at)}</div>
                       <span style={{
                         fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20,
                         background: r.sent_via === "whatsapp" ? "#e8f5e9" : "#f0f0f5",
-                        color: r.sent_via === "whatsapp" ? "#388e3c" : "#6b7280",
+                        color: r.sent_via === "whatsapp" ? "#388e3c" : "#564E66",
                       }}>
                         {r.sent_via === "whatsapp" ? "WhatsApp" : "Manual"}
                       </span>
@@ -389,12 +389,12 @@ export default function ReviewsGooglePage() {
 }
 
 const labelStyle: React.CSSProperties = {
-  display: "block", fontSize: 12, fontWeight: 600, color: "#6b7280",
+  display: "block", fontSize: 12, fontWeight: 600, color: "#564E66",
   marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em",
 };
 const inputStyle: React.CSSProperties = {
   width: "100%", padding: "8px 12px", borderRadius: 8, border: "1px solid rgba(20,15,30,0.08)",
-  fontSize: 14, color: "#1a1a2e", background: "white", boxSizing: "border-box",
+  fontSize: 14, color: "#14111C", background: "white", boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
 };
 const btnPrimary: React.CSSProperties = {

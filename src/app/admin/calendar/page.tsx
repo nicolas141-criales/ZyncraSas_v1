@@ -4,8 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
-import { IconCalendar, IconX, IconPlus } from "../ZyncraIcons";
+import { IconCalendar, IconX, IconPlus, IconCreditCard } from "../ZyncraIcons";
 import NewAppointmentModal from "../NewAppointmentModal";
+import { Skel, MONO } from "../charts";
 
 interface Appointment {
   id: string;
@@ -49,7 +50,7 @@ const STATUS_MAP: Record<string, { label: string; bg: string; color: string; bor
   pending:   { label: "Pendiente",  bg: "rgba(251,15,5,0.10)",   color: "#fb0f05",  border: "rgba(251,15,5,0.30)"   },
   confirmed: { label: "Confirmada", bg: "rgba(16,185,129,0.10)", color: "#10b981",  border: "rgba(16,185,129,0.30)" },
   completed: { label: "Completada", bg: "rgba(99,102,241,0.10)", color: "#6366f1",  border: "rgba(99,102,241,0.30)" },
-  cancelled: { label: "Cancelada",  bg: "rgba(100,116,139,0.08)",color: "#94a3b8",  border: "rgba(100,116,139,0.20)"},
+  cancelled: { label: "Cancelada",  bg: "rgba(100,116,139,0.08)",color: "#8E879B",  border: "rgba(100,116,139,0.20)"},
 };
 
 const inp: React.CSSProperties = {
@@ -75,6 +76,9 @@ export default function CalendarPage() {
   const [aptFields, setAptFields] = useState<{ name: string; value: string }[]>([]);
   const [showNewAppt, setShowNewAppt] = useState(false);
   const [branding, setBranding] = useState<{ business_name?: string; primary_color?: string } | null>(null);
+  const [dragApt, setDragApt] = useState<Appointment | null>(null);
+  const [dragOver, setDragOver] = useState<string | null>(null);
+  const [toast, setToast] = useState("");
 
   const weekDays = getWeekDays(weekRef);
   const todayStr = toISO(new Date());
@@ -164,6 +168,26 @@ export default function CalendarPage() {
     }
   };
 
+  const sendChangeEmail = useCallback((apt: Appointment, date: string, time: string, type: "modification" | "cancellation") => {
+    const clientEmail = (apt.clients as any)?.email as string | null | undefined;
+    if (!clientEmail || !apt.manage_token) return;
+    fetch("/api/send-confirmation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email:        clientEmail,
+        clientName:   (apt.clients as any)?.name ?? "",
+        businessName: branding?.business_name ?? "",
+        service:      (apt.services as any)?.name ?? "",
+        professional: (apt.professionals as any)?.name ?? "",
+        date, time,
+        primaryColor: branding?.primary_color ?? "#fb0f05",
+        manageToken:  apt.manage_token,
+        type,
+      }),
+    }).catch(() => {});
+  }, [branding]);
+
   const saveApt = async () => {
     if (!selectedApt) return;
     setIsSaving(true);
@@ -171,32 +195,11 @@ export default function CalendarPage() {
       .update({ appointment_date: editForm.date, appointment_time: editForm.time, status: editForm.status })
       .eq("id", selectedApt.id);
     if (!error) {
-      const clientEmail = (selectedApt.clients as any)?.email as string | null | undefined;
-      const manageToken = selectedApt.manage_token;
-      if (clientEmail && manageToken) {
-        const dateChanged = editForm.date !== selectedApt.appointment_date
-                         || editForm.time !== selectedApt.appointment_time.substring(0, 5);
-        const wasCancelled = editForm.status === "cancelled" && selectedApt.status !== "cancelled";
-        const emailType = wasCancelled ? "cancellation" : dateChanged ? "modification" : null;
-        if (emailType) {
-          fetch("/api/send-confirmation", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email:        clientEmail,
-              clientName:   (selectedApt.clients as any)?.name ?? "",
-              businessName: branding?.business_name ?? "",
-              service:      (selectedApt.services as any)?.name ?? "",
-              professional: (selectedApt.professionals as any)?.name ?? "",
-              date:         editForm.date,
-              time:         editForm.time,
-              primaryColor: branding?.primary_color ?? "#fb0f05",
-              manageToken,
-              type:         emailType,
-            }),
-          }).catch(() => {});
-        }
-      }
+      const dateChanged = editForm.date !== selectedApt.appointment_date
+                       || editForm.time !== selectedApt.appointment_time.substring(0, 5);
+      const wasCancelled = editForm.status === "cancelled" && selectedApt.status !== "cancelled";
+      const emailType = wasCancelled ? "cancellation" : dateChanged ? "modification" : null;
+      if (emailType) sendChangeEmail(selectedApt, editForm.date, editForm.time, emailType);
       setSelectedApt(null);
       fetchAppointments(tenantId!, startDate, endDate);
     } else {
@@ -205,24 +208,73 @@ export default function CalendarPage() {
     setIsSaving(false);
   };
 
-  // Shared appointment card renderer
+  const flashToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(""), 2400); };
+
+  // ── Drag & drop: reagendar arrastrando la cita a otra celda ──
+  const rescheduleApt = async (apt: Appointment, newDate: string, newHour: string) => {
+    const newTime = `${newHour.substring(0, 2)}:${apt.appointment_time.substring(3, 5)}`;
+    if (newDate === apt.appointment_date && newTime === apt.appointment_time.substring(0, 5)) return;
+    const prev = appointments;
+    setAppointments(list => list.map(a => a.id === apt.id ? { ...a, appointment_date: newDate, appointment_time: `${newTime}:00` } : a));
+    const { error } = await supabase.from("appointments")
+      .update({ appointment_date: newDate, appointment_time: newTime }).eq("id", apt.id);
+    if (error) { setAppointments(prev); flashToast("No se pudo mover la cita"); }
+    else { sendChangeEmail(apt, newDate, newTime, "modification"); flashToast("Cita reagendada ✓"); }
+  };
+
+  const moveAptToProf = async (apt: Appointment, profId: string, newHour: string) => {
+    const newTime = `${newHour.substring(0, 2)}:${apt.appointment_time.substring(3, 5)}`;
+    const profName = profs.find(p => p.id === profId)?.name || "";
+    const prev = appointments;
+    setAppointments(list => list.map(a => a.id === apt.id
+      ? { ...a, professional_id: profId, appointment_time: `${newTime}:00`, professionals: { name: profName } }
+      : a));
+    const { error } = await supabase.from("appointments")
+      .update({ professional_id: profId, appointment_time: newTime }).eq("id", apt.id);
+    if (error) { setAppointments(prev); flashToast("No se pudo mover la cita"); }
+    else flashToast(`Asignada a ${profName} ✓`);
+  };
+
+  const dropProps = (key: string, onDropApt: (apt: Appointment) => void) => ({
+    onDragOver: (e: React.DragEvent) => { if (dragApt) { e.preventDefault(); if (dragOver !== key) setDragOver(key); } },
+    onDragLeave: () => setDragOver(o => (o === key ? null : o)),
+    onDrop: (e: React.DragEvent) => { e.preventDefault(); const d = dragApt; setDragApt(null); setDragOver(null); if (d) onDropApt(d); },
+  });
+
+  // Shared appointment card renderer — draggable para reagendar
   const aptCard = (apt: Appointment) => {
     const s = STATUS_MAP[apt.status] || STATUS_MAP.pending;
     const profName = (apt.professionals as any)?.name;
+    const draggable = apt.status !== "cancelled";
+    const isDragging = dragApt?.id === apt.id;
     return (
       <div key={apt.id} onClick={() => openEdit(apt)}
-        style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: "8px", padding: "5px 7px", fontSize: "11px", marginBottom: "3px", cursor: "pointer", opacity: apt.status === "cancelled" ? 0.55 : 1, transition: "opacity .15s" }}
-        onMouseEnter={e => (e.currentTarget.style.opacity = "0.75")}
-        onMouseLeave={e => (e.currentTarget.style.opacity = apt.status === "cancelled" ? "0.55" : "1")}>
-        <div style={{ fontWeight: 700, color: s.color, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: 3 }}>
-          {fmt12(apt.appointment_time)} · {(apt.clients as any)?.name || "Cliente"}
-          {hasComment(apt) && <span title="Tiene información adicional" style={{ fontSize: 9, flexShrink: 0 }}>💬</span>}
+        draggable={draggable}
+        onDragStart={e => { setDragApt(apt); e.dataTransfer.effectAllowed = "move"; }}
+        onDragEnd={() => { setDragApt(null); setDragOver(null); }}
+        title={draggable ? "Arrastra para reagendar" : undefined}
+        style={{
+          background: "white", borderLeft: `3px solid ${s.color}`,
+          border: `1px solid ${s.border}`, borderLeftWidth: 3, borderLeftColor: s.color,
+          borderRadius: "7px", padding: "5px 7px 5px 8px", fontSize: "11px", marginBottom: "3px",
+          cursor: draggable ? "grab" : "pointer",
+          opacity: isDragging ? 0.35 : apt.status === "cancelled" ? 0.55 : 1,
+          boxShadow: "0 1px 2px rgba(20,15,30,0.05)",
+          transition: "opacity .15s, transform .15s, box-shadow .15s",
+          animation: "znFadeUp .3s cubic-bezier(.22,1,.36,1) both",
+        }}
+        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(20,15,30,0.12)"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 1px 2px rgba(20,15,30,0.05)"; }}>
+        <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: 4 }}>
+          <span style={{ fontFamily: MONO, fontWeight: 600, fontSize: 10, color: s.color, flexShrink: 0 }}>{fmt12(apt.appointment_time)}</span>
+          <span style={{ fontWeight: 600, color: "#14111C", overflow: "hidden", textOverflow: "ellipsis" }}>{(apt.clients as any)?.name || "Cliente"}</span>
+          {hasComment(apt) && <span title="Tiene información adicional" style={{ width: 5, height: 5, borderRadius: "50%", background: "#0027fe", flexShrink: 0 }} />}
         </div>
-        <div style={{ color: "#564E66", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: "1px" }}>
+        <div style={{ color: "#564E66", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: "1px", fontSize: 10.5 }}>
           {(apt.services as any)?.name || "Servicio"}
         </div>
         {profName && view !== "professional" && (
-          <div style={{ color: "#8E879B", fontSize: 10, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: "1px" }}>
+          <div style={{ color: "#8E879B", fontSize: 9.5, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: "1px" }}>
             {profName}
           </div>
         )}
@@ -261,10 +313,10 @@ export default function CalendarPage() {
           </button>
 
           {/* View selector */}
-          <div style={{ display: "flex", border: "1.5px solid rgba(20,15,30,0.08)", borderRadius: "10px", overflow: "hidden" }}>
+          <div style={{ display: "flex", gap: 2, padding: 3, background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "11px" }}>
             {([["week","Semana"],["day","Día"],["professional","Colaborador"]] as const).map(([v, label]) => (
               <button key={v} onClick={() => setView(v)}
-                style={{ padding: "7px 14px", border: "none", borderRight: v !== "professional" ? "1px solid rgba(20,15,30,0.08)" : "none", cursor: "pointer", background: view === v ? "#fb0f05" : "white", color: view === v ? "white" : "#564E66", fontSize: "12px", fontWeight: 600, fontFamily: "inherit", transition: "all .15s" }}>
+                style={{ padding: "6px 13px", border: "none", borderRadius: 8, cursor: "pointer", background: view === v ? "#14111C" : "transparent", color: view === v ? "white" : "#564E66", fontSize: "12px", fontWeight: 600, fontFamily: "inherit", transition: "background .16s ease, color .16s ease" }}>
                 {label}
               </button>
             ))}
@@ -309,21 +361,40 @@ export default function CalendarPage() {
                   })}
                 </div>
                 <div style={{ flex: 1, overflowY: "auto" }}>
-                  {loading ? <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando citas…</div> : (
-                    HOURS.map(hour => (
+                  {loading ? (
+                    <div style={{ padding: "18px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+                      {[0, 1, 2, 3, 4].map(i => <Skel key={i} h={52} r={10} />)}
+                    </div>
+                  ) : (
+                    HOURS.map(hour => {
+                      const isNowHour = hour.substring(0, 2) === String(new Date().getHours()).padStart(2, "0") && weekDays.some(d => toISO(d) === todayStr);
+                      return (
                       <div key={hour} style={{ display: "grid", gridTemplateColumns: "56px repeat(7, 1fr)", borderBottom: "1px solid #f7f5f2", minHeight: "72px" }}>
-                        <div style={{ padding: "10px 8px 0", textAlign: "right", color: "#c0bdb9", fontSize: "11px", fontWeight: 600, borderRight: "1px solid #f0eeeb" }}>{hour}</div>
+                        <div style={{ padding: "10px 6px 0", textAlign: "right", color: isNowHour ? "#fb0f05" : "#c0bdb9", fontSize: "10px", fontFamily: MONO, fontWeight: isNowHour ? 700 : 500, borderRight: "1px solid #f0eeeb", position: "relative" }}>
+                          {hour}
+                          {isNowHour && <span style={{ position: "absolute", right: -3, top: 14, width: 5, height: 5, borderRadius: "50%", background: "#fb0f05" }} />}
+                        </div>
                         {weekDays.map((day, di) => {
                           const isToday = toISO(day) === todayStr;
-                          const apts = getAptsForDay(toISO(day), hour);
+                          const dStr = toISO(day);
+                          const key = `${dStr}_${hour}`;
+                          const apts = getAptsForDay(dStr, hour);
+                          const isOver = dragOver === key;
                           return (
-                            <div key={di} style={{ borderRight: "1px solid #f0eeeb", padding: "4px", background: isToday ? "rgba(251,15,5,0.015)" : undefined }}>
+                            <div key={di} {...dropProps(key, a => rescheduleApt(a, dStr, hour))}
+                              style={{
+                                borderRight: "1px solid #f0eeeb", padding: "4px",
+                                background: isOver ? "rgba(0,39,254,0.06)" : isToday ? "rgba(251,15,5,0.015)" : undefined,
+                                boxShadow: isOver ? "inset 0 0 0 1.5px rgba(0,39,254,0.35)" : "none",
+                                borderRadius: isOver ? 8 : 0, transition: "background .12s, box-shadow .12s",
+                              }}>
                               {apts.map(apt => aptCard(apt))}
                             </div>
                           );
                         })}
                       </div>
-                    ))
+                      );
+                    })
                   )}
                 </div>
               </>
@@ -343,11 +414,20 @@ export default function CalendarPage() {
                 <div style={{ flex: 1, overflowY: "auto" }}>
                   {loading ? <div style={{ padding: "60px", textAlign: "center", color: "#8E879B", fontSize: "14px" }}>Cargando citas…</div> : (
                     HOURS.map(hour => {
-                      const apts = getAptsForDay(toISO(dayRef), hour);
+                      const dStr = toISO(dayRef);
+                      const key = `day_${dStr}_${hour}`;
+                      const apts = getAptsForDay(dStr, hour);
+                      const isOver = dragOver === key;
                       return (
                         <div key={hour} style={{ display: "grid", gridTemplateColumns: "56px 1fr", borderBottom: "1px solid #f7f5f2", minHeight: "72px" }}>
-                          <div style={{ padding: "10px 8px 0", textAlign: "right", color: "#c0bdb9", fontSize: "11px", fontWeight: 600, borderRight: "1px solid #f0eeeb" }}>{hour}</div>
-                          <div style={{ padding: "4px 8px" }}>
+                          <div style={{ padding: "10px 8px 0", textAlign: "right", color: "#c0bdb9", fontSize: "10px", fontFamily: MONO, fontWeight: 500, borderRight: "1px solid #f0eeeb" }}>{hour}</div>
+                          <div {...dropProps(key, a => rescheduleApt(a, dStr, hour))}
+                            style={{
+                              padding: "4px 8px",
+                              background: isOver ? "rgba(0,39,254,0.06)" : undefined,
+                              boxShadow: isOver ? "inset 0 0 0 1.5px rgba(0,39,254,0.35)" : "none",
+                              borderRadius: isOver ? 8 : 0, transition: "background .12s, box-shadow .12s",
+                            }}>
                             {apts.map(apt => aptCard(apt))}
                           </div>
                         </div>
@@ -378,11 +458,21 @@ export default function CalendarPage() {
                     HOURS.map(hour => (
                       <div key={hour} style={{ display: "grid", gridTemplateColumns: `56px repeat(${profs.length}, minmax(130px, 1fr))`, borderBottom: "1px solid #f7f5f2", minHeight: "72px" }}>
                         <div style={{ padding: "10px 8px 0", textAlign: "right", color: "#c0bdb9", fontSize: "11px", fontWeight: 600, borderRight: "1px solid #f0eeeb" }}>{hour}</div>
-                        {profs.map(p => (
-                          <div key={p.id} style={{ borderRight: "1px solid #f0eeeb", padding: "4px" }}>
-                            {getAptsByProf(p.id, hour).map(apt => aptCard(apt))}
-                          </div>
-                        ))}
+                        {profs.map(p => {
+                          const key = `prof_${p.id}_${hour}`;
+                          const isOver = dragOver === key;
+                          return (
+                            <div key={p.id} {...dropProps(key, a => moveAptToProf(a, p.id, hour))}
+                              style={{
+                                borderRight: "1px solid #f0eeeb", padding: "4px",
+                                background: isOver ? "rgba(0,39,254,0.06)" : undefined,
+                                boxShadow: isOver ? "inset 0 0 0 1.5px rgba(0,39,254,0.35)" : "none",
+                                borderRadius: isOver ? 8 : 0, transition: "background .12s, box-shadow .12s",
+                              }}>
+                              {getAptsByProf(p.id, hour).map(apt => aptCard(apt))}
+                            </div>
+                          );
+                        })}
                       </div>
                     ))
                   )}
@@ -393,6 +483,20 @@ export default function CalendarPage() {
           </div>
         </div>
       </div>
+
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: "fixed", bottom: 26, left: "50%", transform: "translateX(-50%)", zIndex: 500,
+          background: "rgba(12,12,20,0.82)", backdropFilter: "blur(14px) saturate(1.4)", WebkitBackdropFilter: "blur(14px) saturate(1.4)",
+          border: "1px solid rgba(255,255,255,0.14)", color: "white", borderRadius: 12,
+          padding: "10px 18px", fontSize: 13, fontWeight: 600,
+          boxShadow: "0 16px 40px rgba(12,12,20,0.35)", animation: "znFadeUp .25s cubic-bezier(.22,1,.36,1) both",
+          fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+        }}>
+          {toast}
+        </div>
+      )}
 
       {/* Nueva cita modal */}
       <NewAppointmentModal
@@ -472,7 +576,7 @@ export default function CalendarPage() {
                     fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
                     boxShadow: "0 4px 12px rgba(16,185,129,0.3)",
                   }}>
-                  💳 Cobrar cita
+                  <IconCreditCard size={15} /> Cobrar cita
                 </button>
               )}
             </div>

@@ -37,13 +37,13 @@ function KpiCard({ label, value, sub, accent, icon }: {
   label: string; value: string; sub: string; accent: string; icon: string;
 }) {
   return (
-    <div style={{ background: "#1e293b", borderRadius: 16, padding: "22px 24px", border: `1px solid rgba(255,255,255,0.05)` }}>
+    <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: "22px 24px", border: `1px solid rgba(255,255,255,0.05)` }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-        <span style={{ fontSize: 12, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
+        <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.42)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
         <span style={{ fontSize: 20, opacity: 0.7 }}>{icon}</span>
       </div>
       <div style={{ fontSize: 32, fontWeight: 800, color: accent, lineHeight: 1, marginBottom: 6 }}>{value}</div>
-      <div style={{ fontSize: 12, color: "#475569" }}>{sub}</div>
+      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)" }}>{sub}</div>
     </div>
   );
 }
@@ -94,7 +94,7 @@ export default function PlatformDashboard() {
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 300 }}>
-        <div style={{ width: 36, height: 36, border: "3px solid #1e293b", borderTopColor: "#7c3aed", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+        <div style={{ width: 36, height: 36, border: "3px solid #181824", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
         <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
       </div>
     );
@@ -103,15 +103,15 @@ export default function PlatformDashboard() {
   return (
     <div>
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "#f1f5f9", margin: 0 }}>Dashboard</h1>
-        <p style={{ color: "#475569", fontSize: 14, margin: "4px 0 0" }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: "rgba(255,255,255,0.94)", margin: 0 }}>Dashboard</h1>
+        <p style={{ color: "rgba(255,255,255,0.32)", fontSize: 14, margin: "4px 0 0" }}>
           Vista general de la plataforma Zyncra
         </p>
       </div>
 
       {/* KPI Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 14, marginBottom: 28 }}>
-        <KpiCard label="MRR" value={fmt(stats?.mrr ?? 0)} sub="ingresos mensuales recurrentes" accent="#a78bfa" icon="💰" />
+        <KpiCard label="MRR" value={fmt(stats?.mrr ?? 0)} sub="ingresos mensuales recurrentes" accent="#ff7d72" icon="💰" />
         <KpiCard label="Clientes activos" value={String(stats?.active ?? 0)} sub={`de ${stats?.total ?? 0} totales`} accent="#34d399" icon="✅" />
         <KpiCard label="En trial" value={String(stats?.trial ?? 0)} sub="período de prueba" accent="#fbbf24" icon="⏳" />
         <KpiCard label="Cuentas vencidas" value={String(stats?.overdue ?? 0)} sub="requieren atención" accent="#f87171" icon="⚠️" />
@@ -123,13 +123,13 @@ export default function PlatformDashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
 
         {/* Cuentas vencidas */}
-        <div style={{ background: "#1e293b", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>Cuentas vencidas</h3>
-            <a href="/platform/billing" style={{ fontSize: 12, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>Ver todas →</a>
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Cuentas vencidas</h3>
+            <a href="/platform/billing" style={{ fontSize: 12, color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Ver todas →</a>
           </div>
           {overdueList.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "30px 0", color: "#475569" }}>
+            <div style={{ textAlign: "center", padding: "30px 0", color: "rgba(255,255,255,0.32)" }}>
               <div style={{ fontSize: 28, marginBottom: 8 }}>✅</div>
               <div style={{ fontSize: 13 }}>Sin cuentas vencidas</div>
             </div>
@@ -138,7 +138,7 @@ export default function PlatformDashboard() {
               {overdueList.map((s: any) => (
                 <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(239,68,68,0.08)", borderRadius: 10, border: "1px solid rgba(239,68,68,0.15)" }}>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#f1f5f9" }}>{s.tenants?.name ?? "—"}</div>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.94)" }}>{s.tenants?.name ?? "—"}</div>
                     <div style={{ fontSize: 11, color: "#ef4444", marginTop: 2 }}>Vencida · {fmt(s.amount)}/mes</div>
                   </div>
                   <a href="/platform/billing" style={{ fontSize: 12, color: "#f87171", fontWeight: 600, textDecoration: "none" }}>Gestionar</a>
@@ -149,23 +149,23 @@ export default function PlatformDashboard() {
         </div>
 
         {/* Nuevos clientes */}
-        <div style={{ background: "#1e293b", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>Últimos registros</h3>
-            <a href="/platform/clients" style={{ fontSize: 12, color: "#7c3aed", textDecoration: "none", fontWeight: 600 }}>Ver todos →</a>
+            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Últimos registros</h3>
+            <a href="/platform/clients" style={{ fontSize: 12, color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Ver todos →</a>
           </div>
           {recentClients.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "30px 0", color: "#475569" }}>
+            <div style={{ textAlign: "center", padding: "30px 0", color: "rgba(255,255,255,0.32)" }}>
               <div style={{ fontSize: 28, marginBottom: 8 }}>👥</div>
               <div style={{ fontSize: 13 }}>Sin clientes este mes</div>
             </div>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {recentClients.map((t: any) => (
-                <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(124,58,237,0.06)", borderRadius: 10, border: "1px solid rgba(124,58,237,0.1)" }}>
+                <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(251,15,5,0.07)", borderRadius: 10, border: "1px solid rgba(251,15,5,0.10)" }}>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#f1f5f9" }}>{t.name}</div>
-                    <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>{fmtDate(t.created_at)}</div>
+                    <div style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.94)" }}>{t.name}</div>
+                    <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>{fmtDate(t.created_at)}</div>
                   </div>
                   <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: "rgba(251,191,36,0.15)", color: "#fbbf24" }}>Trial</span>
                 </div>
@@ -175,18 +175,18 @@ export default function PlatformDashboard() {
         </div>
 
         {/* Resumen de estado */}
-        <div style={{ background: "#1e293b", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)", gridColumn: "1 / -1" }}>
-          <h3 style={{ margin: "0 0 18px", fontSize: 15, fontWeight: 700, color: "#f1f5f9" }}>Distribución de clientes</h3>
+        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)", gridColumn: "1 / -1" }}>
+          <h3 style={{ margin: "0 0 18px", fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Distribución de clientes</h3>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
             {[
               { label: "Activos",    value: stats?.active ?? 0,    color: "#34d399", bg: "rgba(52,211,153,0.1)"  },
               { label: "Trial",      value: stats?.trial ?? 0,     color: "#fbbf24", bg: "rgba(251,191,36,0.1)"  },
               { label: "Vencidos",   value: stats?.overdue ?? 0,   color: "#f87171", bg: "rgba(248,113,113,0.1)" },
-              { label: "Suspendidos",value: stats?.suspended ?? 0, color: "#94a3b8", bg: "rgba(148,163,184,0.1)" },
+              { label: "Suspendidos",value: stats?.suspended ?? 0, color: "rgba(255,255,255,0.55)", bg: "rgba(148,163,184,0.1)" },
             ].map(({ label, value, color, bg }) => (
               <div key={label} style={{ background: bg, borderRadius: 12, padding: "16px 20px", textAlign: "center" }}>
                 <div style={{ fontSize: 28, fontWeight: 800, color }}>{value}</div>
-                <div style={{ fontSize: 12, color: "#64748b", marginTop: 4 }}>{label}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.42)", marginTop: 4 }}>{label}</div>
                 {stats?.total ? (
                   <div style={{ fontSize: 11, color, marginTop: 2, fontWeight: 600 }}>
                     {Math.round((value / stats.total) * 100)}%
