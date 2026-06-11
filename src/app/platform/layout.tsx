@@ -5,12 +5,15 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import { IconGrid, IconUsers, IconCreditCard, IconPackage } from "../admin/ZyncraIcons";
 
-const NAV = [
-  { href: "/platform",         label: "Dashboard",  icon: "▦" },
-  { href: "/platform/clients", label: "Clientes",   icon: "◫" },
-  { href: "/platform/billing", label: "Cobros",     icon: "◈" },
-  { href: "/platform/plans",   label: "Planes",     icon: "◉" },
+type NavItem = { href: string; label: string; icon: React.ReactNode };
+
+const NAV: NavItem[] = [
+  { href: "/platform",         label: "Dashboard", icon: <IconGrid size={16} /> },
+  { href: "/platform/clients", label: "Clientes",  icon: <IconUsers size={16} /> },
+  { href: "/platform/billing", label: "Cobros",    icon: <IconCreditCard size={16} /> },
+  { href: "/platform/plans",   label: "Planes",    icon: <IconPackage size={16} /> },
 ];
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {
@@ -25,7 +28,6 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { router.push("/login"); return; }
 
-      // Verify platform admin
       const { data } = await supabase
         .from("platform_admins")
         .select("user_id")
@@ -58,7 +60,6 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
   return (
     <div style={{ display: "flex", height: "100vh", background: "#10101B", fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif", overflow: "hidden" }}>
 
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div onClick={() => setSidebarOpen(false)}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,.6)", zIndex: 40 }} />
@@ -101,7 +102,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
                   borderLeft: active ? "3px solid #fb0f05" : "3px solid transparent",
                   transition: "background .16s ease, color .16s ease",
                 }}>
-                <span style={{ fontSize: 16 }}>{item.icon}</span>
+                <span style={{ display: "flex", alignItems: "center", opacity: active ? 1 : 0.7 }}>{item.icon}</span>
                 {item.label}
               </Link>
             );

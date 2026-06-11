@@ -52,7 +52,7 @@ const METHODS = ["transferencia", "nequi", "efectivo", "daviplata", "tarjeta"];
 
 export default function PlatformBillingPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
-  const [tenants, setTenants] = useState<{ id: string; name: string }[]>([]);
+  const [tenants, setTenants] = useState<{ id: string; name: string; subAmount: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<PayFilter>("all");
   const [search, setSearch] = useState("");
@@ -73,10 +73,13 @@ export default function PlatformBillingPage() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [{ data: pays }, { data: tens }] = await Promise.all([
+    const [{ data: pays }, { data: tens }, { data: subs }] = await Promise.all([
       supabase.from("saas_payments").select("*, tenants(name)").order("created_at", { ascending: false }),
       supabase.from("tenants").select("id, name").order("name"),
+      supabase.from("saas_subscriptions").select("tenant_id, amount"),
     ]);
+
+    const subAmountMap = new Map<string, number>((subs ?? []).map((s: any) => [s.tenant_id, s.amount ?? 0]));
 
     setPayments(
       (pays ?? []).map((p: any) => ({
@@ -84,7 +87,13 @@ export default function PlatformBillingPage() {
         tenant_name: p.tenants?.name ?? "—",
       }))
     );
-    setTenants((tens ?? []) as { id: string; name: string }[]);
+    setTenants(
+      (tens ?? []).map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        subAmount: subAmountMap.get(t.id) ?? 0,
+      }))
+    );
     setLoading(false);
   }, []);
 
@@ -96,9 +105,13 @@ export default function PlatformBillingPage() {
     return matchFilter && matchSearch;
   });
 
-  const pendingTotal = payments.filter(p => p.status === "pending").reduce((s, p) => s + p.amount, 0);
-  const paidTotal = payments.filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0);
-  const overdueCount = payments.filter(p => p.status === "pending" && p.due_date && new Date(p.due_date) < new Date()).length;
+  const now = new Date();
+  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+
+  const pendingTotal     = payments.filter(p => p.status === "pending").reduce((s, p) => s + p.amount, 0);
+  const paidTotal        = payments.filter(p => p.status === "paid").reduce((s, p) => s + p.amount, 0);
+  const collectedMonth   = payments.filter(p => p.status === "paid" && p.paid_at && p.paid_at >= startOfMonth).reduce((s, p) => s + p.amount, 0);
+  const overdueCount     = payments.filter(p => p.status === "pending" && p.due_date && new Date(p.due_date) < now).length;
 
   async function markPaid() {
     if (!payModal) return;
@@ -110,7 +123,6 @@ export default function PlatformBillingPage() {
       reference: payRef || null,
       notes: payNote || null,
     }).eq("id", payModal.id);
-    // Also update subscription status to active
     await supabase.from("saas_subscriptions").update({ status: "active" }).eq("tenant_id", payModal.tenant_id);
     setSaving(false);
     setPayModal(null);
@@ -134,6 +146,12 @@ export default function PlatformBillingPage() {
     load();
   }
 
+  function handleTenantSelect(tenantId: string) {
+    setNewTenant(tenantId);
+    const t = tenants.find(x => x.id === tenantId);
+    if (t?.subAmount) setNewAmount(String(t.subAmount));
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div>
@@ -149,7 +167,12 @@ export default function PlatformBillingPage() {
       </div>
 
       {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14, marginBottom: 24 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}>
+        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Cobrado este mes</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#34d399" }}>{fmt(collectedMonth)}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>{payments.filter(p => p.status === "paid" && p.paid_at && p.paid_at >= startOfMonth).length} pagos en {new Date().toLocaleDateString("es-CO", { month: "long" })}</div>
+        </div>
         <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Pendiente de cobro</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#fbbf24" }}>{fmt(pendingTotal)}</div>
@@ -157,8 +180,8 @@ export default function PlatformBillingPage() {
         </div>
         <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Recaudado (histórico)</div>
-          <div style={{ fontSize: 26, fontWeight: 800, color: "#34d399" }}>{fmt(paidTotal)}</div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>{payments.filter(p => p.status === "paid").length} pagos</div>
+          <div style={{ fontSize: 26, fontWeight: 800, color: "#60a5fa" }}>{fmt(paidTotal)}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>{payments.filter(p => p.status === "paid").length} pagos totales</div>
         </div>
         <div style={{ background: overdueCount > 0 ? "rgba(248,113,113,.08)" : "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: `1px solid ${overdueCount > 0 ? "rgba(248,113,113,.2)" : "rgba(255,255,255,0.05)"}` }}>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Vencidos</div>
@@ -203,7 +226,7 @@ export default function PlatformBillingPage() {
                 <tr><td colSpan={7} style={{ textAlign: "center", padding: 40, color: "rgba(255,255,255,0.32)" }}>Sin resultados</td></tr>
               )}
               {filtered.map((p, i) => {
-                const isOverdue = p.status === "pending" && p.due_date && new Date(p.due_date) < new Date();
+                const isOverdue = p.status === "pending" && p.due_date && new Date(p.due_date) < now;
                 return (
                   <tr key={p.id} style={{ borderTop: "1px solid rgba(255,255,255,0.04)", background: isOverdue ? "rgba(248,113,113,0.03)" : i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
                     <td style={{ padding: "14px 16px" }}>
@@ -279,13 +302,20 @@ export default function PlatformBillingPage() {
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
                 <label style={lbl}>Negocio</label>
-                <select value={newTenant} onChange={e => setNewTenant(e.target.value)} style={inp}>
+                <select value={newTenant} onChange={e => handleTenantSelect(e.target.value)} style={inp}>
                   <option value="">Seleccionar cliente...</option>
                   {tenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
               </div>
               <div>
-                <label style={lbl}>Monto (COP)</label>
+                <label style={lbl}>
+                  Monto (COP)
+                  {newTenant && tenants.find(t => t.id === newTenant)?.subAmount ? (
+                    <span style={{ fontSize: 10, color: "rgba(255,255,255,0.32)", marginLeft: 8, fontWeight: 400, textTransform: "none" }}>
+                      (pre-llenado desde suscripción)
+                    </span>
+                  ) : null}
+                </label>
                 <input type="number" value={newAmount} onChange={e => setNewAmount(e.target.value)} placeholder="0" style={inp} />
               </div>
               <div>
@@ -298,7 +328,8 @@ export default function PlatformBillingPage() {
               </div>
             </div>
             <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
-              <button onClick={() => setNewModal(false)} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.42)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Cancelar</button>
+              <button onClick={() => { setNewModal(false); setNewTenant(""); setNewAmount(""); setNewDue(""); setNewNote(""); }}
+                style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.42)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>Cancelar</button>
               <button onClick={createPayment} disabled={saving || !newTenant || !newAmount}
                 style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#fb0f05", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer", opacity: (!newTenant || !newAmount) ? 0.5 : 1 }}>
                 {saving ? "Guardando..." : "Crear cobro"}
