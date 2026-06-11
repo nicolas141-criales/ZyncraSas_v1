@@ -431,9 +431,79 @@ function RetentionChart({
   fmt: (n: number) => string;
 }) {
   if (curve.length < 2) {
+    // Placeholder: greyed-out axes + ghost curve + overlay message
+    const VW2 = 600, VH2 = 160;
+    const P2  = { t: 28, r: 20, b: 38, l: 48 };
+    const ghostPts = [100, 65, 42, 28, 18].map((v, i, arr) => ({
+      x: P2.l + (i / (arr.length - 1)) * (VW2 - P2.l - P2.r),
+      y: P2.t + (1 - v / 100) * (VH2 - P2.t - P2.b),
+    }));
+    const ghostLine = ghostPts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    const ghostArea = `${ghostLine} L${ghostPts[4].x.toFixed(1)},${(P2.t + VH2 - P2.t - P2.b).toFixed(1)} L${P2.l},${(P2.t + VH2 - P2.t - P2.b).toFixed(1)} Z`;
     return (
-      <div style={{ padding: "32px 18px", textAlign: "center", color: MUTE, fontSize: 13 }}>
-        Necesitas clientes con al menos dos visitas registradas para ver la curva de retención.
+      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+        {/* Ghost KPI funnel */}
+        <div style={{ display: "flex", alignItems: "center", gap: 0, opacity: 0.22 }}>
+          {[100, 65, 42, 28, 18].map((v, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ textAlign: "center", padding: "6px 16px 8px" }}>
+                <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-1px", lineHeight: 1, color: INK, fontFamily: MONO }}>{v}%</div>
+                <div style={{ marginTop: 5, fontSize: 9, fontFamily: MONO, textTransform: "uppercase", letterSpacing: ".09em", color: MUTE }}>
+                  {i === 0 ? "Mes 0" : `+${i} mes${i > 1 ? "es" : ""}`}
+                </div>
+                <div style={{ width: 36, height: 3, borderRadius: 2, background: "rgba(20,15,30,0.1)", margin: "6px auto 0" }} />
+              </div>
+              {i < 4 && (
+                <svg width="18" height="18" viewBox="0 0 18 18" style={{ color: MUTE, opacity: 0.5, flexShrink: 0 }}>
+                  <path d="M4 9h10M11 6l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              )}
+            </div>
+          ))}
+        </div>
+        {/* Ghost chart + overlay */}
+        <div style={{ position: "relative" }}>
+          <div style={{ background: "rgba(20,15,30,0.018)", borderRadius: 14, border: "1px solid rgba(20,15,30,0.05)", padding: "4px 0 2px", opacity: 0.2 }}>
+            <svg viewBox={`0 0 ${VW2} ${VH2}`} style={{ width: "100%", height: "auto", display: "block" }}>
+              <defs>
+                <linearGradient id="ghost-fill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%"   stopColor="#10b981" stopOpacity="0.5" />
+                  <stop offset="100%" stopColor="#10b981" stopOpacity="0.01" />
+                </linearGradient>
+              </defs>
+              {[0, 25, 50, 75, 100].map(v => {
+                const y = P2.t + (1 - v / 100) * (VH2 - P2.t - P2.b);
+                return (
+                  <g key={v}>
+                    <line x1={P2.l} y1={y} x2={VW2 - P2.r} y2={y} stroke="rgba(20,15,30,0.08)" strokeWidth="1" strokeDasharray={v > 0 ? "3 5" : "none"} />
+                    <text x={P2.l - 9} y={y + 3.5} textAnchor="end" fontSize="9" fill="#b0abc0" fontFamily="monospace">{v}%</text>
+                  </g>
+                );
+              })}
+              <path d={ghostArea} fill="url(#ghost-fill)" />
+              <path d={ghostLine} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+              {ghostPts.map((p, i) => (
+                <g key={i}>
+                  <text x={p.x} y={VH2 - 8} textAnchor="middle" fontSize="9.5" fill="#8E879B" fontFamily="monospace">{i === 0 ? "M0" : `+${i}m`}</text>
+                  <circle cx={p.x} cy={p.y} r="5.5" fill="white" stroke="#10b981" strokeWidth="2.5" />
+                  <circle cx={p.x} cy={p.y} r="2.5"  fill="#10b981" />
+                </g>
+              ))}
+            </svg>
+          </div>
+          {/* Overlay message */}
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(16,185,129,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
+            <div style={{ fontWeight: 700, fontSize: 13, color: INK }}>Sin datos de retención aún</div>
+            <div style={{ fontSize: 11.5, color: MUTE, textAlign: "center", maxWidth: 280, lineHeight: 1.5 }}>
+              La gráfica aparecerá cuando registres clientes con más de una visita en meses distintos.
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -1469,27 +1539,25 @@ export default function AdminOverview() {
       </Card>
 
       {/* ─── Retención & LTV ─── */}
-      {data.retentionCurve.length >= 2 && (
-        <Card delay={0.37}>
-          <CardHead
-            title="Retención de Clientes & LTV"
-            sub="Cuántos clientes regresan mes a mes desde su primera visita"
-            aside={data.retentionCurve.length >= 2
-              ? <span style={{ fontFamily: MONO, fontSize: 10.5, color: "#10b981", fontWeight: 700 }}>
-                  M+1 {data.retentionCurve[1]}%
-                </span>
-              : undefined}
+      <Card delay={0.37}>
+        <CardHead
+          title="Retención de Clientes & LTV"
+          sub="Cuántos clientes regresan mes a mes desde su primera visita"
+          aside={data.retentionCurve.length >= 2
+            ? <span style={{ fontFamily: MONO, fontSize: 10.5, color: "#10b981", fontWeight: 700 }}>
+                M+1 {data.retentionCurve[1]}%
+              </span>
+            : undefined}
+        />
+        <div style={{ padding: "16px 18px 20px" }}>
+          <RetentionChart
+            curve={data.retentionCurve}
+            cohorts={data.retentionCohorts}
+            avgTicket={data.avgTicket}
+            fmt={fmt}
           />
-          <div style={{ padding: "16px 18px 20px" }}>
-            <RetentionChart
-              curve={data.retentionCurve}
-              cohorts={data.retentionCohorts}
-              avgTicket={data.avgTicket}
-              fmt={fmt}
-            />
-          </div>
-        </Card>
-      )}
+        </div>
+      </Card>
 
       {/* ─── Citas + Equipo ─── */}
       <div className="znGridLists">
