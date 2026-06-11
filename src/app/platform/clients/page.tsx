@@ -9,6 +9,8 @@ interface TenantRow {
   id: string;
   name: string;
   slug: string;
+  owner_email: string | null;
+  owner_phone: string | null;
   created_at: string;
   subscription: {
     id: string;
@@ -18,6 +20,11 @@ interface TenantRow {
     current_period_end: string | null;
     trial_ends_at: string | null;
     notes: string | null;
+  } | null;
+  last_payment: {
+    method: string | null;
+    paid_at: string | null;
+    amount: number;
   } | null;
   usage: {
     clients: number;
@@ -42,6 +49,18 @@ function daysUntil(iso: string | null): number | null {
   if (!iso) return null;
   const diff = new Date(iso).getTime() - Date.now();
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
+function fmtMethod(method: string | null) {
+  if (!method) return "—";
+  const map: Record<string, string> = {
+    transferencia: "Transferencia",
+    nequi: "Nequi",
+    efectivo: "Efectivo",
+    daviplata: "Daviplata",
+    tarjeta: "Tarjeta",
+  };
+  return map[method] ?? method.charAt(0).toUpperCase() + method.slice(1);
 }
 
 function StatusBadge({ status }: { status: string }) {
@@ -80,14 +99,30 @@ export default function PlatformClientsPage() {
   const loadTenants = useCallback(async () => {
     setLoading(true);
 
-    const [{ data: subs }, { data: clientCounts }, { data: apptCounts }, { data: allTenants }] = await Promise.all([
+    const [
+      { data: subs },
+      { data: clientCounts },
+      { data: apptCounts },
+      { data: allTenants },
+      { data: paidPayments },
+    ] = await Promise.all([
       supabase.from("saas_subscriptions").select("*, saas_plans(name), tenants(id, name, slug, created_at)"),
       supabase.from("clients").select("tenant_id"),
       supabase.from("appointments").select("tenant_id"),
-      supabase.from("tenants").select("id, name, slug, created_at").order("created_at", { ascending: false }),
+      supabase.from("tenants").select("id, name, slug, created_at, settings").order("created_at", { ascending: false }),
+      supabase.from("saas_payments").select("tenant_id, method, paid_at, amount").eq("status", "paid").order("paid_at", { ascending: false }),
     ]);
 
     const subsMap = new Map((subs ?? []).map((s: any) => [s.tenant_id, s]));
+
+    // Last paid payment per tenant (already ordered by paid_at desc)
+    const paymentMap = new Map<string, { method: string | null; paid_at: string | null; amount: number }>();
+    (paidPayments ?? []).forEach((p: any) => {
+      if (!paymentMap.has(p.tenant_id)) {
+        paymentMap.set(p.tenant_id, { method: p.method, paid_at: p.paid_at, amount: p.amount });
+      }
+    });
+
     const clientMap = new Map<string, number>();
     (clientCounts ?? []).forEach((c: any) => { clientMap.set(c.tenant_id, (clientMap.get(c.tenant_id) ?? 0) + 1); });
     const apptMap = new Map<string, number>();
@@ -95,10 +130,14 @@ export default function PlatformClientsPage() {
 
     const rows: TenantRow[] = (allTenants ?? []).map((t: any) => {
       const sub = subsMap.get(t.id);
+      const pay = paymentMap.get(t.id) ?? null;
+      const settings = t.settings ?? {};
       return {
         id: t.id,
         name: t.name,
         slug: t.slug,
+        owner_email: settings.owner_email ?? null,
+        owner_phone: settings.owner_phone ?? null,
         created_at: t.created_at,
         subscription: sub ? {
           id: sub.id,
@@ -109,6 +148,7 @@ export default function PlatformClientsPage() {
           trial_ends_at: sub.trial_ends_at,
           notes: sub.notes,
         } : null,
+        last_payment: pay,
         usage: {
           clients: clientMap.get(t.id) ?? 0,
           appointments: apptMap.get(t.id) ?? 0,
@@ -124,7 +164,10 @@ export default function PlatformClientsPage() {
 
   const filtered = tenants.filter(t => {
     const matchFilter = filter === "all" || (t.subscription?.status ?? "trial") === filter;
-    const matchSearch = !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.slug.toLowerCase().includes(search.toLowerCase());
+    const matchSearch = !search ||
+      t.name.toLowerCase().includes(search.toLowerCase()) ||
+      t.slug.toLowerCase().includes(search.toLowerCase()) ||
+      (t.owner_email ?? "").toLowerCase().includes(search.toLowerCase());
     return matchFilter && matchSearch;
   });
 
@@ -168,8 +211,8 @@ export default function PlatformClientsPage() {
       {/* Filters */}
       <div style={{ display: "flex", gap: 10, marginBottom: 20, flexWrap: "wrap" }}>
         <input value={search} onChange={e => setSearch(e.target.value)}
-          placeholder="Buscar negocio o slug..."
-          style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.92)", fontSize: 13, width: 220, outline: "none" }} />
+          placeholder="Buscar por negocio, slug o email..."
+          style={{ padding: "8px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.92)", fontSize: 13, width: 260, outline: "none" }} />
         <div style={{ display: "flex", gap: 4 }}>
           {(["all", "active", "trial", "overdue", "suspended"] as StatusFilter[]).map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
@@ -190,11 +233,11 @@ export default function PlatformClientsPage() {
       {loading ? (
         <div style={{ textAlign: "center", padding: 60, color: "rgba(255,255,255,0.32)" }}>Cargando...</div>
       ) : (
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)", overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 960 }}>
             <thead>
               <tr style={{ background: "#10101B" }}>
-                {["Negocio", "Estado", "Plan / Monto", "Trial vence", "Clientes", "Citas", "Registrado", ""].map(h => (
+                {["Negocio / Contacto", "Estado", "Plan / Monto", "Trial vence", "Último pago", "Clientes", "Registrado", ""].map(h => (
                   <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
                 ))}
               </tr>
@@ -207,18 +250,36 @@ export default function PlatformClientsPage() {
                 const days = t.subscription?.status === "trial" ? daysUntil(t.subscription.trial_ends_at) : null;
                 return (
                   <tr key={t.id} style={{ borderTop: "1px solid rgba(255,255,255,0.04)", background: i % 2 === 0 ? "transparent" : "rgba(255,255,255,0.01)" }}>
-                    <td style={{ padding: "14px 16px" }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: "rgba(255,255,255,0.94)" }}>{t.name}</div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.32)", marginTop: 2 }}>/{t.slug}</div>
+
+                    {/* Negocio + contacto */}
+                    <td style={{ padding: "12px 16px", minWidth: 220 }}>
+                      <div style={{ fontWeight: 700, fontSize: 13, color: "rgba(255,255,255,0.94)" }}>{t.name}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 1 }}>/{t.slug}</div>
+                      {t.owner_email && (
+                        <a href={`mailto:${t.owner_email}`} style={{ fontSize: 11, color: "#60a5fa", marginTop: 4, display: "block", textDecoration: "none" }}>
+                          ✉ {t.owner_email}
+                        </a>
+                      )}
+                      {t.owner_phone && (
+                        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>
+                          📱 {t.owner_phone}
+                        </div>
+                      )}
                     </td>
-                    <td style={{ padding: "14px 16px" }}>
+
+                    {/* Estado */}
+                    <td style={{ padding: "12px 16px" }}>
                       <StatusBadge status={t.subscription?.status ?? "trial"} />
                     </td>
-                    <td style={{ padding: "14px 16px" }}>
-                      <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)" }}>{t.subscription?.plan_name ?? "Sin plan"}</div>
+
+                    {/* Plan / Monto */}
+                    <td style={{ padding: "12px 16px" }}>
+                      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{t.subscription?.plan_name ?? "Sin plan"}</div>
                       <div style={{ fontSize: 13, fontWeight: 700, color: "#ff7d72" }}>{t.subscription?.amount ? fmt(t.subscription.amount) + "/mes" : "—"}</div>
                     </td>
-                    <td style={{ padding: "14px 16px" }}>
+
+                    {/* Trial vence */}
+                    <td style={{ padding: "12px 16px" }}>
                       {t.subscription?.status === "trial" && t.subscription.trial_ends_at ? (
                         <div>
                           <div style={{ fontSize: 12, color: days !== null && days <= 3 ? "#f87171" : "rgba(255,255,255,0.55)" }}>
@@ -234,10 +295,28 @@ export default function PlatformClientsPage() {
                         <span style={{ fontSize: 12, color: "rgba(255,255,255,0.22)" }}>—</span>
                       )}
                     </td>
-                    <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.92)", textAlign: "center" }}>{t.usage.clients}</td>
-                    <td style={{ padding: "14px 16px", fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.92)", textAlign: "center" }}>{t.usage.appointments}</td>
-                    <td style={{ padding: "14px 16px", fontSize: 12, color: "rgba(255,255,255,0.42)" }}>{fmtDate(t.created_at)}</td>
-                    <td style={{ padding: "14px 16px" }}>
+
+                    {/* Último pago */}
+                    <td style={{ padding: "12px 16px" }}>
+                      {t.last_payment ? (
+                        <div>
+                          <div style={{ fontSize: 12, fontWeight: 600, color: "#34d399" }}>{fmtMethod(t.last_payment.method)}</div>
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>{fmtDate(t.last_payment.paid_at)}</div>
+                          <div style={{ fontSize: 11, color: "#ff7d72", marginTop: 1 }}>{fmt(t.last_payment.amount)}</div>
+                        </div>
+                      ) : (
+                        <span style={{ fontSize: 12, color: "rgba(255,255,255,0.22)" }}>Sin pagos</span>
+                      )}
+                    </td>
+
+                    {/* Clientes */}
+                    <td style={{ padding: "12px 16px", fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.92)", textAlign: "center" }}>{t.usage.clients}</td>
+
+                    {/* Registrado */}
+                    <td style={{ padding: "12px 16px", fontSize: 12, color: "rgba(255,255,255,0.42)" }}>{fmtDate(t.created_at)}</td>
+
+                    {/* Acción */}
+                    <td style={{ padding: "12px 16px" }}>
                       <button onClick={() => openEdit(t)}
                         style={{ padding: "6px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "#ff7d72", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
                         Editar
@@ -254,9 +333,36 @@ export default function PlatformClientsPage() {
       {/* Edit Modal */}
       {editModal && selected && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 28, maxWidth: 460, width: "100%", border: "1px solid rgba(255,255,255,0.14)" }}>
+          <div style={{ background: "#10101B", borderRadius: 20, padding: 28, maxWidth: 500, width: "100%", border: "1px solid rgba(255,255,255,0.14)", maxHeight: "90vh", overflowY: "auto" }}>
             <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>{selected.name}</h2>
             <p style={{ margin: "0 0 20px", fontSize: 13, color: "rgba(255,255,255,0.42)" }}>/{selected.slug} · Registrado el {fmtDate(selected.created_at)}</p>
+
+            {/* Datos de contacto (solo lectura) */}
+            {(selected.owner_email || selected.owner_phone) && (
+              <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: "12px 16px", marginBottom: 20, display: "flex", flexDirection: "column", gap: 6 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Datos del dueño</div>
+                {selected.owner_email && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.42)", width: 60 }}>Email</span>
+                    <a href={`mailto:${selected.owner_email}`} style={{ fontSize: 13, color: "#60a5fa", textDecoration: "none", fontWeight: 600 }}>{selected.owner_email}</a>
+                  </div>
+                )}
+                {selected.owner_phone && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.42)", width: 60 }}>Teléfono</span>
+                    <a href={`https://wa.me/${selected.owner_phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer" style={{ fontSize: 13, color: "#34d399", textDecoration: "none", fontWeight: 600 }}>{selected.owner_phone}</a>
+                  </div>
+                )}
+                {selected.last_payment && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 4, paddingTop: 8, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.42)", width: 60 }}>Último pago</span>
+                    <span style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>
+                      {fmtMethod(selected.last_payment.method)} · {fmtDate(selected.last_payment.paid_at)} · {fmt(selected.last_payment.amount)}
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
 
             <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
               <div>
@@ -307,6 +413,6 @@ const lbl: React.CSSProperties = {
 };
 const inp: React.CSSProperties = {
   width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)",
-  background: "#10101B", color: "rgba(255,255,255,0.92)", fontSize: 14, boxSizing: "border-box",
+  background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.92)", fontSize: 14, boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
 };

@@ -332,6 +332,8 @@ export default function RegisterPage() {
               country: selectedCountry.code,
               currency: selectedCountry.currency,
               locale: selectedCountry.locale,
+              owner_email: email,
+              owner_phone: whatsapp || null,
             },
           }])
           .select()
