@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
-import { IconCalendar, IconX, IconPlus, IconCreditCard } from "../ZyncraIcons";
+import { IconCalendar, IconX, IconPlus, IconCreditCard, IconChat } from "../ZyncraIcons";
 import NewAppointmentModal from "../NewAppointmentModal";
 import { Skel, MONO } from "../charts";
 
@@ -48,11 +48,12 @@ function addDays(d: Date, n: number) { const r = new Date(d); r.setDate(r.getDat
 const HOURS = Array.from({ length: 13 }, (_, i) => `${(7 + i).toString().padStart(2, "0")}:00`);
 const DAYS_SHORT = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
 const STATUS_MAP: Record<string, { label: string; bg: string; color: string; border: string }> = {
-  pending:   { label: "Pendiente",  bg: "rgba(251,15,5,0.10)",   color: "#fb0f05",  border: "rgba(251,15,5,0.30)"   },
-  confirmed: { label: "Confirmada", bg: "rgba(16,185,129,0.10)", color: "#10b981",  border: "rgba(16,185,129,0.30)" },
-  completed: { label: "Completada", bg: "rgba(99,102,241,0.10)", color: "#6366f1",  border: "rgba(99,102,241,0.30)" },
-  cancelled: { label: "Cancelada",  bg: "rgba(100,116,139,0.08)",color: "#8E879B",  border: "rgba(100,116,139,0.20)"},
+  pending:   { label: "Pendiente",  bg: "rgba(245,158,11,0.12)",  color: "#d97706",  border: "rgba(245,158,11,0.4)"   },
+  confirmed: { label: "Confirmada", bg: "rgba(59,130,246,0.12)",  color: "#2563eb",  border: "rgba(59,130,246,0.4)"   },
+  completed: { label: "Completada", bg: "rgba(16,185,129,0.12)",  color: "#059669",  border: "rgba(16,185,129,0.4)"   },
+  cancelled: { label: "Cancelada",  bg: "rgba(100,116,139,0.08)", color: "#8E879B",  border: "rgba(100,116,139,0.20)" },
 };
+const ALERT_S = { bg: "rgba(239,68,68,0.10)", color: "#dc2626", border: "rgba(239,68,68,0.45)" };
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "10px 13px", border: "1.5px solid rgba(20,15,30,0.08)",
@@ -80,6 +81,7 @@ export default function CalendarPage() {
   const [dragApt, setDragApt] = useState<Appointment | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [toast, setToast] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all"|"pending"|"confirmed"|"completed"|"cancelled">("all");
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => { setIsMounted(true); }, []);
@@ -145,14 +147,24 @@ export default function CalendarPage() {
   const goToday  = () => { setWeekRef(new Date()); setDayRef(new Date()); };
 
   // Helpers for grid
+  const filterByStatus = (a: Appointment) => statusFilter === "all" || a.status === statusFilter;
+
   const getAptsForDay = (dateStr: string, hour: string) =>
-    appointments.filter(a => a.appointment_date === dateStr && a.appointment_time.startsWith(hour.substring(0, 2)));
+    appointments.filter(a => a.appointment_date === dateStr && a.appointment_time.startsWith(hour.substring(0, 2)) && filterByStatus(a));
 
   const getAptsByProf = (profId: string | null, hour: string) =>
     appointments.filter(a =>
       a.appointment_time.startsWith(hour.substring(0, 2)) &&
-      (profId === null ? !a.professional_id : a.professional_id === profId)
+      (profId === null ? !a.professional_id : a.professional_id === profId) &&
+      filterByStatus(a)
     );
+
+  const isAlertApt = (apt: Appointment) => {
+    if (apt.status !== "pending" && apt.status !== "confirmed") return false;
+    if (apt.appointment_date < todayStr) return true;
+    if (apt.appointment_date === todayStr) return parseInt(apt.appointment_time.substring(0, 2)) < new Date().getHours();
+    return false;
+  };
 
   const openEdit = async (apt: Appointment) => {
     setSelectedApt(apt);
@@ -247,7 +259,8 @@ export default function CalendarPage() {
 
   // Shared appointment card renderer — draggable para reagendar
   const aptCard = (apt: Appointment) => {
-    const s = STATUS_MAP[apt.status] || STATUS_MAP.pending;
+    const alert = isAlertApt(apt);
+    const s = alert ? ALERT_S : (STATUS_MAP[apt.status] || STATUS_MAP.pending);
     const profName = (apt.professionals as any)?.name;
     const draggable = apt.status !== "cancelled";
     const isDragging = dragApt?.id === apt.id;
@@ -256,23 +269,28 @@ export default function CalendarPage() {
         draggable={draggable}
         onDragStart={e => { setDragApt(apt); e.dataTransfer.effectAllowed = "move"; }}
         onDragEnd={() => { setDragApt(null); setDragOver(null); }}
-        title={draggable ? "Arrastra para reagendar" : undefined}
+        title={alert ? "Sin presentarse — hora ya pasó" : draggable ? "Arrastra para reagendar" : undefined}
         style={{
-          background: "white", borderLeft: `3px solid ${s.color}`,
+          background: s.bg,
           border: `1px solid ${s.border}`, borderLeftWidth: 3, borderLeftColor: s.color,
           borderRadius: "7px", padding: "5px 7px 5px 8px", fontSize: "11px", marginBottom: "3px",
           cursor: draggable ? "grab" : "pointer",
           opacity: isDragging ? 0.35 : apt.status === "cancelled" ? 0.55 : 1,
-          boxShadow: "0 1px 2px rgba(20,15,30,0.05)",
+          boxShadow: alert ? `0 0 0 1px ${s.border}` : "0 1px 2px rgba(20,15,30,0.05)",
           transition: "opacity .15s, transform .15s, box-shadow .15s",
           animation: "znFadeUp .3s cubic-bezier(.22,1,.36,1) both",
         }}
         onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = "0 6px 16px rgba(20,15,30,0.12)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = "0 1px 2px rgba(20,15,30,0.05)"; }}>
+        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = alert ? `0 0 0 1px ${s.border}` : "0 1px 2px rgba(20,15,30,0.05)"; }}>
         <div style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", display: "flex", alignItems: "center", gap: 4 }}>
           <span style={{ fontFamily: MONO, fontWeight: 600, fontSize: 10, color: s.color, flexShrink: 0 }}>{fmt12(apt.appointment_time)}</span>
           <span style={{ fontWeight: 600, color: "#14111C", overflow: "hidden", textOverflow: "ellipsis" }}>{(apt.clients as any)?.name || "Cliente"}</span>
-          {hasComment(apt) && <span title="Tiene información adicional" style={{ width: 5, height: 5, borderRadius: "50%", background: "#0027fe", flexShrink: 0 }} />}
+          {hasComment(apt) && (
+            <span title="Tiene información adicional" style={{ flexShrink: 0, color: "#2563eb", display: "flex", alignItems: "center" }}>
+              <IconChat size={10} />
+            </span>
+          )}
+          {alert && <span title="Sin presentarse" style={{ flexShrink: 0, fontSize: 9, color: s.color }}>⚠</span>}
         </div>
         <div style={{ color: "#564E66", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: "1px", fontSize: 10.5 }}>
           {(apt.services as any)?.name || "Servicio"}
@@ -290,7 +308,14 @@ export default function CalendarPage() {
   const monthLabel = view === "week"
     ? weekDays[0].toLocaleDateString("es-CO", { month: "long", year: "numeric" })
     : dayRef.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
-  const totalApts = appointments.length;
+  const filteredCount = statusFilter === "all" ? appointments.length : appointments.filter(a => a.status === statusFilter).length;
+  const STATUS_FILTERS: { key: "all"|"pending"|"confirmed"|"completed"|"cancelled"; label: string; color?: string }[] = [
+    { key: "all",       label: "Todas" },
+    { key: "pending",   label: "Pendiente",  color: STATUS_MAP.pending.color },
+    { key: "confirmed", label: "Confirmada", color: STATUS_MAP.confirmed.color },
+    { key: "completed", label: "Completada", color: STATUS_MAP.completed.color },
+    { key: "cancelled", label: "Cancelada",  color: STATUS_MAP.cancelled.color },
+  ];
 
   // ── Render ──────────────────────────────────────────────────────────────
   return (
@@ -305,7 +330,7 @@ export default function CalendarPage() {
           <div>
             <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#14111C", letterSpacing: "-0.5px", margin: 0 }}>Calendario</h1>
             <p style={{ color: "#8E879B", fontSize: "13px", marginTop: "2px", textTransform: "capitalize" }}>
-              {monthLabel} · {totalApts} cita{totalApts !== 1 ? "s" : ""}
+              {monthLabel} · {filteredCount} cita{filteredCount !== 1 ? "s" : ""}
             </p>
           </div>
         </div>
@@ -341,6 +366,26 @@ export default function CalendarPage() {
             </>
           )}
         </div>
+      </div>
+
+      {/* Status filter pills */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 14, flexWrap: "wrap" }}>
+        {STATUS_FILTERS.map(f => {
+          const active = statusFilter === f.key;
+          return (
+            <button key={f.key} onClick={() => setStatusFilter(f.key)}
+              style={{
+                padding: "5px 13px", borderRadius: 20, border: `1.5px solid ${active ? (f.color || "#14111C") : "rgba(20,15,30,0.10)"}`,
+                background: active ? (f.color ? `${f.color}18` : "rgba(20,15,30,0.06)") : "white",
+                color: active ? (f.color || "#14111C") : "#8E879B",
+                fontSize: 12, fontWeight: active ? 700 : 500, cursor: "pointer",
+                fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                transition: "all .15s",
+              }}>
+              {f.label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Calendar grid */}
