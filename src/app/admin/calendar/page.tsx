@@ -602,7 +602,6 @@ export default function CalendarPage() {
                 <select value={editForm.status} onChange={e => setEditForm({ ...editForm, status: e.target.value })} style={inp}>
                   <option value="pending">Pendiente</option>
                   <option value="confirmed">Confirmada</option>
-                  <option value="completed">Completada</option>
                   <option value="cancelled">Cancelada</option>
                 </select>
               </div>
@@ -614,7 +613,7 @@ export default function CalendarPage() {
                 style={editForm.status === "cancelled" ? { background: "#ef4444" } : {}}>
                 {isSaving ? "Guardando…" : "Guardar cambios"}
               </button>
-              {(editForm.status === "pending" || editForm.status === "confirmed") && (
+              {editForm.status === "confirmed" && (
                 <button
                   onClick={() => { setSelectedApt(null); router.push(`/admin/pos?appointment=${selectedApt!.id}`); }}
                   style={{
