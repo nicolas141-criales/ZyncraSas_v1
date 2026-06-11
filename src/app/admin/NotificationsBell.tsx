@@ -179,10 +179,17 @@ function NotifCard({
   );
 }
 
+const LS_KEY = "zn_notif_dismissed";
+
 export default function NotificationsBell({ tenantId }: { tenantId: string }) {
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState<Notif[]>([]);
-  const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  // Dismissed persiste en localStorage para sobrevivir recargas
+  const [dismissed, setDismissed] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try { return new Set(JSON.parse(localStorage.getItem(LS_KEY) ?? "[]")); }
+    catch { return new Set(); }
+  });
   const [confirming, setConfirming] = useState<Set<string>>(new Set());
   const [isMounted, setIsMounted] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -190,22 +197,18 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
   useEffect(() => { setIsMounted(true); }, []);
 
   const load = useCallback(async () => {
-    // Usar fecha local, NO toISOString() que devuelve UTC y desplaza el día en UTC-5
     const localISO = (d: Date) =>
       `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
     const now      = new Date();
-    const todayD   = new Date(now);
-    const tomorrowD = new Date(now); tomorrowD.setDate(now.getDate() + 1);
-    const in7D     = new Date(now);  in7D.setDate(now.getDate() + 7);
-    const today    = localISO(todayD);
-    const tomorrow = localISO(tomorrowD);
+    const today    = localISO(now);
+    const in7D     = new Date(now); in7D.setDate(now.getDate() + 7);
     const in7      = localISO(in7D);
-    const since8h  = new Date(Date.now() - 8 * 3600000).toISOString();
+    // "Reciente" = creada en las últimas 2h → muestra como Nueva cita
+    const since2h  = new Date(Date.now() - 2 * 3600000).toISOString();
 
     const fmtDate = (date: string, time: string) => {
       const t = time.slice(0, 5);
       if (date === today) return `Hoy ${t}`;
-      if (date === tomorrow) return `Mañana ${t}`;
       const d = new Date(date + "T12:00:00");
       return `${d.toLocaleDateString("es-CO", { weekday: "short", day: "numeric", month: "short" })} ${t}`;
     };
@@ -220,22 +223,77 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
       supabase.from("appointments")
         .select("id, appointment_date, appointment_time, status, created_at, clients(name), services(name)")
         .eq("tenant_id", tenantId)
-        .gte("created_at", since8h)
+        .gte("created_at", since2h)
         .order("created_at", { ascending: false })
-        .limit(15),
+        .limit(10),
     ]);
 
     const list: Notif[] = [];
     const meta = (type: Notif["type"]) => TYPE_META[type];
-    // Cada cita solo puede generar UNA notificación (la de mayor prioridad)
-    const seen = new Set<string>();
+    const seen = new Set<string>(); // cada aptId genera solo 1 notificación
 
-    // A — Por presentarse: citas de HOY que faltan 0–3 horas
+    // ── 1. NUEVA CITA (primero, para que no la robe "sin confirmar") ────────
+    // Creada en las últimas 2h y no cancelada
+    (recent ?? [])
+      .filter(a => a.status !== "cancelled")
+      .forEach(a => {
+        if (seen.has(a.id)) return;
+        seen.add(a.id);
+        list.push({
+          id: `D_${a.id}`, aptId: a.id, type: "nueva_cita", group: "activity",
+          client:  (a.clients as any)?.name  || "Cliente",
+          service: (a.services as any)?.name || "Servicio",
+          when: fmtDate(a.appointment_date, a.appointment_time),
+          tag: relTime(a.created_at),
+          ...meta("nueva_cita"),
+        });
+      });
+
+    // ── 2. CANCELACIONES recientes (también últimas 2h) ───────────────────
+    (recent ?? [])
+      .filter(a => a.status === "cancelled")
+      .forEach(a => {
+        if (seen.has(a.id)) return;
+        seen.add(a.id);
+        list.push({
+          id: `Dcancel_${a.id}`, aptId: a.id, type: "cancelacion", group: "activity",
+          client:  (a.clients as any)?.name  || "Cliente",
+          service: (a.services as any)?.name || "Servicio",
+          when: "",
+          tag: relTime(a.created_at),
+          ...meta("cancelacion"),
+        });
+      });
+
+    // ── 3. SIN CONFIRMAR: pending Y quedan ≤ 2h para la cita ─────────────
+    // Sale exactamente 2h antes — no antes, no para todas las del día
     (upcoming ?? [])
       .filter(a => {
-        if (a.appointment_date !== today) return false;
+        if (a.status !== "pending") return false;
         const mins = minsUntil(a.appointment_time.slice(0, 5));
-        return mins >= 0 && mins <= 180;
+        // Solo si la cita es HOY y quedan entre 0 y 120 minutos
+        return a.appointment_date === today && mins >= 0 && mins <= 120;
+      })
+      .forEach(a => {
+        if (seen.has(a.id)) return;
+        seen.add(a.id);
+        const mins = minsUntil(a.appointment_time.slice(0, 5));
+        list.push({
+          id: `B_${a.id}`, aptId: a.id, type: "sin_confirmar", group: "urgent",
+          client:  (a.clients as any)?.name  || "Cliente",
+          service: (a.services as any)?.name || "Servicio",
+          when: `Hoy ${a.appointment_time.slice(0, 5)}`,
+          tag: fmtMinsUntil(mins),
+          ...meta("sin_confirmar"),
+        });
+      });
+
+    // ── 4. POR PRESENTARSE: confirmed Y quedan ≤ 3h para la cita hoy ─────
+    (upcoming ?? [])
+      .filter(a => {
+        if (a.status !== "confirmed") return false;
+        const mins = minsUntil(a.appointment_time.slice(0, 5));
+        return a.appointment_date === today && mins >= 0 && mins <= 180;
       })
       .forEach(a => {
         if (seen.has(a.id)) return;
@@ -251,26 +309,10 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
         });
       });
 
-    // B — Sin confirmar mañana
-    (upcoming ?? [])
-      .filter(a => a.appointment_date === tomorrow && a.status === "pending")
-      .forEach(a => {
-        if (seen.has(a.id)) return;
-        seen.add(a.id);
-        list.push({
-          id: `B_${a.id}`, aptId: a.id, type: "sin_confirmar", group: "action",
-          client:  (a.clients as any)?.name  || "Cliente",
-          service: (a.services as any)?.name || "Servicio",
-          when: `Mañana ${a.appointment_time.slice(0, 5)}`,
-          tag: "Mañana",
-          ...meta("sin_confirmar"),
-        });
-      });
-
-    // C — Sin profesional (próximos 7 días, si no fue ya catalogada)
+    // ── 5. SIN PROFESIONAL: próximos 7 días ──────────────────────────────
     (upcoming ?? [])
       .filter(a => !a.professional_id)
-      .slice(0, 5)
+      .slice(0, 4)
       .forEach(a => {
         if (seen.has(a.id)) return;
         seen.add(a.id);
@@ -279,65 +321,37 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
           client:  (a.clients as any)?.name  || "Cliente",
           service: (a.services as any)?.name || "Servicio",
           when: fmtDate(a.appointment_date, a.appointment_time),
-          tag: a.appointment_date === today ? "Hoy" : a.appointment_date === tomorrow ? "Mañana" : "Próxima",
+          tag: a.appointment_date === today ? "Hoy" : "Próxima",
           ...meta("sin_profesional"),
         });
       });
 
-    // D — Nuevas citas (últimas 8h, si no fue ya catalogada)
-    (recent ?? [])
-      .filter(a => a.status !== "cancelled" && !seen.has(a.id))
-      .slice(0, 4)
-      .forEach(a => {
-        seen.add(a.id);
-        list.push({
-          id: `D_${a.id}`, aptId: a.id, type: "nueva_cita", group: "activity",
-          client:  (a.clients as any)?.name  || "Cliente",
-          service: (a.services as any)?.name || "Servicio",
-          when: fmtDate(a.appointment_date, a.appointment_time),
-          tag: relTime(a.created_at),
-          ...meta("nueva_cita"),
-        });
-      });
-
-    // Cancelaciones recientes
-    (recent ?? [])
-      .filter(a => a.status === "cancelled" && !seen.has(a.id))
-      .slice(0, 3)
-      .forEach(a => {
-        seen.add(a.id);
-        list.push({
-          id: `Dcancel_${a.id}`, aptId: a.id, type: "cancelacion", group: "activity",
-          client:  (a.clients as any)?.name  || "Cliente",
-          service: (a.services as any)?.name || "Servicio",
-          when: "",
-          tag: relTime(a.created_at),
-          ...meta("cancelacion"),
-        });
-      });
-
     setNotifs(list);
+
+    // Limpiar dismissed: solo conservar IDs que aún existen en la lista actual
+    // → previene que el localStorage crezca indefinidamente
+    const currentIds = new Set(list.map(n => n.id));
+    setDismissed(prev => {
+      const cleaned = new Set([...prev].filter(id => currentIds.has(id)));
+      try { localStorage.setItem(LS_KEY, JSON.stringify([...cleaned])); } catch {}
+      return cleaned;
+    });
   }, [tenantId]);
 
   useEffect(() => {
     if (!tenantId) return;
     load();
 
-    // Debounce: múltiples eventos seguidos solo disparan un load()
     const debouncedLoad = () => {
       if (debounceRef.current) clearTimeout(debounceRef.current);
       debounceRef.current = setTimeout(() => load(), 400);
     };
 
-    // Realtime sin filtro de fila — el filtro por tenant_id requiere
-    // configuración especial en Supabase que no siempre está habilitada.
-    // load() ya filtra por tenant_id en la query, así que es seguro.
     const channel = supabase
       .channel(`notif_apts_${tenantId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, debouncedLoad)
       .subscribe();
 
-    // Fallback cada 30s por si el websocket se desconecta
     const iv = setInterval(load, 30000);
 
     return () => {
@@ -347,7 +361,13 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
     };
   }, [tenantId, load]);
 
-  const dismiss = (id: string) => setDismissed(s => new Set([...s, id]));
+  const dismiss = useCallback((id: string) => {
+    setDismissed(prev => {
+      const next = new Set([...prev, id]);
+      try { localStorage.setItem(LS_KEY, JSON.stringify([...next])); } catch {}
+      return next;
+    });
+  }, []);
 
   const confirmApt = async (n: Notif) => {
     setConfirming(s => new Set([...s, n.id]));
