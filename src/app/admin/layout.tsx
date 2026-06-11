@@ -14,6 +14,7 @@ import {
   IconUsers, IconUserGroup, IconPalette, IconPackage,
   IconCog, IconLogout, IconX, IconServiceBell,
 } from "./ZyncraIcons";
+import NotificationsBell from "./NotificationsBell";
 
 const instrumentSerif = Instrument_Serif({
   subsets: ["latin"],
@@ -281,6 +282,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <div className={styles.headerRight}>
               <span className={`${styles.tenantBadge} ${styles.hideMobile}`}>{tenantInfo.name}</span>
+              <NotificationsBell tenantId={tenantInfo.id} />
               {tenantInfo.logoUrl ? (
                 <span className={styles.avatarRing}>
                   <img src={tenantInfo.logoUrl} alt={tenantInfo.name}
