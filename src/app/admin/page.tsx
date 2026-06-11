@@ -32,6 +32,8 @@ interface DashboardData {
   weeklyRevenue: { day: string; revenue: number }[];
   paymentData: { method: string; label: string; color: string; amount: number; count: number }[];
   clientSegments: { nuevos: number; recurrentes: number; perdidos: number };
+  retentionCurve: number[];
+  retentionCohorts: { cohortLabel: string; cohortMonth: string; baseCount: number; retention: number[] }[];
 }
 
 const EMPTY: DashboardData = {
@@ -40,11 +42,17 @@ const EMPTY: DashboardData = {
   occupancyRate: 0, upcomingApts: [], staffPerf: [], topServices: [],
   hourlyData: [], weeklyRevenue: [], paymentData: [],
   clientSegments: { nuevos: 0, recurrentes: 0, perdidos: 0 },
+  retentionCurve: [], retentionCohorts: [],
 };
 
 // ─── Date helpers ─────────────────────────────────────────
 const toISO = (dt: Date) =>
   `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
+const toYM  = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+const addMonths = (ym: string, n: number) => {
+  const d = new Date(parseInt(ym.slice(0,4)), parseInt(ym.slice(5,7)) - 1 + n, 1);
+  return toYM(d);
+};
 
 // ─── Layout CSS (grids responsivas + hover de filas) ─────
 const PAGE_CSS = `
@@ -405,6 +413,272 @@ function ToolBtn({ onClick, title, children, label }: { onClick: () => void; tit
   );
 }
 
+// ─── Retention helpers ────────────────────────────────────
+function retColor(pct: number): { bg: string; fg: string; stroke: string } {
+  if (pct >= 60) return { bg: "rgba(16,185,129,0.12)",  fg: "#059669", stroke: "#10b981" };
+  if (pct >= 35) return { bg: "rgba(16,185,129,0.07)",  fg: "#10b981", stroke: "#10b981" };
+  if (pct >= 20) return { bg: "rgba(245,158,11,0.12)",  fg: "#b45309", stroke: "#f59e0b" };
+  if (pct >= 8)  return { bg: "rgba(249,115,22,0.10)",  fg: "#c2410c", stroke: "#f97316" };
+  return              { bg: "rgba(239,68,68,0.09)",   fg: "#dc2626", stroke: "#ef4444" };
+}
+
+function RetentionChart({
+  curve, cohorts, avgTicket, fmt,
+}: {
+  curve: number[];
+  cohorts: DashboardData["retentionCohorts"];
+  avgTicket: number;
+  fmt: (n: number) => string;
+}) {
+  if (curve.length < 2) {
+    return (
+      <div style={{ padding: "32px 18px", textAlign: "center", color: MUTE, fontSize: 13 }}>
+        Necesitas clientes con al menos dos visitas registradas para ver la curva de retención.
+      </div>
+    );
+  }
+
+  // SVG chart dimensions
+  const VW = 600, VH = 160;
+  const PAD = { t: 28, r: 20, b: 38, l: 48 };
+  const cW = VW - PAD.l - PAD.r;
+  const cH = VH - PAD.t - PAD.b;
+  const n = curve.length;
+
+  const pts = curve.map((v, i) => ({
+    x: PAD.l + (n === 1 ? cW / 2 : (i / (n - 1)) * cW),
+    y: PAD.t + (1 - v / 100) * cH,
+    v,
+  }));
+
+  const linePath = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  const areaPath = `${linePath} L${pts[n-1].x.toFixed(1)},${(PAD.t + cH).toFixed(1)} L${PAD.l.toFixed(1)},${(PAD.t + cH).toFixed(1)} Z`;
+  const yLabels = [0, 25, 50, 75, 100];
+
+  // LTV estimate: avgTicket × sum of retention curve / 100
+  const ltv = avgTicket * (curve.reduce((a, b) => a + b, 0) / 100);
+  const maxCols = cohorts.reduce((m, r) => Math.max(m, r.retention.length), 0);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+      {/* ── KPI funnel: M0 → M1 → M2 → ... ── */}
+      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
+        {curve.map((v, i) => {
+          const { fg, bg } = i === 0
+            ? { fg: INK, bg: "rgba(20,15,30,0.06)" }
+            : retColor(v);
+          return (
+            <div key={i} style={{ display: "flex", alignItems: "center" }}>
+              <div style={{ textAlign: "center", padding: "6px 16px 8px" }}>
+                <div style={{
+                  fontSize: 28, fontWeight: 700, letterSpacing: "-1px", lineHeight: 1,
+                  color: fg, fontFamily: MONO,
+                }}>
+                  {v}%
+                </div>
+                <div style={{
+                  marginTop: 5, fontSize: 9, fontFamily: MONO, textTransform: "uppercase",
+                  letterSpacing: ".09em", color: MUTE,
+                }}>
+                  {i === 0 ? "Mes 0" : `+${i} mes${i > 1 ? "es" : ""}`}
+                </div>
+                <div style={{ width: 36, height: 3, borderRadius: 2, background: bg, margin: "6px auto 0" }} />
+              </div>
+              {i < curve.length - 1 && (
+                <svg width="18" height="18" viewBox="0 0 18 18" style={{ color: MUTE, opacity: 0.35, flexShrink: 0 }}>
+                  <path d="M4 9h10M11 6l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+                </svg>
+              )}
+            </div>
+          );
+        })}
+        {ltv > 0 && (
+          <div style={{ marginLeft: "auto", textAlign: "right", paddingRight: 4 }}>
+            <div style={{ fontSize: 10, fontFamily: MONO, color: MUTE, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 3 }}>
+              LTV estimado
+            </div>
+            <div style={{ fontSize: 18, fontWeight: 700, color: INK, letterSpacing: "-0.5px", fontFamily: MONO }}>
+              {fmt(ltv)}
+            </div>
+            <div style={{ fontSize: 10, color: MUTE, marginTop: 2 }}>
+              ticket × visitas esperadas
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Curva de retención SVG ── */}
+      <div style={{
+        background: "rgba(20,15,30,0.018)", borderRadius: 14,
+        border: "1px solid rgba(20,15,30,0.05)", padding: "4px 0 2px",
+      }}>
+        <svg
+          viewBox={`0 0 ${VW} ${VH}`}
+          style={{ width: "100%", height: "auto", display: "block" }}
+          aria-label="Curva de retención de clientes"
+        >
+          <defs>
+            <linearGradient id="ret-fill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%"   stopColor="#10b981" stopOpacity="0.28" />
+              <stop offset="100%" stopColor="#10b981" stopOpacity="0.01" />
+            </linearGradient>
+            <filter id="ret-glow">
+              <feGaussianBlur stdDeviation="2" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+          </defs>
+
+          {/* Y-axis grid + labels */}
+          {yLabels.map(v => {
+            const y = PAD.t + (1 - v / 100) * cH;
+            return (
+              <g key={v}>
+                <line
+                  x1={PAD.l} y1={y} x2={VW - PAD.r} y2={y}
+                  stroke="rgba(20,15,30,0.055)" strokeWidth="1"
+                  strokeDasharray={v > 0 ? "3 5" : "none"}
+                />
+                <text x={PAD.l - 9} y={y + 3.5} textAnchor="end"
+                  fontSize="9" fill="#b0abc0"
+                  fontFamily="var(--font-jetbrains-mono),JetBrains Mono,monospace">
+                  {v}%
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Filled area */}
+          <path d={areaPath} fill="url(#ret-fill)" />
+
+          {/* Main line */}
+          <path
+            d={linePath} fill="none"
+            stroke="#10b981" strokeWidth="2.5"
+            strokeLinejoin="round" strokeLinecap="round"
+          />
+
+          {/* Glow line (behind) */}
+          <path
+            d={linePath} fill="none"
+            stroke="#10b981" strokeWidth="5" opacity="0.15"
+            strokeLinejoin="round" strokeLinecap="round"
+          />
+
+          {/* Data points */}
+          {pts.map((p, i) => (
+            <g key={i}>
+              {/* X-axis label */}
+              <text
+                x={p.x} y={VH - 8} textAnchor="middle"
+                fontSize="9.5" fill="#8E879B"
+                fontFamily="var(--font-jetbrains-mono),JetBrains Mono,monospace">
+                {i === 0 ? "M0" : `+${i}m`}
+              </text>
+              {/* Value label above dot */}
+              <text
+                x={p.x} y={p.y - 10} textAnchor="middle"
+                fontSize="10" fontWeight="700" fill={INK}
+                fontFamily="var(--font-jetbrains-mono),JetBrains Mono,monospace">
+                {p.v}%
+              </text>
+              {/* Dot */}
+              <circle cx={p.x} cy={p.y} r="5.5" fill="white" stroke="#10b981" strokeWidth="2.5" />
+              <circle cx={p.x} cy={p.y} r="2.5"  fill="#10b981" />
+            </g>
+          ))}
+        </svg>
+      </div>
+
+      {/* ── Cohort breakdown table ── */}
+      {cohorts.length > 0 && maxCols > 1 && (
+        <div style={{ overflowX: "auto" }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11.5 }}>
+            <thead>
+              <tr style={{ borderBottom: `1px solid ${LINE}` }}>
+                <th style={{ textAlign: "left", padding: "5px 8px 8px 0", fontFamily: MONO, fontSize: 9, color: MUTE, textTransform: "uppercase", letterSpacing: ".08em", whiteSpace: "nowrap" }}>
+                  Cohorte
+                </th>
+                <th style={{ textAlign: "center", padding: "5px 8px 8px", fontFamily: MONO, fontSize: 9, color: MUTE, textTransform: "uppercase", letterSpacing: ".08em" }}>
+                  N
+                </th>
+                {Array.from({ length: maxCols }, (_, i) => (
+                  <th key={i} style={{ textAlign: "center", padding: "5px 4px 8px", fontFamily: MONO, fontSize: 9, color: MUTE, textTransform: "uppercase", letterSpacing: ".08em", minWidth: 50 }}>
+                    {i === 0 ? "M0" : `+${i}m`}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {cohorts.map((row, ri) => (
+                <tr key={row.cohortMonth}
+                  style={{ borderBottom: ri < cohorts.length - 1 ? `1px solid rgba(20,15,30,0.04)` : "none" }}>
+                  <td style={{ padding: "7px 8px 7px 0", fontWeight: 600, fontSize: 12.5, color: INK, whiteSpace: "nowrap" }}>
+                    {row.cohortLabel}
+                  </td>
+                  <td style={{ padding: "7px 8px", textAlign: "center", fontFamily: MONO, fontSize: 11, color: DIM }}>
+                    {row.baseCount}
+                  </td>
+                  {Array.from({ length: maxCols }, (_, i) => {
+                    const pct = row.retention[i];
+                    if (pct === undefined) {
+                      return <td key={i} style={{ padding: "7px 4px", textAlign: "center" }}><span style={{ color: "#d0ceca", fontSize: 10 }}>—</span></td>;
+                    }
+                    const { bg, fg } = i === 0
+                      ? { bg: "rgba(20,15,30,0.055)", fg: INK }
+                      : retColor(pct);
+                    return (
+                      <td key={i} style={{ padding: "7px 4px", textAlign: "center" }}>
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", justifyContent: "center",
+                          minWidth: 42, padding: "2.5px 5px", borderRadius: 7,
+                          background: bg, color: fg,
+                          fontFamily: MONO, fontSize: 11.5, fontWeight: 700,
+                        }}>
+                          {pct}%
+                        </span>
+                      </td>
+                    );
+                  })}
+                </tr>
+              ))}
+              {/* Weighted average row */}
+              {cohorts.length > 1 && (
+                <tr style={{ borderTop: `1px solid rgba(20,15,30,0.08)` }}>
+                  <td style={{ padding: "8px 8px 8px 0", fontWeight: 700, fontSize: 11.5, color: DIM }}>
+                    Promedio
+                  </td>
+                  <td style={{ padding: "8px 8px", textAlign: "center", fontFamily: MONO, fontSize: 11, color: MUTE }}>
+                    —
+                  </td>
+                  {curve.map((pct, i) => {
+                    const { bg, fg } = i === 0 ? { bg: "rgba(20,15,30,0.055)", fg: INK } : retColor(pct);
+                    return (
+                      <td key={i} style={{ padding: "8px 4px", textAlign: "center" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 42, padding: "2.5px 5px", borderRadius: 7, background: bg, color: fg, fontFamily: MONO, fontSize: 11.5, fontWeight: 700 }}>
+                          {pct}%
+                        </span>
+                      </td>
+                    );
+                  })}
+                  {curve.length < maxCols && Array.from({ length: maxCols - curve.length }, (_, i) => (
+                    <td key={`empty-${i}`} style={{ padding: "8px 4px", textAlign: "center" }}>
+                      <span style={{ color: "#d0ceca", fontSize: 10 }}>—</span>
+                    </td>
+                  ))}
+                </tr>
+              )}
+            </tbody>
+          </table>
+          <p style={{ fontSize: 10.5, color: "#c0bbc8", margin: "10px 0 0" }}>
+            M0 = mes de primera visita · cada columna siguiente muestra qué % de ese grupo regresó · LTV estimado = ticket promedio × visitas esperadas
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main Dashboard ───────────────────────────────────────
 export default function AdminOverview() {
   const { tenantId, currency, locale } = useAdmin();
@@ -559,7 +833,51 @@ export default function AdminOverview() {
     });
     const clientSegments = { nuevos: segNuevos, recurrentes: segRecurrentes, perdidos: segPerdidos };
 
-    setData({ todayRevenue, prevDayRevenue, todayCount, pending, noShowRate, avgTicket, returningPct, newClientsToday: newClientsToday || 0, occupancyRate, upcomingApts, staffPerf, topServices, hourlyData, weeklyRevenue, paymentData, clientSegments });
+    // ── Cohortes de retención ──────────────────────────────────────────────
+    const now2 = new Date();
+    const currentYM = toYM(now2);
+    const clientFirst: Record<string, string> = {};
+    const clientMonthsMap: Record<string, Set<string>> = {};
+    ((allAptsRaw as any[]) || []).forEach((a: any) => {
+      const ym = (a.appointment_date as string).slice(0, 7);
+      if (!clientMonthsMap[a.client_id]) clientMonthsMap[a.client_id] = new Set();
+      clientMonthsMap[a.client_id].add(ym);
+      if (!clientFirst[a.client_id] || ym < clientFirst[a.client_id]) clientFirst[a.client_id] = ym;
+    });
+    const cohortMap: Record<string, string[]> = {};
+    Object.entries(clientFirst).forEach(([cid, firstYM]) => {
+      if (!cohortMap[firstYM]) cohortMap[firstYM] = [];
+      cohortMap[firstYM].push(cid);
+    });
+    const retentionCohorts: DashboardData["retentionCohorts"] = [];
+    for (let i = 5; i >= 0; i--) {
+      const cohortMonth = addMonths(currentYM, -i);
+      const clients2 = cohortMap[cohortMonth] ?? [];
+      if (clients2.length === 0) continue;
+      const base = clients2.length;
+      const retention: number[] = [100];
+      for (let m = 1; m <= 5; m++) {
+        const targetYM = addMonths(cohortMonth, m);
+        if (targetYM > currentYM) break;
+        const returned = clients2.filter(cid => clientMonthsMap[cid]?.has(targetYM)).length;
+        retention.push(Math.round((returned / base) * 100));
+      }
+      const d2 = new Date(parseInt(cohortMonth.slice(0,4)), parseInt(cohortMonth.slice(5,7)) - 1, 1);
+      const cohortLabel = d2.toLocaleDateString("es-CO", { month: "short", year: "numeric" });
+      retentionCohorts.push({ cohortLabel, cohortMonth, baseCount: base, retention });
+    }
+    // Weighted-average retention curve
+    const maxOff = retentionCohorts.reduce((m, r) => Math.max(m, r.retention.length), 0);
+    const retentionCurve: number[] = [];
+    for (let i = 0; i < maxOff; i++) {
+      let wSum = 0, wTotal = 0;
+      retentionCohorts.forEach(r => {
+        if (r.retention[i] !== undefined) { wSum += r.retention[i] * r.baseCount; wTotal += r.baseCount; }
+      });
+      retentionCurve.push(wTotal > 0 ? Math.round(wSum / wTotal) : 0);
+    }
+
+    setData({ todayRevenue, prevDayRevenue, todayCount, pending, noShowRate, avgTicket, returningPct, newClientsToday: newClientsToday || 0, occupancyRate, upcomingApts, staffPerf, topServices, hourlyData, weeklyRevenue, paymentData, clientSegments, retentionCurve, retentionCohorts });
     hasLoadedOnce.current = true;
     setLoading(false);
     setRefreshing(false);
@@ -1149,6 +1467,29 @@ export default function AdminOverview() {
           />
         </div>
       </Card>
+
+      {/* ─── Retención & LTV ─── */}
+      {data.retentionCurve.length >= 2 && (
+        <Card delay={0.37}>
+          <CardHead
+            title="Retención de Clientes & LTV"
+            sub="Cuántos clientes regresan mes a mes desde su primera visita"
+            aside={data.retentionCurve.length >= 2
+              ? <span style={{ fontFamily: MONO, fontSize: 10.5, color: "#10b981", fontWeight: 700 }}>
+                  M+1 {data.retentionCurve[1]}%
+                </span>
+              : undefined}
+          />
+          <div style={{ padding: "16px 18px 20px" }}>
+            <RetentionChart
+              curve={data.retentionCurve}
+              cohorts={data.retentionCohorts}
+              avgTicket={data.avgTicket}
+              fmt={fmt}
+            />
+          </div>
+        </Card>
+      )}
 
       {/* ─── Citas + Equipo ─── */}
       <div className="znGridLists">

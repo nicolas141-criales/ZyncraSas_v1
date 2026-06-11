@@ -11,21 +11,8 @@ interface Client {
 
 interface Segments { nuevos: number; recurrentes: number; perdidos: number; }
 
-interface CohortRow {
-  cohortLabel: string;   // "Ene 2026"
-  cohortMonth: string;   // "2026-01"
-  baseCount: number;
-  retention: number[];   // [100, 40, 20, ...] for months 0, 1, 2, 3...
-}
-
 const EMPTY_FORM = { name: "", phone: "", email: "" };
 const toISO = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-const toYM  = (d: Date) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
-const addMonths = (ym: string, n: number) => {
-  const y = parseInt(ym.slice(0,4)), m = parseInt(ym.slice(5,7)) - 1;
-  const d = new Date(y, m + n, 1);
-  return toYM(d);
-};
 
 function formatPhone(raw: string) {
   const d = raw.replace(/\D/g, "");
@@ -39,63 +26,6 @@ function initials(name: string) {
 
 const AVATAR_COLORS = ["#fb0f05","#0027fe","#0027fe","#10b981","#f59e0b","#ec4899"];
 const avatarColor = (id: string) => AVATAR_COLORS[id.charCodeAt(0) % AVATAR_COLORS.length];
-
-// Interpolates color green→yellow→red based on retention %
-function retentionColor(pct: number): { bg: string; fg: string } {
-  if (pct >= 60) return { bg: "rgba(16,185,129,0.15)",  fg: "#059669" };
-  if (pct >= 40) return { bg: "rgba(16,185,129,0.08)",  fg: "#10b981" };
-  if (pct >= 25) return { bg: "rgba(245,158,11,0.13)",  fg: "#b45309" };
-  if (pct >= 10) return { bg: "rgba(249,115,22,0.12)",  fg: "#c2410c" };
-  return              { bg: "rgba(239,68,68,0.11)",   fg: "#dc2626" };
-}
-
-function computeCohortRetention(aptsData: any[]): CohortRow[] {
-  const now = new Date();
-  const currentYM = toYM(now);
-
-  // Per-client: first appointment month + set of all months with appointments
-  const clientFirst: Record<string, string> = {};
-  const clientMonths: Record<string, Set<string>> = {};
-
-  for (const apt of aptsData) {
-    const ym = (apt.appointment_date as string).slice(0, 7);
-    const cid = apt.client_id as string;
-    if (!clientMonths[cid]) clientMonths[cid] = new Set();
-    clientMonths[cid].add(ym);
-    if (!clientFirst[cid] || ym < clientFirst[cid]) clientFirst[cid] = ym;
-  }
-
-  // Cohorts: group clients by their first appointment month
-  const cohorts: Record<string, string[]> = {};
-  for (const [cid, firstYM] of Object.entries(clientFirst)) {
-    if (!cohorts[firstYM]) cohorts[firstYM] = [];
-    cohorts[firstYM].push(cid);
-  }
-
-  // Build last 6 calendar months
-  const rows: CohortRow[] = [];
-  for (let i = 5; i >= 0; i--) {
-    const cohortMonth = addMonths(currentYM, -i);
-    const clients = cohorts[cohortMonth] ?? [];
-    if (clients.length === 0) continue;
-
-    const baseCount = clients.length;
-    const retention: number[] = [100]; // month 0 = 100%
-
-    for (let m = 1; m <= 5; m++) {
-      const targetYM = addMonths(cohortMonth, m);
-      if (targetYM > currentYM) break; // no data in the future
-      const returned = clients.filter(cid => clientMonths[cid]?.has(targetYM)).length;
-      retention.push(Math.round((returned / baseCount) * 100));
-    }
-
-    const d = new Date(parseInt(cohortMonth.slice(0,4)), parseInt(cohortMonth.slice(5,7)) - 1, 1);
-    const cohortLabel = d.toLocaleDateString("es-CO", { month: "short", year: "numeric" });
-
-    rows.push({ cohortLabel, cohortMonth, baseCount, retention });
-  }
-  return rows;
-}
 
 const inp: React.CSSProperties = {
   width: "100%", padding: "11px 14px", border: "1.5px solid rgba(20,15,30,0.08)",
@@ -119,7 +49,6 @@ export default function ClientsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [segments, setSegments] = useState<Segments>({ nuevos: 0, recurrentes: 0, perdidos: 0 });
-  const [retentionRows, setRetentionRows] = useState<CohortRow[]>([]);
 
   const fetchClients = useCallback(async (tid: string) => {
     const [{ data }, { data: aptsData }] = await Promise.all([
@@ -143,7 +72,6 @@ export default function ClientsPage() {
         else nuevos++;
       });
       setSegments({ nuevos, recurrentes, perdidos });
-      setRetentionRows(computeCohortRetention(aptsData as any[]));
     }
   }, []);
 
@@ -183,9 +111,6 @@ export default function ClientsPage() {
     c.phone.includes(search) ||
     (c.email ?? "").toLowerCase().includes(search.toLowerCase())
   );
-
-  // Max columns shown in cohort table = max months of data across all rows
-  const maxCols = retentionRows.reduce((m, r) => Math.max(m, r.retention.length), 0);
 
   return (
     <div style={{ fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif" }}>
@@ -241,105 +166,6 @@ export default function ClientsPage() {
         </div>
       )}
 
-      {/* ── Retención de Clientes (Cohortes) ── */}
-      {!loading && retentionRows.length > 0 && (
-        <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", padding: "20px 22px", marginBottom: "20px" }}>
-          {/* Section header */}
-          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18, flexWrap: "wrap", gap: 10 }}>
-            <div>
-              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                <div style={{ width: 7, height: 7, borderRadius: "50%", background: "linear-gradient(135deg, #10b981, #0027fe)" }} />
-                <span style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>Retención de Clientes</span>
-              </div>
-              <p style={{ fontSize: 12, color: "#8E879B", margin: 0 }}>
-                % de clientes que vuelven mes a mes desde su primera visita
-              </p>
-            </div>
-            {/* Legend */}
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-              {[
-                { label: "≥60%", bg: "rgba(16,185,129,0.15)", fg: "#059669" },
-                { label: "25–59%", bg: "rgba(245,158,11,0.13)", fg: "#b45309" },
-                { label: "<25%", bg: "rgba(239,68,68,0.11)", fg: "#dc2626" },
-              ].map(l => (
-                <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
-                  <span style={{ width: 12, height: 12, borderRadius: 3, background: l.bg, display: "inline-block" }} />
-                  <span style={{ fontSize: 10.5, color: l.fg, fontWeight: 600 }}>{l.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Cohort table */}
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr>
-                  <th style={{ textAlign: "left", padding: "6px 12px 8px 0", fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace", fontSize: 9.5, fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".08em", whiteSpace: "nowrap", borderBottom: "1px solid #f0eeeb" }}>
-                    Cohorte
-                  </th>
-                  <th style={{ textAlign: "center", padding: "6px 8px 8px", fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace", fontSize: 9.5, fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".08em", whiteSpace: "nowrap", borderBottom: "1px solid #f0eeeb" }}>
-                    Clientes
-                  </th>
-                  {Array.from({ length: maxCols }, (_, i) => (
-                    <th key={i} style={{ textAlign: "center", padding: "6px 6px 8px", fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace", fontSize: 9.5, fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".08em", whiteSpace: "nowrap", borderBottom: "1px solid #f0eeeb", minWidth: 56 }}>
-                      {i === 0 ? "Mes 0" : `+${i} mes${i > 1 ? "es" : ""}`}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {retentionRows.map((row, ri) => (
-                  <tr key={row.cohortMonth}
-                    style={{ borderBottom: ri < retentionRows.length - 1 ? "1px solid #f7f5f2" : "none" }}>
-                    {/* Cohort label */}
-                    <td style={{ padding: "10px 12px 10px 0", fontWeight: 700, fontSize: 12.5, color: "#14111C", whiteSpace: "nowrap" }}>
-                      {row.cohortLabel}
-                    </td>
-                    {/* Base count */}
-                    <td style={{ padding: "10px 8px", textAlign: "center", fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace", fontSize: 12, fontWeight: 600, color: "#564E66" }}>
-                      {row.baseCount}
-                    </td>
-                    {/* Retention cells */}
-                    {Array.from({ length: maxCols }, (_, i) => {
-                      const pct = row.retention[i];
-                      if (pct === undefined) {
-                        return (
-                          <td key={i} style={{ padding: "10px 6px", textAlign: "center" }}>
-                            <span style={{ color: "#d0ceca", fontSize: 11 }}>—</span>
-                          </td>
-                        );
-                      }
-                      const { bg, fg } = i === 0
-                        ? { bg: "rgba(20,15,30,0.06)", fg: "#14111C" }
-                        : retentionColor(pct);
-                      return (
-                        <td key={i} style={{ padding: "10px 6px", textAlign: "center" }}>
-                          <span style={{
-                            display: "inline-flex", alignItems: "center", justifyContent: "center",
-                            minWidth: 44, padding: "4px 6px", borderRadius: 8,
-                            background: bg, color: fg,
-                            fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
-                            fontSize: 12, fontWeight: 700,
-                          }}>
-                            {pct}%
-                          </span>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Footer note */}
-          <p style={{ margin: "14px 0 0", fontSize: 11, color: "#b0abc0" }}>
-            Mes 0 = mes en que el cliente visitó por primera vez · Los porcentajes muestran cuántos de ese grupo volvieron en cada mes siguiente.
-          </p>
-        </div>
-      )}
-
       {/* List */}
       <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden" }}>
         {loading ? (
@@ -361,7 +187,6 @@ export default function ClientsPage() {
           </div>
         ) : (
           <div style={{ overflowX: "auto" }}>
-            {/* Table header */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr auto", padding: "12px 20px", borderBottom: "1px solid #f0eeeb", background: "rgba(20,15,30,0.025)" }}>
               {["Cliente","Teléfono","Correo","Acciones"].map(h => (
                 <div key={h} style={{ fontSize: "9.5px", fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.09em", fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace" }}>{h}</div>
@@ -374,7 +199,6 @@ export default function ClientsPage() {
                 onMouseEnter={e => (e.currentTarget.style.background = "#fafaf8")}
                 onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
               >
-                {/* Name + avatar */}
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: `linear-gradient(135deg, ${avatarColor(c.id)}, ${avatarColor(c.id)}aa)`, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontWeight: 700, fontSize: "12px", flexShrink: 0 }}>
                     {initials(c.name)}
@@ -382,7 +206,6 @@ export default function ClientsPage() {
                   <span style={{ fontWeight: 600, fontSize: "14px", color: "#14111C" }}>{c.name}</span>
                 </div>
 
-                {/* Phone + WhatsApp link */}
                 <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                   <span style={{ fontSize: "13px", color: "#564E66" }}>{c.phone}</span>
                   <a href={`https://wa.me/${c.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener noreferrer"
@@ -391,10 +214,8 @@ export default function ClientsPage() {
                   </a>
                 </div>
 
-                {/* Email */}
                 <span style={{ fontSize: "13px", color: "#564E66" }}>{c.email || <span style={{ color: "#d0ceca" }}>—</span>}</span>
 
-                {/* Actions */}
                 <div style={{ display: "flex", gap: "6px" }}>
                   <button onClick={() => openEdit(c)}
                     style={{ padding: "6px 12px", borderRadius: "8px", border: "1.5px solid rgba(20,15,30,0.08)", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif", transition: "all 0.15s" }}
