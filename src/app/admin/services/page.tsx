@@ -284,7 +284,7 @@ export default function ServicesPage() {
           <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "500px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "92vh", overflowY: "auto" }}>
 
             {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: error ? "14px" : "24px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconServiceBell size={17} />
@@ -295,6 +295,12 @@ export default function ServicesPage() {
                 <IconX size={20} />
               </button>
             </div>
+
+            {error && (
+              <div style={{ background: "#fff0f0", border: "1px solid rgba(251,15,5,0.2)", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#d90d04", marginBottom: "16px", fontWeight: 500 }}>
+                {error}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit}>
               <div style={{ marginBottom: "18px" }}>
@@ -327,11 +333,7 @@ export default function ServicesPage() {
                 <TagEditor tags={tags} onChange={setTags} inpStyle={inp} />
               </div>
 
-              {error && (
-                <div style={{ background: "#fff0f0", border: "1px solid rgba(251,15,5,0.2)", borderRadius: "10px", padding: "10px 14px", fontSize: "13px", color: "#d90d04", marginBottom: "16px", fontWeight: 500 }}>
-                  {error}
-                </div>
-              )}
+
 
               <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
                 <button type="button" className="btn-secondary" onClick={() => setShowModal(false)} disabled={saving}>Cancelar</button>

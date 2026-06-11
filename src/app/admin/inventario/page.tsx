@@ -424,7 +424,7 @@ export default function InventarioPage() {
         ) : (
           <div style={{ background: "white", borderRadius: 18, border: "1px solid rgba(20,15,30,0.08)", overflow: "hidden" }}>
             {/* Table head */}
-            <div style={{ display: "grid", gridTemplateColumns: "56px 1fr 120px 120px 120px 90px 120px", padding: "10px 20px", borderBottom: "1px solid #f0eeeb", background: "rgba(20,15,30,0.02)", gap: 12 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "56px 1fr 120px 120px 120px 90px 150px", padding: "10px 20px", borderBottom: "1px solid #f0eeeb", background: "rgba(20,15,30,0.02)", gap: 12 }}>
               {["Foto", "Producto / SKU", "P. Costo", "P. Venta", "P. Efectivo", "Stock", "Acciones"].map(h => (
                 <div key={h} style={{ fontFamily: MONO, fontSize: 9.5, fontWeight: 600, color: "#8E879B", textTransform: "uppercase", letterSpacing: ".09em" }}>{h}</div>
               ))}
@@ -436,7 +436,7 @@ export default function InventarioPage() {
               const isOut  = p.stock_quantity === 0;
               return (
                 <div key={p.id}
-                  style={{ display: "grid", gridTemplateColumns: "56px 1fr 120px 120px 120px 90px 120px", padding: "13px 20px", gap: 12, alignItems: "center", borderBottom: idx < filtered.length - 1 ? "1px solid #f7f5f2" : "none", transition: "background .1s" }}
+                  style={{ display: "grid", gridTemplateColumns: "56px 1fr 120px 120px 120px 90px 150px", padding: "13px 20px", gap: 12, alignItems: "center", borderBottom: idx < filtered.length - 1 ? "1px solid #f7f5f2" : "none", transition: "background .1s" }}
                   onMouseEnter={e => (e.currentTarget.style.background = "#fafaf8")}
                   onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
                 >
@@ -576,7 +576,7 @@ export default function InventarioPage() {
           onClick={e => { if (e.target === e.currentTarget) setShowModal(false); }}>
           <div style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(32px)", WebkitBackdropFilter: "blur(32px)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: 22, padding: 28, width: "100%", maxWidth: 540, boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "90vh", overflowY: "auto" }}>
 
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 22 }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: formError ? 14 : 22 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div style={{ width: 36, height: 36, borderRadius: 10, background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05" }}>
                   <IconPackage size={17} />
@@ -589,6 +589,12 @@ export default function InventarioPage() {
                 <IconX size={20} />
               </button>
             </div>
+
+            {formError && (
+              <div style={{ background: "#fff0f0", border: "1px solid rgba(251,15,5,0.2)", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#d90d04", marginBottom: 16, fontWeight: 500 }}>
+                {formError}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit}>
               {/* Photo */}
@@ -704,12 +710,6 @@ export default function InventarioPage() {
                     placeholder="5" style={{ ...inp, fontFamily: MONO }} />
                 </div>
               </div>
-
-              {formError && (
-                <div style={{ background: "#fff0f0", border: "1px solid rgba(251,15,5,0.2)", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#d90d04", marginBottom: 16, fontWeight: 500 }}>
-                  {formError}
-                </div>
-              )}
 
               <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
                 <button type="button" onClick={() => setShowModal(false)} disabled={saving}
