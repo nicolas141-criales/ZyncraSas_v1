@@ -297,8 +297,24 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
   useEffect(() => {
     if (!tenantId) return;
     load();
-    const iv = setInterval(load, 60000);
-    return () => clearInterval(iv);
+
+    // Escuchar cambios en tiempo real — INSERT, UPDATE, DELETE en appointments
+    const channel = supabase
+      .channel(`notif_apts_${tenantId}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "appointments", filter: `tenant_id=eq.${tenantId}` },
+        () => load()
+      )
+      .subscribe();
+
+    // Fallback cada 5 min por si el canal websocket se desconecta
+    const iv = setInterval(load, 300000);
+
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(iv);
+    };
   }, [tenantId, load]);
 
   const dismiss = (id: string) => setDismissed(s => new Set([...s, id]));
