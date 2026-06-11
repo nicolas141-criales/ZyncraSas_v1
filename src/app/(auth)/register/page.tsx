@@ -300,23 +300,35 @@ export default function RegisterPage() {
   const [promoCode, setPromoCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
   const [activating, setActivating] = useState(false);
+  // Settings loaded from platform_settings table (fallback to hardcoded defaults)
+  const [trialCodeDB, setTrialCodeDB] = useState(TRIAL_CODE);
+  const [trialDaysDB, setTrialDaysDB] = useState(30);
 
   useEffect(() => {
     if (step !== 5) return;
-    async function fetchPlans() {
+    async function fetchStep5() {
       setPlansLoading(true);
-      const { data } = await supabase.from("saas_plans").select("*").eq("active", true).order("price");
-      const rows: SaasPlan[] = (data ?? []).map((p: any) => ({
+      const [{ data: plansData }, { data: settingsData }] = await Promise.all([
+        supabase.from("saas_plans").select("*").eq("active", true).order("price"),
+        supabase.from("platform_settings").select("key, value"),
+      ]);
+      // Plans
+      const rows: SaasPlan[] = (plansData ?? []).map((p: any) => ({
         ...p,
         features: Array.isArray(p.features) ? p.features : [],
       }));
       setPlans(rows);
-      // Auto-select the only free plan if there's exactly one
       const freePlans = rows.filter(p => p.price === 0);
       if (freePlans.length === 1 && !selectedPlanId) setSelectedPlanId(freePlans[0].id);
+      // Platform settings (trial code + days)
+      if (settingsData && settingsData.length > 0) {
+        const m = new Map((settingsData as any[]).map(s => [s.key as string, s.value as string]));
+        if (m.has("trial_code")) setTrialCodeDB(m.get("trial_code")!.toLowerCase());
+        if (m.has("trial_days")) setTrialDaysDB(Number(m.get("trial_days")) || 30);
+      }
       setPlansLoading(false);
     }
-    fetchPlans();
+    fetchStep5();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
@@ -407,15 +419,15 @@ export default function RegisterPage() {
     const plan = plans.find(p => p.id === selectedPlanId);
     if (!plan || !tenantId) return;
 
-    // Free plans require the promo code
-    if (plan.price === 0 && promoCode.trim().toLowerCase() !== TRIAL_CODE) {
+    // Free plans require the promo code (read from DB, fallback to hardcoded)
+    if (plan.price === 0 && promoCode.trim().toLowerCase() !== trialCodeDB) {
       setCodeError(t.trialCodeError);
       return;
     }
 
     setActivating(true);
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+    trialEndsAt.setDate(trialEndsAt.getDate() + trialDaysDB);
 
     await supabase.from("saas_subscriptions").insert({
       tenant_id: tenantId,
