@@ -5,15 +5,17 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { IconGrid, IconUsers, IconCreditCard, IconPackage } from "../admin/ZyncraIcons";
+import { IconGrid, IconUsers, IconCreditCard, IconPackage, IconChartBar, IconCog } from "../admin/ZyncraIcons";
 
 type NavItem = { href: string; label: string; icon: React.ReactNode };
 
 const NAV: NavItem[] = [
-  { href: "/platform",         label: "Dashboard", icon: <IconGrid size={16} /> },
-  { href: "/platform/clients", label: "Clientes",  icon: <IconUsers size={16} /> },
-  { href: "/platform/billing", label: "Cobros",    icon: <IconCreditCard size={16} /> },
-  { href: "/platform/plans",   label: "Planes",    icon: <IconPackage size={16} /> },
+  { href: "/platform",           label: "Dashboard", icon: <IconGrid size={16} /> },
+  { href: "/platform/clients",   label: "Clientes",  icon: <IconUsers size={16} /> },
+  { href: "/platform/billing",   label: "Cobros",    icon: <IconCreditCard size={16} /> },
+  { href: "/platform/plans",     label: "Planes",    icon: <IconPackage size={16} /> },
+  { href: "/platform/analytics", label: "Analytics", icon: <IconChartBar size={16} /> },
+  { href: "/platform/settings",  label: "Ajustes",   icon: <IconCog size={16} /> },
 ];
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {

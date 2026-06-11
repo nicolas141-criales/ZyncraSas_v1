@@ -247,8 +247,35 @@ export default function PlatformClientsPage() {
             </button>
           ))}
         </div>
-        <div style={{ marginLeft: "auto", fontSize: 12, color: "rgba(255,255,255,0.32)", alignSelf: "center" }}>
-          {filtered.length} de {tenants.length} clientes
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 12 }}>
+          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.32)" }}>{filtered.length} de {tenants.length} clientes</span>
+          <button
+            onClick={() => {
+              const headers = ["Negocio", "Slug", "Email", "Teléfono", "Estado", "Plan", "Monto/mes", "Trial vence", "Último pago", "Método pago", "Clientes", "Registrado"];
+              const rows = filtered.map(t => [
+                t.name,
+                t.slug,
+                t.owner_email ?? "",
+                t.owner_phone ?? "",
+                t.subscription?.status ?? "trial",
+                t.subscription?.plan_name ?? "",
+                String(t.subscription?.amount ?? ""),
+                t.subscription?.trial_ends_at ?? "",
+                t.last_payment?.paid_at ?? "",
+                t.last_payment?.method ?? "",
+                String(t.usage.clients),
+                t.created_at,
+              ]);
+              const csv = [headers, ...rows].map(r => r.map(v => `"${v.replace(/"/g, '""')}"`).join(",")).join("\n");
+              const a = document.createElement("a");
+              a.href = "data:text/csv;charset=utf-8,﻿" + encodeURIComponent(csv);
+              a.download = `clientes-zyncra-${new Date().toISOString().slice(0, 10)}.csv`;
+              a.click();
+            }}
+            style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.55)", fontSize: 12, fontWeight: 600, cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}
+          >
+            ↓ Exportar CSV
+          </button>
         </div>
       </div>
 
