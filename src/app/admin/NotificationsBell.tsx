@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import { supabase } from "@/lib/supabase";
 import { IconX } from "./ZyncraIcons";
@@ -185,6 +185,7 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
   const [confirming, setConfirming] = useState<Set<string>>(new Set());
   const [isMounted, setIsMounted] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => { setIsMounted(true); }, []);
 
@@ -226,16 +227,19 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
 
     const list: Notif[] = [];
     const meta = (type: Notif["type"]) => TYPE_META[type];
+    // Cada cita solo puede generar UNA notificación (la de mayor prioridad)
+    const seen = new Set<string>();
 
     // A — Por presentarse: citas de HOY que faltan 0–3 horas
-    // Se muestra ANTES de la cita para que el admin pueda actuar
     (upcoming ?? [])
       .filter(a => {
         if (a.appointment_date !== today) return false;
         const mins = minsUntil(a.appointment_time.slice(0, 5));
-        return mins >= 0 && mins <= 180; // 0 a 3 horas antes
+        return mins >= 0 && mins <= 180;
       })
       .forEach(a => {
+        if (seen.has(a.id)) return;
+        seen.add(a.id);
         const mins = minsUntil(a.appointment_time.slice(0, 5));
         list.push({
           id: `A_${a.id}`, aptId: a.id, type: "inasistencia", group: "urgent",
@@ -250,53 +254,67 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
     // B — Sin confirmar mañana
     (upcoming ?? [])
       .filter(a => a.appointment_date === tomorrow && a.status === "pending")
-      .forEach(a => list.push({
-        id: `B_${a.id}`, aptId: a.id, type: "sin_confirmar", group: "action",
-        client:  (a.clients as any)?.name  || "Cliente",
-        service: (a.services as any)?.name || "Servicio",
-        when: `Mañana ${a.appointment_time.slice(0, 5)}`,
-        tag: "Mañana",
-        ...meta("sin_confirmar"),
-      }));
+      .forEach(a => {
+        if (seen.has(a.id)) return;
+        seen.add(a.id);
+        list.push({
+          id: `B_${a.id}`, aptId: a.id, type: "sin_confirmar", group: "action",
+          client:  (a.clients as any)?.name  || "Cliente",
+          service: (a.services as any)?.name || "Servicio",
+          when: `Mañana ${a.appointment_time.slice(0, 5)}`,
+          tag: "Mañana",
+          ...meta("sin_confirmar"),
+        });
+      });
 
-    // C — Sin profesional (próximos 7 días)
+    // C — Sin profesional (próximos 7 días, si no fue ya catalogada)
     (upcoming ?? [])
       .filter(a => !a.professional_id)
       .slice(0, 5)
-      .forEach(a => list.push({
-        id: `C_${a.id}`, aptId: a.id, type: "sin_profesional", group: "action",
-        client:  (a.clients as any)?.name  || "Cliente",
-        service: (a.services as any)?.name || "Servicio",
-        when: fmtDate(a.appointment_date, a.appointment_time),
-        tag: a.appointment_date === today ? "Hoy" : a.appointment_date === tomorrow ? "Mañana" : "Próxima",
-        ...meta("sin_profesional"),
-      }));
+      .forEach(a => {
+        if (seen.has(a.id)) return;
+        seen.add(a.id);
+        list.push({
+          id: `C_${a.id}`, aptId: a.id, type: "sin_profesional", group: "action",
+          client:  (a.clients as any)?.name  || "Cliente",
+          service: (a.services as any)?.name || "Servicio",
+          when: fmtDate(a.appointment_date, a.appointment_time),
+          tag: a.appointment_date === today ? "Hoy" : a.appointment_date === tomorrow ? "Mañana" : "Próxima",
+          ...meta("sin_profesional"),
+        });
+      });
 
-    // D — Nuevas citas (últimas 8h)
+    // D — Nuevas citas (últimas 8h, si no fue ya catalogada)
     (recent ?? [])
-      .filter(a => a.status !== "cancelled")
+      .filter(a => a.status !== "cancelled" && !seen.has(a.id))
       .slice(0, 4)
-      .forEach(a => list.push({
-        id: `D_${a.id}`, aptId: a.id, type: "nueva_cita", group: "activity",
-        client:  (a.clients as any)?.name  || "Cliente",
-        service: (a.services as any)?.name || "Servicio",
-        when: fmtDate(a.appointment_date, a.appointment_time),
-        tag: relTime(a.created_at),
-        ...meta("nueva_cita"),
-      }));
+      .forEach(a => {
+        seen.add(a.id);
+        list.push({
+          id: `D_${a.id}`, aptId: a.id, type: "nueva_cita", group: "activity",
+          client:  (a.clients as any)?.name  || "Cliente",
+          service: (a.services as any)?.name || "Servicio",
+          when: fmtDate(a.appointment_date, a.appointment_time),
+          tag: relTime(a.created_at),
+          ...meta("nueva_cita"),
+        });
+      });
 
     // Cancelaciones recientes
     (recent ?? [])
-      .filter(a => a.status === "cancelled")
+      .filter(a => a.status === "cancelled" && !seen.has(a.id))
       .slice(0, 3)
-      .forEach(a => list.push({
-        id: `Dcancel_${a.id}`, aptId: a.id, type: "cancelacion", group: "activity",
-        client:  (a.clients as any)?.name  || "Cliente",
-        service: (a.services as any)?.name || "Servicio",
-        when: "",
-        tag: relTime(a.created_at),
-        ...meta("cancelacion"),
-      }));
+      .forEach(a => {
+        seen.add(a.id);
+        list.push({
+          id: `Dcancel_${a.id}`, aptId: a.id, type: "cancelacion", group: "activity",
+          client:  (a.clients as any)?.name  || "Cliente",
+          service: (a.services as any)?.name || "Servicio",
+          when: "",
+          tag: relTime(a.created_at),
+          ...meta("cancelacion"),
+        });
+      });
 
     setNotifs(list);
   }, [tenantId]);
@@ -305,20 +323,25 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
     if (!tenantId) return;
     load();
 
-    // Escuchar cambios en tiempo real — INSERT, UPDATE, DELETE en appointments
+    // Debounce: múltiples eventos seguidos solo disparan un load()
+    const debouncedLoad = () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => load(), 400);
+    };
+
+    // Realtime sin filtro de fila — el filtro por tenant_id requiere
+    // configuración especial en Supabase que no siempre está habilitada.
+    // load() ya filtra por tenant_id en la query, así que es seguro.
     const channel = supabase
       .channel(`notif_apts_${tenantId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "appointments", filter: `tenant_id=eq.${tenantId}` },
-        () => load()
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "appointments" }, debouncedLoad)
       .subscribe();
 
-    // Fallback cada 5 min por si el canal websocket se desconecta
-    const iv = setInterval(load, 300000);
+    // Fallback cada 30s por si el websocket se desconecta
+    const iv = setInterval(load, 30000);
 
     return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
       supabase.removeChannel(channel);
       clearInterval(iv);
     };
