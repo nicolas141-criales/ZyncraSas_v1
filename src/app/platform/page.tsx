@@ -76,23 +76,28 @@ export default function PlatformDashboard() {
       const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
       const in7days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString();
 
-      const [{ data: subs }, { data: payments }, { data: newTenants }] = await Promise.all([
+      const [{ data: subs }, { data: payments }, { data: newTenants }, { data: allTenants }] = await Promise.all([
         supabase.from("saas_subscriptions").select("*, tenants(name, created_at)"),
         supabase.from("saas_payments").select("*").eq("status", "pending"),
         supabase.from("tenants").select("id, name, created_at").gte("created_at", startOfMonth).order("created_at", { ascending: false }),
+        supabase.from("tenants").select("id, name"),
       ]);
 
       const subsData = (subs ?? []) as any[];
       const paymentsData = (payments ?? []) as any[];
+      const allTenantsData = (allTenants ?? []) as any[];
 
-      const statusMap = new Map<string, string>(subsData.map((s: any) => [s.tenant_id, s.status]));
+      // Tenants sin fila en saas_subscriptions cuentan como "trial" (igual que en clients page)
+      const subsMap = new Map<string, string>(subsData.map((s: any) => [s.tenant_id, s.status]));
+      const statusMap = new Map<string, string>(allTenantsData.map((t: any) => [t.id, subsMap.get(t.id) ?? "trial"]));
       setTenantStatusMap(statusMap);
 
+      const allStatuses = allTenantsData.map((t: any) => subsMap.get(t.id) ?? "trial");
       const activeSubs = subsData.filter(s => s.status === "active");
-      const trialSubs  = subsData.filter(s => s.status === "trial");
+      const trialCount  = allStatuses.filter(s => s === "trial").length;
       const mrr = activeSubs.reduce((acc, s) => acc + (s.amount ?? 0), 0);
 
-      const totalForConversion = activeSubs.length + trialSubs.length;
+      const totalForConversion = activeSubs.length + trialCount;
       const conversionRate = totalForConversion > 0
         ? Math.round((activeSubs.length / totalForConversion) * 100)
         : 0;
@@ -106,11 +111,11 @@ export default function PlatformDashboard() {
         .sort((a: TrialExpiring, b: TrialExpiring) => a.daysLeft - b.daysLeft);
 
       setStats({
-        total: subsData.length,
+        total: allTenantsData.length,
         active: activeSubs.length,
-        trial: trialSubs.length,
-        overdue: subsData.filter(s => s.status === "overdue").length,
-        suspended: subsData.filter(s => s.status === "suspended").length,
+        trial: trialCount,
+        overdue: allStatuses.filter(s => s === "overdue").length,
+        suspended: allStatuses.filter(s => s === "suspended").length,
         mrr,
         arr: mrr * 12,
         pendingAmount: paymentsData.reduce((acc, p) => acc + (p.amount ?? 0), 0),
