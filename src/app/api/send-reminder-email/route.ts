@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendReminderEmail, type ReminderTemplateKey } from "@/lib/email";
+import { requireInternalOrUser, rateLimit, clientIp, tooManyRequests } from "@/lib/api-auth";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  // Service role required — no anon fallback (this route writes reminder_logs
+  // and reads branding across tenants).
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 const DAYS_ES   = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
@@ -23,6 +26,11 @@ function fmtDate(dateStr: string) {
 
 export async function POST(req: NextRequest) {
   try {
+    // Authn: internal service secret OR an authenticated admin session.
+    const authErr = await requireInternalOrUser(req);
+    if (authErr) return authErr;
+    if (!rateLimit(`send-reminder:${clientIp(req)}`, 60, 60_000)) return tooManyRequests();
+
     const body = await req.json();
     const {
       appointmentId,

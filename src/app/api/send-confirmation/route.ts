@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { escapeHtml, requireInternalOrUser, rateLimit, clientIp, tooManyRequests } from "@/lib/api-auth";
 
 const MONTHS_ES = [
   "enero","febrero","marzo","abril","mayo","junio",
@@ -240,6 +241,14 @@ function emailCancelledHTML({ clientName, businessName, service, professional, d
 // ── POST handler ───────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
   try {
+    // Authn: internal service secret OR an authenticated admin session.
+    // Prevents this verified-domain sender from being used as an open relay.
+    const authErr = await requireInternalOrUser(req);
+    if (authErr) return authErr;
+
+    // Abuse throttle (defense-in-depth).
+    if (!rateLimit(`send-confirmation:${clientIp(req)}`, 30, 60_000)) return tooManyRequests();
+
     const body = await req.json();
     const {
       email, clientName, businessName,
@@ -256,6 +265,14 @@ export async function POST(req: NextRequest) {
     if (!email || (type !== "cancellation" && !manageToken)) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 });
     }
+    // Basic recipient validation.
+    if (typeof email !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+    }
+    // manage_token only ever travels in a URL path — keep it token-shaped.
+    if (manageToken && !/^[A-Za-z0-9_-]{8,128}$/.test(manageToken)) {
+      return NextResponse.json({ error: "Invalid token" }, { status: 400 });
+    }
 
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) {
@@ -267,13 +284,22 @@ export async function POST(req: NextRequest) {
     const rescheduleUrl = `${base}/manage/${manageToken}?action=reschedule`;
     const cancelUrl     = `${base}/manage/${manageToken}?action=cancel`;
 
+    // Strip CR/LF from the subject to prevent email header injection.
+    const subjBiz = String(businessName ?? "").replace(/[\r\n]+/g, " ").trim();
     const subjects: Record<string, string> = {
-      confirmation: `Cita confirmada — ${businessName}`,
-      modification:  `Cita actualizada — ${businessName}`,
-      cancellation:  `Tu cita fue cancelada — ${businessName}`,
+      confirmation: `Cita confirmada — ${subjBiz}`,
+      modification:  `Cita actualizada — ${subjBiz}`,
+      cancellation:  `Tu cita fue cancelada — ${subjBiz}`,
     };
 
-    const params = { clientName, businessName, service, professional, date, time };
+    // Escape every user-controlled string interpolated into the email HTML.
+    const params = {
+      clientName:   escapeHtml(clientName),
+      businessName: escapeHtml(businessName),
+      service:      escapeHtml(service),
+      professional: escapeHtml(professional),
+      date, time,
+    };
     const html = type === "cancellation"
       ? emailCancelledHTML(params)
       : type === "modification"

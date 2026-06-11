@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { supabase } from "@/lib/supabase";
+import { supabase, authedHeaders } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconCalendar, IconX, IconPlus, IconCreditCard, IconChat } from "../ZyncraIcons";
 import NewAppointmentModal from "../NewAppointmentModal";
@@ -184,12 +184,12 @@ export default function CalendarPage() {
     }
   };
 
-  const sendChangeEmail = useCallback((apt: Appointment, date: string, time: string, type: "modification" | "cancellation") => {
+  const sendChangeEmail = useCallback(async (apt: Appointment, date: string, time: string, type: "modification" | "cancellation") => {
     const clientEmail = (apt.clients as any)?.email as string | null | undefined;
     if (!clientEmail || !apt.manage_token) return;
     fetch("/api/send-confirmation", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: await authedHeaders(),
       body: JSON.stringify({
         email:        clientEmail,
         clientName:   (apt.clients as any)?.name ?? "",

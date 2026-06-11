@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, authedHeaders } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import {
   IconBell, IconCalendar, IconChat, IconCheck, IconClipboard,
@@ -370,7 +370,7 @@ export default function RemindersPage() {
     try {
       const res = await fetch("/api/send-reminder-email", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await authedHeaders(),
         body: JSON.stringify({
           appointmentId:   appt.id,
           tenantId,

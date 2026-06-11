@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { internalHeaders } from "@/lib/api-auth";
 import { checkAIAuth, serviceDb } from "@/lib/ai-auth";
 import { phoneOrFilter } from "@/lib/phone";
 
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest) {
       const base = (process.env.NEXT_PUBLIC_APP_URL ?? "https://zyncra.app").replace(/\/$/, "");
       fetch(`${base}/api/send-confirmation`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: internalHeaders(),
         body: JSON.stringify({
           email:        clientData.email,
           clientName:   clientData.name,

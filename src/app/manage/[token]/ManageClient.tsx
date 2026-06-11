@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
 
 /* ─── Constants ─── */
 const TIME_SLOTS = [
@@ -77,21 +76,25 @@ export default function ManageClient({ token, appt, tenant, branding }: Props) {
     if (action === "cancel" || action === "reschedule") setView(action);
   }, []);
 
-  // load booked slots when date changes
+  // load booked slots when date changes — via the tenant-scoped server
+  // endpoint (service role); the browser no longer reads the appointments table.
   useEffect(() => {
     if (!selDate || !appt?.professional_id) { setBookedSlots(new Set()); return; }
     setLoadingSlots(true);
-    supabase.from("appointments")
-      .select("appointment_time")
-      .eq("tenant_id", appt.tenant_id)
-      .eq("appointment_date", selDate)
-      .eq("professional_id", appt.professional_id)
-      .neq("id", appt.id)
-      .in("status", ["pending", "confirmed"])
-      .then(({ data }) => {
-        setBookedSlots(new Set((data ?? []).map((a: any) => slotKey(a.appointment_time))));
+    fetch("/api/public/booking", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "availability", tenant_id: appt.tenant_id, date: selDate }),
+    })
+      .then(r => r.json())
+      .then((json) => {
+        const booked = (Array.isArray(json.booked) ? json.booked : [])
+          .filter((a: any) => a.professional_id === appt.professional_id)
+          .map((a: any) => slotKey(a.appointment_time));
+        setBookedSlots(new Set(booked));
         setLoadingSlots(false);
-      });
+      })
+      .catch(() => { setBookedSlots(new Set()); setLoadingSlots(false); });
   }, [selDate, appt]);
 
   /* derived */

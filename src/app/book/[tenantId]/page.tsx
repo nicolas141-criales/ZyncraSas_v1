@@ -221,22 +221,29 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
         return `${h12.toString().padStart(2, "0")}:${m} ${suffix}`;
       };
 
-      if (selectedProfessional === "any") {
-        // Trae todas las citas del día con su profesional
-        const { data } = await supabase
-          .from("appointments")
-          .select("appointment_time, professional_id")
-          .eq("tenant_id", tenant.id)
-          .eq("appointment_date", selectedDate)
-          .in("status", ["pending", "confirmed"]);
+      // Availability comes from a tenant-scoped server endpoint (service role).
+      // The browser no longer reads the appointments table directly, so anon
+      // access to other tenants' bookings (PII) stays revoked.
+      let data: { appointment_time: string; professional_id: string | null }[] = [];
+      try {
+        const res = await fetch("/api/public/booking", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "availability", tenant_id: tenant.id, date: selectedDate }),
+        });
+        const json = await res.json();
+        data = Array.isArray(json.booked) ? json.booked : [];
+      } catch {
+        data = [];
+      }
 
+      if (selectedProfessional === "any") {
         const totalProfs = professionals.length;
         const booked = new Set<string>();
-
-        if (totalProfs > 0 && data) {
+        if (totalProfs > 0) {
           // Agrupa por horario: cuántos profesionales distintos están ocupados
           const slotBusy: Record<string, Set<string>> = {};
-          for (const a of data as any[]) {
+          for (const a of data) {
             const key = toKey(a.appointment_time);
             if (!slotBusy[key]) slotBusy[key] = new Set();
             if (a.professional_id) slotBusy[key].add(a.professional_id);
@@ -249,15 +256,9 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
         setBookedSlots(booked);
       } else {
         // Profesional específico: solo sus citas
-        const { data } = await supabase
-          .from("appointments")
-          .select("appointment_time")
-          .eq("tenant_id", tenant.id)
-          .eq("appointment_date", selectedDate)
-          .eq("professional_id", selectedProfessional!)
-          .in("status", ["pending", "confirmed"]);
-
-        setBookedSlots(new Set<string>((data ?? []).map((a: any) => toKey(a.appointment_time))));
+        setBookedSlots(new Set<string>(
+          data.filter(a => a.professional_id === selectedProfessional).map(a => toKey(a.appointment_time))
+        ));
       }
       setLoadingSlots(false);
     }
@@ -366,139 +367,38 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
     if (!tenant || !selectedDate) return;
     setSubmitting(true);
     try {
-      const cleanPhone = details.phone.replace(/\D/g, "").slice(0, 10);
+      // All client/appointment writes go through a tenant-scoped server endpoint
+      // (service role). The browser never touches the clients/appointments tables,
+      // so anon RLS on them stays fully revoked. Professional auto-assignment,
+      // conflict checks and the confirmation email run server-side.
+      const fieldPayload = serviceFields
+        .filter(f => fieldValues[f.id] !== undefined && fieldValues[f.id] !== "")
+        .map(f => ({ field_id: f.id, field_key: f.field_key, value: fieldValues[f.id] }));
 
-      const { data: existing } = await supabase
-        .from("clients").select("id")
-        .eq("phone", cleanPhone).eq("tenant_id", tenant.id).maybeSingle();
-
-      let clientId = existing?.id;
-      if (!clientId) {
-        const { data: newClient } = await supabase
-          .from("clients")
-          .insert({ tenant_id: tenant.id, name: details.name, phone: cleanPhone, email: details.email })
-          .select("id").single();
-        clientId = newClient?.id;
-      }
-
-      if (clientId) {
-        // Asigna el profesional: si eligió uno específico lo usa directamente;
-        // si eligió "sin preferencia", elige al libre con menos citas en la semana.
-        let profId: string | null = null;
-        if (selectedProfessional !== "any") {
-          profId = selectedProfessional;
-        } else if (professionals.length > 0) {
-          const timeStr = selectedTime ? convertTo24h(selectedTime) : "09:00:00";
-          const [dy, dmo, dd] = selectedDate!.split("-").map(Number);
-          const dayOfWeek = new Date(dy, dmo - 1, dd).getDay();
-          const dayKey = String(dayOfWeek);
-          const slotMin = timeToMin(timeStr.slice(0, 5));
-
-          // Solo profesionales que trabajan ese día y hora según su horario personal (o el del negocio)
-          const workingProfs = professionals.filter((p: any) => {
-            const sched = p.schedule ?? businessHours;
-            if (!sched) return true;
-            const dayH = sched[dayKey];
-            if (!dayH || !dayH.open) return false;
-            return slotMin >= timeToMin(dayH.start) && slotMin < timeToMin(dayH.end);
-          });
-          const candidatePool = workingProfs.length > 0 ? workingProfs : professionals;
-
-          // Cuáles profesionales están ocupados a esa hora exacta
-          const { data: busyNow } = await supabase
-            .from("appointments")
-            .select("professional_id")
-            .eq("tenant_id", tenant.id)
-            .eq("appointment_date", selectedDate!)
-            .eq("appointment_time", timeStr)
-            .in("status", ["pending", "confirmed"]);
-
-          const busyIds = new Set((busyNow ?? []).map((a: any) => a.professional_id).filter(Boolean));
-          const freeProfs = candidatePool.filter((p: any) => !busyIds.has(p.id));
-          const pool = freeProfs.length > 0 ? freeProfs : candidatePool;
-
-          if (pool.length === 1) {
-            profId = pool[0].id;
-          } else {
-            // Cuenta citas de la semana por profesional y elige el que menos tenga
-            const d = new Date(selectedDate!);
-            const dow = d.getDay();
-            const mondayOffset = dow === 0 ? -6 : 1 - dow;
-            const monday = new Date(d); monday.setDate(d.getDate() + mondayOffset);
-            const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
-            const toISO = (dt: Date) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}-${String(dt.getDate()).padStart(2, "0")}`;
-
-            const { data: weekApts } = await supabase
-              .from("appointments")
-              .select("professional_id")
-              .eq("tenant_id", tenant.id)
-              .gte("appointment_date", toISO(monday))
-              .lte("appointment_date", toISO(sunday))
-              .in("status", ["pending", "confirmed"]);
-
-            const countMap: Record<string, number> = {};
-            for (const a of weekApts ?? []) {
-              if (a.professional_id) countMap[a.professional_id] = (countMap[a.professional_id] || 0) + 1;
-            }
-
-            const sorted = [...pool].sort((a: any, b: any) => (countMap[a.id] || 0) - (countMap[b.id] || 0));
-            profId = sorted[0].id;
-          }
-        }
-
-        const { data: apptData } = await supabase.from("appointments").insert({
+      const res = await fetch("/api/public/booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create",
           tenant_id: tenant.id,
-          client_id: clientId,
           service_id: selectedService,
-          professional_id: profId,
-          appointment_date: selectedDate,
-          appointment_time: selectedTime ? convertTo24h(selectedTime) : "09:00:00",
-          status: "pending",
-        }).select("id, manage_token").single();
+          professional_id: selectedProfessional === "any" ? null : selectedProfessional,
+          date: selectedDate,
+          time: selectedTime ? convertTo24h(selectedTime) : "09:00:00",
+          name: details.name,
+          phone: details.phone,
+          email: details.email,
+          field_values: fieldPayload,
+        }),
+      });
 
-        // Save service field values
-        const allFields = [...serviceFields];
-        if (allFields.length > 0) {
-          const upserts = allFields
-            .filter(f => fieldValues[f.id] !== undefined && fieldValues[f.id] !== "")
-            .map(f => ({
-              tenant_id: tenant.id,
-              client_id: clientId,
-              field_id: f.id,
-              field_key: f.field_key,
-              value: fieldValues[f.id],
-            }));
-          if (upserts.length > 0) {
-            await supabase.from("client_field_values").upsert(upserts, { onConflict: "client_id,field_id" });
-          }
-        }
-
-        setBookedClientId(clientId);
-
-        // Send confirmation email if the client provided their email
-        const manageToken = (apptData as any)?.manage_token;
-        if (details.email && manageToken) {
-          const profName = profId
-            ? (professionals.find((p: any) => p.id === profId) as any)?.name ?? "—"
-            : "—";
-          fetch("/api/send-confirmation", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email:         details.email,
-              clientName:    details.name,
-              businessName,
-              service:       selectedSvc?.name ?? "—",
-              professional:  profName,
-              date:          selectedDate,
-              time:          selectedTime ? convertTo24h(selectedTime) : "09:00:00",
-              primaryColor,
-              secondaryColor,
-              manageToken,
-            }),
-          }).catch(() => {}); // fire-and-forget — booking succeeds even if email fails
-        }
+      const result = await res.json().catch(() => ({}));
+      if (!res.ok || !result?.ok) {
+        alert(result?.error ?? "Hubo un error al procesar tu reserva. Por favor intenta de nuevo.");
+        return;
       }
+
+      if (result.client_id) setBookedClientId(result.client_id);
       setIsBooked(true);
     } catch (err) {
       console.error("Booking error:", err);

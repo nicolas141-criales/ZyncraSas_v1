@@ -96,13 +96,17 @@ async function sendReminder(appt: any, key: ReminderKey) {
 }
 
 export async function GET(req: NextRequest) {
-  // Vercel calls with Authorization: Bearer <CRON_SECRET>
+  // Vercel calls with Authorization: Bearer <CRON_SECRET>.
+  // Fail-closed: if the secret is not configured, deny — this endpoint sends
+  // emails/WhatsApp and reads across tenants with the service-role key.
   const secret = process.env.CRON_SECRET;
-  if (secret) {
-    const auth = req.headers.get("authorization") ?? "";
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!secret) {
+    console.error("[cron/reminders] CRON_SECRET not set — denying (fail-closed).");
+    return NextResponse.json({ error: "Service unavailable" }, { status: 503 });
+  }
+  const auth = req.headers.get("authorization") ?? "";
+  if (auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const now    = new Date();

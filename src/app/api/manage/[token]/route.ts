@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { internalHeaders } from "@/lib/api-auth";
 import { createClient } from "@supabase/supabase-js";
 
 type Params = Promise<{ token: string }>;
 
 const db = () => createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  // Service role required: this token-based flow reads/updates appointments that
+  // anon can no longer access under the hardened RLS. No anon fallback.
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
 ) as any;
 
@@ -72,7 +75,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
       const base = (process.env.NEXT_PUBLIC_APP_URL ?? "https://zyncra.app").replace(/\/$/, "");
       fetch(`${base}/api/send-confirmation`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: internalHeaders(),
         body: JSON.stringify({
           email:        appt.clients.email,
           clientName:   appt.clients.name,
@@ -114,7 +117,7 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
       const base = (process.env.NEXT_PUBLIC_APP_URL ?? "").replace(/\/$/, "");
       await fetch(`${base}/api/send-confirmation`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: internalHeaders(),
         body: JSON.stringify({
           email:          appt.clients.email,
           clientName:     appt.clients.name,

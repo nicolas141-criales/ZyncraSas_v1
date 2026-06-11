@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase, authedHeaders } from "@/lib/supabase";
 import { IconPlus, IconX, IconClock } from "./ZyncraIcons";
 
 const TIME_SLOTS = [
@@ -197,7 +197,7 @@ export default function NewAppointmentModal({ tenantId, open, onClose, onCreated
       const profName = profs.find((p: any) => p.id === profId)?.name ?? "";
       fetch("/api/send-confirmation", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await authedHeaders(),
         body: JSON.stringify({
           email:        selectedClient.email,
           clientName:   selectedClient.name,
