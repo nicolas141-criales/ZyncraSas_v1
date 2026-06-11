@@ -23,16 +23,25 @@ const STATUS_BADGE: Record<string, { label: string; bg: string; color: string }>
 function fmt(n: number) {
   return new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 }
+function fmtCompact(n: number) {
+  if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `$${(n / 1_000).toFixed(0)}K`;
+  return fmt(n);
+}
 function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("es-CO", { month: "short", day: "numeric", year: "numeric" });
 }
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime();
   const mins = Math.floor(diff / 60000);
-  if (mins < 60) return `hace ${Math.max(1, mins)}m`;
+  if (mins < 2) return "ahora mismo";
+  if (mins < 60) return `hace ${mins}m`;
   const hrs = Math.floor(mins / 60);
   if (hrs < 24) return `hace ${hrs}h`;
-  return `hace ${Math.floor(hrs / 24)}d`;
+  const days = Math.floor(hrs / 24);
+  if (days === 1) return "ayer";
+  if (days < 7) return `hace ${days} días`;
+  return fmtDate(iso);
 }
 function getLast6Months(): { key: string; label: string }[] {
   const out = [];
@@ -47,45 +56,144 @@ function getLast6Months(): { key: string; label: string }[] {
   return out;
 }
 
-function KpiCard({ label, value, sub, accent, icon, tag }: {
-  label: string; value: string; sub: string; accent: string; icon: string; tag?: string;
+// ── KPI Card ────────────────────────────────────────────────────────────────
+
+function KpiCard({
+  label, value, sub, accent, icon, tag, size = "normal",
+}: {
+  label: string; value: string; sub: string; accent: string;
+  icon: string; tag?: string; size?: "normal" | "large";
 }) {
   return (
-    <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.05)" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.42)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
-          {tag && (
-            <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.28)", letterSpacing: "0.08em", fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace" }}>
-              {tag}
-            </span>
-          )}
+    <div style={{
+      position: "relative", overflow: "hidden",
+      background: "#13131F",
+      borderRadius: 18,
+      padding: size === "large" ? "26px 28px" : "20px 22px",
+      border: "1px solid rgba(255,255,255,0.07)",
+      borderLeft: `3px solid ${accent}`,
+    }}>
+      {/* Ambient glow */}
+      <div style={{
+        position: "absolute", top: -20, left: -10, width: 100, height: 100,
+        borderRadius: "50%", background: accent, opacity: 0.07, filter: "blur(28px)",
+        pointerEvents: "none",
+      }} />
+      <div style={{ position: "relative" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.07em" }}>{label}</span>
+            {tag && (
+              <span style={{
+                fontSize: 8.5, fontWeight: 700, padding: "1px 5px", borderRadius: 4,
+                background: `${accent}22`, color: accent, letterSpacing: "0.07em",
+                fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
+              }}>{tag}</span>
+            )}
+          </div>
+          <span style={{ fontSize: size === "large" ? 22 : 18, opacity: 0.6 }}>{icon}</span>
         </div>
-        <span style={{ fontSize: 20, opacity: 0.7 }}>{icon}</span>
+        <div style={{
+          fontSize: size === "large" ? 34 : 28, fontWeight: 800, color: accent,
+          lineHeight: 1, marginBottom: 6, letterSpacing: "-0.02em",
+        }}>{value}</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", fontWeight: 500 }}>{sub}</div>
       </div>
-      <div style={{ fontSize: 30, fontWeight: 800, color: accent, lineHeight: 1, marginBottom: 6 }}>{value}</div>
-      <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)" }}>{sub}</div>
     </div>
   );
 }
 
-function MiniBar({ data, valueKey, color }: { data: MonthBar[]; valueKey: "signups" | "revenue"; color: string }) {
-  const max = Math.max(...data.map(d => d[valueKey]), 1);
+// ── Trend chart ────────────────────────────────────────────────────────────
+
+function TrendChart({ data, tab }: { data: MonthBar[]; tab: "signups" | "revenue" }) {
+  const values = data.map(d => d[tab]);
+  const max = Math.max(...values, 1);
+  const color = tab === "signups" ? "#60a5fa" : "#ff7d72";
+  const total = values.reduce((a, b) => a + b, 0);
+  const thisMonth = values[values.length - 1] ?? 0;
+  const lastMonth = values[values.length - 2] ?? 0;
+  const growth = lastMonth > 0 ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : 0;
+
   return (
-    <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 50, marginTop: 8 }}>
-      {data.map((d, i) => {
-        const h = Math.max(3, (d[valueKey] / max) * 46);
-        const isLast = i === data.length - 1;
-        return (
-          <div key={d.label} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-            <div style={{ width: "100%", height: h, background: color, borderRadius: "3px 3px 0 0", opacity: isLast ? 1 : 0.45 }} />
-            <div style={{ fontSize: 8, color: "rgba(255,255,255,0.28)", whiteSpace: "nowrap" }}>{d.label}</div>
+    <div>
+      {/* Summary row */}
+      <div style={{ display: "flex", gap: 28, marginBottom: 24, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>Este mes</div>
+          <div style={{ fontSize: 22, fontWeight: 800, color }}>
+            {tab === "signups" ? thisMonth : fmtCompact(thisMonth)}
           </div>
-        );
-      })}
+        </div>
+        {growth !== 0 && (
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>vs mes anterior</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: growth > 0 ? "#34d399" : "#f87171" }}>
+              {growth > 0 ? "+" : ""}{growth}%
+            </div>
+          </div>
+        )}
+        <div>
+          <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.3)", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 4 }}>Últimos 6 meses</div>
+          <div style={{ fontSize: 18, fontWeight: 800, color: "rgba(255,255,255,0.55)" }}>
+            {tab === "signups" ? total : fmtCompact(total)}
+          </div>
+        </div>
+      </div>
+
+      {/* Bars */}
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 100, paddingBottom: 28, position: "relative" }}>
+        {/* Horizontal guide lines */}
+        {[0.5, 1].map(pct => (
+          <div key={pct} style={{
+            position: "absolute", left: 0, right: 0,
+            bottom: 28 + pct * 72,
+            borderTop: "1px dashed rgba(255,255,255,0.06)",
+          }} />
+        ))}
+
+        {data.map((d, i) => {
+          const v = d[tab];
+          const h = Math.max(4, (v / max) * 72);
+          const isLast = i === data.length - 1;
+          return (
+            <div key={d.label} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 0, position: "relative" }}>
+              {/* Value label above bar */}
+              {v > 0 && (
+                <div style={{
+                  position: "absolute",
+                  bottom: 28 + h + 4,
+                  fontSize: 9, fontWeight: 700,
+                  color: isLast ? color : "rgba(255,255,255,0.25)",
+                  whiteSpace: "nowrap",
+                }}>
+                  {tab === "signups" ? v : fmtCompact(v)}
+                </div>
+              )}
+              <div style={{
+                width: "100%", height: h,
+                background: isLast
+                  ? color
+                  : `linear-gradient(180deg, ${color}88 0%, ${color}44 100%)`,
+                borderRadius: "5px 5px 0 0",
+                position: "absolute", bottom: 28,
+              }} />
+              <div style={{
+                position: "absolute", bottom: 6,
+                fontSize: 9.5, fontWeight: isLast ? 700 : 400,
+                color: isLast ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.25)",
+                whiteSpace: "nowrap",
+              }}>
+                {d.label}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
+
+// ── Main component ────────────────────────────────────────────────────────
 
 export default function PlatformDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
@@ -95,6 +203,7 @@ export default function PlatformDashboard() {
   const [tenantStatusMap, setTenantStatusMap] = useState<Map<string, string>>(new Map());
   const [activityFeed, setActivityFeed] = useState<ActivityEvent[]>([]);
   const [monthlyTrend, setMonthlyTrend] = useState<MonthBar[]>([]);
+  const [trendTab, setTrendTab] = useState<"signups" | "revenue">("signups");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -124,7 +233,6 @@ export default function PlatformDashboard() {
       const paymentsData = (payments ?? []) as any[];
       const allTenantsData = (allTenants ?? []) as any[];
 
-      // Status map
       const subsMap = new Map<string, string>(subsData.map((s: any) => [s.tenant_id, s.status]));
       const statusMap = new Map<string, string>(allTenantsData.map((t: any) => [t.id, subsMap.get(t.id) ?? "trial"]));
       setTenantStatusMap(statusMap);
@@ -145,7 +253,7 @@ export default function PlatformDashboard() {
         }))
         .sort((a: TrialExpiring, b: TrialExpiring) => a.daysLeft - b.daysLeft);
 
-      // Monthly trend (last 6 months)
+      // Monthly trend
       const months6 = getLast6Months();
       const signupsByMonth = new Map<string, number>();
       const revenueByMonth = new Map<string, number>();
@@ -165,28 +273,29 @@ export default function PlatformDashboard() {
         revenue: revenueByMonth.get(m.key) ?? 0,
       })));
 
-      // Activity feed (most recent events combined)
+      // Activity feed
       const signupEvents: ActivityEvent[] = allTenantsData.slice(0, 8).map((t: any) => ({
         id: `s-${t.id}`,
         icon: "🏪",
-        text: `Nuevo registro: ${t.name}`,
-        sub: "Cliente nuevo",
+        text: t.name,
+        sub: "Nuevo registro",
         time: t.created_at,
         color: "#60a5fa",
       }));
       const payEvents: ActivityEvent[] = (recentPaid ?? []).map((p: any) => ({
-        id: `p-${p.id ?? p.paid_at}`,
+        id: `p-${p.paid_at}`,
         icon: "💳",
-        text: `Pago recibido: ${(p.tenants as any)?.name ?? "—"}`,
+        text: (p.tenants as any)?.name ?? "—",
         sub: fmt(p.amount ?? 0),
         time: p.paid_at ?? "",
         color: "#34d399",
       }));
-      const combined = [...signupEvents, ...payEvents]
-        .filter(e => e.time)
-        .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-        .slice(0, 10);
-      setActivityFeed(combined);
+      setActivityFeed(
+        [...signupEvents, ...payEvents]
+          .filter(e => e.time)
+          .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+          .slice(0, 12),
+      );
 
       setStats({
         total: allTenantsData.length,
@@ -194,15 +303,14 @@ export default function PlatformDashboard() {
         trial: trialCount,
         overdue: allStatuses.filter(s => s === "overdue").length,
         suspended: allStatuses.filter(s => s === "suspended").length,
-        mrr,
-        arr: mrr * 12,
+        mrr, arr: mrr * 12,
         pendingAmount: paymentsData.reduce((acc, p) => acc + (p.amount ?? 0), 0),
         pendingCount: paymentsData.length,
         newThisMonth: (newTenants ?? []).length,
         conversionRate,
         trialsExpiringSoon: expiringSoon.length,
       });
-      setRecentClients((newTenants ?? []).slice(0, 5));
+      setRecentClients((newTenants ?? []).slice(0, 6));
       setOverdueList(subsData.filter(s => s.status === "overdue").slice(0, 5));
       setTrialsExpiring(expiringSoon);
       setLoading(false);
@@ -220,117 +328,147 @@ export default function PlatformDashboard() {
   }
 
   return (
-    <div>
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 24, fontWeight: 800, color: "rgba(255,255,255,0.94)", margin: 0 }}>Dashboard</h1>
-        <p style={{ color: "rgba(255,255,255,0.32)", fontSize: 14, margin: "4px 0 0" }}>Vista general de la plataforma Zyncra</p>
-      </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
 
-      {/* KPI Grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 14, marginBottom: 28 }}>
-        <KpiCard label="Ingreso mensual"    value={fmt(stats?.mrr ?? 0)}                sub="suscripciones activas"           accent="#ff7d72" icon="💰" tag="MRR" />
-        <KpiCard label="Proyección anual"   value={fmt(stats?.arr ?? 0)}                sub="ingreso mensual × 12"            accent="#f97316" icon="📈" tag="ARR" />
-        <KpiCard label="Clientes activos"   value={String(stats?.active ?? 0)}          sub={`de ${stats?.total ?? 0} totales`} accent="#34d399" icon="✅" />
-        <KpiCard label="En trial"           value={String(stats?.trial ?? 0)}           sub="período de prueba"               accent="#fbbf24" icon="⏳" />
-        <KpiCard label="Conversión"         value={`${stats?.conversionRate ?? 0}%`}    sub="trial → activo"                  accent="#a78bfa" icon="🎯" />
-        <KpiCard label="Cuentas vencidas"   value={String(stats?.overdue ?? 0)}         sub="requieren atención"              accent="#f87171" icon="⚠️" />
-        <KpiCard label="Cobros pendientes"  value={fmt(stats?.pendingAmount ?? 0)}      sub={`${stats?.pendingCount ?? 0} facturas`} accent="#fb923c" icon="📋" />
-        <KpiCard label="Nuevos este mes"    value={String(stats?.newThisMonth ?? 0)}    sub="clientes registrados"            accent="#60a5fa" icon="🆕" />
-      </div>
-
-      {/* Trials expiring alert */}
-      {trialsExpiring.length > 0 && (
-        <div style={{ background: "rgba(251,191,36,0.06)", borderRadius: 16, padding: 24, border: "1px solid rgba(251,191,36,0.22)", marginBottom: 20 }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#fbbf24" }}>⏳ Trials por vencer ({trialsExpiring.length})</h3>
-            <a href="/platform/clients" style={{ fontSize: 12, color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Gestionar →</a>
+      {/* Page header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+        <div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "rgba(255,255,255,0.94)", margin: 0, letterSpacing: "-0.02em" }}>Dashboard</h1>
+          <p style={{ color: "rgba(255,255,255,0.28)", fontSize: 13, margin: "3px 0 0" }}>
+            {new Date().toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long" })}
+          </p>
+        </div>
+        {stats && stats.overdue > 0 && (
+          <div style={{ display: "flex", alignItems: "center", gap: 8, background: "rgba(248,113,113,0.1)", borderRadius: 10, padding: "7px 14px", border: "1px solid rgba(248,113,113,0.2)" }}>
+            <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#f87171", animation: "pulse 2s infinite" }} />
+            <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}`}</style>
+            <span style={{ fontSize: 12, fontWeight: 600, color: "#f87171" }}>{stats.overdue} cuenta{stats.overdue > 1 ? "s" : ""} vencida{stats.overdue > 1 ? "s" : ""}</span>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        )}
+      </div>
+
+      {/* ── Row 1: Hero KPIs ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <KpiCard label="Ingreso mensual"  value={fmtCompact(stats?.mrr ?? 0)}             sub="suscripciones activas"            accent="#ff7d72" icon="💰" tag="MRR" size="large" />
+        <KpiCard label="Clientes activos" value={String(stats?.active ?? 0)}               sub={`de ${stats?.total ?? 0} totales`} accent="#34d399" icon="✅" size="large" />
+        <KpiCard label="En trial"         value={String(stats?.trial ?? 0)}                sub="período de prueba activo"         accent="#fbbf24" icon="⏳" size="large" />
+        <KpiCard label="Conversión"       value={`${stats?.conversionRate ?? 0}%`}         sub="trial → activo"                   accent="#a78bfa" icon="🎯" size="large" />
+      </div>
+
+      {/* ── Row 2: Secondary KPIs ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
+        <KpiCard label="Proyección anual"  value={fmtCompact(stats?.arr ?? 0)}             sub="ingreso mensual × 12"             accent="#f97316" icon="📈" tag="ARR" />
+        <KpiCard label="Cobros pendientes" value={fmtCompact(stats?.pendingAmount ?? 0)}   sub={`${stats?.pendingCount ?? 0} facturas sin cobrar`} accent="#fb923c" icon="📋" />
+        <KpiCard label="Cuentas vencidas"  value={String(stats?.overdue ?? 0)}             sub="requieren atención"               accent="#f87171" icon="⚠️" />
+        <KpiCard label="Nuevos este mes"   value={String(stats?.newThisMonth ?? 0)}        sub="registros del mes"                accent="#60a5fa" icon="🆕" />
+      </div>
+
+      {/* ── Trials expiring (solo cuando hay) ── */}
+      {trialsExpiring.length > 0 && (
+        <div style={{ background: "rgba(251,191,36,0.05)", borderRadius: 16, padding: "18px 22px", border: "1px solid rgba(251,191,36,0.18)" }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 14 }}>
+            ⏳ Trials por vencer esta semana — {trialsExpiring.length} cliente{trialsExpiring.length > 1 ? "s" : ""}
+          </div>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             {trialsExpiring.map((t, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(251,191,36,0.07)", borderRadius: 10, border: "1px solid rgba(251,191,36,0.15)" }}>
-                <div style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.94)" }}>{t.tenantName}</div>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <span style={{ fontSize: 12, color: "rgba(255,255,255,0.42)" }}>Vence {fmtDate(t.trial_ends_at)}</span>
-                  <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 10px", borderRadius: 20, background: t.daysLeft <= 1 ? "rgba(248,113,113,.2)" : "rgba(251,191,36,.15)", color: t.daysLeft <= 1 ? "#f87171" : "#fbbf24" }}>
-                    {t.daysLeft === 0 ? "Hoy" : t.daysLeft === 1 ? "Mañana" : `${t.daysLeft} días`}
-                  </span>
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 14px", background: "rgba(251,191,36,0.08)", borderRadius: 10, border: "1px solid rgba(251,191,36,0.12)" }}>
+                <div>
+                  <div style={{ fontWeight: 700, fontSize: 13, color: "rgba(255,255,255,0.9)" }}>{t.tenantName}</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 1 }}>Vence {fmtDate(t.trial_ends_at)}</div>
                 </div>
+                <span style={{
+                  fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 20, whiteSpace: "nowrap",
+                  background: t.daysLeft <= 1 ? "rgba(248,113,113,.2)" : "rgba(251,191,36,.15)",
+                  color: t.daysLeft <= 1 ? "#f87171" : "#fbbf24",
+                }}>
+                  {t.daysLeft === 0 ? "Hoy" : t.daysLeft === 1 ? "Mañana" : `${t.daysLeft}d`}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Trend bars */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: "20px 24px", border: "1px solid rgba(255,255,255,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Registros por mes</span>
-            <a href="/platform/analytics" style={{ fontSize: 12, color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Ver analytics →</a>
+      {/* ── Trend chart (full width) ── */}
+      <div style={{ background: "#13131F", borderRadius: 18, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "-0.01em" }}>
+            {trendTab === "signups" ? "Nuevos registros" : "Ingresos cobrados"} — últimos 6 meses
+          </span>
+          <div style={{ display: "flex", gap: 4, background: "rgba(255,255,255,0.05)", borderRadius: 10, padding: 4 }}>
+            {(["signups", "revenue"] as const).map(tab => (
+              <button key={tab} onClick={() => setTrendTab(tab)} style={{
+                padding: "5px 14px", borderRadius: 7, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 600,
+                background: trendTab === tab ? (tab === "signups" ? "#60a5fa" : "#ff7d72") : "transparent",
+                color: trendTab === tab ? "#10101B" : "rgba(255,255,255,0.35)",
+                transition: "all .15s",
+              }}>
+                {tab === "signups" ? "Registros" : "Ingresos"}
+              </button>
+            ))}
           </div>
-          <MiniBar data={monthlyTrend} valueKey="signups" color="#60a5fa" />
         </div>
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: "20px 24px", border: "1px solid rgba(255,255,255,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Ingresos por mes</span>
-            <a href="/platform/analytics" style={{ fontSize: 12, color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Ver analytics →</a>
-          </div>
-          <MiniBar data={monthlyTrend} valueKey="revenue" color="#ff7d72" />
-        </div>
+        <TrendChart data={monthlyTrend} tab={trendTab} />
       </div>
 
-      {/* Two columns */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
+      {/* ── Bottom grid: Activity | Clients | Distribution ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
 
-        {/* Cuentas vencidas */}
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Cuentas vencidas</h3>
-            <a href="/platform/billing" style={{ fontSize: 12, color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Ver todas →</a>
-          </div>
-          {overdueList.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "30px 0", color: "rgba(255,255,255,0.32)" }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>✅</div>
-              <div style={{ fontSize: 13 }}>Sin cuentas vencidas</div>
-            </div>
+        {/* Actividad reciente */}
+        <div style={{ background: "#13131F", borderRadius: 18, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.06)", gridColumn: "span 1" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 18, letterSpacing: "-0.01em" }}>Actividad reciente</div>
+          {activityFeed.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "24px 0", color: "rgba(255,255,255,0.25)", fontSize: 13 }}>Sin actividad</div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {overdueList.map((s: any) => (
-                <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(239,68,68,0.08)", borderRadius: 10, border: "1px solid rgba(239,68,68,0.15)" }}>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.94)" }}>{s.tenants?.name ?? "—"}</div>
-                    <div style={{ fontSize: 11, color: "#ef4444", marginTop: 2 }}>Vencida · {fmt(s.amount)}/mes</div>
+            <div style={{ display: "flex", flexDirection: "column", position: "relative" }}>
+              {/* Timeline vertical line */}
+              <div style={{ position: "absolute", left: 13, top: 14, bottom: 14, width: 1, background: "rgba(255,255,255,0.05)" }} />
+              {activityFeed.slice(0, 8).map((e, i) => (
+                <div key={e.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "9px 0", position: "relative" }}>
+                  {/* Timeline dot */}
+                  <div style={{
+                    width: 28, height: 28, borderRadius: "50%",
+                    background: `${e.color}18`,
+                    border: `1.5px solid ${e.color}44`,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 12, flexShrink: 0, position: "relative", zIndex: 1,
+                  }}>
+                    {e.icon}
                   </div>
-                  <a href="/platform/billing" style={{ fontSize: 12, color: "#f87171", fontWeight: 600, textDecoration: "none" }}>Gestionar</a>
+                  <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.82)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.text}</div>
+                    <div style={{ display: "flex", gap: 8, marginTop: 1, alignItems: "center" }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: e.color }}>{e.sub}</span>
+                      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.22)" }}>·</span>
+                      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.22)" }}>{timeAgo(e.time)}</span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
 
-        {/* Nuevos clientes */}
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-            <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Últimos registros</h3>
-            <a href="/platform/clients" style={{ fontSize: 12, color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Ver todos →</a>
-          </div>
+        {/* Últimos registros */}
+        <div style={{ background: "#13131F", borderRadius: 18, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 18, letterSpacing: "-0.01em" }}>Últimos registros</div>
           {recentClients.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "30px 0", color: "rgba(255,255,255,0.32)" }}>
-              <div style={{ fontSize: 28, marginBottom: 8 }}>👥</div>
-              <div style={{ fontSize: 13 }}>Sin clientes este mes</div>
+            <div style={{ textAlign: "center", padding: "24px 0", color: "rgba(255,255,255,0.25)" }}>
+              <div style={{ fontSize: 24, marginBottom: 8 }}>👥</div>
+              <div style={{ fontSize: 12 }}>Sin registros este mes</div>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               {recentClients.map((t: any) => {
                 const status = tenantStatusMap.get(t.id) ?? "trial";
                 const badge = STATUS_BADGE[status] ?? STATUS_BADGE.trial;
                 return (
-                  <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: "rgba(251,15,5,0.07)", borderRadius: 10, border: "1px solid rgba(251,15,5,0.10)" }}>
-                    <div>
-                      <div style={{ fontWeight: 600, fontSize: 13, color: "rgba(255,255,255,0.94)" }}>{t.name}</div>
-                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", marginTop: 2 }}>{fmtDate(t.created_at)}</div>
+                  <div key={t.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 12px", background: "rgba(255,255,255,0.04)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.05)" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 12, color: "rgba(255,255,255,0.87)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{t.name}</div>
+                      <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 1 }}>{timeAgo(t.created_at)}</div>
                     </div>
-                    <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: badge.bg, color: badge.color }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: badge.bg, color: badge.color, whiteSpace: "nowrap", marginLeft: 8 }}>
                       {badge.label}
                     </span>
                   </div>
@@ -339,78 +477,54 @@ export default function PlatformDashboard() {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Activity feed */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20, marginBottom: 20 }}>
+        {/* Distribución + cuentas vencidas */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-        {/* Feed */}
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
-          <h3 style={{ margin: "0 0 18px", fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Actividad reciente</h3>
-          {activityFeed.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "20px 0", color: "rgba(255,255,255,0.32)", fontSize: 13 }}>Sin actividad reciente</div>
-          ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
-              {activityFeed.map((e, i) => (
-                <div key={e.id} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 0", borderBottom: i < activityFeed.length - 1 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
-                  <div style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0 }}>
-                    {e.icon}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.87)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.text}</div>
-                    <div style={{ display: "flex", gap: 8, marginTop: 2, alignItems: "center" }}>
-                      {e.sub && <span style={{ fontSize: 11, fontWeight: 700, color: e.color }}>{e.sub}</span>}
-                      <span style={{ fontSize: 10, color: "rgba(255,255,255,0.28)" }}>{timeAgo(e.time)}</span>
+          {/* Distribución */}
+          <div style={{ background: "#13131F", borderRadius: 18, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.06)", flex: 1 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 16, letterSpacing: "-0.01em" }}>Distribución</div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {[
+                { label: "Activos",     value: stats?.active ?? 0,    color: "#34d399" },
+                { label: "Trial",       value: stats?.trial ?? 0,     color: "#fbbf24" },
+                { label: "Vencidos",    value: stats?.overdue ?? 0,   color: "#f87171" },
+                { label: "Suspendidos", value: stats?.suspended ?? 0, color: "rgba(255,255,255,0.3)" },
+              ].map(({ label, value, color }) => {
+                const pct = stats?.total ? Math.round((value / stats.total) * 100) : 0;
+                return (
+                  <div key={label}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                      <span style={{ fontSize: 11, color: "rgba(255,255,255,0.42)" }}>{label}</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, color }}>
+                        {value} <span style={{ fontWeight: 400, color: "rgba(255,255,255,0.2)" }}>({pct}%)</span>
+                      </span>
+                    </div>
+                    <div style={{ height: 4, borderRadius: 3, background: "rgba(255,255,255,0.05)", overflow: "hidden" }}>
+                      <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 3, transition: "width .5s ease" }} />
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Cuentas vencidas */}
+          {overdueList.length > 0 && (
+            <div style={{ background: "rgba(248,113,113,0.06)", borderRadius: 18, padding: "18px 20px", border: "1px solid rgba(248,113,113,0.15)" }}>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#f87171", marginBottom: 12, textTransform: "uppercase", letterSpacing: "0.06em" }}>⚠️ Vencidas</div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                {overdueList.map((s: any) => (
+                  <div key={s.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.75)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "60%" }}>{s.tenants?.name ?? "—"}</span>
+                    <span style={{ fontSize: 11, color: "#f87171", fontWeight: 700 }}>{fmt(s.amount)}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>
 
-        {/* Client distribution */}
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, border: "1px solid rgba(255,255,255,0.05)" }}>
-          <h3 style={{ margin: "0 0 18px", fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Distribución de clientes</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {[
-              { label: "Activos",     value: stats?.active ?? 0,    color: "#34d399", bg: "rgba(52,211,153,0.1)"  },
-              { label: "Trial",       value: stats?.trial ?? 0,     color: "#fbbf24", bg: "rgba(251,191,36,0.1)"  },
-              { label: "Vencidos",    value: stats?.overdue ?? 0,   color: "#f87171", bg: "rgba(248,113,113,0.1)" },
-              { label: "Suspendidos", value: stats?.suspended ?? 0, color: "rgba(255,255,255,0.55)", bg: "rgba(148,163,184,0.1)" },
-            ].map(({ label, value, color, bg }) => {
-              const pct = stats?.total ? Math.round((value / stats.total) * 100) : 0;
-              return (
-                <div key={label}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                    <span style={{ fontSize: 12, color: "rgba(255,255,255,0.55)" }}>{label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 700, color }}>{value} <span style={{ fontWeight: 400, color: "rgba(255,255,255,0.28)" }}>({pct}%)</span></span>
-                  </div>
-                  <div style={{ height: 5, borderRadius: 4, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 4, transition: "width .4s ease" }} />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Quick actions */}
-          <div style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.28)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Acciones rápidas</div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-              {[
-                { label: "Nuevo cobro", href: "/platform/billing", color: "#ff7d72" },
-                { label: "Ver clientes", href: "/platform/clients", color: "#60a5fa" },
-                { label: "Analytics", href: "/platform/analytics", color: "#a78bfa" },
-                { label: "Planes", href: "/platform/plans", color: "#34d399" },
-              ].map(a => (
-                <a key={a.label} href={a.href} style={{ fontSize: 11, fontWeight: 600, padding: "5px 12px", borderRadius: 7, textDecoration: "none", background: "rgba(255,255,255,0.06)", color: a.color, border: "1px solid rgba(255,255,255,0.08)", whiteSpace: "nowrap" }}>
-                  {a.label}
-                </a>
-              ))}
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
