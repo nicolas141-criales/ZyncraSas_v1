@@ -168,22 +168,22 @@ export default function PlatformBillingPage() {
 
       {/* KPIs */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 24 }}>
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(52,211,153,0.15)" }}>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Cobrado este mes</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#34d399" }}>{fmt(collectedMonth)}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>{payments.filter(p => p.status === "paid" && p.paid_at && p.paid_at >= startOfMonth).length} pagos en {new Date().toLocaleDateString("es-CO", { month: "long" })}</div>
         </div>
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(251,191,36,0.15)" }}>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Pendiente de cobro</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#fbbf24" }}>{fmt(pendingTotal)}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>{payments.filter(p => p.status === "pending").length} facturas</div>
         </div>
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(96,165,250,0.15)" }}>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Recaudado (histórico)</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: "#60a5fa" }}>{fmt(paidTotal)}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>{payments.filter(p => p.status === "paid").length} pagos totales</div>
         </div>
-        <div style={{ background: overdueCount > 0 ? "rgba(248,113,113,.08)" : "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: `1px solid ${overdueCount > 0 ? "rgba(248,113,113,.2)" : "rgba(255,255,255,0.05)"}` }}>
+        <div style={{ background: overdueCount > 0 ? "linear-gradient(145deg, rgba(248,113,113,0.1) 0%, rgba(248,113,113,0.03) 100%)" : "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 14, padding: "18px 20px", border: `1px solid ${overdueCount > 0 ? "rgba(248,113,113,.25)" : "rgba(255,255,255,0.08)"}` }}>
           <div style={{ fontSize: 11, color: "rgba(255,255,255,0.42)", fontWeight: 700, textTransform: "uppercase", marginBottom: 8 }}>Vencidos</div>
           <div style={{ fontSize: 26, fontWeight: 800, color: overdueCount > 0 ? "#f87171" : "rgba(255,255,255,0.42)" }}>{overdueCount}</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.32)", marginTop: 4 }}>con fecha de vencimiento pasada</div>
@@ -212,10 +212,10 @@ export default function PlatformBillingPage() {
       {loading ? (
         <div style={{ textAlign: "center", padding: 60, color: "rgba(255,255,255,0.32)" }}>Cargando...</div>
       ) : (
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
+        <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
           <table style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
-              <tr style={{ background: "#10101B" }}>
+              <tr style={{ background: "rgba(0,0,0,0.3)" }}>
                 {["Negocio", "Monto", "Estado", "Vencimiento", "Pagado", "Método", ""].map(h => (
                   <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.05em" }}>{h}</th>
                 ))}
@@ -263,7 +263,7 @@ export default function PlatformBillingPage() {
       {/* Mark Paid Modal */}
       {payModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%", border: "1px solid rgba(255,255,255,0.14)" }}>
+          <div style={{ background: "rgba(6,6,20,0.9)", backdropFilter: "blur(40px) saturate(200%)", WebkitBackdropFilter: "blur(40px) saturate(200%)", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)" }}>
             <h2 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>Registrar pago</h2>
             <p style={{ margin: "0 0 20px", fontSize: 13, color: "rgba(255,255,255,0.42)" }}>
               {payModal.tenant_name} · <strong style={{ color: "#ff7d72" }}>{fmt(payModal.amount)}</strong>
@@ -297,7 +297,7 @@ export default function PlatformBillingPage() {
       {/* New Payment Modal */}
       {newModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%", border: "1px solid rgba(255,255,255,0.14)" }}>
+          <div style={{ background: "rgba(6,6,20,0.9)", backdropFilter: "blur(40px) saturate(200%)", WebkitBackdropFilter: "blur(40px) saturate(200%)", borderRadius: 20, padding: 28, maxWidth: 420, width: "100%", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)" }}>
             <h2 style={{ margin: "0 0 20px", fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>Nuevo cobro</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
               <div>
@@ -348,6 +348,6 @@ const lbl: React.CSSProperties = {
 };
 const inp: React.CSSProperties = {
   width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)",
-  background: "#10101B", color: "rgba(255,255,255,0.92)", fontSize: 14, boxSizing: "border-box",
+  background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.92)", fontSize: 14, boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
 };

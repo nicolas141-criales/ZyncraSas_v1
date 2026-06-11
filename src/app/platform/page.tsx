@@ -67,10 +67,13 @@ function KpiCard({
   return (
     <div style={{
       position: "relative", overflow: "hidden",
-      background: "#13131F",
+      background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)",
+      backdropFilter: "blur(20px) saturate(180%)",
+      WebkitBackdropFilter: "blur(20px) saturate(180%)",
+      boxShadow: "0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.07)",
       borderRadius: 18,
       padding: size === "large" ? "26px 28px" : "20px 22px",
-      border: "1px solid rgba(255,255,255,0.07)",
+      border: "1px solid rgba(255,255,255,0.09)",
       borderLeft: `3px solid ${accent}`,
     }}>
       {/* Ambient glow */}
@@ -390,7 +393,7 @@ export default function PlatformDashboard() {
       )}
 
       {/* ── Trend chart (full width) ── */}
-      <div style={{ background: "#13131F", borderRadius: 18, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.06)" }}>
+      <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 18, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.08)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.9)", letterSpacing: "-0.01em" }}>
             {trendTab === "signups" ? "Nuevos registros" : "Ingresos cobrados"} — últimos 6 meses
@@ -415,7 +418,7 @@ export default function PlatformDashboard() {
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 16 }}>
 
         {/* Actividad reciente */}
-        <div style={{ background: "#13131F", borderRadius: 18, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.06)", gridColumn: "span 1" }}>
+        <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 18, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.08)", gridColumn: "span 1" }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 18, letterSpacing: "-0.01em" }}>Actividad reciente</div>
           {activityFeed.length === 0 ? (
             <div style={{ textAlign: "center", padding: "24px 0", color: "rgba(255,255,255,0.25)", fontSize: 13 }}>Sin actividad</div>
@@ -450,7 +453,7 @@ export default function PlatformDashboard() {
         </div>
 
         {/* Últimos registros */}
-        <div style={{ background: "#13131F", borderRadius: 18, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 18, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.08)" }}>
           <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 18, letterSpacing: "-0.01em" }}>Últimos registros</div>
           {recentClients.length === 0 ? (
             <div style={{ textAlign: "center", padding: "24px 0", color: "rgba(255,255,255,0.25)" }}>
@@ -482,7 +485,7 @@ export default function PlatformDashboard() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
           {/* Distribución */}
-          <div style={{ background: "#13131F", borderRadius: 18, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.06)", flex: 1 }}>
+          <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 18, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.08)", flex: 1 }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.9)", marginBottom: 16, letterSpacing: "-0.01em" }}>Distribución</div>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[

@@ -200,7 +200,7 @@ export default function PlatformAnalyticsPage() {
           { label: "En trial",            value: String(totalTrial),      color: "#fbbf24", sub: "sin convertir" },
           { label: "Tasa de vencimiento", value: `${churnRate}%`,         color: churnRate > 10 ? "#f87171" : "#34d399", sub: "cuentas vencidas" },
         ].map(k => (
-          <div key={k.label} style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.05)" }}>
+          <div key={k.label} style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 14, padding: "18px 20px", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>{k.label}</div>
             <div style={{ fontSize: 22, fontWeight: 800, color: k.color }}>{k.value}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 4 }}>{k.sub}</div>
@@ -209,7 +209,7 @@ export default function PlatformAnalyticsPage() {
       </div>
 
       {/* Main chart */}
-      <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 18, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.05)", marginBottom: 20 }}>
+      <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 18, padding: "24px 28px", border: "1px solid rgba(255,255,255,0.08)", marginBottom: 20 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
           <div>
             <div style={{ fontSize: 16, fontWeight: 800, color: "rgba(255,255,255,0.94)", marginBottom: 4 }}>
@@ -251,7 +251,7 @@ export default function PlatformAnalyticsPage() {
       </div>
 
       {/* Monthly breakdown table */}
-      <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 18, border: "1px solid rgba(255,255,255,0.05)", overflow: "hidden" }}>
+      <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06)", borderRadius: 18, border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
         <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
           <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>Desglose mensual</span>
         </div>

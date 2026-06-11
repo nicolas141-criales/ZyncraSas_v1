@@ -283,10 +283,10 @@ export default function PlatformClientsPage() {
       {loading ? (
         <div style={{ textAlign: "center", padding: 60, color: "rgba(255,255,255,0.32)" }}>Cargando...</div>
       ) : (
-        <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.05)", overflowX: "auto" }}>
+        <div style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.06)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.08)", overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 960 }}>
             <thead>
-              <tr style={{ background: "#10101B" }}>
+              <tr style={{ background: "rgba(0,0,0,0.3)" }}>
                 {["Negocio / Contacto", "Estado", "Plan / Monto", "Trial vence", "Último pago", "Clientes", "Registrado", ""].map(h => (
                   <th key={h} style={{ padding: "12px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.32)", textTransform: "uppercase", letterSpacing: "0.05em", whiteSpace: "nowrap" }}>{h}</th>
                 ))}
@@ -383,7 +383,7 @@ export default function PlatformClientsPage() {
       {/* Edit Modal */}
       {editModal && selected && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div style={{ background: "#10101B", borderRadius: 20, padding: 28, maxWidth: 500, width: "100%", border: "1px solid rgba(255,255,255,0.14)", maxHeight: "90vh", overflowY: "auto" }}>
+          <div style={{ background: "rgba(6,6,20,0.9)", backdropFilter: "blur(40px) saturate(200%)", WebkitBackdropFilter: "blur(40px) saturate(200%)", borderRadius: 20, padding: 28, maxWidth: 500, width: "100%", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)", maxHeight: "90vh", overflowY: "auto" }}>
             <h2 style={{ margin: "0 0 4px", fontSize: 18, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>{selected.name}</h2>
             <p style={{ margin: "0 0 20px", fontSize: 13, color: "rgba(255,255,255,0.42)" }}>/{selected.slug} · Registrado el {fmtDate(selected.created_at)}</p>
 
@@ -465,7 +465,7 @@ export default function PlatformClientsPage() {
       {/* Delete confirmation modal */}
       {deleteModal && selected && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: 20 }}>
-          <div style={{ background: "#10101B", borderRadius: 20, padding: 28, maxWidth: 440, width: "100%", border: "1px solid rgba(239,68,68,0.3)" }}>
+          <div style={{ background: "rgba(6,6,20,0.9)", backdropFilter: "blur(40px) saturate(200%)", WebkitBackdropFilter: "blur(40px) saturate(200%)", borderRadius: 20, padding: 28, maxWidth: 440, width: "100%", border: "1px solid rgba(239,68,68,0.3)", boxShadow: "0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)" }}>
             <div style={{ fontSize: 32, marginBottom: 12, textAlign: "center" }}>⚠️</div>
             <h2 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 800, color: "#f87171", textAlign: "center" }}>
               Eliminar cliente

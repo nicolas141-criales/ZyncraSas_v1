@@ -237,7 +237,7 @@ ON CONFLICT (key) DO NOTHING;`}
       )}
 
       {/* Código de trial */}
-      <section style={{ background: "rgba(255,255,255,0.08)", borderRadius: 18, padding: 24, border: "1px solid rgba(255,255,255,0.05)", marginBottom: 16 }}>
+      <section style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 18, padding: 24, border: "1px solid rgba(255,255,255,0.08)", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
           <span style={{ fontSize: 18 }}>🎟️</span>
           <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>Código de acceso gratuito</h2>
@@ -259,7 +259,7 @@ ON CONFLICT (key) DO NOTHING;`}
       </section>
 
       {/* Período de trial */}
-      <section style={{ background: "rgba(255,255,255,0.08)", borderRadius: 18, padding: 24, border: "1px solid rgba(255,255,255,0.05)", marginBottom: 16 }}>
+      <section style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 18, padding: 24, border: "1px solid rgba(255,255,255,0.08)", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
           <span style={{ fontSize: 18 }}>⏱️</span>
           <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>Período de trial</h2>
@@ -293,7 +293,7 @@ ON CONFLICT (key) DO NOTHING;`}
       </section>
 
       {/* Estado del sistema */}
-      <section style={{ background: "rgba(255,255,255,0.08)", borderRadius: 18, padding: 24, border: "1px solid rgba(255,255,255,0.05)", marginBottom: 16 }}>
+      <section style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 18, padding: 24, border: "1px solid rgba(255,255,255,0.08)", marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <span style={{ fontSize: 18 }}>📊</span>
@@ -325,7 +325,7 @@ ON CONFLICT (key) DO NOTHING;`}
       </section>
 
       {/* Cuenta de administrador */}
-      <section style={{ background: "rgba(255,255,255,0.08)", borderRadius: 18, padding: 24, border: "1px solid rgba(255,255,255,0.05)", marginBottom: 16 }}>
+      <section style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 18, padding: 24, border: "1px solid rgba(255,255,255,0.08)", marginBottom: 16 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
           <span style={{ fontSize: 18 }}>👤</span>
           <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>Cuenta de administrador</h2>

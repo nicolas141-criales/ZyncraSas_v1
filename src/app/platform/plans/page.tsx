@@ -114,7 +114,7 @@ export default function PlatformPlansPage() {
       </div>
 
       {/* MRR banner */}
-      <div style={{ background: "linear-gradient(135deg, rgba(251,15,5,0.16), rgba(99,102,241,0.1))", borderRadius: 16, padding: "20px 24px", marginBottom: 24, border: "1px solid rgba(251,15,5,0.16)", display: "flex", gap: 40 }}>
+      <div style={{ background: "linear-gradient(135deg, rgba(251,15,5,0.18), rgba(99,102,241,0.12))", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)", borderRadius: 16, padding: "20px 24px", marginBottom: 24, border: "1px solid rgba(251,15,5,0.2)", display: "flex", gap: 40 }}>
         <div>
           <div style={{ fontSize: 11, color: "#ff7d72", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>MRR Estimado</div>
           <div style={{ fontSize: 28, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>{fmt(totalMRR)}</div>
@@ -141,7 +141,7 @@ export default function PlatformPlansPage() {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
           {plans.map(p => (
-            <div key={p.id} style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: 24, border: `1px solid ${p.active ? "rgba(251,15,5,0.16)" : "rgba(255,255,255,0.05)"}`, opacity: p.active ? 1 : 0.6 }}>
+            <div key={p.id} style={{ background: "linear-gradient(145deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)", backdropFilter: "blur(20px) saturate(180%)", WebkitBackdropFilter: "blur(20px) saturate(180%)", boxShadow: "0 4px 24px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.07)", borderRadius: 16, padding: 24, border: `1px solid ${p.active ? "rgba(251,15,5,0.2)" : "rgba(255,255,255,0.06)"}`, opacity: p.active ? 1 : 0.6 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                 <div>
                   <div style={{ fontSize: 16, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>{p.name}</div>
@@ -176,7 +176,7 @@ export default function PlatformPlansPage() {
       {/* Modal */}
       {modal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 20 }}>
-          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 20, padding: 28, maxWidth: 460, width: "100%", border: "1px solid rgba(255,255,255,0.14)", maxHeight: "90vh", overflowY: "auto" }}>
+          <div style={{ background: "rgba(6,6,20,0.9)", backdropFilter: "blur(40px) saturate(200%)", WebkitBackdropFilter: "blur(40px) saturate(200%)", borderRadius: 20, padding: 28, maxWidth: 460, width: "100%", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 24px 64px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)", maxHeight: "90vh", overflowY: "auto" }}>
             <h2 style={{ margin: "0 0 20px", fontSize: 17, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>
               {editing ? "Editar plan" : "Nuevo plan"}
             </h2>
@@ -234,6 +234,6 @@ const lbl: React.CSSProperties = {
 };
 const inp: React.CSSProperties = {
   width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.14)",
-  background: "#10101B", color: "rgba(255,255,255,0.92)", fontSize: 14, boxSizing: "border-box",
+  background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.92)", fontSize: 14, boxSizing: "border-box",
   fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
 };
