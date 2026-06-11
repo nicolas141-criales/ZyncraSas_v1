@@ -95,6 +95,9 @@ export default function PlatformClientsPage() {
   const [editNotes, setEditNotes] = useState("");
   const [editTrialEnds, setEditTrialEnds] = useState("");
   const [saving, setSaving] = useState(false);
+  const [deleteModal, setDeleteModal] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deleting, setDeleting] = useState(false);
 
   const loadTenants = useCallback(async () => {
     setLoading(true);
@@ -170,6 +173,26 @@ export default function PlatformClientsPage() {
       (t.owner_email ?? "").toLowerCase().includes(search.toLowerCase());
     return matchFilter && matchSearch;
   });
+
+  function openDelete(t: TenantRow) {
+    setSelected(t);
+    setDeleteConfirm("");
+    setDeleteModal(true);
+  }
+
+  async function handleDelete() {
+    if (!selected || deleteConfirm !== selected.name) return;
+    setDeleting(true);
+    // Delete platform-level records first, then the tenant (cascade handles the rest)
+    await supabase.from("saas_payments").delete().eq("tenant_id", selected.id);
+    await supabase.from("saas_subscriptions").delete().eq("tenant_id", selected.id);
+    await supabase.from("tenants").delete().eq("id", selected.id);
+    setDeleting(false);
+    setDeleteModal(false);
+    setEditModal(false);
+    setSelected(null);
+    loadTenants();
+  }
 
   function openEdit(t: TenantRow) {
     setSelected(t);
@@ -392,12 +415,85 @@ export default function PlatformClientsPage() {
               </div>
             </div>
 
-            <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "flex-end" }}>
-              <button onClick={() => setEditModal(false)} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.42)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+            <div style={{ display: "flex", gap: 10, marginTop: 20, justifyContent: "space-between", alignItems: "center" }}>
+              <button
+                onClick={() => { setEditModal(false); openDelete(selected); }}
+                style={{ padding: "9px 16px", borderRadius: 10, border: "1px solid rgba(239,68,68,0.35)", background: "rgba(239,68,68,0.08)", color: "#f87171", fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+              >
+                Eliminar cliente
+              </button>
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setEditModal(false)} style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.42)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}>
+                  Cancelar
+                </button>
+                <button onClick={saveEdit} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#fb0f05", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
+                  {saving ? "Guardando..." : "Guardar cambios"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete confirmation modal */}
+      {deleteModal && selected && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.8)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1100, padding: 20 }}>
+          <div style={{ background: "#10101B", borderRadius: 20, padding: 28, maxWidth: 440, width: "100%", border: "1px solid rgba(239,68,68,0.3)" }}>
+            <div style={{ fontSize: 32, marginBottom: 12, textAlign: "center" }}>⚠️</div>
+            <h2 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 800, color: "#f87171", textAlign: "center" }}>
+              Eliminar cliente
+            </h2>
+            <p style={{ margin: "0 0 20px", fontSize: 13, color: "rgba(255,255,255,0.55)", textAlign: "center", lineHeight: 1.6 }}>
+              Esta acción es <strong style={{ color: "#f87171" }}>permanente e irreversible</strong>. Se eliminarán el tenant, suscripción y pagos asociados.
+            </p>
+
+            <div style={{ background: "rgba(239,68,68,0.07)", borderRadius: 10, padding: "12px 16px", marginBottom: 20, border: "1px solid rgba(239,68,68,0.15)" }}>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.42)", marginBottom: 4 }}>Negocio a eliminar</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.94)" }}>{selected.name}</div>
+              {selected.owner_email && <div style={{ fontSize: 12, color: "#60a5fa", marginTop: 2 }}>{selected.owner_email}</div>}
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: "block", fontSize: 12, color: "rgba(255,255,255,0.42)", marginBottom: 8 }}>
+                Escribe <strong style={{ color: "rgba(255,255,255,0.7)" }}>{selected.name}</strong> para confirmar:
+              </label>
+              <input
+                type="text"
+                value={deleteConfirm}
+                onChange={e => setDeleteConfirm(e.target.value)}
+                placeholder={selected.name}
+                autoFocus
+                style={{
+                  width: "100%", padding: "10px 14px", borderRadius: 8, boxSizing: "border-box",
+                  border: deleteConfirm === selected.name
+                    ? "1px solid rgba(239,68,68,0.6)"
+                    : "1px solid rgba(255,255,255,0.14)",
+                  background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.92)",
+                  fontSize: 14, fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                  outline: "none",
+                }}
+              />
+            </div>
+
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button
+                onClick={() => { setDeleteModal(false); setDeleteConfirm(""); }}
+                style={{ padding: "9px 20px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.14)", background: "transparent", color: "rgba(255,255,255,0.42)", fontWeight: 600, fontSize: 14, cursor: "pointer" }}
+              >
                 Cancelar
               </button>
-              <button onClick={saveEdit} disabled={saving} style={{ padding: "9px 20px", borderRadius: 10, border: "none", background: "#fb0f05", color: "white", fontWeight: 700, fontSize: 14, cursor: "pointer" }}>
-                {saving ? "Guardando..." : "Guardar cambios"}
+              <button
+                onClick={handleDelete}
+                disabled={deleting || deleteConfirm !== selected.name}
+                style={{
+                  padding: "9px 20px", borderRadius: 10, border: "none",
+                  background: deleteConfirm === selected.name ? "#ef4444" : "rgba(239,68,68,0.3)",
+                  color: "white", fontWeight: 700, fontSize: 14,
+                  cursor: deleteConfirm === selected.name ? "pointer" : "not-allowed",
+                  transition: "background .15s",
+                }}
+              >
+                {deleting ? "Eliminando..." : "Sí, eliminar"}
               </button>
             </div>
           </div>
