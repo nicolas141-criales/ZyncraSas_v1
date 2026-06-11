@@ -581,7 +581,10 @@ export default function AdminOverview() {
     const prevDayRevenue = calcRevenue(prevApts);
     const todayCount = filteredApts.length;
     const pending = filteredApts.filter(a => a.status === "pending").length;
-    const noShows = filteredApts.filter(a => a.status === "no_show").length;
+    const todayISO = toISO(new Date());
+    const noShows = filteredApts.filter(a =>
+      a.appointment_date < todayISO && (a.status === "pending" || a.status === "confirmed")
+    ).length;
     const noShowRate = filteredApts.filter(a => a.status !== "cancelled").length > 0
       ? (noShows / filteredApts.filter(a => a.status !== "cancelled").length) * 100
       : 0;
@@ -770,7 +773,8 @@ export default function AdminOverview() {
     const generated = now.toLocaleDateString("es-CO", { weekday: "long", day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" });
     const SL: Record<string, string> = { confirmed: "Confirmada", pending: "Pendiente", completed: "Completada", cancelled: "Cancelada", no_show: "No se presentó" };
     const apts = data.upcomingApts as any[];
-    const noShowCount    = apts.filter(a => a.status === "no_show").length;
+    const rptToday = new Date().toISOString().slice(0, 10);
+    const noShowCount    = apts.filter(a => a.appointment_date < rptToday && (a.status === "pending" || a.status === "confirmed")).length;
     const completedCount = apts.filter(a => a.status === "completed").length;
     const confirmedCount = apts.filter(a => a.status === "confirmed").length;
 
