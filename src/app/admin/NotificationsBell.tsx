@@ -189,9 +189,16 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
   useEffect(() => { setIsMounted(true); }, []);
 
   const load = useCallback(async () => {
-    const today    = new Date().toISOString().slice(0, 10);
-    const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
-    const in7      = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+    // Usar fecha local, NO toISOString() que devuelve UTC y desplaza el día en UTC-5
+    const localISO = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const now      = new Date();
+    const todayD   = new Date(now);
+    const tomorrowD = new Date(now); tomorrowD.setDate(now.getDate() + 1);
+    const in7D     = new Date(now);  in7D.setDate(now.getDate() + 7);
+    const today    = localISO(todayD);
+    const tomorrow = localISO(tomorrowD);
+    const in7      = localISO(in7D);
     const since8h  = new Date(Date.now() - 8 * 3600000).toISOString();
 
     const fmtDate = (date: string, time: string) => {
