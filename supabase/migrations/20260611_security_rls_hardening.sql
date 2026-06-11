@@ -42,9 +42,14 @@ CREATE POLICY "clients_owner_all" ON public.clients
 
 -- ── appointments (PII + business data) ───────────────────────────────
 ALTER TABLE public.appointments ENABLE ROW LEVEL SECURITY;
-DROP POLICY IF EXISTS "Todos pueden gestionar citas"  ON public.appointments;    -- legacy USING(true)
-DROP POLICY IF EXISTS "Public puede insertar citas"   ON public.appointments;    -- anon INSERT, now via service role
-DROP POLICY IF EXISTS "Propietario gestiona citas"    ON public.appointments;
+DROP POLICY IF EXISTS "Todos pueden gestionar citas"            ON public.appointments; -- legacy USING(true)
+DROP POLICY IF EXISTS "Public puede insertar citas"             ON public.appointments; -- anon INSERT, now via service role
+-- anon SELECT/UPDATE gated only by `manage_token IS NOT NULL` (true for ~every
+-- row) => anon could read ALL appointments and update any of them. The /manage
+-- flow now uses the service-role API route, so these are removed.
+DROP POLICY IF EXISTS "Manage page lee por manage_token"        ON public.appointments;
+DROP POLICY IF EXISTS "Manage page actualiza por manage_token"  ON public.appointments;
+DROP POLICY IF EXISTS "Propietario gestiona citas"              ON public.appointments;
 CREATE POLICY "appointments_owner_all" ON public.appointments
   FOR ALL
   USING      (tenant_id IN (SELECT id FROM public.tenants WHERE owner_id = auth.uid()))
