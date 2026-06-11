@@ -8,6 +8,8 @@ import { supabase } from "@/lib/supabase";
 import styles from "../auth.module.css";
 import { IconCheck } from "@/app/admin/ZyncraIcons";
 
+const TRIAL_CODE = "freetrialzyncra";
+
 const createSlug = (name: string) =>
   name.toLowerCase().replace(/[^\w\s-]/g, "").replace(/[\s_-]+/g, "-").replace(/^-+|-+$/g, "");
 
@@ -36,18 +38,16 @@ const COUNTRIES = [
 
 const I18N = {
   es: {
-    // Steps meta
     steps: [
       { title: "Tu negocio",   subtitle: "Cuéntanos sobre lo que haces" },
       { title: "Tu operación", subtitle: "¿Cómo trabajas día a día?" },
       { title: "Tus retos",    subtitle: "¿Qué quieres mejorar?" },
       { title: "Tu cuenta",    subtitle: "¡Solo faltan tus datos!" },
+      { title: "Tu plan",      subtitle: "Activa tu acceso" },
     ],
-    // Left panel
-    features: ["14 días gratis, sin tarjeta", "Plan personalizado para ti", "Soporte en español incluido"],
+    features: ["Sin tarjeta de crédito", "Plan personalizado para ti", "Soporte en español incluido"],
     successTitle: "¡Tu cuenta\nestá lista!",
-    successSub: "Hemos elegido el plan perfecto para tu negocio. Empieza a gestionar todo en minutos.",
-    // Step 1
+    successSub: "Tu período de prueba está activo. Empieza a gestionar todo en minutos.",
     s1heading: "¿Qué tipo de negocio tienes?",
     s1sub: "Esto nos ayuda a personalizar todo para ti",
     bizNameLabel: "Nombre de tu negocio",
@@ -56,7 +56,6 @@ const I18N = {
     continueBtn: "Continuar →",
     loginPrompt: "¿Ya tienes cuenta?",
     loginLink: "Inicia sesión",
-    // Step 2
     s2heading: "¿Cómo funciona tu negocio?",
     s2sub: "Datos clave para calibrar tu plan perfecto",
     teamQ: "¿Cuántas personas trabajan contigo?",
@@ -65,11 +64,9 @@ const I18N = {
     yesMulti: "Sí, varias sedes",
     noMulti: "No, solo una",
     backBtn: "← Atrás",
-    // Step 3
     s3heading: "¿Qué quieres mejorar?",
     s3sub: "Elige hasta 3 prioridades para tu negocio",
     goalsCount: (n: number) => `${n}/3 seleccionados`,
-    // Step 4
     s4heading: "Crea tu cuenta",
     s4sub: "Un paso más para empezar a gestionar tu negocio",
     emailLabel: "Correo electrónico",
@@ -79,24 +76,35 @@ const I18N = {
     whatsappPlaceholder: "+57 300 000 0000",
     passwordLabel: "Contraseña",
     passwordPlaceholder: "Mín. 6 caracteres, 1 mayúscula, 1 número",
-    createBtn: (loading: boolean) => loading ? "Creando tu cuenta..." : "Crear cuenta gratis →",
+    createBtn: (loading: boolean) => loading ? "Creando tu cuenta..." : "Crear cuenta →",
     termsText: "Al registrarte aceptas los",
     termsLink: "Términos de uso",
     andText: "y la",
     privacyLink: "Política de privacidad",
-    // Step 5
-    s5heading: "¡Cuenta creada!",
-    s5sub: "Basado en tu perfil, este es tu plan ideal",
-    planTag: "Plan recomendado",
-    freeTrial: "14 días gratis",
-    planTip: "Puedes cambiar de plan en cualquier momento desde tu panel de configuración.",
+    s5heading: "Elige tu plan",
+    s5sub: "Durante nuestro lanzamiento, el acceso es por invitación con un código especial",
+    trialLabel: "Trial — 30 días gratuitos",
+    trialDesc: "Acceso completo a todas las funciones de Zyncra sin costo durante 30 días.",
+    trialFeatures: [
+      "Agenda y calendario ilimitado",
+      "Gestión de clientes (CRM)",
+      "Sistema POS y cobros",
+      "Recordatorios automáticos",
+      "WhatsApp Marketing",
+      "Reportes y finanzas",
+    ],
+    trialCodeLabel: "Código de activación",
+    trialCodePlaceholder: "Ingresa tu código aquí",
+    trialCodeError: "Código incorrecto. Verifica e intenta de nuevo.",
+    activateBtn: (loading: boolean) => loading ? "Activando..." : "Activar 30 días gratis →",
+    paidComingSoon: "Planes de pago — Próximamente",
+    s6heading: "¡Listo!",
+    s6sub: "Tu cuenta está activa. Tienes 30 días para explorar todo Zyncra.",
     goPanel: "Ir a mi panel →",
-    footerTrial: "Prueba gratuita de 14 días — sin tarjeta de crédito",
-    // Errors
+    footerTrial: "30 días de prueba — sin tarjeta de crédito",
     pwError: "La contraseña debe tener mínimo 6 caracteres, 1 mayúscula y 1 número.",
     dupError: "El nombre de este negocio ya está en uso.",
     genericError: "Ocurrió un error al crear tu cuenta.",
-    // Data
     bizTypes: [
       { id: "barberia",  emoji: "💈", label: "Barbería" },
       { id: "salon",     emoji: "✂️", label: "Salón de belleza" },
@@ -129,11 +137,6 @@ const I18N = {
       { id: "marketing",   emoji: "📣", label: "Marketing automático" },
       { id: "team",        emoji: "👥", label: "Gestionar equipo" },
     ],
-    plans: {
-      Esencial:     { price: "$99.900/mes",  reasons: ["Agenda digital y recordatorios automáticos", "Gestión de clientes ilimitados", "WhatsApp para confirmaciones de cita", "Reportes básicos de tu negocio"] },
-      Pro:          { price: "$199.900/mes", reasons: ["Todo lo del plan Esencial +", "POS y cobros integrados", "Comisiones automáticas del equipo", "Campañas de WhatsApp Marketing"] },
-      Personalizado:{ price: "A medida",     reasons: ["Múltiples sedes centralizadas", "Equipo grande sin restricciones", "Facturación integrada", "Soporte dedicado y onboarding"] },
-    },
   },
   en: {
     steps: [
@@ -141,10 +144,11 @@ const I18N = {
       { title: "Your operation",  subtitle: "How do you work day to day?" },
       { title: "Your goals",      subtitle: "What do you want to improve?" },
       { title: "Your account",    subtitle: "Just your details left!" },
+      { title: "Your plan",       subtitle: "Activate your access" },
     ],
-    features: ["14 days free, no credit card", "Personalized plan for you", "Support included"],
-    successTitle: "Your account\nis ready!",
-    successSub: "We have chosen the perfect plan for your business. Start managing everything in minutes.",
+    features: ["No credit card required", "Personalized plan for you", "Support included"],
+    successTitle: "You're all set!",
+    successSub: "Your trial is active. Start managing everything in minutes.",
     s1heading: "What type of business do you have?",
     s1sub: "This helps us personalize everything for you",
     bizNameLabel: "Business name",
@@ -173,18 +177,32 @@ const I18N = {
     whatsappPlaceholder: "+1 555 000 0000",
     passwordLabel: "Password",
     passwordPlaceholder: "Min. 6 chars, 1 uppercase, 1 number",
-    createBtn: (loading: boolean) => loading ? "Creating your account..." : "Create free account →",
+    createBtn: (loading: boolean) => loading ? "Creating your account..." : "Create account →",
     termsText: "By registering you accept the",
     termsLink: "Terms of use",
     andText: "and the",
     privacyLink: "Privacy policy",
-    s5heading: "Account created!",
-    s5sub: "Based on your profile, here is your ideal plan",
-    planTag: "Recommended plan",
-    freeTrial: "14-day free trial",
-    planTip: "You can change your plan at any time from your settings panel.",
+    s5heading: "Choose your plan",
+    s5sub: "During our launch, access is by invitation with a special code",
+    trialLabel: "Trial — 30 days free",
+    trialDesc: "Full access to all Zyncra features at no cost for 30 days.",
+    trialFeatures: [
+      "Unlimited scheduling & calendar",
+      "Client management (CRM)",
+      "POS & payments",
+      "Automatic reminders",
+      "WhatsApp Marketing",
+      "Reports & finances",
+    ],
+    trialCodeLabel: "Activation code",
+    trialCodePlaceholder: "Enter your code here",
+    trialCodeError: "Incorrect code. Please check and try again.",
+    activateBtn: (loading: boolean) => loading ? "Activating..." : "Activate 30 days free →",
+    paidComingSoon: "Paid plans — Coming soon",
+    s6heading: "All done!",
+    s6sub: "Your account is active. You have 30 days to explore everything Zyncra has to offer.",
     goPanel: "Go to my panel →",
-    footerTrial: "14-day free trial — no credit card required",
+    footerTrial: "30-day trial — no credit card required",
     pwError: "Password must have at least 6 characters, 1 uppercase letter and 1 number.",
     dupError: "This business name is already in use.",
     genericError: "An error occurred while creating your account.",
@@ -220,21 +238,10 @@ const I18N = {
       { id: "marketing",   emoji: "📣", label: "Automated marketing" },
       { id: "team",        emoji: "👥", label: "Manage team" },
     ],
-    plans: {
-      Esencial:     { price: "$99.900/mo",  reasons: ["Digital scheduling & auto reminders", "Unlimited client management", "WhatsApp appointment confirmations", "Basic business reports"] },
-      Pro:          { price: "$199.900/mo", reasons: ["Everything in Esencial +", "Integrated POS & payments", "Automatic team commissions", "WhatsApp Marketing campaigns"] },
-      Personalizado:{ price: "Custom",      reasons: ["Multiple centralized locations", "Large team, no restrictions", "Integrated billing", "Dedicated support & onboarding"] },
-    },
   },
 } as const;
 
 // ── Plan logic ────────────────────────────────────────────────────────────────
-
-const PLAN_COLORS = {
-  Esencial:     { color: "#111118", bg: "#f5f4f2", accent: "rgba(0,0,0,.08)" },
-  Pro:          { color: "#fb0f05", bg: "rgba(251,15,5,.06)", accent: "rgba(251,15,5,.14)" },
-  Personalizado:{ color: "#0027fe", bg: "rgba(0,39,254,.06)", accent: "rgba(0,39,254,.14)" },
-} as const;
 
 function determinePlan(data: { collaborators: string; appointments: string; multiSede: boolean; goals: string[] }): "Esencial" | "Pro" | "Personalizado" {
   if (data.multiSede || data.collaborators === "8+") return "Personalizado";
@@ -273,10 +280,12 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Step 5
-  const [plan, setPlan] = useState<"Esencial" | "Pro" | "Personalizado">("Esencial");
+  // Step 5 - plan activation
+  const [tenantId, setTenantId] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [activating, setActivating] = useState(false);
 
-  // Derived language + translations
   const selectedCountry = COUNTRIES.find(c => c.code === country) ?? COUNTRIES[0];
   const lang: "en" | "es" = selectedCountry.locale.startsWith("en") ? "en" : "es";
   const t = I18N[lang];
@@ -344,10 +353,10 @@ export default function RegisterPage() {
             whatsapp: whatsapp || null,
             plan_recommended: determinePlan({ collaborators, appointments, multiSede: multiSede!, goals }),
           }]);
+
+          setTenantId(tenantData.id);
         }
 
-        const recommended = determinePlan({ collaborators, appointments, multiSede: multiSede!, goals });
-        setPlan(recommended);
         setStep(5);
       }
     } catch (err: unknown) {
@@ -357,9 +366,30 @@ export default function RegisterPage() {
     }
   };
 
-  const meta = t.steps[Math.min(step - 1, 3)];
-  const planColors = PLAN_COLORS[plan];
-  const planI18n = t.plans[plan];
+  const handleActivateTrial = async () => {
+    setCodeError(null);
+    if (promoCode.trim().toLowerCase() !== TRIAL_CODE) {
+      setCodeError(t.trialCodeError);
+      return;
+    }
+    if (!tenantId) return;
+
+    setActivating(true);
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 30);
+
+    await supabase.from("saas_subscriptions").insert({
+      tenant_id: tenantId,
+      status: "trial",
+      amount: 0,
+      trial_ends_at: trialEndsAt.toISOString(),
+    });
+
+    setActivating(false);
+    setStep(6);
+  };
+
+  const meta = t.steps[Math.min(step - 1, 4)];
 
   return (
     <div className={styles.page}>
@@ -378,7 +408,7 @@ export default function RegisterPage() {
         </div>
 
         <div className={styles.brandCenter}>
-          {step < 5 ? (
+          {step < 6 ? (
             <>
               <div className={styles.stepDots}>
                 {t.steps.map((m, i) => (
@@ -438,7 +468,7 @@ export default function RegisterPage() {
           {step === 1 && (
             <>
               <div className={styles.wizardProgress}>
-                <div className={styles.wizardProgressBar} style={{ width: "25%" }} />
+                <div className={styles.wizardProgressBar} style={{ width: "20%" }} />
               </div>
               <h1 className={styles.heading}>{t.s1heading}</h1>
               <p className={styles.subheading}>{t.s1sub}</p>
@@ -492,7 +522,7 @@ export default function RegisterPage() {
           {step === 2 && (
             <>
               <div className={styles.wizardProgress}>
-                <div className={styles.wizardProgressBar} style={{ width: "50%" }} />
+                <div className={styles.wizardProgressBar} style={{ width: "40%" }} />
               </div>
               <h1 className={styles.heading}>{t.s2heading}</h1>
               <p className={styles.subheading}>{t.s2sub}</p>
@@ -546,7 +576,7 @@ export default function RegisterPage() {
           {step === 3 && (
             <>
               <div className={styles.wizardProgress}>
-                <div className={styles.wizardProgressBar} style={{ width: "75%" }} />
+                <div className={styles.wizardProgressBar} style={{ width: "60%" }} />
               </div>
               <h1 className={styles.heading}>{t.s3heading}</h1>
               <p className={styles.subheading}>{t.s3sub}</p>
@@ -581,7 +611,7 @@ export default function RegisterPage() {
           {step === 4 && (
             <>
               <div className={styles.wizardProgress}>
-                <div className={styles.wizardProgressBar} style={{ width: "92%" }} />
+                <div className={styles.wizardProgressBar} style={{ width: "80%" }} />
               </div>
               <h1 className={styles.heading}>{t.s4heading}</h1>
               <p className={styles.subheading}>{t.s4sub}</p>
@@ -634,59 +664,138 @@ export default function RegisterPage() {
             </>
           )}
 
-          {/* ── Step 5: Plan recommendation ── */}
+          {/* ── Step 5: Plan selection + activation code ── */}
           {step === 5 && (
             <>
-              <div style={{ textAlign: "center", marginBottom: 24 }}>
-                <div style={{ fontSize: 48, lineHeight: 1, marginBottom: 12 }}>🎉</div>
-                <h1 className={styles.heading}>{t.s5heading}</h1>
-                <p className={styles.subheading}>{t.s5sub}</p>
+              <div className={styles.wizardProgress}>
+                <div className={styles.wizardProgressBar} style={{ width: "95%" }} />
               </div>
+              <h1 className={styles.heading}>{t.s5heading}</h1>
+              <p className={styles.subheading}>{t.s5sub}</p>
 
+              {/* Trial plan card */}
               <div style={{
-                background: planColors.bg,
-                border: `1.5px solid ${planColors.accent}`,
+                border: "2px solid #fb0f05",
                 borderRadius: 16,
-                padding: "24px 20px",
-                marginBottom: 20,
+                padding: "20px 20px 16px",
+                marginBottom: 12,
+                background: "rgba(251,15,5,0.03)",
+                position: "relative",
               }}>
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
+                <div style={{
+                  position: "absolute", top: -11, left: 16,
+                  background: "#fb0f05", color: "white",
+                  fontSize: 10, fontWeight: 700, padding: "2px 10px",
+                  borderRadius: 20, letterSpacing: "0.08em", textTransform: "uppercase",
+                }}>
+                  Disponible ahora
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                   <div>
-                    <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1px", color: planColors.color, marginBottom: 4 }}>
-                      {t.planTag}
-                    </div>
-                    <div style={{ fontSize: 26, fontWeight: 900, color: "#14111C", letterSpacing: "-.03em" }}>
-                      Plan {plan}
-                    </div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#14111C" }}>{t.trialLabel}</div>
+                    <div style={{ fontSize: 13, color: "#8E879B", marginTop: 3 }}>{t.trialDesc}</div>
                   </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 20, fontWeight: 800, color: planColors.color }}>{planI18n.price}</div>
-                    <div style={{ fontSize: 11, color: "#a0a0b0", marginTop: 2 }}>{t.freeTrial}</div>
+                  <div style={{
+                    background: "rgba(251,15,5,0.08)", color: "#fb0f05",
+                    fontSize: 13, fontWeight: 800, padding: "4px 12px",
+                    borderRadius: 10, whiteSpace: "nowrap",
+                  }}>
+                    $0
                   </div>
                 </div>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {planI18n.reasons.map((r, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13, color: "#3a3548" }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 18 }}>
+                  {t.trialFeatures.map((f, i) => (
+                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 13, color: "#3a3548" }}>
                       <div style={{
-                        width: 20, height: 20, borderRadius: "50%",
-                        background: planColors.color, display: "flex",
-                        alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        width: 18, height: 18, borderRadius: "50%", background: "#fb0f05",
+                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
                       }}>
-                        <IconCheck size={11} strokeWidth={3} />
+                        <IconCheck size={10} strokeWidth={3} />
                       </div>
-                      {r}
+                      {f}
                     </div>
                   ))}
                 </div>
+
+                {/* Code input */}
+                <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)", paddingTop: 16 }}>
+                  <label style={{
+                    display: "block", fontSize: 11, fontWeight: 700, color: "#8E879B",
+                    marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em",
+                  }}>
+                    {t.trialCodeLabel}
+                  </label>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    style={{ paddingLeft: 14, fontFamily: "monospace", letterSpacing: "0.04em" }}
+                    placeholder={t.trialCodePlaceholder}
+                    value={promoCode}
+                    onChange={e => { setPromoCode(e.target.value); setCodeError(null); }}
+                    onKeyDown={e => e.key === "Enter" && handleActivateTrial()}
+                  />
+                  {codeError && (
+                    <div style={{
+                      marginTop: 8, fontSize: 12, color: "#ef4444", fontWeight: 600,
+                      display: "flex", alignItems: "center", gap: 6,
+                    }}>
+                      <span>⚠</span> {codeError}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Paid plans — coming soon */}
+              <div style={{
+                border: "1.5px solid rgba(0,0,0,0.08)", borderRadius: 16,
+                padding: "16px 20px", marginBottom: 20,
+                background: "rgba(0,0,0,0.02)", opacity: 0.6,
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "#8E879B" }}>{t.paidComingSoon}</span>
+                <span style={{
+                  fontSize: 10, fontWeight: 700, padding: "2px 10px", borderRadius: 20,
+                  background: "rgba(0,0,0,0.06)", color: "#a0a0b0",
+                  textTransform: "uppercase", letterSpacing: "0.08em",
+                }}>
+                  Pronto
+                </span>
+              </div>
+
+              <button
+                className={styles.button}
+                disabled={activating || !promoCode.trim()}
+                onClick={handleActivateTrial}
+                style={{ opacity: !promoCode.trim() ? 0.5 : 1 }}
+              >
+                {t.activateBtn(activating)}
+              </button>
+            </>
+          )}
+
+          {/* ── Step 6: Success ── */}
+          {step === 6 && (
+            <>
+              <div style={{ textAlign: "center", marginBottom: 28 }}>
+                <div style={{ fontSize: 56, lineHeight: 1, marginBottom: 16 }}>🎉</div>
+                <h1 className={styles.heading}>{t.s6heading}</h1>
+                <p className={styles.subheading}>{t.s6sub}</p>
               </div>
 
               <div style={{
-                background: "rgba(0,39,254,.05)", borderRadius: 12, padding: "14px 16px",
-                marginBottom: 20, fontSize: 13, color: "#564E66", lineHeight: 1.55,
-                border: "1px solid rgba(0,39,254,.12)",
+                background: "rgba(251,15,5,0.05)", border: "1.5px solid rgba(251,15,5,0.14)",
+                borderRadius: 14, padding: "16px 20px", marginBottom: 24,
+                display: "flex", alignItems: "center", gap: 16,
               }}>
-                {t.planTip}
+                <div style={{ fontSize: 32, lineHeight: 1 }}>⏳</div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#14111C" }}>Trial activo — 30 días</div>
+                  <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>
+                    Vence el {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" })}
+                  </div>
+                </div>
               </div>
 
               <button className={styles.button} onClick={() => router.push("/admin")}>
