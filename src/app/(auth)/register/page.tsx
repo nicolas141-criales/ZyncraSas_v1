@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -241,6 +241,18 @@ const I18N = {
   },
 } as const;
 
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface SaasPlan {
+  id: string;
+  name: string;
+  price: number;
+  billing_cycle: string;
+  description: string | null;
+  features: string[];
+  active: boolean;
+}
+
 // ── Plan logic ────────────────────────────────────────────────────────────────
 
 function determinePlan(data: { collaborators: string; appointments: string; multiSede: boolean; goals: string[] }): "Esencial" | "Pro" | "Personalizado" {
@@ -282,9 +294,31 @@ export default function RegisterPage() {
 
   // Step 5 - plan activation
   const [tenantId, setTenantId] = useState<string | null>(null);
+  const [plans, setPlans] = useState<SaasPlan[]>([]);
+  const [plansLoading, setPlansLoading] = useState(false);
+  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
   const [codeError, setCodeError] = useState<string | null>(null);
   const [activating, setActivating] = useState(false);
+
+  useEffect(() => {
+    if (step !== 5) return;
+    async function fetchPlans() {
+      setPlansLoading(true);
+      const { data } = await supabase.from("saas_plans").select("*").eq("active", true).order("price");
+      const rows: SaasPlan[] = (data ?? []).map((p: any) => ({
+        ...p,
+        features: Array.isArray(p.features) ? p.features : [],
+      }));
+      setPlans(rows);
+      // Auto-select the only free plan if there's exactly one
+      const freePlans = rows.filter(p => p.price === 0);
+      if (freePlans.length === 1 && !selectedPlanId) setSelectedPlanId(freePlans[0].id);
+      setPlansLoading(false);
+    }
+    fetchPlans();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [step]);
 
   const selectedCountry = COUNTRIES.find(c => c.code === country) ?? COUNTRIES[0];
   const lang: "en" | "es" = selectedCountry.locale.startsWith("en") ? "en" : "es";
@@ -368,13 +402,16 @@ export default function RegisterPage() {
     }
   };
 
-  const handleActivateTrial = async () => {
+  const handleActivatePlan = async () => {
     setCodeError(null);
-    if (promoCode.trim().toLowerCase() !== TRIAL_CODE) {
+    const plan = plans.find(p => p.id === selectedPlanId);
+    if (!plan || !tenantId) return;
+
+    // Free plans require the promo code
+    if (plan.price === 0 && promoCode.trim().toLowerCase() !== TRIAL_CODE) {
       setCodeError(t.trialCodeError);
       return;
     }
-    if (!tenantId) return;
 
     setActivating(true);
     const trialEndsAt = new Date();
@@ -382,8 +419,9 @@ export default function RegisterPage() {
 
     await supabase.from("saas_subscriptions").insert({
       tenant_id: tenantId,
+      plan_id: plan.id,
       status: "trial",
-      amount: 0,
+      amount: plan.price,
       trial_ends_at: trialEndsAt.toISOString(),
     });
 
@@ -666,7 +704,7 @@ export default function RegisterPage() {
             </>
           )}
 
-          {/* ── Step 5: Plan selection + activation code ── */}
+          {/* ── Step 5: Plan selection ── */}
           {step === 5 && (
             <>
               <div className={styles.wizardProgress}>
@@ -675,105 +713,161 @@ export default function RegisterPage() {
               <h1 className={styles.heading}>{t.s5heading}</h1>
               <p className={styles.subheading}>{t.s5sub}</p>
 
-              {/* Trial plan card */}
-              <div style={{
-                border: "2px solid #fb0f05",
-                borderRadius: 16,
-                padding: "20px 20px 16px",
-                marginBottom: 12,
-                background: "rgba(251,15,5,0.03)",
-                position: "relative",
-              }}>
-                <div style={{
-                  position: "absolute", top: -11, left: 16,
-                  background: "#fb0f05", color: "white",
-                  fontSize: 10, fontWeight: 700, padding: "2px 10px",
-                  borderRadius: 20, letterSpacing: "0.08em", textTransform: "uppercase",
-                }}>
-                  Disponible ahora
+              {plansLoading ? (
+                <div style={{ textAlign: "center", padding: "32px 0", color: "#8E879B", fontSize: 14 }}>
+                  Cargando planes...
                 </div>
-
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: "#14111C" }}>{t.trialLabel}</div>
-                    <div style={{ fontSize: 13, color: "#8E879B", marginTop: 3 }}>{t.trialDesc}</div>
-                  </div>
-                  <div style={{
-                    background: "rgba(251,15,5,0.08)", color: "#fb0f05",
-                    fontSize: 13, fontWeight: 800, padding: "4px 12px",
-                    borderRadius: 10, whiteSpace: "nowrap",
-                  }}>
-                    $0
-                  </div>
+              ) : plans.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "32px 0", color: "#8E879B", fontSize: 14 }}>
+                  No hay planes disponibles en este momento.
                 </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
+                  {plans.map(plan => {
+                    const isFree = plan.price === 0;
+                    const isSelected = selectedPlanId === plan.id;
+                    // Paid plans are locked during launch
+                    const isLocked = plan.price > 0;
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 7, marginBottom: 18 }}>
-                  {t.trialFeatures.map((f, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 9, fontSize: 13, color: "#3a3548" }}>
-                      <div style={{
-                        width: 18, height: 18, borderRadius: "50%", background: "#fb0f05",
-                        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                      }}>
-                        <IconCheck size={10} strokeWidth={3} />
+                    return (
+                      <div
+                        key={plan.id}
+                        onClick={() => !isLocked && setSelectedPlanId(plan.id)}
+                        style={{
+                          border: isSelected
+                            ? "2px solid #fb0f05"
+                            : "1.5px solid rgba(0,0,0,0.1)",
+                          borderRadius: 16,
+                          padding: "18px 20px",
+                          background: isSelected
+                            ? "rgba(251,15,5,0.03)"
+                            : isLocked ? "rgba(0,0,0,0.02)" : "#fff",
+                          cursor: isLocked ? "default" : "pointer",
+                          opacity: isLocked ? 0.55 : 1,
+                          position: "relative",
+                          transition: "border-color .15s, background .15s",
+                        }}
+                      >
+                        {/* Badges */}
+                        {isFree && (
+                          <div style={{
+                            position: "absolute", top: -11, left: 16,
+                            background: "#fb0f05", color: "white",
+                            fontSize: 10, fontWeight: 700, padding: "2px 10px",
+                            borderRadius: 20, letterSpacing: "0.08em", textTransform: "uppercase",
+                          }}>
+                            Disponible ahora
+                          </div>
+                        )}
+                        {isLocked && (
+                          <div style={{
+                            position: "absolute", top: -11, right: 16,
+                            background: "rgba(0,0,0,0.15)", color: "#fff",
+                            fontSize: 10, fontWeight: 700, padding: "2px 10px",
+                            borderRadius: 20, letterSpacing: "0.08em", textTransform: "uppercase",
+                          }}>
+                            Próximamente
+                          </div>
+                        )}
+
+                        {/* Header */}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: plan.features.length > 0 ? 12 : 0 }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                            {/* Radio dot */}
+                            <div style={{
+                              width: 18, height: 18, borderRadius: "50%",
+                              border: isSelected ? "none" : "2px solid rgba(0,0,0,0.2)",
+                              background: isSelected ? "#fb0f05" : "transparent",
+                              flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                            }}>
+                              {isSelected && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "white" }} />}
+                            </div>
+                            <div>
+                              <div style={{ fontSize: 16, fontWeight: 800, color: "#14111C" }}>{plan.name}</div>
+                              {plan.description && (
+                                <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>{plan.description}</div>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ textAlign: "right", flexShrink: 0 }}>
+                            <div style={{ fontSize: 18, fontWeight: 800, color: isFree ? "#fb0f05" : "#14111C" }}>
+                              {isFree ? "Gratis" : new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(plan.price)}
+                            </div>
+                            {!isFree && (
+                              <div style={{ fontSize: 11, color: "#8E879B" }}>
+                                /{plan.billing_cycle === "monthly" ? "mes" : "año"}
+                              </div>
+                            )}
+                            {isFree && (
+                              <div style={{ fontSize: 11, color: "#8E879B" }}>30 días</div>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Features */}
+                        {plan.features.length > 0 && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginLeft: 28 }}>
+                            {plan.features.map((f, i) => (
+                              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3a3548" }}>
+                                <div style={{
+                                  width: 16, height: 16, borderRadius: "50%",
+                                  background: isSelected ? "#fb0f05" : "rgba(0,0,0,0.12)",
+                                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                                }}>
+                                  <IconCheck size={9} strokeWidth={3} />
+                                </div>
+                                {f}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Code input — only for selected free plan */}
+                        {isSelected && isFree && (
+                          <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)", paddingTop: 14, marginTop: 16 }}>
+                            <label style={{
+                              display: "block", fontSize: 11, fontWeight: 700, color: "#8E879B",
+                              marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em",
+                            }}>
+                              {t.trialCodeLabel}
+                            </label>
+                            <input
+                              type="text"
+                              className={styles.input}
+                              style={{ paddingLeft: 14, fontFamily: "monospace", letterSpacing: "0.04em" }}
+                              placeholder={t.trialCodePlaceholder}
+                              value={promoCode}
+                              onChange={e => { setPromoCode(e.target.value); setCodeError(null); }}
+                              onKeyDown={e => e.key === "Enter" && handleActivatePlan()}
+                              autoFocus
+                            />
+                            {codeError && (
+                              <div style={{ marginTop: 8, fontSize: 12, color: "#ef4444", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                                <span>⚠</span> {codeError}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      {f}
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
+              )}
 
-                {/* Code input */}
-                <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)", paddingTop: 16 }}>
-                  <label style={{
-                    display: "block", fontSize: 11, fontWeight: 700, color: "#8E879B",
-                    marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em",
-                  }}>
-                    {t.trialCodeLabel}
-                  </label>
-                  <input
-                    type="text"
-                    className={styles.input}
-                    style={{ paddingLeft: 14, fontFamily: "monospace", letterSpacing: "0.04em" }}
-                    placeholder={t.trialCodePlaceholder}
-                    value={promoCode}
-                    onChange={e => { setPromoCode(e.target.value); setCodeError(null); }}
-                    onKeyDown={e => e.key === "Enter" && handleActivateTrial()}
-                  />
-                  {codeError && (
-                    <div style={{
-                      marginTop: 8, fontSize: 12, color: "#ef4444", fontWeight: 600,
-                      display: "flex", alignItems: "center", gap: 6,
-                    }}>
-                      <span>⚠</span> {codeError}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Paid plans — coming soon */}
-              <div style={{
-                border: "1.5px solid rgba(0,0,0,0.08)", borderRadius: 16,
-                padding: "16px 20px", marginBottom: 20,
-                background: "rgba(0,0,0,0.02)", opacity: 0.6,
-                display: "flex", alignItems: "center", justifyContent: "space-between",
-              }}>
-                <span style={{ fontSize: 14, fontWeight: 600, color: "#8E879B" }}>{t.paidComingSoon}</span>
-                <span style={{
-                  fontSize: 10, fontWeight: 700, padding: "2px 10px", borderRadius: 20,
-                  background: "rgba(0,0,0,0.06)", color: "#a0a0b0",
-                  textTransform: "uppercase", letterSpacing: "0.08em",
-                }}>
-                  Pronto
-                </span>
-              </div>
-
-              <button
-                className={styles.button}
-                disabled={activating || !promoCode.trim()}
-                onClick={handleActivateTrial}
-                style={{ opacity: !promoCode.trim() ? 0.5 : 1 }}
-              >
-                {t.activateBtn(activating)}
-              </button>
+              {(() => {
+                const plan = plans.find(p => p.id === selectedPlanId);
+                const canActivate = plan && (plan.price > 0 || promoCode.trim().length > 0);
+                return (
+                  <button
+                    className={styles.button}
+                    disabled={activating || !canActivate}
+                    onClick={handleActivatePlan}
+                    style={{ opacity: !canActivate ? 0.5 : 1 }}
+                  >
+                    {t.activateBtn(activating)}
+                  </button>
+                );
+              })()}
             </>
           )}
 
