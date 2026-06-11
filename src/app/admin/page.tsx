@@ -65,6 +65,10 @@ const PAGE_CSS = `
 @media(min-width:1020px){.znGridSplit{grid-template-columns:1fr 1fr}}
 .znGridLists{display:grid;gap:14px;grid-template-columns:1fr}
 @media(min-width:1020px){.znGridLists{grid-template-columns:1.5fr 1fr}}
+.znClientGrid{display:grid;grid-template-columns:200px 1fr}
+@media(max-width:700px){.znClientGrid{grid-template-columns:1fr}}
+.znClientGrid>div:last-child{border-left:1px solid rgba(20,15,30,.06)}
+@media(max-width:700px){.znClientGrid>div:last-child{border-left:none;border-top:1px solid rgba(20,15,30,.06)}}
 .znStrip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:hidden}
 @media(max-width:860px){.znStrip{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .znStrip>div{border-left:1px solid rgba(20,15,30,.06);border-top:1px solid rgba(20,15,30,.06);margin-left:-1px;margin-top:-1px}
@@ -414,337 +418,116 @@ function ToolBtn({ onClick, title, children, label }: { onClick: () => void; tit
 }
 
 // ─── Retention helpers ────────────────────────────────────
-function retColor(pct: number): { bg: string; fg: string; stroke: string } {
-  if (pct >= 60) return { bg: "rgba(16,185,129,0.12)",  fg: "#059669", stroke: "#10b981" };
-  if (pct >= 35) return { bg: "rgba(16,185,129,0.07)",  fg: "#10b981", stroke: "#10b981" };
-  if (pct >= 20) return { bg: "rgba(245,158,11,0.12)",  fg: "#b45309", stroke: "#f59e0b" };
-  if (pct >= 8)  return { bg: "rgba(249,115,22,0.10)",  fg: "#c2410c", stroke: "#f97316" };
-  return              { bg: "rgba(239,68,68,0.09)",   fg: "#dc2626", stroke: "#ef4444" };
+function retColor(pct: number): { bg: string; fg: string } {
+  if (pct >= 60) return { bg: "rgba(16,185,129,0.12)", fg: "#059669" };
+  if (pct >= 35) return { bg: "rgba(16,185,129,0.07)", fg: "#10b981" };
+  if (pct >= 20) return { bg: "rgba(245,158,11,0.12)", fg: "#b45309" };
+  if (pct >= 8)  return { bg: "rgba(249,115,22,0.10)", fg: "#c2410c" };
+  return              { bg: "rgba(239,68,68,0.09)",  fg: "#dc2626" };
 }
 
 function RetentionChart({
-  curve, cohorts, avgTicket, fmt,
+  curve, cohorts,
 }: {
   curve: number[];
   cohorts: DashboardData["retentionCohorts"];
-  avgTicket: number;
-  fmt: (n: number) => string;
 }) {
-  if (curve.length < 2) {
-    // Placeholder: greyed-out axes + ghost curve + overlay message
-    const VW2 = 600, VH2 = 160;
-    const P2  = { t: 28, r: 20, b: 38, l: 48 };
-    const ghostPts = [100, 65, 42, 28, 18].map((v, i, arr) => ({
-      x: P2.l + (i / (arr.length - 1)) * (VW2 - P2.l - P2.r),
-      y: P2.t + (1 - v / 100) * (VH2 - P2.t - P2.b),
-    }));
-    const ghostLine = ghostPts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-    const ghostArea = `${ghostLine} L${ghostPts[4].x.toFixed(1)},${(P2.t + VH2 - P2.t - P2.b).toFixed(1)} L${P2.l},${(P2.t + VH2 - P2.t - P2.b).toFixed(1)} Z`;
-    return (
-      <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-        {/* Ghost KPI funnel */}
-        <div style={{ display: "flex", alignItems: "center", gap: 0, opacity: 0.22 }}>
-          {[100, 65, 42, 28, 18].map((v, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center" }}>
-              <div style={{ textAlign: "center", padding: "6px 16px 8px" }}>
-                <div style={{ fontSize: 28, fontWeight: 700, letterSpacing: "-1px", lineHeight: 1, color: INK, fontFamily: MONO }}>{v}%</div>
-                <div style={{ marginTop: 5, fontSize: 9, fontFamily: MONO, textTransform: "uppercase", letterSpacing: ".09em", color: MUTE }}>
-                  {i === 0 ? "Mes 0" : `+${i} mes${i > 1 ? "es" : ""}`}
-                </div>
-                <div style={{ width: 36, height: 3, borderRadius: 2, background: "rgba(20,15,30,0.1)", margin: "6px auto 0" }} />
-              </div>
-              {i < 4 && (
-                <svg width="18" height="18" viewBox="0 0 18 18" style={{ color: MUTE, opacity: 0.5, flexShrink: 0 }}>
-                  <path d="M4 9h10M11 6l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                </svg>
-              )}
-            </div>
-          ))}
-        </div>
-        {/* Ghost chart + overlay */}
-        <div style={{ position: "relative" }}>
-          <div style={{ background: "rgba(20,15,30,0.018)", borderRadius: 14, border: "1px solid rgba(20,15,30,0.05)", padding: "4px 0 2px", opacity: 0.2 }}>
-            <svg viewBox={`0 0 ${VW2} ${VH2}`} style={{ width: "100%", height: "auto", display: "block" }}>
-              <defs>
-                <linearGradient id="ghost-fill" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%"   stopColor="#10b981" stopOpacity="0.5" />
-                  <stop offset="100%" stopColor="#10b981" stopOpacity="0.01" />
-                </linearGradient>
-              </defs>
-              {[0, 25, 50, 75, 100].map(v => {
-                const y = P2.t + (1 - v / 100) * (VH2 - P2.t - P2.b);
-                return (
-                  <g key={v}>
-                    <line x1={P2.l} y1={y} x2={VW2 - P2.r} y2={y} stroke="rgba(20,15,30,0.08)" strokeWidth="1" strokeDasharray={v > 0 ? "3 5" : "none"} />
-                    <text x={P2.l - 9} y={y + 3.5} textAnchor="end" fontSize="9" fill="#b0abc0" fontFamily="monospace">{v}%</text>
-                  </g>
-                );
-              })}
-              <path d={ghostArea} fill="url(#ghost-fill)" />
-              <path d={ghostLine} fill="none" stroke="#10b981" strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-              {ghostPts.map((p, i) => (
-                <g key={i}>
-                  <text x={p.x} y={VH2 - 8} textAnchor="middle" fontSize="9.5" fill="#8E879B" fontFamily="monospace">{i === 0 ? "M0" : `+${i}m`}</text>
-                  <circle cx={p.x} cy={p.y} r="5.5" fill="white" stroke="#10b981" strokeWidth="2.5" />
-                  <circle cx={p.x} cy={p.y} r="2.5"  fill="#10b981" />
-                </g>
-              ))}
-            </svg>
-          </div>
-          {/* Overlay message */}
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 8 }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "rgba(16,185,129,0.1)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
-              </svg>
-            </div>
-            <div style={{ fontWeight: 700, fontSize: 13, color: INK }}>Sin datos de retención aún</div>
-            <div style={{ fontSize: 11.5, color: MUTE, textAlign: "center", maxWidth: 280, lineHeight: 1.5 }}>
-              La gráfica aparecerá cuando registres clientes con más de una visita en meses distintos.
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const hasData = curve.length >= 2;
+  const ghostCurve = [100, 65, 42, 28, 18];
+  const displayCurve = hasData ? curve : ghostCurve;
 
-  // SVG chart dimensions
-  const VW = 600, VH = 160;
-  const PAD = { t: 28, r: 20, b: 38, l: 48 };
+  // Compute user counts per month offset
+  const monthStats = displayCurve.map((pct, i) => {
+    if (!hasData) return { pct, users: Math.round(80 * pct / 100) };
+    let totalUsers = 0, totalBase = 0;
+    cohorts.forEach(r => {
+      if (r.retention[i] !== undefined) {
+        totalBase += r.baseCount;
+        totalUsers += Math.round(r.baseCount * r.retention[i] / 100);
+      }
+    });
+    return { pct, users: i === 0 ? totalBase : totalUsers };
+  });
+
+  // Compact SVG
+  const VW = 460, VH = 90;
+  const PAD = { t: 12, r: 10, b: 22, l: 30 };
   const cW = VW - PAD.l - PAD.r;
   const cH = VH - PAD.t - PAD.b;
-  const n = curve.length;
-
-  const pts = curve.map((v, i) => ({
+  const n = displayCurve.length;
+  const pts = displayCurve.map((v, i) => ({
     x: PAD.l + (n === 1 ? cW / 2 : (i / (n - 1)) * cW),
     y: PAD.t + (1 - v / 100) * cH,
     v,
   }));
-
   const linePath = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-  const areaPath = `${linePath} L${pts[n-1].x.toFixed(1)},${(PAD.t + cH).toFixed(1)} L${PAD.l.toFixed(1)},${(PAD.t + cH).toFixed(1)} Z`;
-  const yLabels = [0, 25, 50, 75, 100];
-
-  // LTV estimate: avgTicket × sum of retention curve / 100
-  const ltv = avgTicket * (curve.reduce((a, b) => a + b, 0) / 100);
-  const maxCols = cohorts.reduce((m, r) => Math.max(m, r.retention.length), 0);
+  const areaPath = `${linePath} L${pts[n-1].x.toFixed(1)},${(PAD.t + cH).toFixed(1)} L${PAD.l},${(PAD.t + cH).toFixed(1)} Z`;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
 
-      {/* ── KPI funnel: M0 → M1 → M2 → ... ── */}
-      <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 0 }}>
-        {curve.map((v, i) => {
-          const { fg, bg } = i === 0
-            ? { fg: INK, bg: "rgba(20,15,30,0.06)" }
-            : retColor(v);
+      {/* Stat pills: M0 → +1m → +2m */}
+      <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", opacity: hasData ? 1 : 0.22 }}>
+        {monthStats.map((s, i) => {
+          const { bg, fg } = i === 0 ? { bg: "rgba(20,15,30,0.06)", fg: INK } : retColor(s.pct);
           return (
-            <div key={i} style={{ display: "flex", alignItems: "center" }}>
-              <div style={{ textAlign: "center", padding: "6px 16px 8px" }}>
-                <div style={{
-                  fontSize: 28, fontWeight: 700, letterSpacing: "-1px", lineHeight: 1,
-                  color: fg, fontFamily: MONO,
-                }}>
-                  {v}%
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+              <div style={{ background: bg, borderRadius: 8, padding: "4px 9px", textAlign: "center", minWidth: 52 }}>
+                <div style={{ fontFamily: MONO, fontSize: 12.5, fontWeight: 700, color: fg, lineHeight: 1 }}>
+                  {i === 0 ? `${s.users}u` : `${s.pct}%`}
                 </div>
-                <div style={{
-                  marginTop: 5, fontSize: 9, fontFamily: MONO, textTransform: "uppercase",
-                  letterSpacing: ".09em", color: MUTE,
-                }}>
-                  {i === 0 ? "Mes 0" : `+${i} mes${i > 1 ? "es" : ""}`}
+                <div style={{ fontSize: 8.5, color: MUTE, marginTop: 2, fontFamily: MONO, whiteSpace: "nowrap" }}>
+                  {i === 0 ? "Mes 0" : `+${i}m · ${s.users}u`}
                 </div>
-                <div style={{ width: 36, height: 3, borderRadius: 2, background: bg, margin: "6px auto 0" }} />
               </div>
-              {i < curve.length - 1 && (
-                <svg width="18" height="18" viewBox="0 0 18 18" style={{ color: MUTE, opacity: 0.35, flexShrink: 0 }}>
-                  <path d="M4 9h10M11 6l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-                </svg>
+              {i < monthStats.length - 1 && (
+                <span style={{ color: MUTE, fontSize: 9, opacity: 0.45 }}>→</span>
               )}
             </div>
           );
         })}
-        {ltv > 0 && (
-          <div style={{ marginLeft: "auto", textAlign: "right", paddingRight: 4 }}>
-            <div style={{ fontSize: 10, fontFamily: MONO, color: MUTE, textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 3 }}>
-              LTV estimado
-            </div>
-            <div style={{ fontSize: 18, fontWeight: 700, color: INK, letterSpacing: "-0.5px", fontFamily: MONO }}>
-              {fmt(ltv)}
-            </div>
-            <div style={{ fontSize: 10, color: MUTE, marginTop: 2 }}>
-              ticket × visitas esperadas
-            </div>
+      </div>
+
+      {/* SVG curve */}
+      <div style={{ position: "relative" }}>
+        <div style={{ background: "rgba(20,15,30,0.018)", borderRadius: 9, border: "1px solid rgba(20,15,30,0.05)", opacity: hasData ? 1 : 0.18 }}>
+          <svg viewBox={`0 0 ${VW} ${VH}`} style={{ width: "100%", height: "auto", display: "block" }}>
+            <defs>
+              <linearGradient id="ret-fill2" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%"   stopColor="#10b981" stopOpacity="0.3" />
+                <stop offset="100%" stopColor="#10b981" stopOpacity="0.01" />
+              </linearGradient>
+            </defs>
+            {[0, 50, 100].map(v => {
+              const y = PAD.t + (1 - v / 100) * cH;
+              return (
+                <g key={v}>
+                  <line x1={PAD.l} y1={y} x2={VW - PAD.r} y2={y} stroke="rgba(20,15,30,0.05)" strokeWidth="1" strokeDasharray={v > 0 ? "3 4" : "none"} />
+                  <text x={PAD.l - 5} y={y + 3} textAnchor="end" fontSize="7" fill="#c0bbc8" fontFamily="monospace">{v}%</text>
+                </g>
+              );
+            })}
+            <path d={areaPath} fill="url(#ret-fill2)" />
+            <path d={linePath} fill="none" stroke="#10b981" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+            {pts.map((p, i) => (
+              <g key={i}>
+                <text x={p.x} y={VH - 3} textAnchor="middle" fontSize="7.5" fill="#8E879B" fontFamily="monospace">
+                  {i === 0 ? "M0" : `+${i}m`}
+                </text>
+                <circle cx={p.x} cy={p.y} r="3.5" fill="white" stroke="#10b981" strokeWidth="2" />
+                <circle cx={p.x} cy={p.y} r="1.5" fill="#10b981" />
+              </g>
+            ))}
+          </svg>
+        </div>
+        {!hasData && (
+          <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 10.5, color: MUTE, textAlign: "center", lineHeight: 1.5, padding: "0 14px" }}>
+              Aparece cuando un cliente vuelve en un mes distinto al de su primera visita
+            </span>
           </div>
         )}
       </div>
-
-      {/* ── Curva de retención SVG ── */}
-      <div style={{
-        background: "rgba(20,15,30,0.018)", borderRadius: 14,
-        border: "1px solid rgba(20,15,30,0.05)", padding: "4px 0 2px",
-      }}>
-        <svg
-          viewBox={`0 0 ${VW} ${VH}`}
-          style={{ width: "100%", height: "auto", display: "block" }}
-          aria-label="Curva de retención de clientes"
-        >
-          <defs>
-            <linearGradient id="ret-fill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%"   stopColor="#10b981" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0.01" />
-            </linearGradient>
-            <filter id="ret-glow">
-              <feGaussianBlur stdDeviation="2" result="blur" />
-              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
-            </filter>
-          </defs>
-
-          {/* Y-axis grid + labels */}
-          {yLabels.map(v => {
-            const y = PAD.t + (1 - v / 100) * cH;
-            return (
-              <g key={v}>
-                <line
-                  x1={PAD.l} y1={y} x2={VW - PAD.r} y2={y}
-                  stroke="rgba(20,15,30,0.055)" strokeWidth="1"
-                  strokeDasharray={v > 0 ? "3 5" : "none"}
-                />
-                <text x={PAD.l - 9} y={y + 3.5} textAnchor="end"
-                  fontSize="9" fill="#b0abc0"
-                  fontFamily="var(--font-jetbrains-mono),JetBrains Mono,monospace">
-                  {v}%
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Filled area */}
-          <path d={areaPath} fill="url(#ret-fill)" />
-
-          {/* Main line */}
-          <path
-            d={linePath} fill="none"
-            stroke="#10b981" strokeWidth="2.5"
-            strokeLinejoin="round" strokeLinecap="round"
-          />
-
-          {/* Glow line (behind) */}
-          <path
-            d={linePath} fill="none"
-            stroke="#10b981" strokeWidth="5" opacity="0.15"
-            strokeLinejoin="round" strokeLinecap="round"
-          />
-
-          {/* Data points */}
-          {pts.map((p, i) => (
-            <g key={i}>
-              {/* X-axis label */}
-              <text
-                x={p.x} y={VH - 8} textAnchor="middle"
-                fontSize="9.5" fill="#8E879B"
-                fontFamily="var(--font-jetbrains-mono),JetBrains Mono,monospace">
-                {i === 0 ? "M0" : `+${i}m`}
-              </text>
-              {/* Value label above dot */}
-              <text
-                x={p.x} y={p.y - 10} textAnchor="middle"
-                fontSize="10" fontWeight="700" fill={INK}
-                fontFamily="var(--font-jetbrains-mono),JetBrains Mono,monospace">
-                {p.v}%
-              </text>
-              {/* Dot */}
-              <circle cx={p.x} cy={p.y} r="5.5" fill="white" stroke="#10b981" strokeWidth="2.5" />
-              <circle cx={p.x} cy={p.y} r="2.5"  fill="#10b981" />
-            </g>
-          ))}
-        </svg>
-      </div>
-
-      {/* ── Cohort breakdown table ── */}
-      {cohorts.length > 0 && maxCols > 1 && (
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 11.5 }}>
-            <thead>
-              <tr style={{ borderBottom: `1px solid ${LINE}` }}>
-                <th style={{ textAlign: "left", padding: "5px 8px 8px 0", fontFamily: MONO, fontSize: 9, color: MUTE, textTransform: "uppercase", letterSpacing: ".08em", whiteSpace: "nowrap" }}>
-                  Cohorte
-                </th>
-                <th style={{ textAlign: "center", padding: "5px 8px 8px", fontFamily: MONO, fontSize: 9, color: MUTE, textTransform: "uppercase", letterSpacing: ".08em" }}>
-                  N
-                </th>
-                {Array.from({ length: maxCols }, (_, i) => (
-                  <th key={i} style={{ textAlign: "center", padding: "5px 4px 8px", fontFamily: MONO, fontSize: 9, color: MUTE, textTransform: "uppercase", letterSpacing: ".08em", minWidth: 50 }}>
-                    {i === 0 ? "M0" : `+${i}m`}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {cohorts.map((row, ri) => (
-                <tr key={row.cohortMonth}
-                  style={{ borderBottom: ri < cohorts.length - 1 ? `1px solid rgba(20,15,30,0.04)` : "none" }}>
-                  <td style={{ padding: "7px 8px 7px 0", fontWeight: 600, fontSize: 12.5, color: INK, whiteSpace: "nowrap" }}>
-                    {row.cohortLabel}
-                  </td>
-                  <td style={{ padding: "7px 8px", textAlign: "center", fontFamily: MONO, fontSize: 11, color: DIM }}>
-                    {row.baseCount}
-                  </td>
-                  {Array.from({ length: maxCols }, (_, i) => {
-                    const pct = row.retention[i];
-                    if (pct === undefined) {
-                      return <td key={i} style={{ padding: "7px 4px", textAlign: "center" }}><span style={{ color: "#d0ceca", fontSize: 10 }}>—</span></td>;
-                    }
-                    const { bg, fg } = i === 0
-                      ? { bg: "rgba(20,15,30,0.055)", fg: INK }
-                      : retColor(pct);
-                    return (
-                      <td key={i} style={{ padding: "7px 4px", textAlign: "center" }}>
-                        <span style={{
-                          display: "inline-flex", alignItems: "center", justifyContent: "center",
-                          minWidth: 42, padding: "2.5px 5px", borderRadius: 7,
-                          background: bg, color: fg,
-                          fontFamily: MONO, fontSize: 11.5, fontWeight: 700,
-                        }}>
-                          {pct}%
-                        </span>
-                      </td>
-                    );
-                  })}
-                </tr>
-              ))}
-              {/* Weighted average row */}
-              {cohorts.length > 1 && (
-                <tr style={{ borderTop: `1px solid rgba(20,15,30,0.08)` }}>
-                  <td style={{ padding: "8px 8px 8px 0", fontWeight: 700, fontSize: 11.5, color: DIM }}>
-                    Promedio
-                  </td>
-                  <td style={{ padding: "8px 8px", textAlign: "center", fontFamily: MONO, fontSize: 11, color: MUTE }}>
-                    —
-                  </td>
-                  {curve.map((pct, i) => {
-                    const { bg, fg } = i === 0 ? { bg: "rgba(20,15,30,0.055)", fg: INK } : retColor(pct);
-                    return (
-                      <td key={i} style={{ padding: "8px 4px", textAlign: "center" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", minWidth: 42, padding: "2.5px 5px", borderRadius: 7, background: bg, color: fg, fontFamily: MONO, fontSize: 11.5, fontWeight: 700 }}>
-                          {pct}%
-                        </span>
-                      </td>
-                    );
-                  })}
-                  {curve.length < maxCols && Array.from({ length: maxCols - curve.length }, (_, i) => (
-                    <td key={`empty-${i}`} style={{ padding: "8px 4px", textAlign: "center" }}>
-                      <span style={{ color: "#d0ceca", fontSize: 10 }}>—</span>
-                    </td>
-                  ))}
-                </tr>
-              )}
-            </tbody>
-          </table>
-          <p style={{ fontSize: 10.5, color: "#c0bbc8", margin: "10px 0 0" }}>
-            M0 = mes de primera visita · cada columna siguiente muestra qué % de ese grupo regresó · LTV estimado = ticket promedio × visitas esperadas
-          </p>
-        </div>
-      )}
     </div>
   );
 }
@@ -1518,44 +1301,60 @@ export default function AdminOverview() {
         </Card>
       </div>
 
-      {/* ─── Segmentos de clientes ─── */}
+      {/* ─── Segmentos + Retención (sección unificada) ─── */}
       <Card delay={0.36}>
         <CardHead
-          title="Segmentos de clientes"
-          sub="Clasificación por actividad"
+          title="Clientes"
+          sub="Segmentación y retención mensual"
           aside={<IconUsers size={13} />}
         />
-        <div style={{ padding: "16px 18px" }}>
-          <Donut
-            data={[
-              { label: "Nuevos (1ª vez)",    value: data.clientSegments.nuevos,      color: "#0027fe" },
-              { label: "Recurrentes",         value: data.clientSegments.recurrentes, color: "#10b981" },
-              { label: "Perdidos (+60 días)", value: data.clientSegments.perdidos,    color: "#ef4444" },
-            ]}
-            fmt={v => String(Math.round(v))}
-            centerLabel="clientes"
-          />
-        </div>
-      </Card>
+        <div className="znClientGrid">
 
-      {/* ─── Retención & LTV ─── */}
-      <Card delay={0.37}>
-        <CardHead
-          title="Retención de Clientes & LTV"
-          sub="Cuántos clientes regresan mes a mes desde su primera visita"
-          aside={data.retentionCurve.length >= 2
-            ? <span style={{ fontFamily: MONO, fontSize: 10.5, color: "#10b981", fontWeight: 700 }}>
-                M+1 {data.retentionCurve[1]}%
-              </span>
-            : undefined}
-        />
-        <div style={{ padding: "16px 18px 20px" }}>
-          <RetentionChart
-            curve={data.retentionCurve}
-            cohorts={data.retentionCohorts}
-            avgTicket={data.avgTicket}
-            fmt={fmt}
-          />
+          {/* Left — Segmentos */}
+          <div style={{ padding: "14px 18px" }}>
+            <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".09em", marginBottom: 10 }}>
+              Segmentos
+            </div>
+            {(() => {
+              const seg = data.clientSegments;
+              const total = seg.nuevos + seg.recurrentes + seg.perdidos;
+              return [
+                { label: "Nuevos",       sub: "Primera vez",  value: seg.nuevos,      color: "#0027fe" },
+                { label: "Recurrentes",  sub: "30 días",      value: seg.recurrentes, color: "#10b981" },
+                { label: "Perdidos",     sub: "+60 días",     value: seg.perdidos,    color: "#ef4444" },
+              ].map((s, i) => {
+                const pct = total > 0 ? Math.round((s.value / total) * 100) : 0;
+                return (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "8px 0",
+                    borderBottom: i < 2 ? `1px solid rgba(20,15,30,0.05)` : "none",
+                  }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 12.5, color: INK }}>{s.label}</div>
+                      <div style={{ fontSize: 10.5, color: MUTE }}>{s.sub}</div>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ fontFamily: MONO, fontSize: 16, fontWeight: 700, color: INK, lineHeight: 1 }}>{s.value}</div>
+                      <div style={{ fontFamily: MONO, fontSize: 10, color: MUTE, marginTop: 2 }}>{pct}%</div>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+
+          {/* Right — Retención */}
+          <div style={{ padding: "14px 18px" }}>
+            <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".09em", marginBottom: 10 }}>
+              Retención mes a mes
+            </div>
+            <RetentionChart
+              curve={data.retentionCurve}
+              cohorts={data.retentionCohorts}
+            />
+          </div>
         </div>
       </Card>
 
