@@ -1301,63 +1301,6 @@ export default function AdminOverview() {
         </Card>
       </div>
 
-      {/* ─── Segmentos + Retención (sección unificada) ─── */}
-      <Card delay={0.36}>
-        <CardHead
-          title="Clientes"
-          sub="Segmentación y retención mensual"
-          aside={<IconUsers size={13} />}
-        />
-        <div className="znClientGrid">
-
-          {/* Left — Segmentos */}
-          <div style={{ padding: "14px 18px" }}>
-            <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".09em", marginBottom: 10 }}>
-              Segmentos
-            </div>
-            {(() => {
-              const seg = data.clientSegments;
-              const total = seg.nuevos + seg.recurrentes + seg.perdidos;
-              return [
-                { label: "Nuevos",       sub: "Primera vez",  value: seg.nuevos,      color: "#0027fe" },
-                { label: "Recurrentes",  sub: "30 días",      value: seg.recurrentes, color: "#10b981" },
-                { label: "Perdidos",     sub: "+60 días",     value: seg.perdidos,    color: "#ef4444" },
-              ].map((s, i) => {
-                const pct = total > 0 ? Math.round((s.value / total) * 100) : 0;
-                return (
-                  <div key={i} style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    padding: "8px 0",
-                    borderBottom: i < 2 ? `1px solid rgba(20,15,30,0.05)` : "none",
-                  }}>
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 12.5, color: INK }}>{s.label}</div>
-                      <div style={{ fontSize: 10.5, color: MUTE }}>{s.sub}</div>
-                    </div>
-                    <div style={{ textAlign: "right", flexShrink: 0 }}>
-                      <div style={{ fontFamily: MONO, fontSize: 16, fontWeight: 700, color: INK, lineHeight: 1 }}>{s.value}</div>
-                      <div style={{ fontFamily: MONO, fontSize: 10, color: MUTE, marginTop: 2 }}>{pct}%</div>
-                    </div>
-                  </div>
-                );
-              });
-            })()}
-          </div>
-
-          {/* Right — Retención */}
-          <div style={{ padding: "14px 18px" }}>
-            <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".09em", marginBottom: 10 }}>
-              Retención mes a mes
-            </div>
-            <RetentionChart
-              curve={data.retentionCurve}
-              cohorts={data.retentionCohorts}
-            />
-          </div>
-        </div>
-      </Card>
-
       {/* ─── Citas + Equipo ─── */}
       <div className="znGridLists">
         <Card delay={0.38}>
@@ -1452,6 +1395,63 @@ export default function AdminOverview() {
           )}
         </Card>
       </div>
+
+      {/* ─── Segmentos + Retención ─── */}
+      <Card delay={0.44}>
+        <CardHead
+          title="Clientes"
+          sub="Segmentación y retención mensual"
+          aside={<IconUsers size={13} />}
+        />
+        <div className="znClientGrid">
+
+          {/* Left — Segmentos */}
+          <div style={{ padding: "14px 18px" }}>
+            <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".09em", marginBottom: 10 }}>
+              Segmentos
+            </div>
+            {(() => {
+              const seg = data.clientSegments;
+              const total = seg.nuevos + seg.recurrentes + seg.perdidos;
+              return [
+                { label: "Nuevos",      sub: "Primera vez", value: seg.nuevos,      color: "#0027fe" },
+                { label: "Recurrentes", sub: "30 días",     value: seg.recurrentes, color: "#10b981" },
+                { label: "Perdidos",    sub: "+60 días",    value: seg.perdidos,    color: "#ef4444" },
+              ].map((s, i) => {
+                const pct = total > 0 ? Math.round((s.value / total) * 100) : 0;
+                return (
+                  <div key={i} style={{
+                    display: "flex", alignItems: "center", gap: 10,
+                    padding: "8px 0",
+                    borderBottom: i < 2 ? `1px solid rgba(20,15,30,0.05)` : "none",
+                  }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: s.color, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontWeight: 600, fontSize: 12.5, color: INK }}>{s.label}</div>
+                      <div style={{ fontSize: 10.5, color: MUTE }}>{s.sub}</div>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ fontFamily: MONO, fontSize: 16, fontWeight: 700, color: INK, lineHeight: 1 }}>{s.value}</div>
+                      <div style={{ fontFamily: MONO, fontSize: 10, color: MUTE, marginTop: 2 }}>{pct}%</div>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+
+          {/* Right — Retención */}
+          <div style={{ padding: "14px 18px" }}>
+            <div style={{ fontFamily: MONO, fontSize: 9, fontWeight: 600, color: MUTE, textTransform: "uppercase", letterSpacing: ".09em", marginBottom: 10 }}>
+              Retención mes a mes
+            </div>
+            <RetentionChart
+              curve={data.retentionCurve}
+              cohorts={data.retentionCohorts}
+            />
+          </div>
+        </div>
+      </Card>
 
       {/* ─── Modal nueva cita ─── */}
       {tenantId && (
