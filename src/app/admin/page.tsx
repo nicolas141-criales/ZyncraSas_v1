@@ -581,8 +581,10 @@ export default function AdminOverview() {
     const prevDayRevenue = calcRevenue(prevApts);
     const todayCount = filteredApts.length;
     const pending = filteredApts.filter(a => a.status === "pending").length;
-    const noShows = filteredApts.filter(a => a.clients?.no_shows > 0).length;
-    const noShowRate = filteredApts.length > 0 ? (noShows / filteredApts.length) * 100 : 0;
+    const noShows = filteredApts.filter(a => a.status === "no_show").length;
+    const noShowRate = filteredApts.filter(a => a.status !== "cancelled").length > 0
+      ? (noShows / filteredApts.filter(a => a.status !== "cancelled").length) * 100
+      : 0;
     const paid = filteredApts.filter(a => a.status !== "cancelled" && a.services?.price);
     const avgTicket = paid.length > 0 ? paid.reduce((s, a) => s + Number(a.services.price), 0) / paid.length : 0;
     const upcomingApts = filteredApts

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
@@ -79,6 +80,9 @@ export default function CalendarPage() {
   const [dragApt, setDragApt] = useState<Appointment | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [toast, setToast] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => { setIsMounted(true); }, []);
 
   const weekDays = getWeekDays(weekRef);
   const todayStr = toISO(new Date());
@@ -506,9 +510,9 @@ export default function CalendarPage() {
         onCreated={() => fetchAppointments(tenantId!, startDate, endDate)}
       />
 
-      {/* Edit modal */}
-      {selectedApt && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 300, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
+      {/* Edit modal — rendered via portal to escape backdrop-filter stacking context */}
+      {isMounted && selectedApt && createPortal(
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999, background: "rgba(12,12,20,0.45)", backdropFilter: "blur(16px) saturate(1.4)", WebkitBackdropFilter: "blur(16px) saturate(1.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
           onClick={e => { if (e.target === e.currentTarget) setSelectedApt(null); }}>
           <div style={{ background: "rgba(255,255,255,0.88)", backdropFilter: "blur(32px) saturate(1.6)", WebkitBackdropFilter: "blur(32px) saturate(1.6)", border: "1px solid rgba(255,255,255,0.7)", borderRadius: "22px", padding: "28px", width: "100%", maxWidth: "420px", boxShadow: "0 24px 64px rgba(0,0,0,0.18)", maxHeight: "90vh", overflowY: "auto" }}>
 
@@ -581,7 +585,8 @@ export default function CalendarPage() {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
