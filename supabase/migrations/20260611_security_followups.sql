@@ -6,11 +6,17 @@
 -- public booking page cannot resolve a tenant by slug.
 -- =====================================================================
 
--- #1 site_reviews: anon INSERT only for real tenants (was WITH CHECK true).
+-- #1 site_reviews: anon INSERT only for real tenants, and only as a PENDING
+-- review with a valid rating. Prevents publishing fake reviews by setting
+-- status='approved' directly (moderation bypass) and out-of-range ratings.
 DROP POLICY IF EXISTS "public_insert_site_reviews" ON public.site_reviews;
 CREATE POLICY "public_insert_site_reviews" ON public.site_reviews
   FOR INSERT
-  WITH CHECK (tenant_id IN (SELECT id FROM public.tenants));
+  WITH CHECK (
+    tenant_id IN (SELECT id FROM public.tenants)
+    AND status = 'pending'
+    AND rating BETWEEN 1 AND 5
+  );
 
 -- #2 Storage bucket `professionals` (public): drop the broad SELECT policy that
 -- allowed LISTING all files. Per-object access via the public URL does not use
