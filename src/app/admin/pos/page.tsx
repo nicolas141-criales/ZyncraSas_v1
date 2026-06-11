@@ -17,11 +17,14 @@ interface LinkedApt {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
+interface Tag { name: string; color: string; }
+
 interface Service {
   id: string;
   name: string;
   price: number;
   duration_minutes: number;
+  tags: Tag[];
 }
 
 interface Product {
@@ -34,6 +37,7 @@ interface Product {
   discount_value: number;
   stock_quantity: number;
   photo_url: string | null;
+  tags: Tag[];
 }
 
 interface Client {
@@ -142,16 +146,16 @@ export default function PosPage() {
   // ── Load services ──
   useEffect(() => {
     if (!tenantId) return;
-    supabase.from("services").select("id,name,price,duration_minutes")
+    supabase.from("services").select("id,name,price,duration_minutes,tags")
       .eq("tenant_id", tenantId).order("name")
-      .then(({ data }) => { setServices(data || []); setLoadingServices(false); });
+      .then(({ data }) => { setServices((data as any) || []); setLoadingServices(false); });
   }, [tenantId]);
 
   // ── Load products ──
   useEffect(() => {
     if (!tenantId) return;
     supabase.from("products")
-      .select("id,name,sku,sale_price,cost_price,discount_type,discount_value,stock_quantity,photo_url")
+      .select("id,name,sku,sale_price,cost_price,discount_type,discount_value,stock_quantity,photo_url,tags")
       .eq("tenant_id", tenantId).eq("is_active", true).order("name")
       .then(({ data }) => { setProducts((data as any) || []); setLoadingProducts(false); });
   }, [tenantId]);
@@ -349,9 +353,14 @@ export default function PosPage() {
     setTimeout(() => setSuccessMsg(""), 3500);
   };
 
-  // ── Filtered services ──
-  const filtered = services.filter(s =>
-    !search || s.name.toLowerCase().includes(search.toLowerCase())
+  // ── Global search ──
+  const isSearching = search.trim().length > 0;
+  const q = search.toLowerCase();
+  const filteredServices = services.filter(s =>
+    !isSearching || s.name.toLowerCase().includes(q) || (s.tags || []).some(t => t.name.toLowerCase().includes(q))
+  );
+  const filteredProducts = products.filter(p =>
+    !isSearching || p.name.toLowerCase().includes(q) || (p.sku ?? "").toLowerCase().includes(q) || (p.tags || []).some(t => t.name.toLowerCase().includes(q))
   );
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -415,30 +424,31 @@ export default function PosPage() {
 
           {/* Left: Catalog */}
           <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-            {/* Catalog tab + search + free item */}
+            {/* Search + tab switcher + free item */}
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-              {/* Servicios / Productos switcher */}
-              <div style={{ display: "flex", gap: 3, background: "rgba(20,15,30,0.04)", padding: 3, borderRadius: 10, flexShrink: 0 }}>
-                {(["servicios", "productos"] as const).map(t => (
-                  <button key={t} onClick={() => { setCatalogTab(t); setSearch(""); }} style={{
-                    padding: "6px 14px", borderRadius: 7, fontSize: 12, fontWeight: 700,
-                    cursor: "pointer", border: "none", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-                    background: catalogTab === t ? "#14111C" : "transparent",
-                    color: catalogTab === t ? "#fff" : "#564E66",
-                    boxShadow: catalogTab === t ? "0 1px 6px rgba(20,15,30,0.18)" : "none",
-                    transition: "all 0.15s",
-                  }}>
-                    {t === "servicios" ? "Servicios" : "Productos"}
-                  </button>
-                ))}
-              </div>
-              <div style={{ flex: 1, position: "relative", minWidth: 140 }}>
+              {!isSearching && (
+                <div style={{ display: "flex", gap: 3, background: "rgba(20,15,30,0.04)", padding: 3, borderRadius: 10, flexShrink: 0 }}>
+                  {(["servicios", "productos"] as const).map(t => (
+                    <button key={t} onClick={() => setCatalogTab(t)} style={{
+                      padding: "6px 14px", borderRadius: 7, fontSize: 12, fontWeight: 700,
+                      cursor: "pointer", border: "none", fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                      background: catalogTab === t ? "#14111C" : "transparent",
+                      color: catalogTab === t ? "#fff" : "#564E66",
+                      boxShadow: catalogTab === t ? "0 1px 6px rgba(20,15,30,0.18)" : "none",
+                      transition: "all 0.15s",
+                    }}>
+                      {t === "servicios" ? "Servicios" : "Productos"}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <div style={{ flex: 1, position: "relative", minWidth: 160 }}>
                 <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#8E879B", pointerEvents: "none" }}>
                   <IconSearch size={15} />
                 </div>
                 <input
                   type="text" value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder={catalogTab === "servicios" ? "Buscar servicio..." : "Buscar producto..."}
+                  placeholder="Buscar servicios y productos..."
                   style={{ ...inp, paddingLeft: 36 }}
                 />
               </div>
@@ -448,19 +458,114 @@ export default function PosPage() {
               </button>
             </div>
 
-            {/* Services grid */}
-            {catalogTab === "servicios" && (
+            {/* ── Búsqueda global: resultados combinados ── */}
+            {isSearching && (
+              (loadingServices && loadingProducts) ? (
+                <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+                  <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+                </div>
+              ) : filteredServices.length === 0 && filteredProducts.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "40px 20px", color: "#8E879B", fontSize: 14 }}>
+                  Sin resultados para &ldquo;{search}&rdquo;.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 12 }}>
+                  {filteredServices.map(svc => {
+                    const inCart = cart.find(i => i.serviceId === svc.id);
+                    return (
+                      <button key={`s-${svc.id}`} onClick={() => addToCart(svc)}
+                        onMouseDown={e => { e.currentTarget.style.transform = "scale(0.965)"; }}
+                        onMouseUp={e => { e.currentTarget.style.transform = "translateY(-1px)"; }}
+                        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-1px)"; e.currentTarget.style.boxShadow = inCart ? "0 0 0 3px rgba(251,15,5,0.08), 0 8px 20px rgba(20,15,30,0.08)" : "0 8px 20px rgba(20,15,30,0.08)"; }}
+                        onMouseLeave={e => { e.currentTarget.style.transform = "none"; e.currentTarget.style.boxShadow = inCart ? "0 0 0 3px rgba(251,15,5,0.08)" : "none"; }}
+                        style={{
+                          background: "white", borderRadius: 16, padding: "14px 16px",
+                          border: inCart ? "2px solid rgba(251,15,5,0.4)" : "1.5px solid rgba(20,15,30,0.08)",
+                          cursor: "pointer", textAlign: "left",
+                          transition: "transform .14s ease, box-shadow .18s ease, border-color .15s",
+                          boxShadow: inCart ? "0 0 0 3px rgba(251,15,5,0.08)" : "none",
+                          fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                        }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 5 }}>
+                          <div style={{ fontWeight: 700, fontSize: 12.5, color: "#14111C", flex: 1, paddingRight: 6 }}>{svc.name}</div>
+                          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 5, background: "rgba(16,185,129,0.1)", color: "#10b981", flexShrink: 0 }}>Serv</span>
+                        </div>
+                        {(svc.tags || []).length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 5 }}>
+                            {(svc.tags || []).map((tag, ti) => (
+                              <span key={ti} style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: tag.color + "18", color: tag.color, border: `1px solid ${tag.color}30` }}>{tag.name}</span>
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ fontSize: 17, fontWeight: 700, color: "#14111C", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.4px" }}>{fmt(svc.price)}</div>
+                        <div style={{ fontSize: 10.5, color: "#8E879B", marginTop: 3, fontFamily: MONO }}>{svc.duration_minutes} min</div>
+                        {inCart && (
+                          <div key={inCart.qty} style={{ marginTop: 6, fontSize: 10, fontWeight: 700, color: "white", background: "linear-gradient(135deg, #fb0f05, #0027fe)", display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, fontFamily: MONO, animation: "znPop .3s cubic-bezier(.22,1,.36,1) both" }}>
+                            × {inCart.qty} en carrito
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                  {filteredProducts.map(prod => {
+                    const effPrice = productEffectivePrice(prod);
+                    const inCart = cart.find(i => i.productId === prod.id);
+                    const outOfStock = prod.stock_quantity <= 0;
+                    return (
+                      <button key={`p-${prod.id}`} onClick={() => addProductToCart(prod)} disabled={outOfStock}
+                        style={{
+                          background: outOfStock ? "rgba(20,15,30,0.03)" : "white",
+                          borderRadius: 16, padding: "14px 16px",
+                          border: inCart ? "2px solid rgba(0,39,254,0.4)" : outOfStock ? "1.5px solid rgba(20,15,30,0.05)" : "1.5px solid rgba(20,15,30,0.08)",
+                          cursor: outOfStock ? "not-allowed" : "pointer", textAlign: "left", transition: "all 0.15s",
+                          boxShadow: inCart ? "0 0 0 3px rgba(0,39,254,0.08)" : "none",
+                          fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                          position: "relative", overflow: "hidden",
+                        }}>
+                        {prod.photo_url && (
+                          <div style={{ width: "100%", height: 70, borderRadius: 8, overflow: "hidden", marginBottom: 8, background: "rgba(20,15,30,0.04)" }}>
+                            <img src={prod.photo_url} alt={prod.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          </div>
+                        )}
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 4 }}>
+                          <div style={{ fontWeight: 700, fontSize: 12.5, color: outOfStock ? "#b0abc0" : "#14111C", flex: 1, paddingRight: 6, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.name}</div>
+                          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 6px", borderRadius: 5, background: "rgba(99,102,241,0.1)", color: "#6366f1", flexShrink: 0 }}>Prod</span>
+                        </div>
+                        {(prod.tags || []).length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 4 }}>
+                            {(prod.tags || []).map((tag, ti) => (
+                              <span key={ti} style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: tag.color + "18", color: tag.color, border: `1px solid ${tag.color}30` }}>{tag.name}</span>
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+                          <span style={{ fontSize: 16, fontWeight: 700, color: outOfStock ? "#b0abc0" : "#14111C" }}>{fmt(effPrice)}</span>
+                          {prod.discount_value > 0 && <span style={{ fontSize: 10, color: "#b0abc0", textDecoration: "line-through" }}>{fmt(prod.sale_price)}</span>}
+                        </div>
+                        <div style={{ marginTop: 4, fontSize: 10.5, fontWeight: 600, color: outOfStock ? "#ef4444" : prod.stock_quantity <= 5 ? "#f59e0b" : "#8E879B" }}>
+                          {outOfStock ? "Sin stock" : `${prod.stock_quantity} disponibles`}
+                        </div>
+                        {inCart && <div style={{ marginTop: 4, fontSize: 11, fontWeight: 700, color: "#0027fe" }}>× {inCart.qty} en carrito</div>}
+                      </button>
+                    );
+                  })}
+                </div>
+              )
+            )}
+
+            {/* ── Catálogo por tab (solo cuando no hay búsqueda) ── */}
+            {!isSearching && catalogTab === "servicios" && (
               loadingServices ? (
                 <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
                   <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
                 </div>
-              ) : filtered.length === 0 ? (
+              ) : filteredServices.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "40px 20px", color: "#8E879B", fontSize: 14 }}>
-                  {search ? "Sin resultados." : "No hay servicios configurados."}
+                  No hay servicios configurados.
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 12 }}>
-                  {filtered.map(svc => {
+                  {filteredServices.map(svc => {
                     const inCart = cart.find(i => i.serviceId === svc.id);
                     return (
                       <button key={svc.id} onClick={() => addToCart(svc)}
@@ -476,17 +581,18 @@ export default function PosPage() {
                           boxShadow: inCart ? "0 0 0 3px rgba(251,15,5,0.08)" : "none",
                           fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
                         }}>
+                        {(svc.tags || []).length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 6 }}>
+                            {(svc.tags || []).map((tag, ti) => (
+                              <span key={ti} style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: tag.color + "18", color: tag.color, border: `1px solid ${tag.color}30` }}>{tag.name}</span>
+                            ))}
+                          </div>
+                        )}
                         <div style={{ fontWeight: 700, fontSize: 13, color: "#14111C", marginBottom: 6 }}>{svc.name}</div>
                         <div style={{ fontSize: 18, fontWeight: 700, color: "#14111C", fontVariantNumeric: "tabular-nums", letterSpacing: "-0.4px" }}>{fmt(svc.price)}</div>
                         <div style={{ fontSize: 10.5, color: "#8E879B", marginTop: 4, fontFamily: MONO }}>{svc.duration_minutes} min</div>
                         {inCart && (
-                          <div key={inCart.qty} style={{
-                            marginTop: 8, fontSize: 10, fontWeight: 700, color: "white",
-                            background: "linear-gradient(135deg, #fb0f05, #0027fe)",
-                            display: "inline-flex", alignItems: "center", gap: 4,
-                            padding: "3px 9px", borderRadius: 20, fontFamily: MONO,
-                            animation: "znPop .3s cubic-bezier(.22,1,.36,1) both",
-                          }}>
+                          <div key={inCart.qty} style={{ marginTop: 8, fontSize: 10, fontWeight: 700, color: "white", background: "linear-gradient(135deg, #fb0f05, #0027fe)", display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, fontFamily: MONO, animation: "znPop .3s cubic-bezier(.22,1,.36,1) both" }}>
                             × {inCart.qty} en carrito
                           </div>
                         )}
@@ -497,55 +603,58 @@ export default function PosPage() {
               )
             )}
 
-            {/* Products grid */}
-            {catalogTab === "productos" && (
+            {!isSearching && catalogTab === "productos" && (
               loadingProducts ? (
                 <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
                   <div style={{ width: 32, height: 32, border: "3px solid rgba(20,15,30,0.08)", borderTopColor: "#0027fe", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
                 </div>
-              ) : products.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.sku ?? "").toLowerCase().includes(search.toLowerCase())).length === 0 ? (
+              ) : filteredProducts.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "40px 20px", color: "#8E879B", fontSize: 14 }}>
-                  {search ? "Sin resultados." : "No hay productos en inventario."}
+                  No hay productos en inventario.
                 </div>
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 12 }}>
-                  {products
-                    .filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || (p.sku ?? "").toLowerCase().includes(search.toLowerCase()))
-                    .map(prod => {
-                      const effPrice = productEffectivePrice(prod);
-                      const inCart = cart.find(i => i.productId === prod.id);
-                      const outOfStock = prod.stock_quantity <= 0;
-                      return (
-                        <button key={prod.id} onClick={() => addProductToCart(prod)}
-                          disabled={outOfStock}
-                          style={{
-                            background: outOfStock ? "rgba(20,15,30,0.03)" : "white",
-                            borderRadius: 16, padding: "14px 16px",
-                            border: inCart ? "2px solid rgba(0,39,254,0.4)" : outOfStock ? "1.5px solid rgba(20,15,30,0.05)" : "1.5px solid rgba(20,15,30,0.08)",
-                            cursor: outOfStock ? "not-allowed" : "pointer", textAlign: "left", transition: "all 0.15s",
-                            boxShadow: inCart ? "0 0 0 3px rgba(0,39,254,0.08)" : "none",
-                            fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-                            position: "relative", overflow: "hidden",
-                          }}>
-                          {/* Photo */}
-                          {prod.photo_url && (
-                            <div style={{ width: "100%", height: 80, borderRadius: 10, overflow: "hidden", marginBottom: 10, background: "rgba(20,15,30,0.04)" }}>
-                              <img src={prod.photo_url} alt={prod.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                            </div>
-                          )}
-                          {prod.sku && <div style={{ fontSize: 9.5, fontFamily: "'JetBrains Mono',monospace", color: "#b0abc0", marginBottom: 3 }}>{prod.sku}</div>}
-                          <div style={{ fontWeight: 700, fontSize: 12.5, color: outOfStock ? "#b0abc0" : "#14111C", marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.name}</div>
-                          <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
-                            <span style={{ fontSize: 16, fontWeight: 700, color: outOfStock ? "#b0abc0" : "#14111C" }}>{fmt(effPrice)}</span>
-                            {prod.discount_value > 0 && <span style={{ fontSize: 10, color: "#b0abc0", textDecoration: "line-through" }}>{fmt(prod.sale_price)}</span>}
+                  {filteredProducts.map(prod => {
+                    const effPrice = productEffectivePrice(prod);
+                    const inCart = cart.find(i => i.productId === prod.id);
+                    const outOfStock = prod.stock_quantity <= 0;
+                    return (
+                      <button key={prod.id} onClick={() => addProductToCart(prod)}
+                        disabled={outOfStock}
+                        style={{
+                          background: outOfStock ? "rgba(20,15,30,0.03)" : "white",
+                          borderRadius: 16, padding: "14px 16px",
+                          border: inCart ? "2px solid rgba(0,39,254,0.4)" : outOfStock ? "1.5px solid rgba(20,15,30,0.05)" : "1.5px solid rgba(20,15,30,0.08)",
+                          cursor: outOfStock ? "not-allowed" : "pointer", textAlign: "left", transition: "all 0.15s",
+                          boxShadow: inCart ? "0 0 0 3px rgba(0,39,254,0.08)" : "none",
+                          fontFamily: "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                          position: "relative", overflow: "hidden",
+                        }}>
+                        {prod.photo_url && (
+                          <div style={{ width: "100%", height: 80, borderRadius: 10, overflow: "hidden", marginBottom: 10, background: "rgba(20,15,30,0.04)" }}>
+                            <img src={prod.photo_url} alt={prod.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                           </div>
-                          <div style={{ marginTop: 6, fontSize: 10.5, fontWeight: 600, color: outOfStock ? "#ef4444" : prod.stock_quantity <= 5 ? "#f59e0b" : "#8E879B" }}>
-                            {outOfStock ? "Sin stock" : `${prod.stock_quantity} disponibles`}
+                        )}
+                        {(prod.tags || []).length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginBottom: 5 }}>
+                            {(prod.tags || []).map((tag, ti) => (
+                              <span key={ti} style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: tag.color + "18", color: tag.color, border: `1px solid ${tag.color}30` }}>{tag.name}</span>
+                            ))}
                           </div>
-                          {inCart && <div style={{ marginTop: 6, fontSize: 11, fontWeight: 700, color: "#0027fe" }}>× {inCart.qty} en carrito</div>}
-                        </button>
-                      );
-                    })}
+                        )}
+                        {prod.sku && <div style={{ fontSize: 9.5, fontFamily: "'JetBrains Mono',monospace", color: "#b0abc0", marginBottom: 3 }}>{prod.sku}</div>}
+                        <div style={{ fontWeight: 700, fontSize: 12.5, color: outOfStock ? "#b0abc0" : "#14111C", marginBottom: 5, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{prod.name}</div>
+                        <div style={{ display: "flex", alignItems: "baseline", gap: 5 }}>
+                          <span style={{ fontSize: 16, fontWeight: 700, color: outOfStock ? "#b0abc0" : "#14111C" }}>{fmt(effPrice)}</span>
+                          {prod.discount_value > 0 && <span style={{ fontSize: 10, color: "#b0abc0", textDecoration: "line-through" }}>{fmt(prod.sale_price)}</span>}
+                        </div>
+                        <div style={{ marginTop: 6, fontSize: 10.5, fontWeight: 600, color: outOfStock ? "#ef4444" : prod.stock_quantity <= 5 ? "#f59e0b" : "#8E879B" }}>
+                          {outOfStock ? "Sin stock" : `${prod.stock_quantity} disponibles`}
+                        </div>
+                        {inCart && <div style={{ marginTop: 6, fontSize: 11, fontWeight: 700, color: "#0027fe" }}>× {inCart.qty} en carrito</div>}
+                      </button>
+                    );
+                  })}
                 </div>
               )
             )}

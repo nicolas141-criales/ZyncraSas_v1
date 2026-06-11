@@ -12,10 +12,44 @@ const TYPE_ICONS: Record<FieldType, string> = { text: "T", number: "#", date: "D
 function slugify(s: string) { return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, ""); }
 const EMPTY_FIELD = { name: "", field_type: "text" as FieldType, required: false, options: "" };
 
+interface Tag { name: string; color: string; }
+const TAG_COLORS = ["#ef4444","#f97316","#f59e0b","#10b981","#06b6d4","#3b82f6","#8b5cf6","#ec4899","#64748b"];
+
 interface Service {
   id: string; tenant_id: string; name: string;
   description: string | null; duration_minutes: number;
-  price: number; image_url: string | null;
+  price: number; image_url: string | null; tags: Tag[];
+}
+
+function TagEditor({ tags, onChange, inpStyle }: { tags: Tag[]; onChange: (t: Tag[]) => void; inpStyle: React.CSSProperties }) {
+  const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState(TAG_COLORS[0]);
+  const add = () => {
+    const n = newName.trim(); if (!n) return;
+    onChange([...tags, { name: n, color: newColor }]);
+    setNewName("");
+  };
+  return (
+    <div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        {tags.map((t, i) => (
+          <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: t.color + "18", color: t.color, border: `1px solid ${t.color}40` }}>
+            {t.name}
+            <button type="button" onClick={() => onChange(tags.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: t.color, padding: 0, lineHeight: 1, fontSize: 13 }}>×</button>
+          </span>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && (e.preventDefault(), add())} placeholder="Nueva etiqueta..." style={{ ...inpStyle, flex: 1, padding: "8px 12px", fontSize: 13 }} />
+        <div style={{ display: "flex", gap: 4 }}>
+          {TAG_COLORS.map(c => (
+            <button key={c} type="button" onClick={() => setNewColor(c)} style={{ width: 18, height: 18, borderRadius: "50%", background: c, border: newColor === c ? "2px solid #14111C" : "2px solid transparent", cursor: "pointer", flexShrink: 0 }} />
+          ))}
+        </div>
+        <button type="button" onClick={add} style={{ padding: "8px 14px", borderRadius: 9, background: "#14111C", color: "#fff", border: "none", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>+</button>
+      </div>
+    </div>
+  );
 }
 
 const EMPTY_FORM = { name: "", description: "", duration_minutes: "", price: "", image_url: "" };
@@ -46,6 +80,7 @@ export default function ServicesPage() {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
 
   // Campos adicionales del servicio (dentro del modal de edición)
   const [serviceFields, setServiceFields] = useState<CustomField[]>([]);
@@ -74,7 +109,7 @@ export default function ServicesPage() {
   const openCreate = () => {
     setEditingService(null); setForm(EMPTY_FORM); setImageFile(null);
     setImagePreview(""); setError(null); setServiceFields([]);
-    setShowFieldForm(false); setShowModal(true);
+    setShowFieldForm(false); setTags([]); setShowModal(true);
   };
 
   const openEdit = (s: Service) => {
@@ -82,6 +117,7 @@ export default function ServicesPage() {
     setForm({ name: s.name, description: s.description ?? "", duration_minutes: String(s.duration_minutes), price: String(s.price), image_url: s.image_url ?? "" });
     setImageFile(null); setImagePreview(s.image_url ?? ""); setError(null);
     setShowFieldForm(false); setFieldForm(EMPTY_FIELD); setFieldError(null);
+    setTags((s as any).tags || []);
     loadServiceFields(s.id);
     setShowModal(true);
   };
@@ -110,7 +146,7 @@ export default function ServicesPage() {
     setSaving(true); setError(null);
     let finalImageUrl = form.image_url || null;
     if (imageFile) { const u = await uploadImage(imageFile); if (!u) { setSaving(false); return; } finalImageUrl = u; }
-    const payload = { tenant_id: tenantId, name: form.name.trim(), description: form.description.trim() || null, duration_minutes: durationVal, price: priceVal, image_url: finalImageUrl };
+    const payload = { tenant_id: tenantId, name: form.name.trim(), description: form.description.trim() || null, duration_minutes: durationVal, price: priceVal, image_url: finalImageUrl, tags };
     if (editingService) {
       const { error: err } = await supabase.from("services").update(payload).eq("id", editingService.id);
       if (err) { setError(err.message); setSaving(false); return; }
@@ -208,7 +244,7 @@ export default function ServicesPage() {
                     {s.description}
                   </div>
                 )}
-                <div style={{ display: "flex", gap: "6px", marginBottom: "14px", flexWrap: "wrap" }}>
+                <div style={{ display: "flex", gap: "6px", marginBottom: "8px", flexWrap: "wrap" }}>
                   <span style={{ display: "flex", alignItems: "center", gap: "4px", padding: "4px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600, background: "rgba(20,15,30,0.025)", color: "#564E66", border: "1px solid rgba(20,15,30,0.08)" }}>
                     <IconClock size={11} /> {s.duration_minutes} min
                   </span>
@@ -216,6 +252,13 @@ export default function ServicesPage() {
                     <IconCreditCard size={11} /> {fmt(s.price)}
                   </span>
                 </div>
+                {((s as any).tags || []).length > 0 && (
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 4, marginBottom: 10 }}>
+                    {((s as any).tags as Tag[]).map((tag, ti) => (
+                      <span key={ti} style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: tag.color + "18", color: tag.color, border: `1px solid ${tag.color}30` }}>{tag.name}</span>
+                    ))}
+                  </div>
+                )}
                 <div style={{ display: "flex", gap: "8px", borderTop: "1px solid #f0eeeb", paddingTop: "12px" }}>
                   <button onClick={() => openEdit(s)} style={{ flex: 1, padding: "8px", borderRadius: "9px", border: "1.5px solid rgba(20,15,30,0.08)", background: "white", color: "#3a3548", fontSize: "12px", fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = "#fb0f05"; e.currentTarget.style.color = "#fb0f05"; }}
@@ -268,7 +311,7 @@ export default function ServicesPage() {
                 <label style={lbl}>Descripción</label>
                 <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Descripción breve del servicio..." rows={2} style={{ ...inp, resize: "vertical" }} />
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "22px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px", marginBottom: "16px" }}>
                 <div>
                   <label style={lbl}>Duración (minutos) *</label>
                   <input required type="number" min={1} placeholder="Ej. 30" value={form.duration_minutes} onChange={e => setForm({ ...form, duration_minutes: e.target.value })} style={inp} />
@@ -277,6 +320,11 @@ export default function ServicesPage() {
                   <label style={lbl}>Precio COP *</label>
                   <input required type="number" min={0} placeholder="Ej. 50000" value={form.price} onChange={e => setForm({ ...form, price: e.target.value })} style={inp} />
                 </div>
+              </div>
+
+              <div style={{ marginBottom: "22px" }}>
+                <label style={lbl}>Etiquetas</label>
+                <TagEditor tags={tags} onChange={setTags} inpStyle={inp} />
               </div>
 
               {error && (

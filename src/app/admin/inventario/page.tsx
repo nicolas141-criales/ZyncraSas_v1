@@ -7,6 +7,9 @@ import { IconPackage, IconPlus, IconX, IconSearch, IconRefresh } from "../Zyncra
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+interface Tag { name: string; color: string; }
+const TAG_COLORS = ["#ef4444","#f97316","#f59e0b","#10b981","#06b6d4","#3b82f6","#8b5cf6","#ec4899","#64748b"];
+
 interface Product {
   id: string;
   tenant_id: string;
@@ -22,6 +25,7 @@ interface Product {
   low_stock_alert: number;
   is_active: boolean;
   created_at: string;
+  tags: Tag[];
 }
 
 interface Movement {
@@ -75,6 +79,37 @@ const lbl: React.CSSProperties = {
 const MONO = "var(--font-jetbrains-mono),'JetBrains Mono',monospace";
 const GRAD = "linear-gradient(135deg,#fb0f05 0%,#0027fe 100%)";
 
+function TagEditor({ tags, onChange, inpStyle }: { tags: Tag[]; onChange: (t: Tag[]) => void; inpStyle: React.CSSProperties }) {
+  const [newName, setNewName] = useState("");
+  const [newColor, setNewColor] = useState(TAG_COLORS[0]);
+  const add = () => {
+    const n = newName.trim(); if (!n) return;
+    onChange([...tags, { name: n, color: newColor }]);
+    setNewName("");
+  };
+  return (
+    <div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 8 }}>
+        {tags.map((t, i) => (
+          <span key={i} style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: t.color + "18", color: t.color, border: `1px solid ${t.color}40` }}>
+            {t.name}
+            <button type="button" onClick={() => onChange(tags.filter((_, j) => j !== i))} style={{ background: "none", border: "none", cursor: "pointer", color: t.color, padding: 0, lineHeight: 1, fontSize: 13 }}>×</button>
+          </span>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <input value={newName} onChange={e => setNewName(e.target.value)} onKeyDown={e => e.key === "Enter" && (e.preventDefault(), add())} placeholder="Nueva etiqueta..." style={{ ...inpStyle, flex: 1, padding: "8px 12px", fontSize: 13 }} />
+        <div style={{ display: "flex", gap: 4 }}>
+          {TAG_COLORS.map(c => (
+            <button key={c} type="button" onClick={() => setNewColor(c)} style={{ width: 18, height: 18, borderRadius: "50%", background: c, border: newColor === c ? "2px solid #14111C" : "2px solid transparent", cursor: "pointer", flexShrink: 0 }} />
+          ))}
+        </div>
+        <button type="button" onClick={add} style={{ padding: "8px 14px", borderRadius: 9, background: "#14111C", color: "#fff", border: "none", fontWeight: 700, fontSize: 12, cursor: "pointer" }}>+</button>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function InventarioPage() {
@@ -96,6 +131,7 @@ export default function InventarioPage() {
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -154,7 +190,7 @@ export default function InventarioPage() {
     setEditing(null);
     setForm({ ...EMPTY_FORM, sku: genSku() });
     setPhotoFile(null); setPhotoPreview(null);
-    setFormError(null); setShowModal(true);
+    setTags([]); setFormError(null); setShowModal(true);
   };
 
   const openEdit = (p: Product) => {
@@ -172,6 +208,7 @@ export default function InventarioPage() {
     });
     setPhotoFile(null);
     setPhotoPreview(p.photo_url ?? null);
+    setTags(p.tags || []);
     setFormError(null); setShowModal(true);
   };
 
@@ -207,6 +244,7 @@ export default function InventarioPage() {
       discount_type: form.discount_type || null,
       discount_value: parseFloat(form.discount_value) || 0,
       low_stock_alert: parseInt(form.low_stock_alert) || 5,
+      tags,
     };
 
     if (editing) {
@@ -422,6 +460,13 @@ export default function InventarioPage() {
                     {p.description && (
                       <div style={{ fontSize: 11, color: "#b0abc0", marginTop: 2, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}>{p.description}</div>
                     )}
+                    {(p.tags || []).length > 0 && (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 4 }}>
+                        {(p.tags || []).map((tag, ti) => (
+                          <span key={ti} style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 7px", borderRadius: 20, background: tag.color + "18", color: tag.color, border: `1px solid ${tag.color}30` }}>{tag.name}</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Prices */}
@@ -593,6 +638,12 @@ export default function InventarioPage() {
                 <textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })}
                   placeholder="Descripción breve del producto..." rows={2}
                   style={{ ...inp, resize: "vertical", minHeight: 60 }} />
+              </div>
+
+              {/* Tags */}
+              <div style={{ marginBottom: 14 }}>
+                <label style={lbl}>Etiquetas</label>
+                <TagEditor tags={tags} onChange={setTags} inpStyle={inp} />
               </div>
 
               {/* Prices */}
