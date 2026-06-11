@@ -169,16 +169,17 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   /* ─── Data loading ─── */
   useEffect(() => {
     async function load() {
-      const { data: tenants } = await supabase
-        .from("tenants").select("*").eq("slug", slug).limit(1);
+      // Resolve the tenant via a SECURITY DEFINER RPC that returns ONLY public
+      // columns (id, slug, name, phone, settings). Anon no longer has a broad
+      // SELECT on `tenants`, so owner_id / push_token / plan stay hidden.
+      const { data: trows } = await supabase.rpc("get_public_tenant", { p_slug: slug });
+      const tenantData = Array.isArray(trows) ? trows[0] : trows;
 
-      if (!tenants || tenants.length === 0) {
+      if (!tenantData) {
         setNotFound(true);
         setLoadingData(false);
         return;
       }
-
-      const tenantData = tenants[0];
       setTenant(tenantData);
 
       const [
