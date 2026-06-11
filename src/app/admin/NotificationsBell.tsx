@@ -7,6 +7,7 @@ import { IconX } from "./ZyncraIcons";
 
 interface Notif {
   id: string;
+  aptId: string;
   type: "inasistencia" | "sin_confirmar" | "sin_profesional" | "nueva_cita" | "cancelacion";
   group: "urgent" | "action" | "activity";
   client: string;
@@ -32,6 +33,14 @@ const GROUP_LABELS: Record<Notif["group"], string> = {
   activity: "Actividad reciente",
 };
 
+const TYPE_LABELS: Record<Notif["type"], string> = {
+  inasistencia:    "Por presentarse",
+  sin_confirmar:   "Sin confirmar",
+  sin_profesional: "Sin colaborador",
+  nueva_cita:      "Nueva cita",
+  cancelacion:     "Cancelada",
+};
+
 function initials(name: string) {
   return name.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
 }
@@ -45,18 +54,32 @@ function relTime(iso: string): string {
   return `Hace ${Math.floor(h / 24)}d`;
 }
 
-function NotifCard({ n, onDismiss }: { n: Notif; onDismiss: () => void }) {
-  const meta = TYPE_META[n.type];
-  const avatarBg = `${meta.color}18`;
-  const ini = initials(n.client);
+function minsUntil(timeStr: string): number {
+  const now = new Date();
+  const nowM = now.getHours() * 60 + now.getMinutes();
+  const aptM = parseInt(timeStr.slice(0, 2)) * 60 + parseInt(timeStr.slice(3, 5));
+  return aptM - nowM;
+}
 
-  const typeLabels: Record<Notif["type"], string> = {
-    inasistencia:    "Sin presentarse",
-    sin_confirmar:   "Sin confirmar",
-    sin_profesional: "Sin colaborador",
-    nueva_cita:      "Nueva cita",
-    cancelacion:     "Cancelada",
-  };
+function fmtMinsUntil(m: number): string {
+  if (m <= 0) return "Ahora";
+  if (m < 60) return `En ${m}m`;
+  return `En ${Math.floor(m / 60)}h ${m % 60 > 0 ? `${m % 60}m` : ""}`.trim();
+}
+
+function NotifCard({
+  n,
+  onDismiss,
+  onConfirm,
+  confirming,
+}: {
+  n: Notif;
+  onDismiss: () => void;
+  onConfirm?: () => void;
+  confirming?: boolean;
+}) {
+  const meta = TYPE_META[n.type];
+  const ini = initials(n.client);
 
   return (
     <div style={{
@@ -65,23 +88,19 @@ function NotifCard({ n, onDismiss }: { n: Notif; onDismiss: () => void }) {
       border: "1px solid rgba(20,15,30,0.07)",
       borderLeft: `3px solid ${meta.color}`,
       boxShadow: "0 1px 4px rgba(20,15,30,0.05)",
-      position: "relative",
     }}>
-      {/* Avatar / icon column */}
+      {/* Avatar + icon */}
       <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-        {/* Client avatar */}
         <div style={{
           width: 36, height: 36, borderRadius: "50%",
-          background: avatarBg, border: `1.5px solid ${meta.color}30`,
+          background: `${meta.color}18`, border: `1.5px solid ${meta.color}30`,
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "12px", fontWeight: 700, color: meta.color, flexShrink: 0,
+          fontSize: "12px", fontWeight: 700, color: meta.color,
         }}>
           {ini}
         </div>
-        {/* Type icon */}
         <div style={{
-          width: 20, height: 20, borderRadius: "50%",
-          background: `${meta.color}12`,
+          width: 20, height: 20, borderRadius: "50%", background: `${meta.color}12`,
           display: "flex", alignItems: "center", justifyContent: "center",
         }}>
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={meta.color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -92,14 +111,13 @@ function NotifCard({ n, onDismiss }: { n: Notif; onDismiss: () => void }) {
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        {/* Type tag + dismiss */}
+        {/* Type pill + time + dismiss */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
           <span style={{
             fontSize: "10px", fontWeight: 700, letterSpacing: "0.05em", textTransform: "uppercase",
-            color: meta.color, background: `${meta.color}12`,
-            padding: "2px 7px", borderRadius: 20,
+            color: meta.color, background: `${meta.color}12`, padding: "2px 7px", borderRadius: 20,
           }}>
-            {typeLabels[n.type]}
+            {TYPE_LABELS[n.type]}
           </span>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontSize: "10px", color: "#8E879B", fontWeight: 600 }}>{n.tag}</span>
@@ -118,7 +136,7 @@ function NotifCard({ n, onDismiss }: { n: Notif; onDismiss: () => void }) {
         </div>
 
         {/* Service + when */}
-        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap", marginBottom: onConfirm ? 10 : 0 }}>
           <span style={{ fontSize: "11.5px", color: "#564E66" }}>{n.service}</span>
           {n.when && (
             <>
@@ -127,6 +145,35 @@ function NotifCard({ n, onDismiss }: { n: Notif; onDismiss: () => void }) {
             </>
           )}
         </div>
+
+        {/* Confirm button — solo en sin_confirmar */}
+        {onConfirm && (
+          <button
+            onClick={onConfirm}
+            disabled={confirming}
+            style={{
+              marginTop: 2, width: "100%", padding: "7px 12px", borderRadius: "8px", border: "none",
+              background: confirming ? "rgba(37,99,235,0.08)" : "rgba(37,99,235,0.10)",
+              color: "#2563eb", fontSize: "11.5px", fontWeight: 700, cursor: confirming ? "default" : "pointer",
+              fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+              display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+              transition: "background .15s",
+            }}
+            onMouseEnter={e => { if (!confirming) e.currentTarget.style.background = "rgba(37,99,235,0.18)"; }}
+            onMouseLeave={e => { e.currentTarget.style.background = confirming ? "rgba(37,99,235,0.08)" : "rgba(37,99,235,0.10)"; }}
+          >
+            {confirming ? (
+              "Confirmando…"
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="m4.5 12.75 6 6 9-13.5" />
+                </svg>
+                Confirmar cita
+              </>
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -136,6 +183,7 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
   const [open, setOpen] = useState(false);
   const [notifs, setNotifs] = useState<Notif[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [confirming, setConfirming] = useState<Set<string>>(new Set());
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => { setIsMounted(true); }, []);
@@ -144,7 +192,6 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
     const today    = new Date().toISOString().slice(0, 10);
     const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
     const in7      = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
-    const nowHHMM  = `${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")}`;
     const since8h  = new Date(Date.now() - 8 * 3600000).toISOString();
 
     const fmtDate = (date: string, time: string) => {
@@ -173,23 +220,31 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
     const list: Notif[] = [];
     const meta = (type: Notif["type"]) => TYPE_META[type];
 
-    // A — Inasistencias hoy
+    // A — Por presentarse: citas de HOY que faltan 0–3 horas
+    // Se muestra ANTES de la cita para que el admin pueda actuar
     (upcoming ?? [])
-      .filter(a => a.appointment_date === today && a.appointment_time.slice(0, 5) < nowHHMM)
-      .forEach(a => list.push({
-        id: `A_${a.id}`, type: "inasistencia", group: "urgent",
-        client:  (a.clients as any)?.name  || "Cliente",
-        service: (a.services as any)?.name || "Servicio",
-        when: `Hoy ${a.appointment_time.slice(0, 5)}`,
-        tag: "Hoy",
-        ...meta("inasistencia"),
-      }));
+      .filter(a => {
+        if (a.appointment_date !== today) return false;
+        const mins = minsUntil(a.appointment_time.slice(0, 5));
+        return mins >= 0 && mins <= 180; // 0 a 3 horas antes
+      })
+      .forEach(a => {
+        const mins = minsUntil(a.appointment_time.slice(0, 5));
+        list.push({
+          id: `A_${a.id}`, aptId: a.id, type: "inasistencia", group: "urgent",
+          client:  (a.clients as any)?.name  || "Cliente",
+          service: (a.services as any)?.name || "Servicio",
+          when: `Hoy ${a.appointment_time.slice(0, 5)}`,
+          tag: fmtMinsUntil(mins),
+          ...meta("inasistencia"),
+        });
+      });
 
     // B — Sin confirmar mañana
     (upcoming ?? [])
       .filter(a => a.appointment_date === tomorrow && a.status === "pending")
       .forEach(a => list.push({
-        id: `B_${a.id}`, type: "sin_confirmar", group: "action",
+        id: `B_${a.id}`, aptId: a.id, type: "sin_confirmar", group: "action",
         client:  (a.clients as any)?.name  || "Cliente",
         service: (a.services as any)?.name || "Servicio",
         when: `Mañana ${a.appointment_time.slice(0, 5)}`,
@@ -197,12 +252,12 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
         ...meta("sin_confirmar"),
       }));
 
-    // C — Sin profesional
+    // C — Sin profesional (próximos 7 días)
     (upcoming ?? [])
       .filter(a => !a.professional_id)
       .slice(0, 5)
       .forEach(a => list.push({
-        id: `C_${a.id}`, type: "sin_profesional", group: "action",
+        id: `C_${a.id}`, aptId: a.id, type: "sin_profesional", group: "action",
         client:  (a.clients as any)?.name  || "Cliente",
         service: (a.services as any)?.name || "Servicio",
         when: fmtDate(a.appointment_date, a.appointment_time),
@@ -215,7 +270,7 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
       .filter(a => a.status !== "cancelled")
       .slice(0, 4)
       .forEach(a => list.push({
-        id: `D_${a.id}`, type: "nueva_cita", group: "activity",
+        id: `D_${a.id}`, aptId: a.id, type: "nueva_cita", group: "activity",
         client:  (a.clients as any)?.name  || "Cliente",
         service: (a.services as any)?.name || "Servicio",
         when: fmtDate(a.appointment_date, a.appointment_time),
@@ -228,7 +283,7 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
       .filter(a => a.status === "cancelled")
       .slice(0, 3)
       .forEach(a => list.push({
-        id: `Dcancel_${a.id}`, type: "cancelacion", group: "activity",
+        id: `Dcancel_${a.id}`, aptId: a.id, type: "cancelacion", group: "activity",
         client:  (a.clients as any)?.name  || "Cliente",
         service: (a.services as any)?.name || "Servicio",
         when: "",
@@ -246,11 +301,23 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
     return () => clearInterval(iv);
   }, [tenantId, load]);
 
-  const visible = notifs.filter(n => !dismissed.has(n.id));
-  const count = visible.length;
   const dismiss = (id: string) => setDismissed(s => new Set([...s, id]));
 
-  // Group visible notifs
+  const confirmApt = async (n: Notif) => {
+    setConfirming(s => new Set([...s, n.id]));
+    const { error } = await supabase.from("appointments")
+      .update({ status: "confirmed" })
+      .eq("id", n.aptId);
+    setConfirming(s => { const next = new Set(s); next.delete(n.id); return next; });
+    if (!error) {
+      dismiss(n.id);
+      load();
+    }
+  };
+
+  const visible = notifs.filter(n => !dismissed.has(n.id));
+  const count = visible.length;
+
   const grouped = GROUP_ORDER.map(g => ({
     group: g,
     label: GROUP_LABELS[g],
@@ -300,14 +367,8 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
             display: "flex", flexDirection: "column",
             fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
           }}>
-
             {/* Header */}
-            <div style={{
-              padding: "22px 20px 16px",
-              background: "white",
-              borderBottom: "1px solid rgba(20,15,30,0.07)",
-              flexShrink: 0,
-            }}>
+            <div style={{ padding: "22px 20px 16px", background: "white", borderBottom: "1px solid rgba(20,15,30,0.07)", flexShrink: 0 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
                   <h2 style={{ fontSize: "17px", fontWeight: 700, color: "#14111C", margin: "0 0 3px" }}>Notificaciones</h2>
@@ -320,16 +381,13 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
                   <IconX size={16} />
                 </button>
               </div>
-
-              {/* Summary chips */}
               {count > 0 && (
                 <div style={{ display: "flex", gap: 6, marginTop: 12, flexWrap: "wrap" }}>
                   {grouped.map(g => (
                     <span key={g.group} style={{
-                      fontSize: "10px", fontWeight: 700, padding: "3px 9px", borderRadius: 20,
-                      background: g.items[0].group === "urgent" ? "rgba(220,38,38,0.1)" : g.items[0].group === "action" ? "rgba(217,119,6,0.1)" : "rgba(37,99,235,0.1)",
-                      color: g.items[0].group === "urgent" ? "#dc2626" : g.items[0].group === "action" ? "#d97706" : "#2563eb",
-                      letterSpacing: "0.04em",
+                      fontSize: "10px", fontWeight: 700, padding: "3px 9px", borderRadius: 20, letterSpacing: "0.04em",
+                      background: g.group === "urgent" ? "rgba(220,38,38,0.10)" : g.group === "action" ? "rgba(217,119,6,0.10)" : "rgba(37,99,235,0.10)",
+                      color:      g.group === "urgent" ? "#dc2626"              : g.group === "action" ? "#d97706"              : "#2563eb",
                     }}>
                       {g.label} · {g.items.length}
                     </span>
@@ -349,13 +407,12 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
                   </div>
                   <div style={{ fontSize: "14px", fontWeight: 700, color: "#14111C", marginBottom: 6 }}>Sin alertas pendientes</div>
                   <div style={{ fontSize: "12px", color: "#8E879B", lineHeight: 1.55 }}>
-                    Aquí verás inasistencias, citas sin confirmar,<br />sin colaborador y nueva actividad.
+                    Aquí verás citas próximas, sin confirmar,<br />sin colaborador y nueva actividad.
                   </div>
                 </div>
               ) : (
                 grouped.map((g, gi) => (
                   <div key={g.group} style={{ marginBottom: gi < grouped.length - 1 ? 18 : 0 }}>
-                    {/* Group header */}
                     <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
                       <span style={{ fontSize: "10px", fontWeight: 700, color: "#8E879B", textTransform: "uppercase", letterSpacing: "0.08em" }}>
                         {g.label}
@@ -363,11 +420,14 @@ export default function NotificationsBell({ tenantId }: { tenantId: string }) {
                       <div style={{ flex: 1, height: 1, background: "rgba(20,15,30,0.07)" }} />
                       <span style={{ fontSize: "10px", fontWeight: 700, color: "#8E879B" }}>{g.items.length}</span>
                     </div>
-
-                    {/* Cards */}
                     {g.items.map((n, i) => (
                       <div key={n.id} style={{ animation: `znFadeUp .18s ${(gi * 4 + i) * 0.04}s cubic-bezier(.22,1,.36,1) both` }}>
-                        <NotifCard n={n} onDismiss={() => dismiss(n.id)} />
+                        <NotifCard
+                          n={n}
+                          onDismiss={() => dismiss(n.id)}
+                          onConfirm={n.type === "sin_confirmar" ? () => confirmApt(n) : undefined}
+                          confirming={confirming.has(n.id)}
+                        />
                       </div>
                     ))}
                   </div>
