@@ -40,13 +40,20 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("es-CO", { month: "short", day: "numeric", year: "numeric" });
 }
 
-function KpiCard({ label, value, sub, accent, icon }: {
-  label: string; value: string; sub: string; accent: string; icon: string;
+function KpiCard({ label, value, sub, accent, icon, tag }: {
+  label: string; value: string; sub: string; accent: string; icon: string; tag?: string;
 }) {
   return (
     <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 16, padding: "22px 24px", border: "1px solid rgba(255,255,255,0.05)" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.42)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+          <span style={{ fontSize: 11, fontWeight: 600, color: "rgba(255,255,255,0.42)", textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</span>
+          {tag && (
+            <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 5, background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.28)", letterSpacing: "0.08em", fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace" }}>
+              {tag}
+            </span>
+          )}
+        </div>
         <span style={{ fontSize: 20, opacity: 0.7 }}>{icon}</span>
       </div>
       <div style={{ fontSize: 30, fontWeight: 800, color: accent, lineHeight: 1, marginBottom: 6 }}>{value}</div>
@@ -140,8 +147,8 @@ export default function PlatformDashboard() {
 
       {/* KPI Grid */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 14, marginBottom: 28 }}>
-        <KpiCard label="MRR"              value={fmt(stats?.mrr ?? 0)}          sub="ingresos mensuales recurrentes" accent="#ff7d72" icon="💰" />
-        <KpiCard label="ARR"              value={fmt(stats?.arr ?? 0)}          sub="ingresos anuales proyectados"   accent="#f97316" icon="📈" />
+        <KpiCard label="Ingreso mensual"   value={fmt(stats?.mrr ?? 0)}          sub="suma de todas las suscripciones activas" accent="#ff7d72" icon="💰" tag="MRR" />
+        <KpiCard label="Proyección anual" value={fmt(stats?.arr ?? 0)}          sub="ingreso mensual × 12 meses"     accent="#f97316" icon="📈" tag="ARR" />
         <KpiCard label="Clientes activos" value={String(stats?.active ?? 0)}    sub={`de ${stats?.total ?? 0} totales`} accent="#34d399" icon="✅" />
         <KpiCard label="En trial"         value={String(stats?.trial ?? 0)}     sub="período de prueba"              accent="#fbbf24" icon="⏳" />
         <KpiCard label="Conversión"       value={`${stats?.conversionRate ?? 0}%`} sub="trial → activo"             accent="#a78bfa" icon="🎯" />
