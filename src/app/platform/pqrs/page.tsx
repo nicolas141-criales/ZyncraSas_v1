@@ -269,13 +269,22 @@ export default function PlatformPqrsPage() {
               ))}
             </div>
 
-            <select value={filterType} onChange={e => setFilterType(e.target.value)}
-              style={{ padding: "7px 12px", borderRadius: 8, border: "1px solid rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.7)", fontSize: 12, cursor: "pointer", outline: "none" }}>
-              <option value="all">Todos los tipos</option>
+            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+              <button onClick={() => setFilterType("all")} style={{
+                padding: "7px 11px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 600,
+                background: filterType === "all" ? "rgba(255,255,255,0.18)" : "rgba(255,255,255,0.07)",
+                color: filterType === "all" ? "rgba(255,255,255,0.9)" : "rgba(255,255,255,0.38)",
+              }}>Todos</button>
               {Object.entries(TYPE_META).map(([k, v]) => (
-                <option key={k} value={k}>{v.icon} {v.label}</option>
+                <button key={k} onClick={() => setFilterType(k)} style={{
+                  padding: "7px 11px", borderRadius: 8, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 600,
+                  background: filterType === k ? `${v.color}22` : "rgba(255,255,255,0.07)",
+                  color: filterType === k ? v.color : "rgba(255,255,255,0.38)",
+                }}>
+                  {v.icon} {v.label}
+                </button>
               ))}
-            </select>
+            </div>
 
             <span style={{ marginLeft: "auto", fontSize: 12, color: "rgba(255,255,255,0.28)" }}>
               {filtered.length} de {pqrs.length} PQRs
@@ -428,23 +437,45 @@ export default function PlatformPqrsPage() {
               </div>
             </div>
 
-            {/* Estado + prioridad */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 18 }}>
-              <div>
-                <label style={lbl}>Estado</label>
-                <select value={editStatus} onChange={e => setEditStatus(e.target.value)} style={{ ...inp }}>
-                  {Object.entries(STATUS_META).map(([k, v]) => (
-                    <option key={k} value={k}>{v.label}</option>
-                  ))}
-                </select>
+            {/* Estado */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={lbl}>Estado</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {Object.entries(STATUS_META).map(([k, v]) => (
+                  <button key={k} type="button" onClick={() => setEditStatus(k)}
+                    style={{
+                      flex: 1, minWidth: 90, padding: "10px 12px", borderRadius: 10,
+                      cursor: "pointer", fontSize: 12, fontWeight: 700, transition: "all .15s",
+                      border: editStatus === k ? `1.5px solid ${v.color}` : "1.5px solid rgba(255,255,255,0.08)",
+                      background: editStatus === k ? v.bg : "rgba(255,255,255,0.04)",
+                      color: editStatus === k ? v.color : "rgba(255,255,255,0.35)",
+                      boxShadow: editStatus === k ? `0 0 10px ${v.color}30` : "none",
+                      fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                    }}>
+                    {v.label}
+                  </button>
+                ))}
               </div>
-              <div>
-                <label style={lbl}>Prioridad</label>
-                <select value={editPriority} onChange={e => setEditPriority(e.target.value)} style={{ ...inp }}>
-                  {Object.entries(PRIORITY_META).map(([k, v]) => (
-                    <option key={k} value={k}>{v.label}</option>
-                  ))}
-                </select>
+            </div>
+
+            {/* Prioridad */}
+            <div style={{ marginBottom: 18 }}>
+              <label style={lbl}>Prioridad</label>
+              <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                {Object.entries(PRIORITY_META).map(([k, v]) => (
+                  <button key={k} type="button" onClick={() => setEditPriority(k)}
+                    style={{
+                      flex: 1, minWidth: 70, padding: "10px 12px", borderRadius: 10,
+                      cursor: "pointer", fontSize: 12, fontWeight: 700, transition: "all .15s",
+                      border: editPriority === k ? `1.5px solid ${v.color}` : "1.5px solid rgba(255,255,255,0.08)",
+                      background: editPriority === k ? `${v.color}18` : "rgba(255,255,255,0.04)",
+                      color: editPriority === k ? v.color : "rgba(255,255,255,0.35)",
+                      boxShadow: editPriority === k ? `0 0 10px ${v.color}25` : "none",
+                      fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                    }}>
+                    {v.label}
+                  </button>
+                ))}
               </div>
             </div>
 
