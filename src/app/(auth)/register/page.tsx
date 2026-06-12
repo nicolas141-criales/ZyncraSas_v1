@@ -295,41 +295,28 @@ export default function RegisterPage() {
   // Step 5 - plan activation
   const [tenantId, setTenantId] = useState<string | null>(null);
   const [plans, setPlans] = useState<SaasPlan[]>([]);
-  const [plansLoading, setPlansLoading] = useState(false);
-  const [selectedPlanId, setSelectedPlanId] = useState<string | null>(null);
-  const [promoCode, setPromoCode] = useState("");
-  const [codeError, setCodeError] = useState<string | null>(null);
   const [activating, setActivating] = useState(false);
-  // Settings loaded from platform_settings table (fallback to hardcoded defaults)
-  const [trialCodeDB, setTrialCodeDB] = useState(TRIAL_CODE);
-  const [trialDaysDB, setTrialDaysDB] = useState(30);
+  const [activateError, setActivateError] = useState<string | null>(null);
+
+  const TRIAL_FEATURES = [
+    "Agenda y calendario ilimitado",
+    "Gestión de clientes (CRM)",
+    "Sistema POS y cobros",
+    "Recordatorios automáticos",
+    "WhatsApp Marketing",
+    "Reportes y finanzas",
+  ];
 
   useEffect(() => {
     if (step !== 5) return;
-    async function fetchStep5() {
-      setPlansLoading(true);
-      const [{ data: plansData }, { data: settingsData }] = await Promise.all([
-        supabase.from("saas_plans").select("*").eq("active", true).order("price"),
-        supabase.from("platform_settings").select("key, value"),
-      ]);
-      // Plans
-      const rows: SaasPlan[] = (plansData ?? []).map((p: any) => ({
-        ...p,
-        features: Array.isArray(p.features) ? p.features : [],
-      }));
-      setPlans(rows);
-      const freePlans = rows.filter(p => p.price === 0);
-      if (freePlans.length === 1 && !selectedPlanId) setSelectedPlanId(freePlans[0].id);
-      // Platform settings (trial code + days)
-      if (settingsData && settingsData.length > 0) {
-        const m = new Map((settingsData as any[]).map(s => [s.key as string, s.value as string]));
-        if (m.has("trial_code")) setTrialCodeDB(m.get("trial_code")!.toLowerCase());
-        if (m.has("trial_days")) setTrialDaysDB(Number(m.get("trial_days")) || 30);
-      }
-      setPlansLoading(false);
-    }
-    fetchStep5();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // Load paid plans from DB to show as "Próximamente"
+    supabase.from("saas_plans").select("*").eq("active", true).gt("price", 0).order("price")
+      .then(({ data }: { data: any[] | null }) => {
+        setPlans((data ?? []).map((p: any) => ({
+          ...p,
+          features: Array.isArray(p.features) ? p.features : [],
+        })));
+      });
   }, [step]);
 
   const selectedCountry = COUNTRIES.find(c => c.code === country) ?? COUNTRIES[0];
@@ -415,29 +402,30 @@ export default function RegisterPage() {
   };
 
   const handleActivatePlan = async () => {
-    setCodeError(null);
-    const plan = plans.find(p => p.id === selectedPlanId);
-    if (!plan || !tenantId) return;
-
-    // Free plans require the promo code (read from DB, fallback to hardcoded)
-    if (plan.price === 0 && promoCode.trim().toLowerCase() !== trialCodeDB) {
-      setCodeError(t.trialCodeError);
-      return;
-    }
-
+    if (!tenantId) return;
+    setActivateError(null);
     setActivating(true);
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + trialDaysDB);
 
-    await supabase.from("saas_subscriptions").insert({
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
+    // Use a free plan from DB if one exists, otherwise leave plan_id null
+    const { data: freePlanData } = await supabase
+      .from("saas_plans").select("id").eq("price", 0).limit(1).maybeSingle();
+
+    const { error } = await supabase.from("saas_subscriptions").insert({
       tenant_id: tenantId,
-      plan_id: plan.id,
+      plan_id: freePlanData?.id ?? null,
       status: "trial",
-      amount: plan.price,
+      amount: 0,
       trial_ends_at: trialEndsAt.toISOString(),
     });
 
     setActivating(false);
+    if (error) {
+      setActivateError("No se pudo activar el trial. Intenta de nuevo.");
+      return;
+    }
     setStep(6);
   };
 
@@ -723,163 +711,115 @@ export default function RegisterPage() {
                 <div className={styles.wizardProgressBar} style={{ width: "95%" }} />
               </div>
               <h1 className={styles.heading}>{t.s5heading}</h1>
-              <p className={styles.subheading}>{t.s5sub}</p>
+              <p className={styles.subheading} style={{ marginBottom: 24 }}>
+                Empieza gratis, sin tarjeta de crédito. Cancela cuando quieras.
+              </p>
 
-              {plansLoading ? (
-                <div style={{ textAlign: "center", padding: "32px 0", color: "#8E879B", fontSize: 14 }}>
-                  Cargando planes...
-                </div>
-              ) : plans.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "32px 0", color: "#8E879B", fontSize: 14 }}>
-                  No hay planes disponibles en este momento.
-                </div>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
-                  {plans.map(plan => {
-                    const isFree = plan.price === 0;
-                    const isSelected = selectedPlanId === plan.id;
-                    // Paid plans are locked during launch
-                    const isLocked = plan.price > 0;
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 20 }}>
 
-                    return (
-                      <div
-                        key={plan.id}
-                        onClick={() => !isLocked && setSelectedPlanId(plan.id)}
-                        style={{
-                          border: isSelected
-                            ? "2px solid #fb0f05"
-                            : "1.5px solid rgba(0,0,0,0.1)",
-                          borderRadius: 16,
-                          padding: "18px 20px",
-                          background: isSelected
-                            ? "rgba(251,15,5,0.03)"
-                            : isLocked ? "rgba(0,0,0,0.02)" : "#fff",
-                          cursor: isLocked ? "default" : "pointer",
-                          opacity: isLocked ? 0.55 : 1,
-                          position: "relative",
-                          transition: "border-color .15s, background .15s",
-                        }}
-                      >
-                        {/* Badges */}
-                        {isFree && (
-                          <div style={{
-                            position: "absolute", top: -11, left: 16,
-                            background: "#fb0f05", color: "white",
-                            fontSize: 10, fontWeight: 700, padding: "2px 10px",
-                            borderRadius: 20, letterSpacing: "0.08em", textTransform: "uppercase",
-                          }}>
-                            Disponible ahora
-                          </div>
-                        )}
-                        {isLocked && (
-                          <div style={{
-                            position: "absolute", top: -11, right: 16,
-                            background: "rgba(0,0,0,0.15)", color: "#fff",
-                            fontSize: 10, fontWeight: 700, padding: "2px 10px",
-                            borderRadius: 20, letterSpacing: "0.08em", textTransform: "uppercase",
-                          }}>
-                            Próximamente
-                          </div>
-                        )}
+                {/* ── Trial card (always available) ── */}
+                <div style={{
+                  border: "2px solid #fb0f05",
+                  borderRadius: 16,
+                  padding: "20px 20px",
+                  background: "rgba(251,15,5,0.03)",
+                  position: "relative",
+                }}>
+                  <div style={{
+                    position: "absolute", top: -11, left: 16,
+                    background: "linear-gradient(135deg,#fb0f05,#0027fe)",
+                    color: "white", fontSize: 10, fontWeight: 700,
+                    padding: "3px 12px", borderRadius: 20,
+                    letterSpacing: "0.08em", textTransform: "uppercase",
+                  }}>
+                    ✓ Disponible ahora
+                  </div>
 
-                        {/* Header */}
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: plan.features.length > 0 ? 12 : 0 }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                            {/* Radio dot */}
-                            <div style={{
-                              width: 18, height: 18, borderRadius: "50%",
-                              border: isSelected ? "none" : "2px solid rgba(0,0,0,0.2)",
-                              background: isSelected ? "#fb0f05" : "transparent",
-                              flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                            }}>
-                              {isSelected && <div style={{ width: 7, height: 7, borderRadius: "50%", background: "white" }} />}
-                            </div>
-                            <div>
-                              <div style={{ fontSize: 16, fontWeight: 800, color: "#14111C" }}>{plan.name}</div>
-                              {plan.description && (
-                                <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>{plan.description}</div>
-                              )}
-                            </div>
-                          </div>
-                          <div style={{ textAlign: "right", flexShrink: 0 }}>
-                            <div style={{ fontSize: 18, fontWeight: 800, color: isFree ? "#fb0f05" : "#14111C" }}>
-                              {isFree ? "Gratis" : new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(plan.price)}
-                            </div>
-                            {!isFree && (
-                              <div style={{ fontSize: 11, color: "#8E879B" }}>
-                                /{plan.billing_cycle === "monthly" ? "mes" : "año"}
-                              </div>
-                            )}
-                            {isFree && (
-                              <div style={{ fontSize: 11, color: "#8E879B" }}>30 días</div>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Features */}
-                        {plan.features.length > 0 && (
-                          <div style={{ display: "flex", flexDirection: "column", gap: 6, marginLeft: 28 }}>
-                            {plan.features.map((f, i) => (
-                              <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3a3548" }}>
-                                <div style={{
-                                  width: 16, height: 16, borderRadius: "50%",
-                                  background: isSelected ? "#fb0f05" : "rgba(0,0,0,0.12)",
-                                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                                }}>
-                                  <IconCheck size={9} strokeWidth={3} />
-                                </div>
-                                {f}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Code input — only for selected free plan */}
-                        {isSelected && isFree && (
-                          <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)", paddingTop: 14, marginTop: 16 }}>
-                            <label style={{
-                              display: "block", fontSize: 11, fontWeight: 700, color: "#8E879B",
-                              marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em",
-                            }}>
-                              {t.trialCodeLabel}
-                            </label>
-                            <input
-                              type="text"
-                              className={styles.input}
-                              style={{ paddingLeft: 14, fontFamily: "monospace", letterSpacing: "0.04em" }}
-                              placeholder={t.trialCodePlaceholder}
-                              value={promoCode}
-                              onChange={e => { setPromoCode(e.target.value); setCodeError(null); }}
-                              onKeyDown={e => e.key === "Enter" && handleActivatePlan()}
-                              autoFocus
-                            />
-                            {codeError && (
-                              <div style={{ marginTop: 8, fontSize: 12, color: "#ef4444", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
-                                <span>⚠</span> {codeError}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{
+                        width: 18, height: 18, borderRadius: "50%",
+                        background: "#fb0f05", flexShrink: 0,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <div style={{ width: 7, height: 7, borderRadius: "50%", background: "white" }} />
                       </div>
-                    );
-                  })}
+                      <div>
+                        <div style={{ fontSize: 16, fontWeight: 800, color: "#14111C" }}>Trial — 14 días gratis</div>
+                        <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>Acceso completo a todas las funciones</div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                      <div style={{ fontSize: 22, fontWeight: 800, color: "#fb0f05" }}>Gratis</div>
+                      <div style={{ fontSize: 11, color: "#8E879B" }}>14 días</div>
+                    </div>
+                  </div>
+
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7, marginLeft: 28 }}>
+                    {TRIAL_FEATURES.map((f, i) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3a3548" }}>
+                        <div style={{
+                          width: 16, height: 16, borderRadius: "50%", background: "#fb0f05",
+                          display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                        }}>
+                          <IconCheck size={9} strokeWidth={3} />
+                        </div>
+                        {f}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Paid plans (locked) ── */}
+                {plans.length > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <p style={{ fontSize: 12, color: "#a0a0b8", fontWeight: 600, textAlign: "center", margin: "4px 0 0" }}>
+                      Planes de pago — próximamente
+                    </p>
+                    {plans.map(plan => (
+                      <div key={plan.id} style={{
+                        border: "1.5px solid rgba(0,0,0,0.08)",
+                        borderRadius: 14, padding: "14px 18px",
+                        background: "rgba(0,0,0,0.02)",
+                        opacity: 0.55, position: "relative",
+                        display: "flex", justifyContent: "space-between", alignItems: "center",
+                      }}>
+                        <div style={{ position: "absolute", top: -10, right: 14,
+                          background: "rgba(0,0,0,0.12)", color: "white",
+                          fontSize: 9, fontWeight: 700, padding: "2px 9px",
+                          borderRadius: 20, letterSpacing: "0.08em", textTransform: "uppercase" }}>
+                          Próximamente
+                        </div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: "#14111C" }}>{plan.name}</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, color: "#14111C" }}>
+                          {new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(plan.price)}
+                          <span style={{ fontSize: 11, color: "#8E879B", fontWeight: 400 }}>/mes</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {activateError && (
+                <div style={{ marginBottom: 12, fontSize: 13, color: "#ef4444", fontWeight: 600,
+                  background: "rgba(239,68,68,0.07)", borderRadius: 10, padding: "10px 14px",
+                  border: "1px solid rgba(239,68,68,0.2)" }}>
+                  ⚠ {activateError}
                 </div>
               )}
 
-              {(() => {
-                const plan = plans.find(p => p.id === selectedPlanId);
-                const canActivate = plan && (plan.price > 0 || promoCode.trim().length > 0);
-                return (
-                  <button
-                    className={styles.button}
-                    disabled={activating || !canActivate}
-                    onClick={handleActivatePlan}
-                    style={{ opacity: !canActivate ? 0.5 : 1 }}
-                  >
-                    {t.activateBtn(activating)}
-                  </button>
-                );
-              })()}
+              <button
+                className={styles.button}
+                disabled={activating}
+                onClick={handleActivatePlan}
+              >
+                {activating ? "Activando..." : "Activar 14 días gratis →"}
+              </button>
+
+              <p style={{ fontSize: 12, color: "#8E879B", textAlign: "center", marginTop: 14 }}>
+                Sin tarjeta de crédito · Cancela cuando quieras
+              </p>
             </>
           )}
 
@@ -899,9 +839,9 @@ export default function RegisterPage() {
               }}>
                 <div style={{ fontSize: 32, lineHeight: 1 }}>⏳</div>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#14111C" }}>Trial activo — 30 días</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#14111C" }}>Trial activo — 14 días</div>
                   <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>
-                    Vence el {new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" })}
+                    Vence el {new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toLocaleDateString("es-CO", { day: "numeric", month: "long", year: "numeric" })}
                   </div>
                 </div>
               </div>
