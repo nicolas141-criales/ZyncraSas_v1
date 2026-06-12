@@ -106,6 +106,17 @@ const NAV_GROUPS: NavGroup[] = [
 // Pages that are coming soon
 const COMING_SOON = new Set<string>([]);
 
+// Pages hidden for location_admins (sede-only users)
+const LOCATION_ADMIN_HIDDEN = new Set([
+  "/admin/locations",
+  "/admin/branding",
+  "/admin/settings",
+  "/admin/whatsapp",
+  "/admin/reviews-google",
+  "/admin/reviews-site",
+  "/admin/invoices",
+]);
+
 interface SaasPlanRow {
   id: string;
   name: string;
@@ -457,24 +468,49 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Nav groups — scrollable */}
           <div className={styles.sidebarNav}>
-            {NAV_GROUPS.map(group => (
-              <div key={group.label} className={styles.navGroup}>
-                <div className={styles.navGroupLabel}>{group.label}</div>
-                {group.items.map(item => {
-                  const isActive = pathname === item.href;
-                  const isSoon = COMING_SOON.has(item.href);
-                  return (
-                    <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
-                      className={`${styles.navItem} ${isActive ? styles.active : ""}`}>
-                      <span className={styles.navIcon}>{item.icon}</span>
-                      {item.label}
-                      {isSoon && !isActive && <span className={styles.navComingSoon}>Pronto</span>}
-                    </Link>
-                  );
-                })}
-              </div>
-            ))}
+            {NAV_GROUPS.map(group => {
+              const visibleItems = group.items.filter(item =>
+                !(isLocAdmin && LOCATION_ADMIN_HIDDEN.has(item.href))
+              );
+              if (visibleItems.length === 0) return null;
+              return (
+                <div key={group.label} className={styles.navGroup}>
+                  <div className={styles.navGroupLabel}>{group.label}</div>
+                  {visibleItems.map(item => {
+                    const isActive = pathname === item.href;
+                    const isSoon = COMING_SOON.has(item.href);
+                    return (
+                      <Link key={item.href} href={item.href} onClick={() => setSidebarOpen(false)}
+                        className={`${styles.navItem} ${isActive ? styles.active : ""}`}>
+                        <span className={styles.navIcon}>{item.icon}</span>
+                        {item.label}
+                        {isSoon && !isActive && <span className={styles.navComingSoon}>Pronto</span>}
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
           </div>
+
+          {/* Badge de sede para location_admins */}
+          {isLocAdmin && locationId && (
+            <div style={{
+              margin: "0 12px 10px",
+              padding: "9px 12px",
+              borderRadius: 9,
+              background: "rgba(251,15,5,0.08)",
+              border: "1px solid rgba(251,15,5,0.18)",
+            }}>
+              <div style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase" as const, color: "rgba(255,255,255,0.35)", marginBottom: 3, fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace" }}>
+                Tu sede
+              </div>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: "#ff8a80", display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif" }}>
+                <IconMapPin size={12} />
+                {locations.find(l => l.id === locationId)?.name ?? "Sede"}
+              </div>
+            </div>
+          )}
 
           {/* Cerrar sesión — fijo */}
           <div className={styles.sidebarBottom}>
