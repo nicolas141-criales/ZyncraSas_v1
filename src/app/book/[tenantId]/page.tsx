@@ -138,6 +138,11 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   const [notFound, setNotFound] = useState(false);
   const [businessHours, setBusinessHours] = useState<Record<string, { open: boolean; start: string; end: string }> | null>(null);
 
+  // Multi-sede
+  const [locations, setLocations] = useState<{ id: string; name: string; address: string | null; phone: string | null }[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<{ id: string; name: string; address: string | null; phone: string | null } | null>(null);
+  const [needsLocationSelection, setNeedsLocationSelection] = useState(false);
+
   // Calendar state
   const now = new Date();
   const [calYear, setCalYear] = useState(now.getFullYear());
@@ -187,11 +192,13 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
         { data: profData },
         { data: brandData },
         { data: reviewData },
+        { data: locsData },
       ] = await Promise.all([
         supabase.from("services").select("*").eq("tenant_id", tenantData.id).order("name"),
         supabase.from("professionals").select("*").eq("tenant_id", tenantData.id).eq("is_active", true),
         supabase.from("branding").select("*").eq("tenant_id", tenantData.id).limit(1),
         supabase.from("google_review_settings").select("*").eq("tenant_id", tenantData.id).limit(1),
+        supabase.rpc("get_public_locations", { p_tenant_id: tenantData.id }),
       ]);
 
       if (svcData) setServices(svcData);
@@ -200,6 +207,25 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
       if (reviewData && reviewData.length > 0) setReviewSettings(reviewData[0]);
       // El horario viene de tenants.settings.schedule (mismo campo que la app mobile)
       if (tenantData.settings?.schedule) setBusinessHours(tenantData.settings.schedule);
+
+      // Handle multi-sede
+      const locsList: { id: string; name: string; address: string | null; phone: string | null }[] =
+        Array.isArray(locsData) ? locsData : [];
+      setLocations(locsList);
+      const sedeParam = typeof window !== "undefined"
+        ? new URLSearchParams(window.location.search).get("sede")
+        : null;
+      if (locsList.length === 1) {
+        setSelectedLocation(locsList[0]);
+      } else if (locsList.length > 1) {
+        const preSelected = sedeParam ? locsList.find(l => l.id === sedeParam) ?? null : null;
+        if (preSelected) {
+          setSelectedLocation(preSelected);
+        } else {
+          setNeedsLocationSelection(true);
+        }
+      }
+
       setLoadingData(false);
     }
     load();
@@ -230,7 +256,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
         const res = await fetch("/api/public/booking", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ action: "availability", tenant_id: tenant.id, date: selectedDate }),
+          body: JSON.stringify({ action: "availability", tenant_id: tenant.id, date: selectedDate, location_id: selectedLocation?.id ?? null }),
         });
         const json = await res.json();
         data = Array.isArray(json.booked) ? json.booked : [];
@@ -239,7 +265,9 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
       }
 
       if (selectedProfessional === "any") {
-        const totalProfs = professionals.length;
+        const totalProfs = (selectedLocation
+          ? professionals.filter(p => !p.location_id || p.location_id === selectedLocation.id)
+          : professionals).length;
         const booked = new Set<string>();
         if (totalProfs > 0) {
           // Agrupa por horario: cuántos profesionales distintos están ocupados
@@ -390,6 +418,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
           phone: details.phone,
           email: details.email,
           field_values: fieldPayload,
+          location_id: selectedLocation?.id ?? null,
         }),
       });
 
@@ -479,6 +508,12 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
   };
 
   /* ─── Derived display values ─── */
+  const filteredServices = selectedLocation
+    ? services.filter(s => !s.location_id || s.location_id === selectedLocation.id)
+    : services;
+  const filteredProfessionals = selectedLocation
+    ? professionals.filter(p => !p.location_id || p.location_id === selectedLocation.id)
+    : professionals;
   const selectedSvc = services.find(s => s.id === selectedService);
   const selectedProf = professionals.find(p => p.id === selectedProfessional);
   const selectedDateDisplay = selectedDate ? (() => {
@@ -683,6 +718,48 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
     );
   }
 
+  /* ─── Location selector (pre-step when multiple sedes and none pre-selected) ─── */
+  if (needsLocationSelection && !selectedLocation) {
+    return (
+      <main className={styles.pageWrapper} style={{ ...cssVars, background: pageBg }}>
+        <div className={styles.container}>
+          <Header />
+          <div className={styles.card}>
+            <h2 className={styles.stepTitle}>¿En qué sede te atendemos?</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {locations.map(loc => (
+                <button
+                  key={loc.id}
+                  onClick={() => { setSelectedLocation(loc); setNeedsLocationSelection(false); }}
+                  style={{
+                    width: "100%", textAlign: "left", padding: "16px 18px",
+                    borderRadius: 14,
+                    border: `1.5px solid ${primaryColor}28`,
+                    background: "white", cursor: "pointer",
+                    fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                    display: "flex", flexDirection: "column", gap: 4,
+                    transition: "border-color .15s, box-shadow .15s",
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = primaryColor; (e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 2px ${primaryColor}22`; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = `${primaryColor}28`; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}
+                >
+                  <span style={{ fontWeight: 700, fontSize: 15, color: "#111118", display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>📍</span> {loc.name}
+                  </span>
+                  {loc.address && <span style={{ fontSize: 12, color: "#6b6b80", marginLeft: 24 }}>{loc.address}</span>}
+                  {loc.phone && <span style={{ fontSize: 12, color: "#6b6b80", marginLeft: 24 }}>📞 {loc.phone}</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+          <p className={styles.poweredBy} style={hasDarkBg ? { color: "rgba(255,255,255,0.3)" } : {}}>
+            Reservas con <strong>Zyncra</strong>
+          </p>
+        </div>
+      </main>
+    );
+  }
+
   /* ─── Main booking flow ─── */
   return (
     <main className={styles.pageWrapper} style={{ ...cssVars, background: pageBg }}>
@@ -729,6 +806,9 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
               <CheckIcon size={10} />
             </div>
             <span className={styles.summaryText}>
+              {selectedLocation && locations.length > 1 && (
+                <><strong>📍 {selectedLocation.name}</strong>{" · "}</>
+              )}
               <strong>{selectedSvc.name}</strong>
               {" · "}{selectedSvc.duration_minutes} min · <strong>${selectedSvc.price}</strong>
               {step >= 3 && selectedDateDisplay && (
@@ -747,13 +827,13 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
             <div>
               <h2 className={styles.stepTitle}>¿Qué servicio necesitas?</h2>
 
-              {services.length === 0 ? (
+              {filteredServices.length === 0 ? (
                 <div className={styles.emptyState}>
                   <p>Este negocio aún no tiene servicios disponibles. Contacta directamente.</p>
                 </div>
               ) : (
                 <div className={styles.serviceList}>
-                  {services.map((svc) => {
+                  {filteredServices.map((svc) => {
                     const sel = selectedService === svc.id;
                     return (
                       <div
@@ -817,7 +897,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
               <h2 className={styles.stepTitle}>Elige tu profesional y fecha</h2>
 
               {/* 1. Professional selection */}
-              {professionals.length > 0 && (
+              {filteredProfessionals.length > 0 && (
                 <div className={styles.subSection}>
                   <h3 className={styles.subTitle}>¿Con quién te atiendes?</h3>
                   <div className={styles.profGrid}>
@@ -836,7 +916,7 @@ export default function BookingPage({ params }: { params: Promise<{ tenantId: st
                       <div className={styles.profName}>Sin preferencia</div>
                       <div className={styles.profRole}>Cualquiera</div>
                     </div>
-                    {professionals.map(prof => {
+                    {filteredProfessionals.map(prof => {
                       const sel = selectedProfessional === prof.id;
                       return (
                         <div

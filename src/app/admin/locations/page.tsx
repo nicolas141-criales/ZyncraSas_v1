@@ -63,7 +63,7 @@ function Field({ label, value, onChange, placeholder, type = "text" }: {
 }
 
 export default function LocationsPage() {
-  const { tenantId, setLocationId, locationId } = useAdmin();
+  const { tenantId, tenantSlug, setLocationId, locationId } = useAdmin();
   const [locations, setLocations] = useState<Location[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | "new" | null>(null);
@@ -348,6 +348,28 @@ export default function LocationsPage() {
                         </div>
                         {loc.address && <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>{loc.address}</div>}
                         {loc.phone && <div style={{ fontSize: 12, color: "#8E879B" }}>{loc.phone}</div>}
+                        {tenantSlug && (
+                          <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 5 }}>
+                            <span style={{ fontSize: 10, color: "#8E879B" }}>🔗</span>
+                            <a
+                              href={`/book/${tenantSlug}?sede=${loc.id}`}
+                              target="_blank" rel="noopener noreferrer"
+                              style={{ fontSize: 11, color: "#8E879B", textDecoration: "none", fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: 200 }}
+                            >
+                              /book/{tenantSlug}?sede=…
+                            </a>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(`${window.location.origin}/book/${tenantSlug}?sede=${loc.id}`);
+                                showToast("Link copiado.");
+                              }}
+                              title="Copiar link"
+                              style={{ flexShrink: 0, padding: "2px 8px", borderRadius: 5, border: "1px solid rgba(20,15,30,0.1)", background: "white", color: "#564E66", fontSize: 10, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                            >
+                              Copiar
+                            </button>
+                          </div>
+                        )}
                       </div>
 
                       <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>

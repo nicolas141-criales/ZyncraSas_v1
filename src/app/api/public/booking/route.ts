@@ -50,16 +50,18 @@ export async function POST(req: NextRequest) {
 
   // ── availability: booked slots for a date ────────────────────────────────
   if (action === "availability") {
-    const { date } = body;
+    const { date, location_id } = body;
     if (!isYmd(date)) return NextResponse.json({ error: "Fecha inválida" }, { status: 400 });
 
-    const { data: booked } = await db
+    let availQ = db
       .from("appointments")
       .select("appointment_time, professional_id")
       .eq("tenant_id", tenantId)
       .eq("appointment_date", date)
       .in("status", ["pending", "confirmed"]);
+    if (location_id && typeof location_id === "string") availQ = availQ.eq("location_id", location_id);
 
+    const { data: booked } = await availQ;
     return NextResponse.json({ booked: booked ?? [] });
   }
 
@@ -67,12 +69,13 @@ export async function POST(req: NextRequest) {
   if (action === "create") {
     const {
       service_id, professional_id, date, time,
-      name, phone, email, field_values,
+      name, phone, email, field_values, location_id,
     } = body as {
       service_id?: string; professional_id?: string | null;
       date?: string; time?: string;
       name?: string; phone?: string; email?: string;
       field_values?: { field_id: string; field_key: string; value: string }[];
+      location_id?: string | null;
     };
 
     if (!service_id || !isYmd(date) || !isHms(time) || !name || !phone) {
@@ -107,8 +110,9 @@ export async function POST(req: NextRequest) {
     } else {
       // "Sin preferencia": pick a professional free at that time, load-balanced
       // by the number of appointments already booked that week.
-      const { data: profs } = await db
-        .from("professionals").select("id").eq("tenant_id", tenantId).eq("is_active", true);
+      let profsQ = db.from("professionals").select("id").eq("tenant_id", tenantId).eq("is_active", true);
+      if (location_id && typeof location_id === "string") profsQ = profsQ.eq("location_id", location_id);
+      const { data: profs } = await profsQ;
       if (profs?.length) {
         const { data: busyNow } = await db
           .from("appointments").select("professional_id")
@@ -164,6 +168,7 @@ export async function POST(req: NextRequest) {
         appointment_date: date,
         appointment_time: normalizedTime,
         status: "pending",
+        ...(location_id ? { location_id } : {}),
       })
       .select("id, manage_token")
       .single();
