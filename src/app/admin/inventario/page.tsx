@@ -113,7 +113,7 @@ function TagEditor({ tags, onChange, inpStyle }: { tags: Tag[]; onChange: (t: Ta
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function InventarioPage() {
-  const { tenantId, currency, locale } = useAdmin();
+  const { tenantId, locationId, currency, locale } = useAdmin();
   const fmt = (n: number) =>
     new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
@@ -147,35 +147,30 @@ export default function InventarioPage() {
   // ── Load products ──────────────────────────────────────────────────────────
   const fetchProducts = useCallback(async (tid: string) => {
     setLoading(true);
-    const { data } = await supabase
-      .from("products")
-      .select("*")
-      .eq("tenant_id", tid)
-      .order("name");
+    let q = supabase.from("products").select("*").eq("tenant_id", tid);
+    if (locationId) q = q.eq("location_id", locationId);
+    const { data } = await q.order("name");
     setProducts((data as any) || []);
     setLoading(false);
-  }, []);
+  }, [locationId]);
 
   useEffect(() => {
     if (tenantId) fetchProducts(tenantId);
-  }, [tenantId, fetchProducts]);
+  }, [tenantId, locationId, fetchProducts]);
 
   // ── Load movements ──────────────────────────────────────────────────────────
   const fetchMovements = useCallback(async (tid: string) => {
     setMovLoading(true);
-    const { data } = await supabase
-      .from("inventory_movements")
-      .select("*, products(name, sku)")
-      .eq("tenant_id", tid)
-      .order("created_at", { ascending: false })
-      .limit(200);
+    let q = supabase.from("inventory_movements").select("*, products(name, sku)").eq("tenant_id", tid);
+    if (locationId) q = q.eq("location_id", locationId);
+    const { data } = await q.order("created_at", { ascending: false }).limit(200);
     setMovements((data as any) || []);
     setMovLoading(false);
-  }, []);
+  }, [locationId]);
 
   useEffect(() => {
     if (tenantId && tab === "movimientos") fetchMovements(tenantId);
-  }, [tenantId, tab, fetchMovements]);
+  }, [tenantId, locationId, tab, fetchMovements]);
 
   // ── Photo selection ─────────────────────────────────────────────────────────
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {

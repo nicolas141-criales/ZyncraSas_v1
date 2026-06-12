@@ -119,7 +119,7 @@ function SectionHeader({ title, sub }: { title: string; sub?: string }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function CajaPage() {
-  const { tenantId, currency, locale } = useAdmin();
+  const { tenantId, locationId, currency, locale } = useAdmin();
   const fmt     = (n: number) => new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
   const fmtTime = (iso: string) => new Date(iso).toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
   const fmtDate = (iso: string) => new Date(iso).toLocaleDateString(locale, { weekday: "short", day: "numeric", month: "short", year: "numeric" });
@@ -157,14 +157,9 @@ export default function CajaPage() {
   // ── Load open session ──
   const loadSession = useCallback(async (tid: string) => {
     setLoadingSession(true);
-    const { data: sess } = await supabase
-      .from("cash_sessions")
-      .select("*")
-      .eq("tenant_id", tid)
-      .is("closed_at", null)
-      .order("opened_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    let sq = supabase.from("cash_sessions").select("*").eq("tenant_id", tid).is("closed_at", null);
+    if (locationId) sq = sq.eq("location_id", locationId);
+    const { data: sess } = await sq.order("opened_at", { ascending: false }).limit(1).maybeSingle();
 
     setSession(sess || null);
 
@@ -210,18 +205,14 @@ export default function CajaPage() {
       setSaleDetails({});
     }
     setLoadingSession(false);
-  }, []);
+  }, [locationId]);
 
   // ── Load history ──
   const loadHistory = useCallback(async (tid: string) => {
     setLoadingHistory(true);
-    const { data: sessList } = await supabase
-      .from("cash_sessions")
-      .select("*")
-      .eq("tenant_id", tid)
-      .not("closed_at", "is", null)
-      .order("opened_at", { ascending: false })
-      .limit(30);
+    let hq = supabase.from("cash_sessions").select("*").eq("tenant_id", tid).not("closed_at", "is", null);
+    if (locationId) hq = hq.eq("location_id", locationId);
+    const { data: sessList } = await hq.order("opened_at", { ascending: false }).limit(30);
 
     if (!sessList || sessList.length === 0) { setSessions([]); setLoadingHistory(false); return; }
 
@@ -244,7 +235,7 @@ export default function CajaPage() {
     if (!tenantId) return;
     if (tab === "caja") loadSession(tenantId);
     if (tab === "historial") loadHistory(tenantId);
-  }, [tenantId, tab, loadSession, loadHistory]);
+  }, [tenantId, locationId, tab, loadSession, loadHistory]);
 
   // ── Abrir caja ──
   const handleOpen = async () => {

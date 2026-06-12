@@ -70,7 +70,7 @@ const lbl: React.CSSProperties = {
 };
 
 export default function ServicesPage() {
-  const { tenantId } = useAdmin();
+  const { tenantId, locationId } = useAdmin();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -90,9 +90,11 @@ export default function ServicesPage() {
   const [fieldError, setFieldError] = useState<string | null>(null);
 
   const fetchServices = useCallback(async (tid: string) => {
-    const { data } = await supabase.from("services").select("*").eq("tenant_id", tid).order("name");
+    let q = supabase.from("services").select("*").eq("tenant_id", tid);
+    if (locationId) q = q.eq("location_id", locationId);
+    const { data } = await q.order("name");
     if (data) setServices(data);
-  }, []);
+  }, [locationId]);
 
   const loadServiceFields = useCallback(async (serviceId: string) => {
     const { data } = await supabase

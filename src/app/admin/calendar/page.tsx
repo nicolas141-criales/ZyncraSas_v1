@@ -63,7 +63,7 @@ const inp: React.CSSProperties = {
 };
 
 export default function CalendarPage() {
-  const { tenantId } = useAdmin();
+  const { tenantId, locationId } = useAdmin();
   const router = useRouter();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -95,11 +95,12 @@ export default function CalendarPage() {
   // Fetch professionals + branding
   useEffect(() => {
     if (!tenantId) return;
-    supabase.from("professionals").select("id, name").eq("tenant_id", tenantId).eq("is_active", true).order("name")
-      .then(({ data }) => setProfs(data ?? []));
+    let q = supabase.from("professionals").select("id, name").eq("tenant_id", tenantId).eq("is_active", true);
+    if (locationId) q = q.eq("location_id", locationId);
+    q.order("name").then(({ data }) => setProfs(data ?? []));
     supabase.from("branding").select("business_name, primary_color").eq("tenant_id", tenantId).maybeSingle()
       .then(({ data }) => setBranding(data ?? null));
-  }, [tenantId]);
+  }, [tenantId, locationId]);
 
   // Build indicator set: which (client_id, service_id) pairs have field values
   const buildFieldsSet = useCallback(async (apts: Appointment[]) => {
@@ -122,20 +123,21 @@ export default function CalendarPage() {
 
   const fetchAppointments = useCallback(async (tid: string, s: string, e: string) => {
     setLoading(true);
-    const { data } = await supabase
+    let q = supabase
       .from("appointments")
       .select("id,client_id,service_id,professional_id,appointment_date,appointment_time,status,manage_token,clients(name,email),services(name),professionals(name)")
-      .eq("tenant_id", tid).gte("appointment_date", s).lte("appointment_date", e)
-      .order("appointment_date").order("appointment_time");
+      .eq("tenant_id", tid).gte("appointment_date", s).lte("appointment_date", e);
+    if (locationId) q = q.eq("location_id", locationId);
+    const { data } = await q.order("appointment_date").order("appointment_time");
     const apts = (data ?? []) as unknown as Appointment[];
     setAppointments(apts);
     await buildFieldsSet(apts);
     setLoading(false);
-  }, [buildFieldsSet]);
+  }, [buildFieldsSet, locationId]);
 
   useEffect(() => {
     if (tenantId) fetchAppointments(tenantId, startDate, endDate);
-  }, [tenantId, startDate, endDate, fetchAppointments]);
+  }, [tenantId, locationId, startDate, endDate, fetchAppointments]);
 
   const hasComment = (apt: Appointment) => aptHasFields.has(`${apt.client_id}_${apt.service_id}`);
 

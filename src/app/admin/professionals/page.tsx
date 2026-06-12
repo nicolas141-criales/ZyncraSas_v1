@@ -47,7 +47,7 @@ const lbl: React.CSSProperties = {
 };
 
 export default function ProfessionalsPage() {
-  const { tenantId } = useAdmin();
+  const { tenantId, locationId } = useAdmin();
   const [professionals, setProfessionals] = useState<Professional[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -68,9 +68,11 @@ export default function ProfessionalsPage() {
   const [businessDefaults, setBusinessDefaults] = useState<Schedule | null>(null);
 
   const fetchProfessionals = useCallback(async (tid: string) => {
-    const { data, error } = await supabase.from("professionals").select("*").eq("tenant_id", tid).order("created_at", { ascending: true });
+    let q = supabase.from("professionals").select("*").eq("tenant_id", tid);
+    if (locationId) q = q.eq("location_id", locationId);
+    const { data, error } = await q.order("created_at", { ascending: true });
     if (!error && data) setProfessionals(data as Professional[]);
-  }, []);
+  }, [locationId]);
 
   useEffect(() => {
     if (!tenantId) return;

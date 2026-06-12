@@ -167,7 +167,7 @@ function SectionHeader({ title, sub, icon }: { title: string; sub?: string; icon
 // -"-"-"- Main Component -"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-"-
 
 export default function CommissionsPage() {
-  const { tenantId, currency, locale } = useAdmin();
+  const { tenantId, locationId, currency, locale } = useAdmin();
   const fmt = (n: number) => new Intl.NumberFormat(locale, { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
   const [tab, setTab] = useState<"resumen" | "reglas" | "historial">("resumen");
@@ -206,14 +206,18 @@ export default function CommissionsPage() {
     if (!range.start || !range.end) { setLoadingSummary(false); return; }
     setCurrentRange(range);
 
+    let profQ = supabase.from("professionals").select("id,name,role").eq("tenant_id", tid).eq("is_active", true);
+    if (locationId) profQ = profQ.eq("location_id", locationId);
+    let aptQ = supabase.from("appointments")
+      .select("professional_id, status, services(price)")
+      .eq("tenant_id", tid)
+      .gte("appointment_date", range.start)
+      .lte("appointment_date", range.end)
+      .neq("status", "cancelled");
+    if (locationId) aptQ = aptQ.eq("location_id", locationId);
     const [{ data: profs }, { data: apts }, { data: rulesData }] = await Promise.all([
-      supabase.from("professionals").select("id,name,role").eq("tenant_id", tid).eq("is_active", true).order("name"),
-      supabase.from("appointments")
-        .select("professional_id, status, services(price)")
-        .eq("tenant_id", tid)
-        .gte("appointment_date", range.start)
-        .lte("appointment_date", range.end)
-        .neq("status", "cancelled"),
+      profQ.order("name"),
+      aptQ,
       supabase.from("commission_rules").select("professional_id,type,value").eq("tenant_id", tid),
     ]);
 
@@ -229,19 +233,21 @@ export default function CommissionsPage() {
 
     setSummaries(result);
     setLoadingSummary(false);
-  }, []);
+  }, [locationId]);
 
   // -"-"- Fetch rules -"-"-
   const fetchRules = useCallback(async (tid: string) => {
     setLoadingRules(true);
+    let rProfQ = supabase.from("professionals").select("id,name,role").eq("tenant_id", tid).eq("is_active", true);
+    if (locationId) rProfQ = rProfQ.eq("location_id", locationId);
     const [{ data: profs }, { data: rulesData }] = await Promise.all([
-      supabase.from("professionals").select("id,name,role").eq("tenant_id", tid).eq("is_active", true).order("name"),
+      rProfQ.order("name"),
       supabase.from("commission_rules").select("professional_id,type,value").eq("tenant_id", tid),
     ]);
     setProfessionals(profs || []);
     setRules(rulesData || []);
     setLoadingRules(false);
-  }, []);
+  }, [locationId]);
 
   // -"-"- Fetch payments -"-"-
   const fetchPayments = useCallback(async (tid: string) => {
@@ -261,7 +267,7 @@ export default function CommissionsPage() {
     if (tab === "resumen") fetchSummary(tenantId, period);
     if (tab === "reglas") fetchRules(tenantId);
     if (tab === "historial") fetchPayments(tenantId);
-  }, [tenantId, tab, period, fetchSummary, fetchRules, fetchPayments]);
+  }, [tenantId, locationId, tab, period, fetchSummary, fetchRules, fetchPayments]);
 
   // -"-"- Save rule -"-"-
   const handleSaveRule = async () => {
