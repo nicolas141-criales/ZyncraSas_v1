@@ -156,11 +156,16 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const locale   = tenant.settings?.locale   ?? "es-CO";
         setTenantInfo({ ...tenant, logoUrl: brandingRows?.[0]?.logo_url ?? null, currency, locale });
 
-        if (subData) {
-          setSubStatus(subData.status);
-          setTrialEndsAt(subData.trial_ends_at ?? null);
-          if (subData.status === "trial" && subData.trial_ends_at) {
-            const daysLeft = Math.ceil((new Date(subData.trial_ends_at).getTime() - Date.now()) / 86400000);
+        // subData puede ser null si no hay suscripción o si la RLS bloquea la lectura.
+        // En ambos casos tratamos al usuario como trial (todos los nuevos empiezan en trial).
+        const status = subData?.status ?? "trial";
+        const endsAt = subData?.trial_ends_at ?? null;
+        setSubStatus(status);
+        setTrialEndsAt(endsAt);
+
+        if (status === "trial") {
+          if (endsAt) {
+            const daysLeft = Math.ceil((new Date(endsAt).getTime() - Date.now()) / 86400000);
             if (daysLeft <= 0) {
               setTrialExpired(true);
               setUpgradePlans((plansData ?? []).map((p: any) => ({
@@ -169,6 +174,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               })));
             }
           }
+          // Sin endsAt: muestra banner sin cuenta regresiva (no expira automáticamente)
         }
       }
       setLoadingAuth(false);
