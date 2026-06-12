@@ -304,49 +304,62 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           {/* Trial banner — fijo antes del logout */}
-          {subStatus === "trial" && trialDaysLeft !== null && trialDaysLeft > 0 && (
+          {subStatus === "trial" && !trialExpired && (
             <div style={{
-              margin: "0 12px 0",
+              margin: "0 12px 8px",
               padding: "10px 13px",
               borderRadius: 10,
-              background: trialDaysLeft <= 3
+              background: trialDaysLeft !== null && trialDaysLeft <= 3
                 ? "linear-gradient(135deg, rgba(248,113,113,0.15), rgba(251,191,36,0.08))"
                 : "rgba(255,255,255,0.05)",
-              border: trialDaysLeft <= 3
+              border: trialDaysLeft !== null && trialDaysLeft <= 3
                 ? "1px solid rgba(248,113,113,0.35)"
                 : "1px solid rgba(255,255,255,0.09)",
             }}>
               <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
-                <span style={{ fontSize: 14 }}>{trialDaysLeft <= 3 ? "⚠️" : "⏳"}</span>
+                <span style={{ fontSize: 14 }}>
+                  {trialDaysLeft !== null && trialDaysLeft <= 3 ? "⚠️" : "⏳"}
+                </span>
                 <span style={{
                   fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
                   textTransform: "uppercase",
-                  color: trialDaysLeft <= 3 ? "#f87171" : "rgba(255,255,255,0.55)",
+                  color: trialDaysLeft !== null && trialDaysLeft <= 3 ? "#f87171" : "rgba(255,255,255,0.55)",
                 }}>
                   Período de prueba
                 </span>
               </div>
-              <div style={{
-                fontSize: 20, fontWeight: 800,
-                color: trialDaysLeft <= 3 ? "#f87171" : "rgba(255,255,255,0.9)",
-                lineHeight: 1,
-              }}>
-                {trialDaysLeft} día{trialDaysLeft !== 1 ? "s" : ""}
-              </div>
-              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
-                {trialDaysLeft <= 3 ? "¡Quedan pocos días!" : "restantes"}
-              </div>
-              {/* Barra de progreso */}
-              <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 2, marginTop: 8, overflow: "hidden" }}>
-                <div style={{
-                  height: "100%", borderRadius: 2,
-                  width: `${Math.min(100, (trialDaysLeft / 14) * 100)}%`,
-                  background: trialDaysLeft <= 3
-                    ? "linear-gradient(90deg,#f87171,#fbbf24)"
-                    : "linear-gradient(90deg,#fb0f05,#0027fe)",
-                  transition: "width .3s",
-                }} />
-              </div>
+              {trialDaysLeft !== null ? (
+                <>
+                  <div style={{
+                    fontSize: 20, fontWeight: 800, lineHeight: 1,
+                    color: trialDaysLeft <= 3 ? "#f87171" : "rgba(255,255,255,0.9)",
+                  }}>
+                    {trialDaysLeft} día{trialDaysLeft !== 1 ? "s" : ""}
+                  </div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
+                    {trialDaysLeft <= 3 ? "¡Quedan pocos días!" : "restantes"}
+                  </div>
+                  <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 2, marginTop: 8, overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%", borderRadius: 2,
+                      width: `${Math.min(100, Math.max(4, (trialDaysLeft / 14) * 100))}%`,
+                      background: trialDaysLeft <= 3
+                        ? "linear-gradient(90deg,#f87171,#fbbf24)"
+                        : "linear-gradient(90deg,#fb0f05,#0027fe)",
+                      transition: "width .3s",
+                    }} />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", lineHeight: 1.3 }}>
+                    Acceso de prueba activo
+                  </div>
+                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 3 }}>
+                    Contacta a Zyncra para activar tu plan
+                  </div>
+                </>
+              )}
             </div>
           )}
 

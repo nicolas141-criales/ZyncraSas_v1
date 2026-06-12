@@ -199,7 +199,16 @@ export default function PlatformClientsPage() {
     setEditStatus(t.subscription?.status ?? "trial");
     setEditAmount(String(t.subscription?.amount ?? ""));
     setEditNotes(t.subscription?.notes ?? "");
-    setEditTrialEnds(t.subscription?.trial_ends_at ? t.subscription.trial_ends_at.slice(0, 10) : "");
+    // Pre-fill trial_ends_at: existing value OR default to 14 days from now for new subscriptions
+    if (t.subscription?.trial_ends_at) {
+      setEditTrialEnds(t.subscription.trial_ends_at.slice(0, 10));
+    } else if (!t.subscription || t.subscription.status === "trial") {
+      const d = new Date();
+      d.setDate(d.getDate() + 14);
+      setEditTrialEnds(d.toISOString().slice(0, 10));
+    } else {
+      setEditTrialEnds("");
+    }
     setEditModal(true);
   }
 
@@ -335,11 +344,19 @@ export default function PlatformClientsPage() {
                           <div style={{ fontSize: 12, color: days !== null && days <= 3 ? "#f87171" : "rgba(255,255,255,0.55)" }}>
                             {fmtDate(t.subscription.trial_ends_at)}
                           </div>
-                          {days !== null && (
-                            <div style={{ fontSize: 11, fontWeight: 700, color: days <= 1 ? "#f87171" : days <= 3 ? "#fbbf24" : "rgba(255,255,255,0.32)", marginTop: 2 }}>
-                              {days <= 0 ? "Vencido" : days === 1 ? "Mañana" : `${days} días`}
-                            </div>
-                          )}
+                          <div style={{ fontSize: 11, fontWeight: 700, marginTop: 2, color: days !== null && days <= 0 ? "#f87171" : days !== null && days <= 3 ? "#fbbf24" : "#34d399" }}>
+                            {days === null ? "" : days <= 0 ? "⛔ Vencido" : days === 1 ? "⚠ Mañana" : `⏳ ${days} días`}
+                          </div>
+                        </div>
+                      ) : t.subscription?.status === "trial" && !t.subscription.trial_ends_at ? (
+                        <div>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "#fbbf24" }}>⚠ Sin fecha</span>
+                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", marginTop: 2 }}>Configurar en Gestionar</div>
+                        </div>
+                      ) : !t.subscription ? (
+                        <div>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: "#f87171" }}>Sin suscripción</span>
+                          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.28)", marginTop: 2 }}>Crear en Gestionar</div>
                         </div>
                       ) : (
                         <span style={{ fontSize: 12, color: "rgba(255,255,255,0.22)" }}>—</span>
