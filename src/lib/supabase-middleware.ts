@@ -33,16 +33,17 @@ export async function updateSession(request: NextRequest): Promise<NextResponse>
     },
   });
 
-  // IMPORTANT: getUser() revalidates the token with the auth server; do not
-  // trust getSession() alone for authorization decisions.
-  const { data: { user } } = await supabase.auth.getUser();
+  // Use getSession() (local cookie read, no network round-trip) to avoid
+  // middleware timeouts on Vercel Edge (~1.5 s limit). RLS is the authoritative
+  // security layer; this guard is defense-in-depth for the UI only.
+  const { data: { session } } = await supabase.auth.getSession();
 
   const path = request.nextUrl.pathname;
   const isProtected = PROTECTED_PREFIXES.some(
     (p) => path === p || path.startsWith(`${p}/`)
   );
 
-  if (isProtected && !user) {
+  if (isProtected && !session) {
     const redirectUrl = request.nextUrl.clone();
     redirectUrl.pathname = "/login";
     redirectUrl.search = `?redirect=${encodeURIComponent(path)}`;
