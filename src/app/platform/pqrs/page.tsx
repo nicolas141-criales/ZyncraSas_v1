@@ -91,6 +91,7 @@ export default function PlatformPqrsPage() {
   const [editStatus, setEditStatus] = useState("");
   const [editPriority, setEditPriority] = useState("");
   const [saving, setSaving] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
 
@@ -112,8 +113,8 @@ export default function PlatformPqrsPage() {
   useEffect(() => {
     const ch = supabase
       .channel("pqrs-admin")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pqrs" }, (payload) => {
-        setPqrs(prev => [payload.new as PQR, ...prev]);
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pqrs" }, (payload: { new: PQR }) => {
+        setPqrs(prev => [payload.new, ...prev]);
       })
       .subscribe();
     return () => { supabase.removeChannel(ch); };
@@ -135,6 +136,41 @@ export default function PlatformPqrsPage() {
     setResponse(p.response ?? "");
     setEditStatus(p.status);
     setEditPriority(p.priority);
+  }
+
+  async function sendEmailResponse() {
+    if (!selected || !selected.submitter_email || !response.trim()) return;
+    setSendingEmail(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token ?? "";
+      const res = await fetch("/api/send-pqr-response", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          to: selected.submitter_email,
+          submitterName: selected.submitter_name ?? "",
+          subject: selected.subject,
+          description: selected.description,
+          pqrType: selected.type,
+          responseText: response.trim(),
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "Error al enviar");
+      showToast("✓ Correo enviado correctamente");
+      // Auto-save the response and mark as responded
+      await supabase.from("pqrs").update({
+        response: response.trim(),
+        responded_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }).eq("id", selected.id);
+      setPqrs(prev => prev.map(p => p.id === selected!.id ? { ...p, response: response.trim() } : p));
+    } catch (e: unknown) {
+      showToast((e instanceof Error ? e.message : null) ?? "Error al enviar el correo", false);
+    } finally {
+      setSendingEmail(false);
+    }
   }
 
   async function saveAll() {
@@ -183,6 +219,7 @@ export default function PlatformPqrsPage() {
 
   return (
     <div style={{ fontFamily: FF }}>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
 
       {/* Toast */}
       {toast && (
@@ -466,51 +503,123 @@ export default function PlatformPqrsPage() {
                   </div>
                 </div>
 
-                {/* Respuesta */}
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>Respuesta / Notas internas</div>
+                {/* Plantillas de respuesta */}
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 8 }}>
+                    Plantillas rápidas
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                    {[
+                      {
+                        label: "📬 Recibido",
+                        text: `Hemos recibido tu ${TYPE_META[selected.type]?.label?.toLowerCase() ?? "solicitud"} y queremos informarte que está siendo procesada por nuestro equipo.\n\nNos comprometemos a darte una respuesta detallada en los próximos días hábiles. Si tienes información adicional que quieras compartir, puedes responder a este correo.\n\nGracias por contactarnos.`,
+                      },
+                      {
+                        label: "🔍 En revisión",
+                        text: `Tu caso está siendo revisado en detalle por nuestro equipo. Queremos asegurarnos de brindarte la respuesta más completa y adecuada posible.\n\nTe notificaremos una vez tengamos una resolución. Agradecemos tu paciencia.`,
+                      },
+                      {
+                        label: "✅ Resuelto",
+                        text: `Nos complace informarte que hemos atendido y resuelto tu ${TYPE_META[selected.type]?.label?.toLowerCase() ?? "solicitud"}.\n\nEsperamos haber cubierto tus expectativas. Si tienes alguna pregunta adicional o el inconveniente persiste, no dudes en contactarnos nuevamente.\n\nQuedamos a tu disposición.`,
+                      },
+                      {
+                        label: "🙏 Disculpa",
+                        text: `Lamentamos sinceramente los inconvenientes que hayas experimentado. Entendemos tu frustración y queremos que sepas que tu experiencia es muy importante para nosotros.\n\nHemos tomado nota de lo ocurrido y estamos tomando las medidas necesarias para que no se repita. Agradecemos que nos lo hayas comunicado.`,
+                      },
+                      {
+                        label: "💡 Implementaremos",
+                        text: `¡Muchas gracias por tu sugerencia! La hemos revisado y nos parece muy valiosa para mejorar nuestra plataforma.\n\nLa hemos registrado en nuestro sistema de mejoras y será evaluada por el equipo de producto. Te notificaremos si es implementada en futuras actualizaciones.`,
+                      },
+                      {
+                        label: "⭐ Gracias",
+                        text: `¡Muchas gracias por tus palabras! Nos alegra mucho saber que hemos cumplido con tus expectativas.\n\nTu reconocimiento es un gran motivador para nuestro equipo. Continuaremos trabajando para brindarte el mejor servicio posible.`,
+                      },
+                    ].map(t => (
+                      <button key={t.label} type="button" onClick={() => setResponse(t.text)}
+                        style={{
+                          padding: "6px 11px", borderRadius: 8, fontSize: 11, fontWeight: 600,
+                          cursor: "pointer", fontFamily: FF,
+                          border: "1px solid rgba(255,255,255,0.1)",
+                          background: "rgba(255,255,255,0.06)",
+                          color: "rgba(255,255,255,0.55)",
+                          transition: "all .15s",
+                        }}>
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Textarea de respuesta */}
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+                      Respuesta
+                    </div>
+                    {response.trim() && (
+                      <button type="button" onClick={() => setResponse("")}
+                        style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", background: "none", border: "none", cursor: "pointer", fontFamily: FF }}>
+                        Limpiar
+                      </button>
+                    )}
+                  </div>
                   <textarea
                     value={response}
                     onChange={e => setResponse(e.target.value)}
-                    placeholder="Escribe la respuesta al PQR o notas internas de seguimiento..."
-                    rows={4}
+                    placeholder="Escribe la respuesta o elige una plantilla arriba..."
+                    rows={5}
                     style={{
                       width: "100%", padding: "10px 13px", borderRadius: 10,
                       border: "1px solid rgba(255,255,255,0.14)",
                       background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.9)",
                       fontSize: 13, boxSizing: "border-box", fontFamily: FF,
-                      resize: "vertical", minHeight: 90, outline: "none",
+                      resize: "vertical", minHeight: 110, outline: "none", lineHeight: 1.65,
                     }}
                   />
                   {selected.responded_at && (
                     <div style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 4 }}>
-                      Respondido el {fmtDate(selected.responded_at)}
+                      Última respuesta enviada el {fmtDate(selected.responded_at)}
                     </div>
                   )}
                 </div>
 
-                {/* Guardar */}
-                <div style={{ display: "flex", gap: 8 }}>
+                {/* Botones de acción */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {/* Enviar por email (primario si tiene email) */}
+                  {selected.submitter_email ? (
+                    <button
+                      onClick={sendEmailResponse}
+                      disabled={sendingEmail || !response.trim()}
+                      style={{
+                        padding: "13px 16px", borderRadius: 10,
+                        border: `1.5px solid ${sendingEmail || !response.trim() ? "rgba(96,165,250,0.15)" : "rgba(96,165,250,0.4)"}`,
+                        background: sendingEmail || !response.trim() ? "rgba(96,165,250,0.2)" : "rgba(96,165,250,0.22)",
+                        color: sendingEmail || !response.trim() ? "rgba(96,165,250,0.4)" : "#60a5fa",
+                        fontWeight: 800, fontSize: 14, cursor: sendingEmail || !response.trim() ? "not-allowed" : "pointer",
+                        fontFamily: FF, display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                        transition: "all .15s",
+                      }}>
+                      {sendingEmail
+                        ? <><span style={{ display: "inline-block", width: 14, height: 14, border: "2px solid rgba(96,165,250,0.3)", borderTopColor: "#60a5fa", borderRadius: "50%", animation: "spin .7s linear infinite" }} /> Enviando correo...</>
+                        : "✉ Enviar respuesta por email"}
+                    </button>
+                  ) : (
+                    <div style={{ padding: "10px 14px", borderRadius: 10, border: "1px solid rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)", fontSize: 12, color: "rgba(255,255,255,0.25)", textAlign: "center" }}>
+                      Sin email — el remitente no dejó dirección de contacto
+                    </div>
+                  )}
+
+                  {/* Guardar cambios (siempre disponible) */}
                   <button onClick={saveAll} disabled={saving}
                     style={{
-                      flex: 1, padding: "12px", borderRadius: 10, border: "none",
-                      background: saving ? "rgba(251,15,5,0.4)" : "#fb0f05",
-                      color: "white", fontWeight: 800, fontSize: 14, cursor: saving ? "not-allowed" : "pointer",
-                      fontFamily: FF, boxShadow: "0 4px 16px rgba(251,15,5,0.3)",
+                      padding: "11px", borderRadius: 10, border: "1px solid rgba(251,15,5,0.3)",
+                      background: saving ? "rgba(251,15,5,0.15)" : "rgba(251,15,5,0.18)",
+                      color: saving ? "rgba(255,255,255,0.35)" : "#ff7d72",
+                      fontWeight: 700, fontSize: 13, cursor: saving ? "not-allowed" : "pointer",
+                      fontFamily: FF, transition: "all .15s",
                     }}>
-                    {saving ? "Guardando..." : "💾 Guardar cambios"}
+                    {saving ? "Guardando..." : "💾 Guardar cambios (sin enviar)"}
                   </button>
-                  {selected.submitter_email && (
-                    <a href={`mailto:${selected.submitter_email}?subject=Re: ${encodeURIComponent(selected.subject)}&body=${encodeURIComponent(response)}`}
-                      style={{
-                        padding: "12px 16px", borderRadius: 10, border: "1px solid rgba(96,165,250,0.35)",
-                        background: "rgba(96,165,250,0.1)", color: "#60a5fa",
-                        fontWeight: 700, fontSize: 13, textDecoration: "none",
-                        display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap",
-                      }}>
-                      ✉ Email
-                    </a>
-                  )}
                 </div>
               </div>
 
