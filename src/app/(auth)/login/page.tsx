@@ -29,7 +29,9 @@ export default function LoginPage() {
     try {
       const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError) throw authError;
-      router.push("/admin");
+      // Hard navigation so the browser flushes the new auth cookies before the
+      // middleware runs — router.push() does a soft nav that can race the cookie.
+      window.location.href = "/admin";
     } catch {
       setError("Correo o contraseña incorrectos.");
     } finally {

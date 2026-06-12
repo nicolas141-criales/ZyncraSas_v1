@@ -896,7 +896,7 @@ export default function RegisterPage() {
                 </div>
               </div>
 
-              <button className={styles.button} onClick={() => router.push("/admin")}>
+              <button className={styles.button} onClick={() => { window.location.href = "/admin"; }}>
                 {t.goPanel}
               </button>
 
