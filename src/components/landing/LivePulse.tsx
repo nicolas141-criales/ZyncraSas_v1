@@ -13,6 +13,15 @@ import {
   GradientOrb,
   SectionTitle,
 } from "./primitives";
+import {
+  AnimatePresence,
+  Reveal,
+  TickerNumber,
+  TiltCard,
+  motion,
+} from "./motion";
+
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 type City = { name: string; x: number; y: number; weight: number };
 
@@ -81,6 +90,17 @@ const randomBooking = (): Booking => {
   };
 };
 
+/* Estado inicial determinista: idéntico en servidor y cliente (evita
+   hydration mismatch — la aleatoriedad solo entra tras el mount). */
+const INITIAL_BOOKINGS: Booking[] = [
+  { id: "seed-1", city: CITIES[0], biz: BIZ_TYPES[0], name: "Camila", when: "hace 8s" },
+  { id: "seed-2", city: CITIES[1], biz: BIZ_TYPES[1], name: "Juan", when: "hace 14s" },
+  { id: "seed-3", city: CITIES[2], biz: BIZ_TYPES[2], name: "Diana", when: "hace 21s" },
+  { id: "seed-4", city: CITIES[5], biz: BIZ_TYPES[3], name: "Andrés", when: "hace 29s" },
+  { id: "seed-5", city: CITIES[3], biz: BIZ_TYPES[4], name: "Sara", when: "hace 37s" },
+  { id: "seed-6", city: CITIES[7], biz: BIZ_TYPES[0], name: "Felipe", when: "hace 44s" },
+];
+
 const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
   <div
     style={{
@@ -99,6 +119,7 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
         background:
           "radial-gradient(circle, rgba(251,15,5,0.25), transparent 70%)",
         filter: "blur(40px)",
+        animation: "znGlowPulse 6s ease-in-out infinite",
       }}
     />
     <svg
@@ -118,7 +139,7 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
         strokeWidth="0.4"
       />
     </svg>
-    {CITIES.map((c) => {
+    {CITIES.map((c, ci) => {
       const isLast = lastPing && lastPing.city.name === c.name;
       return (
         <div
@@ -139,6 +160,7 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
               borderRadius: "50%",
               background: "rgba(251,15,5,0.9)",
               boxShadow: "0 0 12px rgba(251,15,5,0.8)",
+              animation: `pulseGlow ${2.2 + (ci % 5) * 0.35}s ease-in-out ${ci * 0.18}s infinite`,
             }}
           />
           {isLast && (
@@ -161,6 +183,30 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
                   animation: "pingRing 1.6s ease-out 0.4s infinite",
                 }}
               />
+              <motion.div
+                initial={{ opacity: 0, y: 6, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.35, ease: EASE }}
+                key={lastPing.id}
+                style={{
+                  position: "absolute",
+                  left: "50%",
+                  bottom: "calc(100% + 8px)",
+                  x: "-50%",
+                  padding: "3px 8px",
+                  borderRadius: 7,
+                  background: "var(--bg-elev)",
+                  border: "1px solid rgba(0,39,254,0.35)",
+                  boxShadow: "0 8px 20px -8px rgba(0,39,254,0.4)",
+                  fontSize: 9.5,
+                  fontFamily: "var(--font-mono)",
+                  whiteSpace: "nowrap",
+                  color: "var(--fg)",
+                  zIndex: 2,
+                }}
+              >
+                {c.name} · +1
+              </motion.div>
             </>
           )}
         </div>
@@ -170,16 +216,11 @@ const ColombiaMap = ({ lastPing }: { lastPing: Booking | null }) => (
 );
 
 export default function LivePulseSection() {
-  const [bookings, setBookings] = useState<Booking[]>(() =>
-    Array.from({ length: 6 }).map(randomBooking),
+  const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
+  const [lastPing, setLastPing] = useState<Booking | null>(
+    INITIAL_BOOKINGS[INITIAL_BOOKINGS.length - 1],
   );
-  const [lastPing, setLastPing] = useState<Booking | null>(null);
   const [counter, setCounter] = useState(1248);
-
-  useEffect(() => {
-    setLastPing(bookings[bookings.length - 1]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -195,20 +236,26 @@ export default function LivePulseSection() {
     <section
       style={{ padding: "72px 0", position: "relative", overflowX: "clip" }}
     >
-      <GradientOrb color="#fb0f05" size={600} x="-20%" y="20%" opacity={0.12} />
-      <GradientOrb color="#0027fe" size={500} x="80%" y="60%" opacity={0.10} />
+      <div className="zn-orb-drift" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <GradientOrb color="#fb0f05" size={600} x="-20%" y="20%" opacity={0.12} />
+      </div>
+      <div className="zn-orb-drift-2" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <GradientOrb color="#0027fe" size={500} x="80%" y="60%" opacity={0.10} />
+      </div>
       <Container max={1240}>
-        <SectionTitle
-          eyebrow="Pulso en vivo"
-          title={
-            <>
-              Mientras lees esto, alguien reserva en{" "}
-              <span className="gradient-text">Zyncra.</span>
-            </>
-          }
-          sub="Más de 500 negocios en 24 ciudades de Colombia. El mapa se actualiza en tiempo real."
-          align="center"
-        />
+        <Reveal>
+          <SectionTitle
+            eyebrow="Pulso en vivo"
+            title={
+              <>
+                Mientras lees esto, alguien reserva en{" "}
+                <span className="gradient-text">Zyncra.</span>
+              </>
+            }
+            sub="Más de 500 negocios en 24 ciudades de Colombia. El mapa se actualiza en tiempo real."
+            align="center"
+          />
+        </Reveal>
 
         <div
           style={{
@@ -219,83 +266,105 @@ export default function LivePulseSection() {
           }}
           className="pulse-grid"
         >
-          <div
-            style={{
-              padding: 36,
-              background:
-                "linear-gradient(180deg, rgba(20,15,30,0.03), rgba(20,15,30,0.005))",
-              border: "1px solid var(--line)",
-              borderRadius: 24,
-              position: "relative",
-            }}
-          >
-            <div
+          <Reveal y={34} style={{ display: "flex" }}>
+            <TiltCard
+              max={2.5}
+              lift={0}
+              spotlight="rgba(251,15,5,0.05)"
               style={{
-                position: "absolute",
-                top: 20,
-                left: 20,
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "6px 12px",
-                background: "rgba(52,211,153,0.10)",
-                border: "1px solid rgba(52,211,153,0.3)",
-                borderRadius: 999,
-                fontSize: 11,
-                color: "var(--green)",
-                fontFamily: "var(--font-mono)",
+                flex: 1,
+                padding: 36,
+                background:
+                  "linear-gradient(180deg, rgba(20,15,30,0.03), rgba(20,15,30,0.005))",
+                border: "1px solid var(--line)",
+                borderRadius: 24,
+                position: "relative",
               }}
             >
-              <span
+              <div
                 style={{
-                  width: 6,
-                  height: 6,
+                  position: "absolute",
+                  top: 20,
+                  left: 20,
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  padding: "6px 12px",
+                  background: "rgba(52,211,153,0.10)",
+                  border: "1px solid rgba(52,211,153,0.3)",
                   borderRadius: 999,
-                  background: "var(--green)",
-                  animation: "pulseGlow 1s infinite",
-                }}
-              />
-              EN VIVO · COLOMBIA
-            </div>
-            <div
-              style={{
-                position: "absolute",
-                top: 20,
-                right: 20,
-                fontFamily: "var(--font-mono)",
-                fontSize: 12,
-                color: "var(--fg-mute)",
-              }}
-            >
-              {lastPing && `→ ${lastPing.city.name}`}
-            </div>
-            <ColombiaMap lastPing={lastPing} />
-            <div style={{ textAlign: "center", marginTop: 16 }}>
-              <div
-                style={{
                   fontSize: 11,
-                  color: "var(--fg-mute)",
+                  color: "var(--green)",
                   fontFamily: "var(--font-mono)",
-                  letterSpacing: "0.05em",
-                  marginBottom: 4,
+                  zIndex: 2,
                 }}
               >
-                RESERVAS HOY
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 999,
+                    background: "var(--green)",
+                    animation: "pulseGlow 1s infinite",
+                    boxShadow: "0 0 8px var(--green)",
+                  }}
+                />
+                EN VIVO · COLOMBIA
               </div>
               <div
-                className="mono"
                 style={{
-                  fontSize: 36,
-                  fontWeight: 500,
-                  letterSpacing: "-0.03em",
+                  position: "absolute",
+                  top: 20,
+                  right: 20,
+                  fontFamily: "var(--font-mono)",
+                  fontSize: 12,
+                  color: "var(--fg-mute)",
+                  zIndex: 2,
                 }}
               >
-                {counter.toLocaleString("es-CO")}
+                <AnimatePresence mode="wait" initial={false}>
+                  {lastPing && (
+                    <motion.span
+                      key={lastPing.id}
+                      initial={{ opacity: 0, y: 6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      transition={{ duration: 0.3, ease: EASE }}
+                      style={{ display: "inline-block" }}
+                    >
+                      → {lastPing.city.name}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
               </div>
-            </div>
-          </div>
+              <ColombiaMap lastPing={lastPing} />
+              <div style={{ textAlign: "center", marginTop: 16 }}>
+                <div
+                  style={{
+                    fontSize: 11,
+                    color: "var(--fg-mute)",
+                    fontFamily: "var(--font-mono)",
+                    letterSpacing: "0.05em",
+                    marginBottom: 4,
+                  }}
+                >
+                  RESERVAS HOY
+                </div>
+                <div
+                  className="mono"
+                  style={{
+                    fontSize: 36,
+                    fontWeight: 500,
+                    letterSpacing: "-0.03em",
+                  }}
+                >
+                  <TickerNumber value={counter} />
+                </div>
+              </div>
+            </TiltCard>
+          </Reveal>
 
-          <div>
+          <Reveal y={34} delay={0.12}>
             <div
               style={{
                 fontSize: 12,
@@ -322,81 +391,95 @@ export default function LivePulseSection() {
                   "linear-gradient(180deg, black 0%, black 85%, transparent 100%)",
               }}
             >
-              {bookings.map((b, i) => (
-                <div
-                  key={b.id}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: "14px 16px",
-                    background:
-                      i === 0
-                        ? `linear-gradient(90deg, ${b.biz.c}1a, transparent)`
-                        : "rgba(20,15,30,0.025)",
-                    border:
-                      "1px solid " +
-                      (i === 0 ? `${b.biz.c}55` : "var(--line)"),
-                    borderRadius: 12,
-                    animation: i === 0 ? "fadeUp .35s ease" : "none",
-                    opacity: Math.max(0.4, 1 - i * 0.08),
-                  }}
-                >
-                  <div
+              <AnimatePresence initial={false}>
+                {bookings.map((b, i) => (
+                  <motion.div
+                    key={b.id}
+                    layout
+                    initial={{ opacity: 0, y: -26, scale: 0.96 }}
+                    animate={{
+                      opacity: Math.max(0.4, 1 - i * 0.08),
+                      y: 0,
+                      scale: 1,
+                    }}
+                    exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.25 } }}
+                    transition={{ duration: 0.5, ease: EASE }}
                     style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 8,
-                      background: `${b.biz.c}22`,
-                      border: `1px solid ${b.biz.c}55`,
-                      display: "grid",
-                      placeItems: "center",
-                      color: b.biz.c,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: "14px 16px",
+                      background:
+                        i === 0
+                          ? `linear-gradient(90deg, ${b.biz.c}1a, transparent)`
+                          : "rgba(20,15,30,0.025)",
+                      border:
+                        "1px solid " +
+                        (i === 0 ? `${b.biz.c}55` : "var(--line)"),
+                      borderRadius: 12,
+                      boxShadow:
+                        i === 0 ? `0 8px 30px -14px ${b.biz.c}66` : "none",
                     }}
                   >
-                    {b.biz.icon}
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
                     <div
                       style={{
-                        fontSize: 13,
-                        fontWeight: 500,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
+                        width: 32,
+                        height: 32,
+                        borderRadius: 8,
+                        background: `${b.biz.c}22`,
+                        border: `1px solid ${b.biz.c}55`,
+                        display: "grid",
+                        placeItems: "center",
+                        color: b.biz.c,
                       }}
                     >
-                      {b.name} reservó · {b.biz.label}
+                      {b.biz.icon}
                     </div>
-                    <div
-                      style={{
-                        fontSize: 11.5,
-                        color: "var(--fg-mute)",
-                        fontFamily: "var(--font-mono)",
-                      }}
-                    >
-                      {b.city.name} · {b.when}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div
+                        style={{
+                          fontSize: 13,
+                          fontWeight: 500,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {b.name} reservó · {b.biz.label}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: 11.5,
+                          color: "var(--fg-mute)",
+                          fontFamily: "var(--font-mono)",
+                        }}
+                      >
+                        {b.city.name} · {b.when}
+                      </div>
                     </div>
-                  </div>
-                  {i === 0 && (
-                    <span
-                      style={{
-                        fontSize: 9.5,
-                        padding: "3px 7px",
-                        background: "rgba(52,211,153,0.15)",
-                        color: "var(--green)",
-                        borderRadius: 999,
-                        fontFamily: "var(--font-mono)",
-                        letterSpacing: "0.04em",
-                      }}
-                    >
-                      NUEVO
-                    </span>
-                  )}
-                </div>
-              ))}
+                    {i === 0 && (
+                      <motion.span
+                        initial={{ opacity: 0, scale: 0.6 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ delay: 0.2, duration: 0.3, ease: EASE }}
+                        style={{
+                          fontSize: 9.5,
+                          padding: "3px 7px",
+                          background: "rgba(52,211,153,0.15)",
+                          color: "var(--green)",
+                          borderRadius: 999,
+                          fontFamily: "var(--font-mono)",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        NUEVO
+                      </motion.span>
+                    )}
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
-          </div>
+          </Reveal>
         </div>
       </Container>
     </section>

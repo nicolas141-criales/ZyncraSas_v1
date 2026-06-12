@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   IconCalendar,
   IconCard,
@@ -14,6 +14,7 @@ import {
   GradientOrb,
   SectionTitle,
 } from "./primitives";
+import { FadeSwitch, Reveal, motion } from "./motion";
 
 // ============ DEMO 1: Live Agenda ============
 type Appt = {
@@ -683,6 +684,28 @@ const DemoPos = () => {
   );
 };
 
+// ============ Skeleton de carga ============
+const DemoSkeleton = () => (
+  <div style={{ padding: 24, display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 20 }}>
+    <div>
+      <div className="zn-skeleton" style={{ width: "42%", height: 22, marginBottom: 10 }} />
+      <div className="zn-skeleton" style={{ width: "26%", height: 12, marginBottom: 22 }} />
+      {[92, 100, 78, 96, 64].map((w, i) => (
+        <div
+          key={i}
+          className="zn-skeleton"
+          style={{ width: `${w}%`, height: 46, marginBottom: 10, borderRadius: 10 }}
+        />
+      ))}
+    </div>
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      {[88, 110, 88].map((h, i) => (
+        <div key={i} className="zn-skeleton" style={{ width: "100%", height: h, borderRadius: 12 }} />
+      ))}
+    </div>
+  </div>
+);
+
 // ============ Wrapper ============
 export default function DemosSection() {
   const tabs = [
@@ -691,116 +714,192 @@ export default function DemosSection() {
     { id: "pos", label: "POS + Factura DIAN", icon: <IconCard size={16} />, sub: "Cobra y factura en segundos, sin doble registro", node: <DemoPos /> },
   ];
   const [active, setActive] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const loadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const switchTab = (i: number) => {
+    if (i === active) return;
+    setActive(i);
+    setLoading(true);
+    if (loadTimer.current) clearTimeout(loadTimer.current);
+    loadTimer.current = setTimeout(() => setLoading(false), 600);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (loadTimer.current) clearTimeout(loadTimer.current);
+    };
+  }, []);
 
   return (
     <section id="demo" style={{ padding: "72px 0", position: "relative", overflowX: "clip" }}>
-      <GradientOrb color="#0027fe" size={700} x="-15%" y="40%" opacity={0.16} />
-      <GradientOrb color="#fb0f05" size={600} x="80%" y="10%" opacity={0.14} />
+      <div className="zn-orb-drift" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <GradientOrb color="#0027fe" size={700} x="-15%" y="40%" opacity={0.16} />
+      </div>
+      <div className="zn-orb-drift-2" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <GradientOrb color="#fb0f05" size={600} x="80%" y="10%" opacity={0.14} />
+      </div>
 
       <Container max={1240}>
-        <SectionTitle
-          eyebrow="Demos en vivo"
-          title={
-            <>
-              El producto funciona, <span className="serif">no solo se ve bonito.</span>
-            </>
-          }
-          sub="Mira cada herramienta en acción. Sin instalar nada, sin registrarte. Solo dale play."
-          align="center"
-        />
+        <Reveal>
+          <SectionTitle
+            eyebrow="Demos en vivo"
+            title={
+              <>
+                El producto funciona, <span className="serif">no solo se ve bonito.</span>
+              </>
+            }
+            sub="Mira cada herramienta en acción. Sin instalar nada, sin registrarte. Solo dale play."
+            align="center"
+          />
+        </Reveal>
 
-        <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+        <Reveal delay={0.08} y={16}>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 32 }}>
+            <div
+              style={{
+                display: "inline-flex",
+                padding: 6,
+                background: "rgba(20,15,30,0.04)",
+                border: "1px solid var(--line)",
+                borderRadius: 14,
+                gap: 4,
+              }}
+              className="demo-tabs"
+            >
+              {tabs.map((t, i) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  onClick={() => switchTab(i)}
+                  className="zn-demo-tab"
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "10px 16px",
+                    background: "transparent",
+                    border: "1px solid transparent",
+                    borderRadius: 10,
+                    color: active === i ? "var(--fg)" : "var(--fg-dim)",
+                    fontSize: 13.5,
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    fontFamily: "var(--font-sans)",
+                    position: "relative",
+                  }}
+                >
+                  {active === i && (
+                    <motion.span
+                      layoutId="zn-demo-tab-pill"
+                      transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                      style={{
+                        position: "absolute",
+                        inset: 0,
+                        background:
+                          "linear-gradient(135deg, rgba(251,15,5,0.2), rgba(0,39,254,0.15))",
+                        border: "1px solid var(--line-strong)",
+                        borderRadius: 10,
+                        boxShadow: "0 6px 20px -8px rgba(0,39,254,0.35)",
+                      }}
+                    />
+                  )}
+                  <span
+                    style={{
+                      position: "relative",
+                      zIndex: 1,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: 8,
+                    }}
+                  >
+                    {t.icon}
+                    {t.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={0.14} y={44}>
           <div
             style={{
-              display: "inline-flex",
-              padding: 6,
-              background: "rgba(20,15,30,0.04)",
-              border: "1px solid var(--line)",
-              borderRadius: 14,
-              gap: 4,
+              position: "relative",
+              background: "linear-gradient(180deg, rgba(20,15,30,0.03) 0%, rgba(20,15,30,0.01) 100%)",
+              border: "1px solid var(--line-strong)",
+              borderRadius: 24,
+              minHeight: 560,
+              overflow: "hidden",
+              boxShadow: "0 40px 80px -30px rgba(20,15,30,0.10), 0 0 100px -40px rgba(0,39,254,0.3)",
             }}
-            className="demo-tabs"
           >
-            {tabs.map((t, i) => (
-              <button
-                key={t.id}
-                type="button"
-                onClick={() => setActive(i)}
+            <div
+              style={{
+                padding: "10px 16px",
+                borderBottom: "1px solid var(--line)",
+                display: "flex",
+                alignItems: "center",
+                gap: 14,
+                background: "rgba(20,15,30,0.02)",
+              }}
+            >
+              <div style={{ display: "flex", gap: 6 }}>
+                {["#FF5F57", "#FEBC2E", "#28C840"].map((c) => (
+                  <span key={c} style={{ width: 10, height: 10, borderRadius: 999, background: c }} />
+                ))}
+              </div>
+              <div
                 style={{
+                  flex: 1,
+                  background: "rgba(20,15,30,0.04)",
+                  border: "1px solid var(--line)",
+                  padding: "4px 12px",
+                  borderRadius: 8,
+                  fontSize: 11.5,
+                  color: "var(--fg-mute)",
+                  fontFamily: "var(--font-mono)",
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  padding: "10px 16px",
-                  background:
-                    active === i
-                      ? "linear-gradient(135deg, rgba(251,15,5,0.2), rgba(0,39,254,0.15))"
-                      : "transparent",
-                  border: active === i ? "1px solid var(--line-strong)" : "1px solid transparent",
-                  borderRadius: 10,
-                  color: active === i ? "var(--fg)" : "var(--fg-dim)",
-                  fontSize: 13.5,
-                  fontWeight: 500,
-                  cursor: "pointer",
-                  fontFamily: "var(--font-sans)",
-                  transition: "all .25s ease",
                 }}
               >
-                {t.icon}
-                {t.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div
-          style={{
-            position: "relative",
-            background: "linear-gradient(180deg, rgba(20,15,30,0.03) 0%, rgba(20,15,30,0.01) 100%)",
-            border: "1px solid var(--line-strong)",
-            borderRadius: 24,
-            minHeight: 560,
-            overflow: "hidden",
-            boxShadow: "0 40px 80px -30px rgba(20,15,30,0.10), 0 0 100px -40px rgba(0,39,254,0.3)",
-          }}
-        >
-          <div
-            style={{
-              padding: "10px 16px",
-              borderBottom: "1px solid var(--line)",
-              display: "flex",
-              alignItems: "center",
-              gap: 14,
-              background: "rgba(20,15,30,0.02)",
-            }}
-          >
-            <div style={{ display: "flex", gap: 6 }}>
-              {["#FF5F57", "#FEBC2E", "#28C840"].map((c) => (
-                <span key={c} style={{ width: 10, height: 10, borderRadius: 999, background: c }} />
-              ))}
+                <IconShield size={11} style={{ color: "var(--green)" }} />
+                <FadeSwitch id={tabs[active].id} style={{ display: "inline-flex" }}>
+                  <span>app.zyncra.com/{tabs[active].id}</span>
+                </FadeSwitch>
+              </div>
+              <span
+                style={{
+                  fontSize: 11,
+                  color: "var(--fg-mute)",
+                  fontFamily: "var(--font-mono)",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 6,
+                }}
+              >
+                <span
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 999,
+                    background: "var(--green)",
+                    boxShadow: "0 0 8px var(--green)",
+                    animation: "pulseGlow 1.4s ease-in-out infinite",
+                  }}
+                />
+                en vivo
+              </span>
             </div>
-            <div
-              style={{
-                flex: 1,
-                background: "rgba(20,15,30,0.04)",
-                border: "1px solid var(--line)",
-                padding: "4px 12px",
-                borderRadius: 8,
-                fontSize: 11.5,
-                color: "var(--fg-mute)",
-                fontFamily: "var(--font-mono)",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-              }}
-            >
-              <IconShield size={11} style={{ color: "var(--green)" }} />
-              app.zyncra.com/{tabs[active].id}
-            </div>
-            <span style={{ fontSize: 11, color: "var(--fg-mute)", fontFamily: "var(--font-mono)" }}>● en vivo</span>
-          </div>
 
-          <div style={{ minHeight: 480 }}>{tabs[active].node}</div>
-        </div>
+            <div style={{ minHeight: 480 }}>
+              <FadeSwitch id={loading ? `sk-${active}` : `tab-${active}`}>
+                {loading ? <DemoSkeleton /> : tabs[active].node}
+              </FadeSwitch>
+            </div>
+          </div>
+        </Reveal>
 
         <div
           style={{
@@ -811,7 +910,7 @@ export default function DemosSection() {
             fontStyle: "italic",
           }}
         >
-          {tabs[active].sub}
+          <FadeSwitch id={`sub-${active}`}>{tabs[active].sub}</FadeSwitch>
         </div>
       </Container>
     </section>

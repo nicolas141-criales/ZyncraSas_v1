@@ -7,6 +7,9 @@ import {
   GradientOrb,
   SectionTitle,
 } from "./primitives";
+import { AnimatePresence, Reveal, motion } from "./motion";
+
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 
 const TIMELINE = [
   {
@@ -116,45 +119,76 @@ const StoryRow = ({
               : "rgba(0,39,254,0.4)"
             : "transparent"),
         borderRadius: 16,
-        opacity: active ? 1 : 0.35,
+        opacity: active ? (isWithout ? 0.92 : 1) : 0.35,
         transform: active ? "scale(1.02)" : "scale(0.98)",
         transition: "all .5s cubic-bezier(.2,.7,.2,1)",
         position: "relative",
+        filter: isWithout ? "saturate(0.55)" : "none",
+        boxShadow:
+          active && !isWithout
+            ? "0 24px 70px -28px rgba(0,39,254,0.45), 0 0 50px -24px rgba(251,15,5,0.3)"
+            : "none",
+        overflow: "hidden",
+        minHeight: 132,
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          marginBottom: 8,
-        }}
-      >
-        {isWithout ? (
-          <IconX size={14} style={{ color: "var(--fg-mute)" }} />
-        ) : (
-          <IconCheck size={14} style={{ color: "var(--green)" }} />
-        )}
-        <span
+      {!isWithout && active && (
+        <div
+          aria-hidden
           style={{
-            fontSize: 15,
-            fontWeight: 500,
-            letterSpacing: "-0.01em",
+            position: "absolute",
+            top: -1,
+            left: 14,
+            right: 14,
+            height: 1,
+            background:
+              "linear-gradient(90deg, transparent, rgba(0,39,254,0.7), transparent)",
           }}
+        />
+      )}
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={item.hour}
+          initial={{ opacity: 0, y: isWithout ? 14 : 18, filter: "blur(6px)" }}
+          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+          exit={{ opacity: 0, y: -12, filter: "blur(4px)" }}
+          transition={{ duration: 0.4, ease: EASE }}
         >
-          {content.title}
-        </span>
-      </div>
-      <p
-        style={{
-          margin: 0,
-          color: isWithout ? "var(--fg-mute)" : "var(--fg-dim)",
-          fontSize: 13.5,
-          lineHeight: 1.5,
-        }}
-      >
-        {content.text}
-      </p>
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              marginBottom: 8,
+            }}
+          >
+            {isWithout ? (
+              <IconX size={14} style={{ color: "var(--fg-mute)" }} />
+            ) : (
+              <IconCheck size={14} style={{ color: "var(--green)" }} />
+            )}
+            <span
+              style={{
+                fontSize: 15,
+                fontWeight: 500,
+                letterSpacing: "-0.01em",
+              }}
+            >
+              {content.title}
+            </span>
+          </div>
+          <p
+            style={{
+              margin: 0,
+              color: isWithout ? "var(--fg-mute)" : "var(--fg-dim)",
+              fontSize: 13.5,
+              lineHeight: 1.5,
+            }}
+          >
+            {content.text}
+          </p>
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 };
@@ -185,17 +219,19 @@ export default function ScrollStorySection() {
   return (
     <section style={{ position: "relative", background: "var(--bg)" }}>
       <Container max={1240}>
-        <SectionTitle
-          eyebrow="Un día con/sin Zyncra"
-          title={
-            <>
-              Misma persona. Misma jornada.{" "}
-              <span className="gradient-text">Dos universos.</span>
-            </>
-          }
-          sub="Haz scroll. Las horas pasan. Mira lo que vives sin Zyncra a la izquierda, y lo que podrías estar viviendo a la derecha."
-          align="center"
-        />
+        <Reveal>
+          <SectionTitle
+            eyebrow="Un día con/sin Zyncra"
+            title={
+              <>
+                Misma persona. Misma jornada.{" "}
+                <span className="gradient-text">Dos universos.</span>
+              </>
+            }
+            sub="Haz scroll. Las horas pasan. Mira lo que vives sin Zyncra a la izquierda, y lo que podrías estar viviendo a la derecha."
+            align="center"
+          />
+        </Reveal>
       </Container>
 
       <div
@@ -293,7 +329,20 @@ export default function ScrollStorySection() {
                     background:
                       "linear-gradient(180deg, transparent, var(--line-strong) 20%, var(--line-strong) 80%, transparent)",
                   }}
-                />
+                >
+                  <motion.div
+                    animate={{
+                      height: `${(activeIdx / (TIMELINE.length - 1)) * 100}%`,
+                    }}
+                    transition={{ duration: 0.55, ease: EASE }}
+                    style={{
+                      width: "100%",
+                      background: "linear-gradient(180deg, #fb0f05, #0027fe)",
+                      boxShadow: "0 0 14px rgba(0,39,254,0.5)",
+                      borderRadius: 2,
+                    }}
+                  />
+                </div>
                 {TIMELINE.map((t, i) => {
                   const isActive = i === activeIdx;
                   const isPast = i < activeIdx;
@@ -419,7 +468,9 @@ export default function ScrollStorySection() {
                     width: `${((activeIdx + 1) / TIMELINE.length) * 100}%`,
                     height: "100%",
                     background: "linear-gradient(90deg, #fb0f05, #0027fe)",
-                    transition: "width .4s ease",
+                    transition: "width .5s cubic-bezier(.22,1,.36,1)",
+                    boxShadow: "0 0 16px rgba(0,39,254,0.55)",
+                    borderRadius: 999,
                   }}
                 />
               </div>

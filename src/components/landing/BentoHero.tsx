@@ -17,6 +17,40 @@ import {
   GradientOrb,
   GridBackdrop,
 } from "./primitives";
+import {
+  LineReveal,
+  Magnetic,
+  Parallax,
+  Particles,
+  TickerNumber,
+  TiltCard,
+  motion,
+} from "./motion";
+
+const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
+
+/* Entrada secuencial del hero (carga de página) */
+const HeroFade = ({
+  children,
+  delay = 0,
+  style,
+  className,
+}: {
+  children: ReactNode;
+  delay?: number;
+  style?: CSSProperties;
+  className?: string;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
+    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+    transition={{ duration: 0.7, delay, ease: EASE }}
+    style={style}
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
 
 const BentoHeroTile = ({
   children,
@@ -26,6 +60,7 @@ const BentoHeroTile = ({
   style = {},
   padding = 18,
   className,
+  index = 0,
 }: {
   children: ReactNode;
   span?: number;
@@ -34,38 +69,53 @@ const BentoHeroTile = ({
   style?: CSSProperties;
   padding?: number;
   className?: string;
+  index?: number;
 }) => (
-  <div
+  <motion.div
     className={className}
+    initial={{ opacity: 0, y: 34, scale: 0.96 }}
+    animate={{ opacity: 1, y: 0, scale: 1 }}
+    transition={{ duration: 0.75, delay: 0.55 + index * 0.09, ease: EASE }}
     style={{
       gridColumn: `span ${span}`,
       gridRow: `span ${rowSpan}`,
-      position: "relative",
-      background:
-        "linear-gradient(180deg, rgba(20,15,30,0.04) 0%, rgba(20,15,30,0.01) 100%)",
-      border: "1px solid var(--line)",
-      borderRadius: 18,
-      padding,
-      overflow: "hidden",
-      transition: "border-color .25s ease, transform .25s ease",
-      backdropFilter: "blur(10px)",
+      display: "flex",
       minHeight: 160,
-      ...style,
     }}
   >
-    <div
-      aria-hidden
+    <TiltCard
+      max={4}
+      lift={-4}
+      spotlight={`${accent}16`}
+      className="zn-tile"
       style={{
-        position: "absolute",
-        top: -1,
-        left: 12,
-        right: 12,
-        height: 1,
-        background: `linear-gradient(90deg, transparent, ${accent}aa, transparent)`,
+        flex: 1,
+        position: "relative",
+        background:
+          "linear-gradient(180deg, rgba(20,15,30,0.04) 0%, rgba(20,15,30,0.01) 100%)",
+        border: "1px solid var(--line)",
+        borderRadius: 18,
+        padding,
+        overflow: "hidden",
+        backdropFilter: "blur(10px)",
+        minHeight: 160,
+        ...style,
       }}
-    />
-    {children}
-  </div>
+    >
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: -1,
+          left: 12,
+          right: 12,
+          height: 1,
+          background: `linear-gradient(90deg, transparent, ${accent}aa, transparent)`,
+        }}
+      />
+      {children}
+    </TiltCard>
+  </motion.div>
 );
 
 type AgendaItem = { t: string; s: string; c: string; d: number };
@@ -328,7 +378,7 @@ const TileRevenue = () => {
           lineHeight: 1,
         }}
       >
-        ${(r / 1000).toFixed(0)}.{(r % 1000).toString().padStart(3, "0")}
+        $<TickerNumber value={r} />
       </div>
       <div
         style={{
@@ -369,6 +419,8 @@ const TileRevenue = () => {
                   ? "linear-gradient(180deg, #0027fe, #fb0f05)"
                   : "rgba(0,39,254,0.25)",
               borderRadius: 2,
+              transformOrigin: "bottom",
+              animation: `znBarGrow .7s ${1.1 + i * 0.05}s cubic-bezier(.22,1,.36,1) both`,
             }}
           />
         ))}
@@ -507,11 +559,18 @@ const TileReviews = () => (
       </span>
       <div style={{ display: "flex", gap: 2 }}>
         {Array.from({ length: 5 }).map((_, i) => (
-          <IconStar
+          <motion.span
             key={i}
-            size={11}
-            style={{ color: "var(--amber)", fill: "var(--amber)" } as CSSProperties}
-          />
+            initial={{ opacity: 0, scale: 0, rotate: -30 }}
+            animate={{ opacity: 1, scale: 1, rotate: 0 }}
+            transition={{ delay: 1.4 + i * 0.1, duration: 0.45, ease: EASE }}
+            style={{ display: "inline-flex" }}
+          >
+            <IconStar
+              size={11}
+              style={{ color: "var(--amber)", fill: "var(--amber)" } as CSSProperties}
+            />
+          </motion.span>
         ))}
       </div>
     </div>
@@ -541,9 +600,11 @@ const TileReviews = () => (
                 overflow: "hidden",
               }}
             >
-              <div
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${w}%` }}
+                transition={{ delay: 1.5, duration: 0.9, ease: EASE }}
                 style={{
-                  width: `${w}%`,
                   height: "100%",
                   background: "var(--amber)",
                 }}
@@ -687,9 +748,14 @@ export default function BentoHero() {
       }}
     >
       <GradientOrb color="#fb0f05" size={900} x="-15%" y="-30%" opacity={0.28} />
-      <GradientOrb color="#0027fe" size={700} x="70%" y="0%" opacity={0.22} />
-      <GradientOrb color="#0027fe" size={500} x="40%" y="60%" opacity={0.08} />
+      <div className="zn-orb-drift" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <GradientOrb color="#0027fe" size={700} x="70%" y="0%" opacity={0.22} />
+      </div>
+      <div className="zn-orb-drift-2" style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+        <GradientOrb color="#0027fe" size={500} x="40%" y="60%" opacity={0.08} />
+      </div>
       <GridBackdrop style={{ opacity: 0.5 }} />
+      <Particles count={24} />
 
       <Container max={1240}>
         <div
@@ -700,37 +766,38 @@ export default function BentoHero() {
             zIndex: 2,
           }}
         >
-          <div
-            className="hero-chip"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "6px 6px 6px 14px",
-              border: "1px solid var(--line-strong)",
-              background: "rgba(0,39,254,0.06)",
-              borderRadius: 999,
-              fontSize: 12.5,
-              marginBottom: 28,
-              fontFamily: "var(--font-mono)",
-              letterSpacing: "0.02em",
-            }}
-          >
-            <span style={{ color: "var(--violet-2)" }}>
-              ● Zyncra Business Suite · 2026
-            </span>
-            <span
+          <HeroFade delay={0.05}>
+            <div
+              className="hero-chip"
               style={{
-                padding: "3px 9px",
-                background: "rgba(20,15,30,0.08)",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "6px 6px 6px 14px",
+                border: "1px solid var(--line-strong)",
+                background: "rgba(0,39,254,0.06)",
                 borderRadius: 999,
-                fontSize: 10.5,
-                color: "var(--fg-dim)",
+                fontSize: 12.5,
+                fontFamily: "var(--font-mono)",
+                letterSpacing: "0.02em",
               }}
             >
-              NUEVO
-            </span>
-          </div>
+              <span style={{ color: "var(--violet-2)" }}>
+                ● Zyncra Business Suite · 2026
+              </span>
+              <span
+                style={{
+                  padding: "3px 9px",
+                  background: "rgba(20,15,30,0.08)",
+                  borderRadius: 999,
+                  fontSize: 10.5,
+                  color: "var(--fg-dim)",
+                }}
+              >
+                NUEVO
+              </span>
+            </div>
+          </HeroFade>
 
           <h1
             style={{
@@ -739,90 +806,107 @@ export default function BentoHero() {
               letterSpacing: "-0.05em",
               fontWeight: 500,
               margin: 0,
+              marginTop: 28,
               marginBottom: 26,
               maxWidth: 1100,
               marginLeft: "auto",
               marginRight: "auto",
             }}
           >
-            Tu negocio,{" "}
-            <span className="gradient-text">en piloto</span>{" "}
-            <span className="gradient-text">automático.</span>
+            <LineReveal delay={0.12}>Tu negocio,</LineReveal>{" "}
+            <LineReveal delay={0.22}>
+              <span className="gradient-text-animated">en piloto</span>
+            </LineReveal>{" "}
+            <LineReveal delay={0.32}>
+              <span className="gradient-text-animated">automático.</span>
+            </LineReveal>
             <br />
-            <span className="serif" style={{ fontWeight: 400, opacity: 0.92 }}>
-              Tú, libre.
-            </span>
+            <LineReveal delay={0.48}>
+              <span className="serif" style={{ fontWeight: 400, opacity: 0.92 }}>
+                Tú, libre.
+              </span>
+            </LineReveal>
           </h1>
 
-          <p
-            style={{
-              fontSize: "clamp(16px, 1.4vw, 19px)",
-              lineHeight: 1.5,
-              color: "var(--fg-dim)",
-              maxWidth: 620,
-              margin: "0 auto 32px",
-            }}
-          >
-            Agenda, marketing por WhatsApp, POS y facturación DIAN — todo en una
-            sola plataforma. Pensada para barberías, spas, salones y profesionales
-            que viven de sus citas.
-          </p>
+          <HeroFade delay={0.55}>
+            <p
+              style={{
+                fontSize: "clamp(16px, 1.4vw, 19px)",
+                lineHeight: 1.5,
+                color: "var(--fg-dim)",
+                maxWidth: 620,
+                margin: "0 auto 32px",
+              }}
+            >
+              Agenda, marketing por WhatsApp, POS y facturación DIAN — todo en una
+              sola plataforma. Pensada para barberías, spas, salones y profesionales
+              que viven de sus citas.
+            </p>
+          </HeroFade>
 
-          <div
-            className="hero-actions"
-            style={{
-              display: "flex",
-              justifyContent: "center",
-              gap: 12,
-              marginBottom: 18,
-              flexWrap: "wrap",
-            }}
-          >
-            <Link
-              href="/register"
+          <HeroFade delay={0.68}>
+            <div
+              className="hero-actions"
               style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "14px 22px",
-                borderRadius: 14,
-                background:
-                  "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
-                color: "white",
-                fontSize: 16,
-                fontWeight: 500,
-                fontFamily: "var(--font-sans)",
-                boxShadow:
-                  "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
-                letterSpacing: "-0.01em",
-                textDecoration: "none",
+                display: "flex",
+                justifyContent: "center",
+                gap: 12,
+                marginBottom: 18,
+                flexWrap: "wrap",
               }}
             >
-              <span>Empezar gratis</span>
-              <IconArrow size={16} />
-            </Link>
-            <a
-              href="#demo"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "14px 22px",
-                borderRadius: 14,
-                background: "rgba(20,15,30,0.06)",
-                color: "var(--fg)",
-                border: "1px solid var(--line-strong)",
-                fontSize: 16,
-                fontWeight: 500,
-                fontFamily: "var(--font-sans)",
-                letterSpacing: "-0.01em",
-                textDecoration: "none",
-              }}
-            >
-              <IconPlay size={13} />
-              <span>Ver demo en vivo</span>
-            </a>
-          </div>
+              <Magnetic>
+                <Link
+                  href="/register"
+                  className="zn-cta-glow"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "14px 22px",
+                    borderRadius: 14,
+                    background:
+                      "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
+                    color: "white",
+                    fontSize: 16,
+                    fontWeight: 500,
+                    fontFamily: "var(--font-sans)",
+                    boxShadow:
+                      "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
+                    letterSpacing: "-0.01em",
+                    textDecoration: "none",
+                  }}
+                >
+                  <span>Empezar gratis</span>
+                  <IconArrow size={16} />
+                </Link>
+              </Magnetic>
+              <Magnetic strength={0.2}>
+                <a
+                  href="#demo"
+                  className="zn-btn-soft"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "14px 22px",
+                    borderRadius: 14,
+                    background: "rgba(20,15,30,0.06)",
+                    color: "var(--fg)",
+                    border: "1px solid var(--line-strong)",
+                    fontSize: 16,
+                    fontWeight: 500,
+                    fontFamily: "var(--font-sans)",
+                    letterSpacing: "-0.01em",
+                    textDecoration: "none",
+                  }}
+                >
+                  <IconPlay size={13} />
+                  <span>Ver demo en vivo</span>
+                </a>
+              </Magnetic>
+            </div>
+          </HeroFade>
 
           <div
             className="hero-trust"
@@ -836,64 +920,86 @@ export default function BentoHero() {
             }}
           >
             {["Sin tarjeta", "Setup en 5 min", "14 días gratis", "Soporte 🇨🇴"].map(
-              (t) => (
-                <span
+              (t, i) => (
+                <motion.span
                   key={t}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.85 + i * 0.08, duration: 0.5, ease: EASE }}
                   style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
                 >
                   <IconCheck size={14} style={{ color: "var(--green)" }} />
                   {t}
-                </span>
+                </motion.span>
               ),
             )}
           </div>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(12, 1fr)",
-            gridAutoRows: "minmax(160px, auto)",
-            gap: 16,
-            position: "relative",
-            zIndex: 2,
-          }}
-          className="bento-hero"
-        >
-          <BentoHeroTile span={5} rowSpan={2} accent="#fb0f05">
-            <TileAgenda />
-          </BentoHeroTile>
-          <BentoHeroTile span={4} rowSpan={2} accent="#34D399">
-            <TileWa />
-          </BentoHeroTile>
-          <BentoHeroTile span={3} rowSpan={2} accent="#fb0f05">
-            <TileRevenue />
-          </BentoHeroTile>
+        <Parallax speed={0.05} style={{ position: "relative", zIndex: 2 }}>
+          <div className="zn-float-soft" style={{ position: "relative" }}>
+            {/* Glow dinámico detrás del producto */}
+            <div
+              aria-hidden
+              style={{
+                position: "absolute",
+                inset: "-8% -4%",
+                background:
+                  "radial-gradient(ellipse 60% 50% at 50% 45%, rgba(0,39,254,0.14), rgba(251,15,5,0.07) 50%, transparent 75%)",
+                filter: "blur(48px)",
+                animation: "znGlowPulse 7s ease-in-out infinite",
+                pointerEvents: "none",
+              }}
+            />
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(12, 1fr)",
+                gridAutoRows: "minmax(160px, auto)",
+                gap: 16,
+                position: "relative",
+              }}
+              className="bento-hero"
+            >
+              <BentoHeroTile span={5} rowSpan={2} accent="#fb0f05" index={0}>
+                <TileAgenda />
+              </BentoHeroTile>
+              <BentoHeroTile span={4} rowSpan={2} accent="#34D399" index={1}>
+                <TileWa />
+              </BentoHeroTile>
+              <BentoHeroTile span={3} rowSpan={2} accent="#fb0f05" index={2}>
+                <TileRevenue />
+              </BentoHeroTile>
 
-          <BentoHeroTile span={3} rowSpan={2} accent="#0027fe" className="bento-hide-mobile">
-            <TilePos />
-          </BentoHeroTile>
-          <BentoHeroTile span={3} rowSpan={2} accent="#FBBF24" className="bento-hide-mobile">
-            <TileReviews />
-          </BentoHeroTile>
-          <BentoHeroTile span={3} rowSpan={2} accent="#22D3EE" className="bento-hide-mobile">
-            <TileBookingLink />
-          </BentoHeroTile>
-          <BentoHeroTile
-            span={3}
-            rowSpan={2}
-            accent="#fff"
-            style={{
-              background:
-                "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
-              border: "1px solid rgba(20,15,30,0.2)",
-              boxShadow: "0 20px 60px -20px rgba(0,39,254,0.5)",
-            }}
-            padding={22}
-          >
-            <TileCta />
-          </BentoHeroTile>
-        </div>
+              <BentoHeroTile span={3} rowSpan={2} accent="#0027fe" className="bento-hide-mobile" index={3}>
+                <TilePos />
+              </BentoHeroTile>
+              <BentoHeroTile span={3} rowSpan={2} accent="#FBBF24" className="bento-hide-mobile" index={4}>
+                <TileReviews />
+              </BentoHeroTile>
+              <BentoHeroTile span={3} rowSpan={2} accent="#22D3EE" className="bento-hide-mobile" index={5}>
+                <TileBookingLink />
+              </BentoHeroTile>
+              <BentoHeroTile
+                span={3}
+                rowSpan={2}
+                accent="#fff"
+                index={6}
+                style={{
+                  background:
+                    "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
+                  backgroundSize: "180% 180%",
+                  animation: "znGradientShift 8s ease infinite",
+                  border: "1px solid rgba(20,15,30,0.2)",
+                  boxShadow: "0 20px 60px -20px rgba(0,39,254,0.5)",
+                }}
+                padding={22}
+              >
+                <TileCta />
+              </BentoHeroTile>
+            </div>
+          </div>
+        </Parallax>
       </Container>
     </section>
   );

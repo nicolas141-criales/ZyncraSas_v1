@@ -1,6 +1,6 @@
 "use client";
 
-import type { CSSProperties, ReactNode } from "react";
+import type { ReactNode } from "react";
 import Link from "next/link";
 import {
   IconArrow,
@@ -29,11 +29,17 @@ import {
 import {
   Card,
   Container,
-  Counter,
   Eyebrow,
   GradientOrb,
   SectionTitle,
 } from "./primitives";
+import {
+  CountUp,
+  Magnetic,
+  Reveal,
+  Stagger,
+  StaggerItem,
+} from "./motion";
 
 // ── StatsBar ──
 export function StatsBar() {
@@ -71,7 +77,8 @@ export function StatsBar() {
   return (
     <section style={{ padding: "40px 0 64px", position: "relative" }}>
       <Container max={1240}>
-        <div
+        <Stagger
+          gap={0.1}
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(4, 1fr)",
@@ -85,7 +92,7 @@ export function StatsBar() {
           className="stats-grid"
         >
           {stats.map((s, i) => (
-            <div
+            <StaggerItem
               key={i}
               style={{
                 padding: "32px 28px",
@@ -104,12 +111,12 @@ export function StatsBar() {
                   marginBottom: 10,
                 }}
               >
-                <Counter
+                <CountUp
                   to={s.val}
                   prefix={s.prefix}
                   suffix={s.suffix}
                   decimals={s.decimals || 0}
-                  duration={1800}
+                  duration={1.9}
                 />
               </div>
               <div
@@ -125,9 +132,9 @@ export function StatsBar() {
               <div style={{ fontSize: 12, color: "var(--fg-mute)" }}>
                 {s.sub}
               </div>
-            </div>
+            </StaggerItem>
           ))}
-        </div>
+        </Stagger>
       </Container>
     </section>
   );
@@ -153,74 +160,45 @@ export function IndustriesMarquee() {
   return (
     <section id="industrias" style={{ padding: "56px 0", position: "relative" }}>
       <Container max={1240}>
-        <SectionTitle
-          eyebrow="Diseñado para tí"
-          title={
-            <>
-              Para cualquier negocio{" "}
-              <span className="gradient-text">que trabaje con citas.</span>
-            </>
-          }
-          sub="Si tu calendario es tu activo más importante, Zyncra es para ti. Pensado para profesionales, no para corporaciones."
-          align="center"
-        />
+        <Reveal>
+          <SectionTitle
+            eyebrow="Diseñado para tí"
+            title={
+              <>
+                Para cualquier negocio{" "}
+                <span className="gradient-text">que trabaje con citas.</span>
+              </>
+            }
+            sub="Si tu calendario es tu activo más importante, Zyncra es para ti. Pensado para profesionales, no para corporaciones."
+            align="center"
+          />
+        </Reveal>
       </Container>
-      <div
-        style={{
-          position: "relative",
-          maskImage:
-            "linear-gradient(90deg, transparent, black 12%, black 88%, transparent)",
-          WebkitMaskImage:
-            "linear-gradient(90deg, transparent, black 12%, black 88%, transparent)",
-          overflow: "hidden",
-        }}
-      >
+      <Reveal delay={0.12} y={20}>
         <div
           style={{
-            display: "flex",
-            gap: 14,
-            width: "max-content",
-            animation: "scrollX 40s linear infinite",
-            padding: "8px 0",
+            position: "relative",
+            maskImage:
+              "linear-gradient(90deg, transparent, black 12%, black 88%, transparent)",
+            WebkitMaskImage:
+              "linear-gradient(90deg, transparent, black 12%, black 88%, transparent)",
+            overflow: "hidden",
           }}
         >
-          {row.map((it, i) => (
-            <div
-              key={`a-${i}`}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: 10,
-                padding: "14px 22px",
-                border: "1px solid var(--line)",
-                borderRadius: 999,
-                background: "rgba(20,15,30,0.025)",
-                fontSize: 14.5,
-                whiteSpace: "nowrap",
-                color: "var(--fg-dim)",
-              }}
-            >
-              <span style={{ color: "var(--violet-2)" }}>{it.icon}</span>
-              {it.label}
-            </div>
-          ))}
-        </div>
-        <div
-          style={{
-            display: "flex",
-            gap: 14,
-            width: "max-content",
-            animation: "scrollX 50s linear infinite reverse",
-            padding: "8px 0",
-            marginTop: 14,
-          }}
-        >
-          {row
-            .slice()
-            .reverse()
-            .map((it, i) => (
+          <div
+            className="zn-marquee-row"
+            style={{
+              display: "flex",
+              gap: 14,
+              width: "max-content",
+              animation: "scrollX 40s linear infinite",
+              padding: "8px 0",
+            }}
+          >
+            {row.map((it, i) => (
               <div
-                key={`b-${i}`}
+                key={`a-${i}`}
+                className="zn-chip-glass"
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
@@ -228,18 +206,53 @@ export function IndustriesMarquee() {
                   padding: "14px 22px",
                   border: "1px solid var(--line)",
                   borderRadius: 999,
-                  background: "rgba(20,15,30,0.025)",
                   fontSize: 14.5,
                   whiteSpace: "nowrap",
                   color: "var(--fg-dim)",
                 }}
               >
-                <span style={{ color: "var(--magenta)" }}>{it.icon}</span>
+                <span style={{ color: "var(--violet-2)" }}>{it.icon}</span>
                 {it.label}
               </div>
             ))}
+          </div>
+          <div
+            className="zn-marquee-row"
+            style={{
+              display: "flex",
+              gap: 14,
+              width: "max-content",
+              animation: "scrollX 50s linear infinite reverse",
+              padding: "8px 0",
+              marginTop: 14,
+            }}
+          >
+            {row
+              .slice()
+              .reverse()
+              .map((it, i) => (
+                <div
+                  key={`b-${i}`}
+                  className="zn-chip-glass"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: "14px 22px",
+                    border: "1px solid var(--line)",
+                    borderRadius: 999,
+                    fontSize: 14.5,
+                    whiteSpace: "nowrap",
+                    color: "var(--fg-dim)",
+                  }}
+                >
+                  <span style={{ color: "var(--magenta)" }}>{it.icon}</span>
+                  {it.label}
+                </div>
+              ))}
+          </div>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
@@ -252,6 +265,7 @@ export function CtaSection() {
       style={{ padding: "72px 0", position: "relative", overflowX: "clip" }}
     >
       <Container max={1240}>
+        <Reveal y={36}>
         <div
           style={{
             position: "relative",
@@ -259,12 +273,14 @@ export function CtaSection() {
             borderRadius: 28,
             background:
               "linear-gradient(135deg, rgba(251,15,5,0.18) 0%, rgba(0,39,254,0.12) 100%)",
+            backgroundSize: "180% 180%",
+            animation: "znGradientShift 9s ease infinite",
             border: "1px solid rgba(0,39,254,0.3)",
             overflow: "hidden",
             textAlign: "center",
             boxShadow: "0 40px 100px -30px rgba(0,39,254,0.4)",
           }}
-          className="cta-wrap"
+          className="cta-wrap zn-beam-border"
         >
           <div
             aria-hidden
@@ -321,52 +337,58 @@ export function CtaSection() {
                 flexWrap: "wrap",
               }}
             >
-              <Link
-                href="/register"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "14px 22px",
-                  borderRadius: 14,
-                  background:
-                    "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
-                  color: "white",
-                  fontSize: 16,
-                  fontWeight: 500,
-                  fontFamily: "var(--font-sans)",
-                  letterSpacing: "-0.01em",
-                  textDecoration: "none",
-                  boxShadow:
-                    "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
-                }}
-              >
-                <span>Empezar gratis</span>
-                <IconArrow size={16} />
-              </Link>
-              <a
-                href="https://wa.me/573001234567?text=Hola%2C+me+interesa+Zyncra"
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: 8,
-                  padding: "14px 22px",
-                  borderRadius: 14,
-                  background: "rgba(20,15,30,0.06)",
-                  color: "var(--fg)",
-                  border: "1px solid var(--line-strong)",
-                  fontSize: 16,
-                  fontWeight: 500,
-                  fontFamily: "var(--font-sans)",
-                  textDecoration: "none",
-                  letterSpacing: "-0.01em",
-                }}
-              >
-                <IconChat size={15} />
-                <span>Hablar por WhatsApp</span>
-              </a>
+              <Magnetic>
+                <Link
+                  href="/register"
+                  className="zn-cta-glow"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "14px 22px",
+                    borderRadius: 14,
+                    background:
+                      "linear-gradient(135deg, #fb0f05 0%, #0027fe 100%)",
+                    color: "white",
+                    fontSize: 16,
+                    fontWeight: 500,
+                    fontFamily: "var(--font-sans)",
+                    letterSpacing: "-0.01em",
+                    textDecoration: "none",
+                    boxShadow:
+                      "0 8px 30px -10px rgba(0,39,254,0.45), inset 0 1px 0 rgba(255,255,255,0.25)",
+                  }}
+                >
+                  <span>Empezar gratis</span>
+                  <IconArrow size={16} />
+                </Link>
+              </Magnetic>
+              <Magnetic strength={0.2}>
+                <a
+                  href="https://wa.me/573001234567?text=Hola%2C+me+interesa+Zyncra"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="zn-btn-soft"
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 8,
+                    padding: "14px 22px",
+                    borderRadius: 14,
+                    background: "rgba(20,15,30,0.06)",
+                    color: "var(--fg)",
+                    border: "1px solid var(--line-strong)",
+                    fontSize: 16,
+                    fontWeight: 500,
+                    fontFamily: "var(--font-sans)",
+                    textDecoration: "none",
+                    letterSpacing: "-0.01em",
+                  }}
+                >
+                  <IconChat size={15} />
+                  <span>Hablar por WhatsApp</span>
+                </a>
+              </Magnetic>
             </div>
             <div
               className="cta-trust"
@@ -397,6 +419,7 @@ export function CtaSection() {
             </div>
           </div>
         </div>
+        </Reveal>
       </Container>
     </section>
   );

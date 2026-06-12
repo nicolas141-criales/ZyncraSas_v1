@@ -6,6 +6,7 @@ import { Space_Grotesk, Instrument_Serif, JetBrains_Mono } from "next/font/googl
 import Nav from "@/components/landing/Nav";
 import Footer from "@/components/landing/Footer";
 import WaFab from "@/components/landing/WaFab";
+import { CursorFX, ScrollProgress } from "@/components/landing/motion";
 import { useEffect, useState } from "react";
 
 const spaceGrotesk = Space_Grotesk({
@@ -66,6 +67,8 @@ export default function ZyncraLayout({ children }: { children: React.ReactNode }
         minHeight: "100vh",
       } as React.CSSProperties}
     >
+      <ScrollProgress />
+      <CursorFX />
       <Nav />
       <main>{children}</main>
       <Footer />
