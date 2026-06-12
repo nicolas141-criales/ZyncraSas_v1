@@ -81,6 +81,13 @@ export default function SupplierRegisterPage() {
       });
       if (insertError) throw insertError;
 
+      // Enviar email de "solicitud recibida"
+      await fetch("/api/supplier-approved", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyName: form.companyName, email: form.email, type: "pending" }),
+      });
+
       router.push("/suppliers/pending");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Error al registrar.";

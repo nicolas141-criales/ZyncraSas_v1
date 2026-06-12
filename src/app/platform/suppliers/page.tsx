@@ -46,11 +46,22 @@ export default function PlatformSuppliersPage() {
 
   const setStatus = async (id: string, status: string, reason?: string) => {
     setUpdating(id);
-    await supabase.from("suppliers").update({
+    const { data: updated } = await supabase.from("suppliers").update({
       status,
       rejection_reason: reason ?? null,
-    }).eq("id", id);
+    }).eq("id", id).select("company_name, email").single();
+
     setSuppliers(prev => prev.map(s => s.id === id ? { ...s, status, rejection_reason: reason ?? null } : s));
+
+    // Notificar al proveedor cuando sea aprobado
+    if (status === "approved" && updated) {
+      await fetch("/api/supplier-approved", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ companyName: updated.company_name, email: updated.email, type: "approved" }),
+      });
+    }
+
     setUpdating(null);
   };
 
