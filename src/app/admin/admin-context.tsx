@@ -23,8 +23,8 @@ interface AdminContextType {
   locationName: string | null;
   /** Todas las sedes activas del tenant. */
   locations: Location[];
-  /** Cambia la sede activa y la persiste en localStorage. */
-  setLocationId: (id: string) => void;
+  /** Cambia la sede activa y la persiste en localStorage. null = todas las sedes. */
+  setLocationId: (id: string | null) => void;
   /** true cuando el usuario es admin de sede (no propietario del tenant) */
   isLocationAdmin: boolean;
 }

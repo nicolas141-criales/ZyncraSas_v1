@@ -178,8 +178,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         if (locationsList.length > 0) {
           const saved = typeof window !== "undefined"
             ? localStorage.getItem(`zyncra_loc_${tenant.id}`) : null;
-          const valid = locationsList.find(l => l.id === saved);
-          setLocationIdState((valid ?? locationsList[0]).id);
+          if (saved === "__all__") {
+            setLocationIdState(null);
+          } else {
+            const valid = locationsList.find(l => l.id === saved);
+            setLocationIdState((valid ?? locationsList[0]).id);
+          }
         }
 
         // subData puede ser null si no hay suscripción o si la RLS bloquea la lectura.
@@ -234,10 +238,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push("/login"); };
 
-  const setLocationId = useCallback((id: string) => {
+  const setLocationId = useCallback((id: string | null) => {
     setLocationIdState(id);
     if (tenantInfo?.id) {
-      localStorage.setItem(`zyncra_loc_${tenantInfo.id}`, id);
+      localStorage.setItem(`zyncra_loc_${tenantInfo.id}`, id ?? "__all__");
     }
     setLocationSelectorOpen(false);
   }, [tenantInfo?.id]);
@@ -519,7 +523,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       <span style={{ color: "rgba(20,17,28,0.25)", margin: "0 1px" }}>·</span>
                       <span style={{ fontSize: 10 }}>📍</span>
                       <span style={{ color: "#fb0f05", fontWeight: 700, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis" }}>
-                        {locationName ?? "Sede"}
+                        {locationId === null ? "Todas las sedes" : (locationName ?? "Sede")}
                       </span>
                       <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.4, flexShrink: 0 }}>
                         <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
@@ -547,6 +551,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                           }}>
                             Cambiar sede
                           </div>
+                          <button
+                            onClick={() => setLocationId(null)}
+                            style={{
+                              width: "100%", textAlign: "left",
+                              padding: "9px 14px", border: "none", cursor: "pointer",
+                              background: locationId === null ? "rgba(251,15,5,0.05)" : "transparent",
+                              display: "flex", alignItems: "center", gap: 9,
+                              fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                              borderBottom: "1px solid rgba(20,17,28,0.06)",
+                            }}
+                          >
+                            <span style={{ fontSize: 13, flexShrink: 0, opacity: locationId === null ? 1 : 0.35 }}>🗺️</span>
+                            <div style={{ minWidth: 0 }}>
+                              <div style={{ fontSize: 13, fontWeight: locationId === null ? 700 : 500, color: locationId === null ? "#fb0f05" : "rgba(20,17,28,0.75)" }}>
+                                Todas las sedes
+                              </div>
+                              <div style={{ fontSize: 11, color: "rgba(20,17,28,0.35)", marginTop: 1 }}>Vista consolidada</div>
+                            </div>
+                          </button>
                           {locations.map(loc => {
                             const active = loc.id === locationId;
                             return (

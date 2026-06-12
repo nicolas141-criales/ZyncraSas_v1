@@ -534,7 +534,7 @@ function RetentionChart({
 
 // ─── Main Dashboard ───────────────────────────────────────
 export default function AdminOverview() {
-  const { tenantId, currency, locale } = useAdmin();
+  const { tenantId, locationId, locations, currency, locale } = useAdmin();
   const [data, setData] = useState<DashboardData>(EMPTY);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"hoy" | "semana" | "mes" | "custom">("hoy");
@@ -548,7 +548,7 @@ export default function AdminOverview() {
   const [profFilter, setProfFilter] = useState("");
   const [profOptions, setProfOptions] = useState<{ id: string; name: string }[]>([]);
 
-  const fetchAll = useCallback(async (tid: string, f: "hoy" | "semana" | "mes" | "custom" = "hoy", cStart?: string, cEnd?: string, profId = "") => {
+  const fetchAll = useCallback(async (tid: string, locId: string | null, f: "hoy" | "semana" | "mes" | "custom" = "hoy", cStart?: string, cEnd?: string, profId = "") => {
     if (!hasLoadedOnce.current) setLoading(true);
     else setRefreshing(true);
     const now = new Date();
@@ -564,14 +564,17 @@ export default function AdminOverview() {
     const weekStart = rangeStart;
     const weekStartStr = toISO(weekStart);
 
-    const baseQ = (supabase as any)
+    let aptQ = (supabase as any)
       .from("appointments")
       .select("id, appointment_date, appointment_time, status, client_id, clients(name, no_shows), services(name, price), professionals(name)")
-      .eq("tenant_id", tid)
+      .eq("tenant_id", tid);
+    if (locId) aptQ = aptQ.eq("location_id", locId);
+    aptQ = aptQ
       .gte("appointment_date", weekStartStr)
       .lte("appointment_date", rangeEndStr)
       .order("appointment_date").order("appointment_time");
-    const { data: weekApts } = await (profId ? baseQ.eq("professional_id", profId) : baseQ);
+    if (profId) aptQ = aptQ.eq("professional_id", profId);
+    const { data: weekApts } = await aptQ;
 
     const apts = (weekApts || []) as any[];
     const filteredApts = f === "hoy" ? apts.filter(a => a.appointment_date === todayStr) : apts;
@@ -643,9 +646,11 @@ export default function AdminOverview() {
       (filteredApts.filter(a => a.status !== "cancelled").length / (profCount * 8 * dayCount)) * 100,
       100
     );
+    let posQ = (supabase as any).from("pos_sales").select("payment_method, total").eq("tenant_id", tid).gte("created_at", weekStartStr + "T00:00:00").lte("created_at", rangeEndStr + "T23:59:59");
+    if (locId) posQ = posQ.eq("location_id", locId);
     const [{ count: newClientsToday }, { data: posRaw }] = await Promise.all([
       supabase.from("clients").select("id", { count: "exact", head: true }).eq("tenant_id", tid).gte("created_at", weekStartStr).lte("created_at", rangeEndStr + "T23:59:59"),
-      (supabase as any).from("pos_sales").select("payment_method, total").eq("tenant_id", tid).gte("created_at", weekStartStr + "T00:00:00").lte("created_at", rangeEndStr + "T23:59:59"),
+      posQ,
     ]);
     const uniqueClients = new Set(apts.map(a => a.client_id)).size;
     const multiVisit = apts.filter((a, _, arr) => arr.filter(b => b.client_id === a.client_id).length > 1);
@@ -671,9 +676,11 @@ export default function AdminOverview() {
       ...v,
     })).sort((a, b) => b.amount - a.amount);
     // ── Segmentos de clientes (sobre toda la historia, no el período) ──────
+    let segAptsQ = (supabase as any).from("appointments").select("client_id,appointment_date").eq("tenant_id", tid).not("status", "eq", "cancelled");
+    if (locId) segAptsQ = segAptsQ.eq("location_id", locId);
     const [{ data: allClientsRaw }, { data: allAptsRaw }] = await Promise.all([
       supabase.from("clients").select("id").eq("tenant_id", tid),
-      supabase.from("appointments").select("client_id,appointment_date").eq("tenant_id", tid).not("status", "eq", "cancelled"),
+      segAptsQ,
     ]);
     const thirtyDAgo = toISO(new Date(Date.now() - 30 * 86400000));
     const sixtyDAgo  = toISO(new Date(Date.now() - 60 * 86400000));
@@ -742,9 +749,9 @@ export default function AdminOverview() {
   }, []);
 
   useEffect(() => {
-    if (tenantId) fetchAll(tenantId, filter, customStart, customEnd, profFilter);
+    if (tenantId) fetchAll(tenantId, locationId, filter, customStart, customEnd, profFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [tenantId, filter, fetchAll, profFilter]);
+  }, [tenantId, locationId, filter, fetchAll, profFilter]);
 
   useEffect(() => {
     if (!tenantId) return;
@@ -1097,9 +1104,18 @@ export default function AdminOverview() {
           </h1>
           <p style={{
             fontFamily: SERIF, fontStyle: "italic", fontSize: 15.5, color: DIM,
-            margin: "3px 0 0", letterSpacing: "0.01em",
+            margin: "3px 0 0", letterSpacing: "0.01em", display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap",
           }}>
             {todayLong}
+            {locationId === null && locations.length > 1 && (
+              <span style={{
+                fontFamily: SANS, fontStyle: "normal", fontSize: 10.5, fontWeight: 700,
+                background: "rgba(251,15,5,0.08)", color: "#fb0f05",
+                padding: "2px 9px", borderRadius: 5, letterSpacing: "0.02em",
+              }}>
+                Todas las sedes
+              </span>
+            )}
           </p>
         </div>
 
@@ -1107,12 +1123,12 @@ export default function AdminOverview() {
           {/* Segmented period control */}
           <div style={{ display: "flex", gap: 2, padding: 3, background: "white", border: `1px solid ${LINE}`, borderRadius: 11 }}>
             {(["hoy", "semana", "mes"] as const).map(f => (
-              <SegBtn key={f} active={filter === f} onClick={() => { setFilter(f); setShowRangePicker(false); fetchAll(tenantId!, f, undefined, undefined, profFilter); }}>
+              <SegBtn key={f} active={filter === f} onClick={() => { setFilter(f); setShowRangePicker(false); fetchAll(tenantId!, locationId, f, undefined, undefined, profFilter); }}>
                 {f === "hoy" ? "Hoy" : f === "semana" ? "7 días" : "30 días"}
               </SegBtn>
             ))}
             <div ref={rangePickerRef} style={{ position: "relative" }}>
-              <SegBtn active={filter === "custom"} onClick={() => { setFilter("custom"); setShowRangePicker(s => !s); if (customStart && customEnd) fetchAll(tenantId!, "custom", customStart, customEnd, profFilter); }}>
+              <SegBtn active={filter === "custom"} onClick={() => { setFilter("custom"); setShowRangePicker(s => !s); if (customStart && customEnd) fetchAll(tenantId!, locationId, "custom", customStart, customEnd, profFilter); }}>
                 {customStart && customEnd
                   ? <span style={{ fontFamily: MONO, fontSize: 11 }}>{customStart.slice(5)} → {customEnd.slice(5)}</span>
                   : "Rango"}
@@ -1124,7 +1140,7 @@ export default function AdminOverview() {
                     end={customEnd}
                     onApply={(s, e) => {
                       setCustomStart(s); setCustomEnd(e);
-                      fetchAll(tenantId!, "custom", s, e, profFilter);
+                      fetchAll(tenantId!, locationId, "custom", s, e, profFilter);
                       setShowRangePicker(false);
                     }}
                   />
@@ -1137,7 +1153,7 @@ export default function AdminOverview() {
           {profOptions.length > 0 && (
             <select
               value={profFilter}
-              onChange={e => { setProfFilter(e.target.value); fetchAll(tenantId!, filter, customStart, customEnd, e.target.value); }}
+              onChange={e => { setProfFilter(e.target.value); fetchAll(tenantId!, locationId, filter, customStart, customEnd, e.target.value); }}
               style={{
                 height: 34, padding: "0 11px", borderRadius: 9,
                 border: profFilter ? "1px solid rgba(20,15,30,0.3)" : `1px solid ${LINE}`,
@@ -1151,7 +1167,7 @@ export default function AdminOverview() {
             </select>
           )}
 
-          <ToolBtn onClick={() => fetchAll(tenantId!, filter, customStart, customEnd, profFilter)} title="Actualizar datos">
+          <ToolBtn onClick={() => fetchAll(tenantId!, locationId, filter, customStart, customEnd, profFilter)} title="Actualizar datos">
             <span style={{ display: "inline-flex", animation: refreshing ? "znSpin .8s linear infinite" : "none" }}>
               <IconRefresh size={15} />
             </span>
@@ -1465,7 +1481,7 @@ export default function AdminOverview() {
           tenantId={tenantId}
           open={showNewAppt}
           onClose={() => setShowNewAppt(false)}
-          onCreated={() => { setShowNewAppt(false); fetchAll(tenantId, filter, customStart, customEnd, profFilter); }}
+          onCreated={() => { setShowNewAppt(false); fetchAll(tenantId, locationId, filter, customStart, customEnd, profFilter); }}
         />
       )}
     </div>
