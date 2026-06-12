@@ -38,19 +38,6 @@ const nextConfig: NextConfig = {
   // Required for Docker standalone deployment
   output: process.env.DOCKER_BUILD === "1" ? "standalone" : undefined,
   poweredByHeader: false,
-  async redirects() {
-    // Case-insensitive redirects — Next.js App Router is case-sensitive
-    return [
-      { source: "/ADMIN",           destination: "/admin",    permanent: false },
-      { source: "/ADMIN/:path*",    destination: "/admin/:path*",    permanent: false },
-      { source: "/Admin",           destination: "/admin",    permanent: false },
-      { source: "/Admin/:path*",    destination: "/admin/:path*",    permanent: false },
-      { source: "/PLATFORM",        destination: "/platform", permanent: false },
-      { source: "/PLATFORM/:path*", destination: "/platform/:path*", permanent: false },
-      { source: "/Platform",        destination: "/platform", permanent: false },
-      { source: "/Platform/:path*", destination: "/platform/:path*", permanent: false },
-    ];
-  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
