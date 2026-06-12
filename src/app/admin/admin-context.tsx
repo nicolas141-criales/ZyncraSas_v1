@@ -25,6 +25,8 @@ interface AdminContextType {
   locations: Location[];
   /** Cambia la sede activa y la persiste en localStorage. */
   setLocationId: (id: string) => void;
+  /** true cuando el usuario es admin de sede (no propietario del tenant) */
+  isLocationAdmin: boolean;
 }
 
 export const AdminContext = createContext<AdminContextType>({
@@ -39,6 +41,7 @@ export const AdminContext = createContext<AdminContextType>({
   locationName: null,
   locations: [],
   setLocationId: () => {},
+  isLocationAdmin: false,
 });
 
 export const useAdmin = () => useContext(AdminContext);

@@ -126,6 +126,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [locations, setLocations] = useState<Location[]>([]);
   const [locationId, setLocationIdState] = useState<string | null>(null);
   const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
+  const [isLocAdmin, setIsLocAdmin] = useState(false);
 
   // Trial state
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
@@ -203,6 +204,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }
           // Sin endsAt: muestra banner sin cuenta regresiva (no expira automáticamente)
         }
+      } else {
+        // No es dueño de tenant — verificar si es admin de sede invitado
+        const { data: ctx } = await (supabase as any).rpc("get_location_admin_context", {
+          p_user_id: session.user.id,
+        });
+        if (!ctx) { router.push("/login"); return; }
+
+        const currency = ctx.tenant_settings?.currency ?? "COP";
+        const locale   = ctx.tenant_settings?.locale   ?? "es-CO";
+        setTenantInfo({
+          id: ctx.tenant_id, slug: ctx.tenant_slug,
+          name: ctx.tenant_name,
+          logoUrl: ctx.logo_url ?? null,
+          currency, locale,
+        });
+        setLocations([{ id: ctx.location_id, name: ctx.location_name, address: null, phone: null, is_active: true }]);
+        setLocationIdState(ctx.location_id);
+        setIsLocAdmin(true);
       }
       setLoadingAuth(false);
     }
@@ -292,6 +311,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       businessName: tenantInfo.name, logoUrl: tenantInfo.logoUrl,
       currency: tenantInfo.currency, locale: tenantInfo.locale, refreshCurrency,
       locationId, locationName, locations, setLocationId,
+      isLocationAdmin: isLocAdmin,
     }}>
       <div className={`${styles.adminLayout} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
         <style>{ZN_KEYFRAMES}</style>

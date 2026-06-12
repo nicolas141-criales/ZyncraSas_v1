@@ -5,6 +5,15 @@ import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
 import { IconMapPin, IconPlus, IconPencil, IconTrash, IconCheck, IconX } from "../ZyncraIcons";
 
+interface LocationAdmin {
+  id: string;
+  email: string;
+  name: string;
+  is_active: boolean;
+  invited_at: string;
+  accepted_at: string | null;
+}
+
 interface Location {
   id: string;
   name: string;
@@ -63,6 +72,12 @@ export default function LocationsPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ text: string; ok: boolean } | null>(null);
 
+  // Admins de sede
+  const [adminsMap, setAdminsMap] = useState<Record<string, LocationAdmin[]>>({});
+  const [invitingLocId, setInvitingLocId] = useState<string | null>(null);
+  const [inviteForm, setInviteForm] = useState({ email: "", name: "" });
+  const [inviteSaving, setInviteSaving] = useState(false);
+
   const showToast = (text: string, ok = true) => {
     setToast({ text, ok });
     setTimeout(() => setToast(null), 3000);
@@ -75,7 +90,24 @@ export default function LocationsPage() {
       .select("id, name, address, phone, is_active, created_at")
       .eq("tenant_id", tenantId)
       .order("created_at");
-    setLocations(data ?? []);
+    const locs: Location[] = data ?? [];
+    setLocations(locs);
+
+    // Cargar admins de cada sede
+    if (locs.length > 0) {
+      const { data: admins } = await supabase
+        .from("location_admins")
+        .select("id, location_id, email, name, is_active, invited_at, accepted_at")
+        .eq("tenant_id", tenantId)
+        .order("invited_at");
+      const map: Record<string, LocationAdmin[]> = {};
+      for (const a of (admins ?? []) as any[]) {
+        if (!map[a.location_id]) map[a.location_id] = [];
+        map[a.location_id].push(a);
+      }
+      setAdminsMap(map);
+    }
+
     setLoading(false);
   }, [tenantId]);
 
@@ -154,6 +186,38 @@ export default function LocationsPage() {
       showToast("Sede eliminada.");
     }
     setDeletingId(null);
+    load();
+  }
+
+  async function handleInvite(locId: string) {
+    if (!inviteForm.email.trim()) { showToast("El email es obligatorio.", false); return; }
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    setInviteSaving(true);
+    const res = await fetch("/api/invite-location-admin", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: inviteForm.email,
+        name: inviteForm.name,
+        locationId: locId,
+        tenantId,
+        requestingUserId: session.user.id,
+      }),
+    });
+    const json = await res.json();
+    if (!res.ok) { showToast(json.error ?? "Error al invitar.", false); }
+    else {
+      showToast("Invitación enviada.");
+      setInvitingLocId(null);
+      setInviteForm({ email: "", name: "" });
+      load();
+    }
+    setInviteSaving(false);
+  }
+
+  async function revokeAdmin(adminId: string) {
+    await supabase.from("location_admins").update({ is_active: false }).eq("id", adminId);
     load();
   }
 
@@ -242,81 +306,148 @@ export default function LocationsPage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
           {locations.map(loc => (
             <div key={loc.id}>
-              {/* Tarjeta normal */}
-              {editingId !== loc.id && (
-                <div style={{
-                  background: "white",
-                  border: loc.id === locationId
-                    ? "1.5px solid rgba(251,15,5,0.3)"
-                    : "1px solid rgba(20,15,30,0.08)",
-                  borderRadius: 14,
-                  padding: "16px 20px",
-                  display: "flex", alignItems: "center", gap: 16,
-                  opacity: loc.is_active ? 1 : 0.55,
-                  transition: "opacity .2s",
-                }}>
-                  {/* Icono sede activa */}
+              {/* Tarjeta normal + Admins de sede */}
+              {editingId !== loc.id && (() => {
+                const admins = (adminsMap[loc.id] ?? []).filter(a => a.is_active);
+                const isInviting = invitingLocId === loc.id;
+                return (
                   <div style={{
-                    width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-                    background: loc.id === locationId ? "rgba(251,15,5,0.08)" : "rgba(20,15,30,0.04)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    color: loc.id === locationId ? "#fb0f05" : "#8E879B",
+                    background: "white",
+                    border: loc.id === locationId
+                      ? "1.5px solid rgba(251,15,5,0.3)"
+                      : "1px solid rgba(20,15,30,0.08)",
+                    borderRadius: 14,
+                    overflow: "hidden",
+                    opacity: loc.is_active ? 1 : 0.55,
+                    transition: "opacity .2s",
                   }}>
-                    <IconMapPin size={17} />
-                  </div>
-
-                  {/* Info */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <span style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>{loc.name}</span>
-                      {loc.id === locationId && (
-                        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "2px 7px", borderRadius: 20, background: "rgba(251,15,5,0.08)", color: "#fb0f05", border: "1px solid rgba(251,15,5,0.18)" }}>
-                          Activa
-                        </span>
-                      )}
-                      {!loc.is_active && (
-                        <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "2px 7px", borderRadius: 20, background: "rgba(20,15,30,0.05)", color: "#8E879B", border: "1px solid rgba(20,15,30,0.1)" }}>
-                          Inactiva
-                        </span>
-                      )}
-                    </div>
-                    {loc.address && <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>{loc.address}</div>}
-                    {loc.phone && <div style={{ fontSize: 12, color: "#8E879B" }}>{loc.phone}</div>}
-                  </div>
-
-                  {/* Acciones */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
-                      <span style={{ fontSize: 10, color: "#8E879B", fontWeight: 500 }}>
-                        {loc.is_active ? "Activa" : "Inactiva"}
-                      </span>
-                      <Toggle checked={loc.is_active} onChange={() => toggleActive(loc)} />
-                    </div>
-                    <button onClick={() => openEdit(loc)} title="Editar" style={{ width: 34, height: 34, borderRadius: 8, border: "1px solid rgba(20,15,30,0.1)", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#564E66" }}>
-                      <IconPencil size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(loc)}
-                      disabled={!!deletingId || (loc.is_active && activeCount <= 1)}
-                      title={loc.is_active && activeCount <= 1 ? "No puedes eliminar la única sede activa" : "Eliminar"}
-                      style={{
-                        width: 34, height: 34, borderRadius: 8,
-                        border: "1px solid rgba(248,113,113,0.25)",
-                        background: "rgba(254,242,242,0.8)",
-                        cursor: (loc.is_active && activeCount <= 1) ? "not-allowed" : "pointer",
+                    {/* Fila principal: icono + info + acciones */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 16, padding: "16px 20px" }}>
+                      <div style={{
+                        width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+                        background: loc.id === locationId ? "rgba(251,15,5,0.08)" : "rgba(20,15,30,0.04)",
                         display: "flex", alignItems: "center", justifyContent: "center",
-                        color: "#ef4444",
-                        opacity: (loc.is_active && activeCount <= 1) ? 0.35 : 1,
-                      }}
-                    >
-                      {deletingId === loc.id
-                        ? <div style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid #ef444455", borderTopColor: "#ef4444", animation: "znSpin .7s linear infinite" }} />
-                        : <IconTrash size={14} />
-                      }
-                    </button>
+                        color: loc.id === locationId ? "#fb0f05" : "#8E879B",
+                      }}>
+                        <IconMapPin size={17} />
+                      </div>
+
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+                          <span style={{ fontWeight: 700, fontSize: 14, color: "#14111C" }}>{loc.name}</span>
+                          {loc.id === locationId && (
+                            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "2px 7px", borderRadius: 20, background: "rgba(251,15,5,0.08)", color: "#fb0f05", border: "1px solid rgba(251,15,5,0.18)" }}>
+                              Activa
+                            </span>
+                          )}
+                          {!loc.is_active && (
+                            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "2px 7px", borderRadius: 20, background: "rgba(20,15,30,0.05)", color: "#8E879B", border: "1px solid rgba(20,15,30,0.1)" }}>
+                              Inactiva
+                            </span>
+                          )}
+                        </div>
+                        {loc.address && <div style={{ fontSize: 12, color: "#8E879B", marginTop: 2 }}>{loc.address}</div>}
+                        {loc.phone && <div style={{ fontSize: 12, color: "#8E879B" }}>{loc.phone}</div>}
+                      </div>
+
+                      <div style={{ display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3 }}>
+                          <span style={{ fontSize: 10, color: "#8E879B", fontWeight: 500 }}>
+                            {loc.is_active ? "Activa" : "Inactiva"}
+                          </span>
+                          <Toggle checked={loc.is_active} onChange={() => toggleActive(loc)} />
+                        </div>
+                        <button onClick={() => openEdit(loc)} title="Editar" style={{ width: 34, height: 34, borderRadius: 8, border: "1px solid rgba(20,15,30,0.1)", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#564E66" }}>
+                          <IconPencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(loc)}
+                          disabled={!!deletingId || (loc.is_active && activeCount <= 1)}
+                          title={loc.is_active && activeCount <= 1 ? "No puedes eliminar la única sede activa" : "Eliminar"}
+                          style={{
+                            width: 34, height: 34, borderRadius: 8,
+                            border: "1px solid rgba(248,113,113,0.25)",
+                            background: "rgba(254,242,242,0.8)",
+                            cursor: (loc.is_active && activeCount <= 1) ? "not-allowed" : "pointer",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            color: "#ef4444",
+                            opacity: (loc.is_active && activeCount <= 1) ? 0.35 : 1,
+                          }}
+                        >
+                          {deletingId === loc.id
+                            ? <div style={{ width: 12, height: 12, borderRadius: "50%", border: "2px solid #ef444455", borderTopColor: "#ef4444", animation: "znSpin .7s linear infinite" }} />
+                            : <IconTrash size={14} />
+                          }
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Admins de sede */}
+                    <div style={{ borderTop: "1px solid rgba(20,15,30,0.06)", padding: "12px 20px 14px", background: "rgba(20,15,30,0.015)" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: admins.length > 0 || isInviting ? 10 : 0 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: "#8E879B", letterSpacing: "0.06em", textTransform: "uppercase" as const }}>
+                          Admins de sede
+                        </span>
+                        {!isInviting && (
+                          <button
+                            onClick={() => { setInvitingLocId(loc.id); setInviteForm({ email: "", name: "" }); }}
+                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 7, border: "1px solid rgba(20,15,30,0.12)", background: "white", color: "#564E66", fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                          >
+                            <IconPlus size={11} /> Invitar
+                          </button>
+                        )}
+                      </div>
+
+                      {admins.map(a => (
+                        <div key={a.id} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderBottom: "1px solid rgba(20,15,30,0.04)" }}>
+                          <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(251,15,5,0.07)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 11, fontWeight: 700, color: "#fb0f05" }}>
+                            {a.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 12, fontWeight: 600, color: "#14111C", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.name}</div>
+                            <div style={{ fontSize: 11, color: "#8E879B", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{a.email}</div>
+                          </div>
+                          <span style={{
+                            fontSize: 9, fontWeight: 700, letterSpacing: "0.07em", textTransform: "uppercase" as const,
+                            padding: "2px 7px", borderRadius: 20, flexShrink: 0,
+                            background: a.accepted_at ? "rgba(16,185,129,0.08)" : "rgba(20,15,30,0.05)",
+                            color: a.accepted_at ? "#059669" : "#8E879B",
+                            border: `1px solid ${a.accepted_at ? "rgba(16,185,129,0.2)" : "rgba(20,15,30,0.1)"}`,
+                          }}>
+                            {a.accepted_at ? "Activo" : "Pendiente"}
+                          </span>
+                          <button
+                            onClick={() => revokeAdmin(a.id)}
+                            title="Revocar acceso"
+                            style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid rgba(248,113,113,0.25)", background: "rgba(254,242,242,0.8)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#ef4444", flexShrink: 0 }}
+                          >
+                            <IconX size={11} />
+                          </button>
+                        </div>
+                      ))}
+
+                      {admins.length === 0 && !isInviting && (
+                        <p style={{ fontSize: 11, color: "rgba(20,15,30,0.3)", margin: 0, marginTop: 4 }}>Sin admins asignados.</p>
+                      )}
+
+                      {isInviting && (
+                        <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
+                          <Field label="Email *" value={inviteForm.email} onChange={v => setInviteForm(p => ({ ...p, email: v }))} placeholder="nombre@correo.com" type="email" />
+                          <Field label="Nombre" value={inviteForm.name} onChange={v => setInviteForm(p => ({ ...p, name: v }))} placeholder="Nombre del admin" />
+                          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 4 }}>
+                            <button onClick={() => setInvitingLocId(null)} style={{ padding: "7px 14px", borderRadius: 8, border: "1.5px solid rgba(20,15,30,0.1)", background: "white", color: "#564E66", fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                              Cancelar
+                            </button>
+                            <button onClick={() => handleInvite(loc.id)} disabled={inviteSaving} style={{ padding: "7px 16px", borderRadius: 8, border: "none", background: "#fb0f05", color: "white", fontSize: 12, fontWeight: 700, cursor: inviteSaving ? "not-allowed" : "pointer", opacity: inviteSaving ? 0.7 : 1, fontFamily: "inherit" }}>
+                              {inviteSaving ? "Enviando…" : "Enviar invitación"}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Formulario edición inline */}
               {editingId === loc.id && (
