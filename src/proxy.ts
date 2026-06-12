@@ -12,8 +12,9 @@ export function proxy(request: NextRequest) {
   );
 
   if (isProtected) {
+    // @supabase/ssr chunks large tokens as sb-*-auth-token.0, .1, etc.
     const hasSession = request.cookies.getAll().some(
-      (c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token") && c.value.length > 10
+      (c) => c.name.startsWith("sb-") && c.name.includes("auth-token") && c.value.length > 10
     );
     if (!hasSession) {
       const url = request.nextUrl.clone();
