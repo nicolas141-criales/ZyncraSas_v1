@@ -124,6 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   // Trial state
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
   const [subStatus, setSubStatus] = useState<string | null>(null);
+  const [planName, setPlanName] = useState<string | null>(null);
   const [trialExpired, setTrialExpired] = useState(false);
   const [upgradePlans, setUpgradePlans] = useState<SaasPlanRow[]>([]);
 
@@ -140,7 +141,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const [{ data: brandingRows }, { data: subData }, { data: plansData }] = await Promise.all([
           supabase.from("branding").select("logo_url").eq("tenant_id", tenant.id).limit(1),
           supabase.from("saas_subscriptions")
-            .select("status, trial_ends_at")
+            .select("status, trial_ends_at, saas_plans(name)")
             .eq("tenant_id", tenant.id)
             .order("created_at", { ascending: false })
             .limit(1)
@@ -160,8 +161,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // En ambos casos tratamos al usuario como trial (todos los nuevos empiezan en trial).
         const status = subData?.status ?? "trial";
         const endsAt = subData?.trial_ends_at ?? null;
+        const fetchedPlanName = (subData as any)?.saas_plans?.name ?? null;
         setSubStatus(status);
         setTrialEndsAt(endsAt);
+        setPlanName(fetchedPlanName);
 
         if (status === "trial") {
           if (endsAt) {
@@ -261,7 +264,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         {/* ── Sidebar ── */}
         <aside className={`${styles.sidebar} ${sidebarOpen ? styles.open : ""}`}>
 
-          {/* Logo — fijo */}
+          {/* Logo + Plan badge — fijo */}
           <div className={styles.brand}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <div style={{ display: "inline-flex", alignItems: "center", gap: 9 }}>
@@ -286,6 +289,108 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <IconX size={18} />
               </button>
             </div>
+
+            {/* Plan badge — siempre visible debajo del logo */}
+            {(() => {
+              const isTrial = subStatus === "trial" || subStatus === null;
+              const isActive = subStatus === "active";
+              const urgency = isTrial && trialDaysLeft !== null && trialDaysLeft <= 3;
+              const displayName = isTrial
+                ? "Trial gratuito"
+                : (planName ?? (isActive ? "Plan activo" : "Suscripción"));
+
+              return (
+                <div style={{
+                  marginTop: 12,
+                  padding: "9px 11px",
+                  borderRadius: 9,
+                  background: urgency
+                    ? "rgba(248,113,113,0.08)"
+                    : "rgba(255,255,255,0.04)",
+                  border: urgency
+                    ? "1px solid rgba(248,113,113,0.22)"
+                    : "1px solid rgba(255,255,255,0.08)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 8,
+                  transition: "background .3s, border-color .3s",
+                }}>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 9, fontWeight: 700, letterSpacing: "0.10em",
+                      textTransform: "uppercase",
+                      color: urgency ? "rgba(248,113,113,0.6)" : "rgba(255,255,255,0.27)",
+                      marginBottom: 3,
+                      fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
+                    }}>
+                      Plan actual
+                    </div>
+                    <div style={{
+                      fontSize: 12.5, fontWeight: 700, lineHeight: 1,
+                      color: urgency ? "#fca5a5" : "rgba(255,255,255,0.80)",
+                      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                      fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                    }}>
+                      {displayName}
+                    </div>
+                  </div>
+
+                  {/* Indicador derecho */}
+                  {isTrial ? (
+                    trialDaysLeft !== null ? (
+                      <div style={{
+                        flexShrink: 0,
+                        padding: "3px 8px", borderRadius: 6,
+                        background: urgency ? "rgba(248,113,113,0.18)" : "rgba(255,255,255,0.07)",
+                        border: urgency ? "1px solid rgba(248,113,113,0.35)" : "1px solid rgba(255,255,255,0.09)",
+                        fontSize: 11, fontWeight: 800, lineHeight: 1.2,
+                        color: urgency ? "#f87171" : "rgba(255,255,255,0.50)",
+                        fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
+                        textAlign: "center" as const,
+                      }}>
+                        {trialDaysLeft}d
+                      </div>
+                    ) : (
+                      <div style={{
+                        flexShrink: 0,
+                        padding: "3px 8px", borderRadius: 6,
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        fontSize: 9, fontWeight: 700, letterSpacing: "0.05em",
+                        color: "rgba(255,255,255,0.32)",
+                        fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
+                        textAlign: "center" as const,
+                        textTransform: "uppercase" as const,
+                      }}>
+                        Prueba
+                      </div>
+                    )
+                  ) : (
+                    <div style={{
+                      flexShrink: 0,
+                      display: "flex", alignItems: "center", gap: 5,
+                      padding: "3px 8px", borderRadius: 6,
+                      background: "rgba(16,185,129,0.10)",
+                      border: "1px solid rgba(16,185,129,0.22)",
+                    }}>
+                      <div style={{
+                        width: 5, height: 5, borderRadius: "50%",
+                        background: "#10b981",
+                        boxShadow: "0 0 5px rgba(16,185,129,0.7)",
+                      }} />
+                      <span style={{
+                        fontSize: 9, fontWeight: 700, letterSpacing: "0.05em",
+                        color: "#34d399", textTransform: "uppercase" as const,
+                        fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
+                      }}>
+                        Activo
+                      </span>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </div>
 
           {/* Nav groups — scrollable */}
@@ -308,66 +413,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               </div>
             ))}
           </div>
-
-          {/* Trial banner — fijo antes del logout */}
-          {subStatus === "trial" && !trialExpired && (
-            <div style={{
-              margin: "0 12px 8px",
-              padding: "10px 13px",
-              borderRadius: 10,
-              background: trialDaysLeft !== null && trialDaysLeft <= 3
-                ? "linear-gradient(135deg, rgba(248,113,113,0.15), rgba(251,191,36,0.08))"
-                : "rgba(255,255,255,0.05)",
-              border: trialDaysLeft !== null && trialDaysLeft <= 3
-                ? "1px solid rgba(248,113,113,0.35)"
-                : "1px solid rgba(255,255,255,0.09)",
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
-                <span style={{ fontSize: 14 }}>
-                  {trialDaysLeft !== null && trialDaysLeft <= 3 ? "⚠️" : "⏳"}
-                </span>
-                <span style={{
-                  fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
-                  textTransform: "uppercase",
-                  color: trialDaysLeft !== null && trialDaysLeft <= 3 ? "#f87171" : "rgba(255,255,255,0.55)",
-                }}>
-                  Período de prueba
-                </span>
-              </div>
-              {trialDaysLeft !== null ? (
-                <>
-                  <div style={{
-                    fontSize: 20, fontWeight: 800, lineHeight: 1,
-                    color: trialDaysLeft <= 3 ? "#f87171" : "rgba(255,255,255,0.9)",
-                  }}>
-                    {trialDaysLeft} día{trialDaysLeft !== 1 ? "s" : ""}
-                  </div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
-                    {trialDaysLeft <= 3 ? "¡Quedan pocos días!" : "restantes"}
-                  </div>
-                  <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 2, marginTop: 8, overflow: "hidden" }}>
-                    <div style={{
-                      height: "100%", borderRadius: 2,
-                      width: `${Math.min(100, Math.max(4, (trialDaysLeft / 14) * 100))}%`,
-                      background: trialDaysLeft <= 3
-                        ? "linear-gradient(90deg,#f87171,#fbbf24)"
-                        : "linear-gradient(90deg,#fb0f05,#0027fe)",
-                      transition: "width .3s",
-                    }} />
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ fontSize: 13, fontWeight: 700, color: "rgba(255,255,255,0.7)", lineHeight: 1.3 }}>
-                    Acceso de prueba activo
-                  </div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 3 }}>
-                    Contacta a Zyncra para activar tu plan
-                  </div>
-                </>
-              )}
-            </div>
-          )}
 
           {/* Cerrar sesión — fijo */}
           <div className={styles.sidebarBottom}>
