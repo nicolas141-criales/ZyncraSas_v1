@@ -297,6 +297,10 @@ export default function RegisterPage() {
   const [plans, setPlans] = useState<SaasPlan[]>([]);
   const [activating, setActivating] = useState(false);
   const [activateError, setActivateError] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [codeError, setCodeError] = useState<string | null>(null);
+  const [trialCodeDB, setTrialCodeDB] = useState(TRIAL_CODE);
+  const [trialDaysDB, setTrialDaysDB] = useState(14);
 
   const TRIAL_FEATURES = [
     "Agenda y calendario ilimitado",
@@ -309,14 +313,23 @@ export default function RegisterPage() {
 
   useEffect(() => {
     if (step !== 5) return;
-    // Load paid plans from DB to show as "Próximamente"
-    supabase.from("saas_plans").select("*").eq("active", true).gt("price", 0).order("price")
-      .then(({ data }: { data: any[] | null }) => {
-        setPlans((data ?? []).map((p: any) => ({
-          ...p,
-          features: Array.isArray(p.features) ? p.features : [],
-        })));
-      });
+    async function fetchStep5() {
+      const [{ data: plansData }, { data: settingsData }] = await Promise.all([
+        // Paid plans to show as "Próximamente"
+        supabase.from("saas_plans").select("*").eq("active", true).gt("price", 0).order("price"),
+        supabase.from("platform_settings").select("key, value"),
+      ]);
+      setPlans((plansData ?? []).map((p: any) => ({
+        ...p,
+        features: Array.isArray(p.features) ? p.features : [],
+      })));
+      if (settingsData && settingsData.length > 0) {
+        const m = new Map((settingsData as any[]).map(s => [s.key as string, s.value as string]));
+        if (m.has("trial_code")) setTrialCodeDB(m.get("trial_code")!.toLowerCase());
+        if (m.has("trial_days")) setTrialDaysDB(Number(m.get("trial_days")) || 14);
+      }
+    }
+    fetchStep5();
   }, [step]);
 
   const selectedCountry = COUNTRIES.find(c => c.code === country) ?? COUNTRIES[0];
@@ -403,19 +416,31 @@ export default function RegisterPage() {
 
   const handleActivatePlan = async () => {
     if (!tenantId) return;
+    setCodeError(null);
     setActivateError(null);
+
+    // Validate activation code
+    if (promoCode.trim().toLowerCase() !== trialCodeDB) {
+      setCodeError(t.trialCodeError);
+      return;
+    }
+
     setActivating(true);
 
     const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+    trialEndsAt.setDate(trialEndsAt.getDate() + trialDaysDB);
 
-    // Use a free plan from DB if one exists, otherwise leave plan_id null
-    const { data: freePlanData } = await supabase
-      .from("saas_plans").select("id").eq("price", 0).limit(1).maybeSingle();
+    // Try free plan first, then any plan (cheapest), to satisfy plan_id FK if NOT NULL
+    const { data: planData } = await supabase
+      .from("saas_plans")
+      .select("id")
+      .order("price", { ascending: true })
+      .limit(1)
+      .maybeSingle();
 
     const { error } = await supabase.from("saas_subscriptions").insert({
       tenant_id: tenantId,
-      plan_id: freePlanData?.id ?? null,
+      plan_id: planData?.id ?? null,
       status: "trial",
       amount: 0,
       trial_ends_at: trialEndsAt.toISOString(),
@@ -423,7 +448,7 @@ export default function RegisterPage() {
 
     setActivating(false);
     if (error) {
-      setActivateError("No se pudo activar el trial. Intenta de nuevo.");
+      setActivateError("No se pudo activar el trial. Verifica el código o intenta de nuevo.");
       return;
     }
     setStep(6);
@@ -755,7 +780,7 @@ export default function RegisterPage() {
                     </div>
                   </div>
 
-                  <div style={{ display: "flex", flexDirection: "column", gap: 7, marginLeft: 28 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7, marginLeft: 28, marginBottom: 18 }}>
                     {TRIAL_FEATURES.map((f, i) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, color: "#3a3548" }}>
                         <div style={{
@@ -767,6 +792,31 @@ export default function RegisterPage() {
                         {f}
                       </div>
                     ))}
+                  </div>
+
+                  {/* Código de activación */}
+                  <div style={{ borderTop: "1px solid rgba(0,0,0,0.07)", paddingTop: 16 }}>
+                    <label style={{
+                      display: "block", fontSize: 11, fontWeight: 700, color: "#8E879B",
+                      marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em",
+                    }}>
+                      {t.trialCodeLabel}
+                    </label>
+                    <input
+                      type="text"
+                      className={styles.input}
+                      style={{ paddingLeft: 14, fontFamily: "monospace", letterSpacing: "0.05em" }}
+                      placeholder={t.trialCodePlaceholder}
+                      value={promoCode}
+                      onChange={e => { setPromoCode(e.target.value); setCodeError(null); }}
+                      onKeyDown={e => e.key === "Enter" && handleActivatePlan()}
+                      autoFocus
+                    />
+                    {codeError && (
+                      <div style={{ marginTop: 8, fontSize: 12, color: "#ef4444", fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+                        <span>⚠</span> {codeError}
+                      </div>
+                    )}
                   </div>
                 </div>
 
