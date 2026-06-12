@@ -15,8 +15,9 @@ const NAV: NavItem[] = [
   { href: "/platform/billing",   label: "Cobros",    icon: <IconCreditCard size={16} /> },
   { href: "/platform/plans",     label: "Planes",    icon: <IconPackage size={16} /> },
   { href: "/platform/analytics", label: "Analytics", icon: <IconChartBar size={16} /> },
-  { href: "/platform/pqrs",      label: "PQRs",      icon: <IconChat size={16} /> },
-  { href: "/platform/settings",  label: "Ajustes",   icon: <IconCog size={16} /> },
+  { href: "/platform/pqrs",       label: "PQRs",        icon: <IconChat size={16} /> },
+  { href: "/platform/suppliers",  label: "Proveedores", icon: <IconPackage size={16} /> },
+  { href: "/platform/settings",   label: "Ajustes",     icon: <IconCog size={16} /> },
 ];
 
 export default function PlatformLayout({ children }: { children: React.ReactNode }) {

@@ -82,7 +82,13 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/admin/inventario", label: "Inventario",          icon: <IconPackage size={17} /> },
       { href: "/admin/caja",       label: "Sistema de Caja",     icon: <IconBanknotes size={17} /> },
       { href: "/admin/invoices",   label: "Factura Electrónica", icon: <IconDocument size={17} /> },
-      { href: "/admin/commissions",label: "Comisiones",          icon: <IconChartBar size={17} /> },
+      { href: "/admin/commissions",  label: "Comisiones",          icon: <IconChartBar size={17} /> },
+    ],
+  },
+  {
+    label: "Compras",
+    items: [
+      { href: "/admin/proveedores", label: "Proveedores",          icon: <IconStorefront size={17} /> },
     ],
   },
   {

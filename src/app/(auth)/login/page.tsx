@@ -27,11 +27,25 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({ email, password });
       if (authError) throw authError;
-      // Hard navigation so the browser flushes the new auth cookies before the
-      // middleware runs — router.push() does a soft nav that can race the cookie.
-      window.location.href = "/admin";
+
+      const uid = authData.user?.id;
+      // Determine role and redirect accordingly
+      const [{ data: platformAdmin }, { data: supplier }] = await Promise.all([
+        supabase.from("platform_admins").select("user_id").eq("user_id", uid).maybeSingle(),
+        supabase.from("suppliers").select("status").eq("user_id", uid).maybeSingle(),
+      ]);
+
+      if (platformAdmin) {
+        window.location.href = "/platform";
+      } else if (supplier?.status === "approved") {
+        window.location.href = "/supplier";
+      } else if (supplier?.status === "pending") {
+        window.location.href = "/suppliers/pending";
+      } else {
+        window.location.href = "/admin";
+      }
     } catch {
       setError("Correo o contraseña incorrectos.");
     } finally {
