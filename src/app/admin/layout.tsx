@@ -105,12 +105,27 @@ const NAV_GROUPS: NavGroup[] = [
 // Pages that are coming soon
 const COMING_SOON = new Set<string>([]);
 
+interface SaasPlanRow {
+  id: string;
+  name: string;
+  price: number;
+  billing_cycle: string;
+  description: string | null;
+  features: string[];
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [tenantInfo, setTenantInfo] = useState<{ id: string; slug: string; name: string; logoUrl: string | null; currency: string; locale: string } | null>(null);
+
+  // Trial state
+  const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
+  const [subStatus, setSubStatus] = useState<string | null>(null);
+  const [trialExpired, setTrialExpired] = useState(false);
+  const [upgradePlans, setUpgradePlans] = useState<SaasPlanRow[]>([]);
 
   useEffect(() => {
     async function checkAuth() {
@@ -122,16 +137,48 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       if (tenants && tenants.length > 0) {
         const tenant = tenants[0] as any;
-        const { data: brandingRows } = await supabase
-          .from("branding").select("logo_url").eq("tenant_id", tenant.id).limit(1);
+        const [{ data: brandingRows }, { data: subData }, { data: plansData }] = await Promise.all([
+          supabase.from("branding").select("logo_url").eq("tenant_id", tenant.id).limit(1),
+          supabase.from("saas_subscriptions")
+            .select("status, trial_ends_at")
+            .eq("tenant_id", tenant.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+          supabase.from("saas_plans")
+            .select("id, name, price, billing_cycle, description, features")
+            .eq("active", true)
+            .gt("price", 0)
+            .order("price"),
+        ]);
+
         const currency = tenant.settings?.currency ?? "COP";
         const locale   = tenant.settings?.locale   ?? "es-CO";
         setTenantInfo({ ...tenant, logoUrl: brandingRows?.[0]?.logo_url ?? null, currency, locale });
+
+        if (subData) {
+          setSubStatus(subData.status);
+          setTrialEndsAt(subData.trial_ends_at ?? null);
+          if (subData.status === "trial" && subData.trial_ends_at) {
+            const daysLeft = Math.ceil((new Date(subData.trial_ends_at).getTime() - Date.now()) / 86400000);
+            if (daysLeft <= 0) {
+              setTrialExpired(true);
+              setUpgradePlans((plansData ?? []).map((p: any) => ({
+                ...p,
+                features: Array.isArray(p.features) ? p.features : [],
+              })));
+            }
+          }
+        }
       }
       setLoadingAuth(false);
     }
     checkAuth();
   }, [router]);
+
+  const trialDaysLeft = subStatus === "trial" && trialEndsAt
+    ? Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / 86400000)
+    : null;
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push("/login"); };
 
@@ -256,6 +303,53 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             ))}
           </div>
 
+          {/* Trial banner — fijo antes del logout */}
+          {subStatus === "trial" && trialDaysLeft !== null && trialDaysLeft > 0 && (
+            <div style={{
+              margin: "0 12px 0",
+              padding: "10px 13px",
+              borderRadius: 10,
+              background: trialDaysLeft <= 3
+                ? "linear-gradient(135deg, rgba(248,113,113,0.15), rgba(251,191,36,0.08))"
+                : "rgba(255,255,255,0.05)",
+              border: trialDaysLeft <= 3
+                ? "1px solid rgba(248,113,113,0.35)"
+                : "1px solid rgba(255,255,255,0.09)",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 4 }}>
+                <span style={{ fontSize: 14 }}>{trialDaysLeft <= 3 ? "⚠️" : "⏳"}</span>
+                <span style={{
+                  fontSize: 10, fontWeight: 700, letterSpacing: "0.07em",
+                  textTransform: "uppercase",
+                  color: trialDaysLeft <= 3 ? "#f87171" : "rgba(255,255,255,0.55)",
+                }}>
+                  Período de prueba
+                </span>
+              </div>
+              <div style={{
+                fontSize: 20, fontWeight: 800,
+                color: trialDaysLeft <= 3 ? "#f87171" : "rgba(255,255,255,0.9)",
+                lineHeight: 1,
+              }}>
+                {trialDaysLeft} día{trialDaysLeft !== 1 ? "s" : ""}
+              </div>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
+                {trialDaysLeft <= 3 ? "¡Quedan pocos días!" : "restantes"}
+              </div>
+              {/* Barra de progreso */}
+              <div style={{ height: 3, background: "rgba(255,255,255,0.07)", borderRadius: 2, marginTop: 8, overflow: "hidden" }}>
+                <div style={{
+                  height: "100%", borderRadius: 2,
+                  width: `${Math.min(100, (trialDaysLeft / 14) * 100)}%`,
+                  background: trialDaysLeft <= 3
+                    ? "linear-gradient(90deg,#f87171,#fbbf24)"
+                    : "linear-gradient(90deg,#fb0f05,#0027fe)",
+                  transition: "width .3s",
+                }} />
+              </div>
+            </div>
+          )}
+
           {/* Cerrar sesión — fijo */}
           <div className={styles.sidebarBottom}>
             <div className={styles.navLogout} onClick={handleLogout}>
@@ -298,6 +392,142 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </main>
         </div>
       </div>
+      {/* ── Modal: Trial expirado ── */}
+      {trialExpired && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 9999,
+          background: "rgba(5,5,16,0.92)",
+          backdropFilter: "blur(12px)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          padding: 20,
+          fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+        }}>
+          <div style={{
+            background: "linear-gradient(180deg, #0e0e22 0%, #07071a 100%)",
+            border: "1px solid rgba(255,255,255,0.1)",
+            borderRadius: 24,
+            padding: "36px 32px",
+            maxWidth: 580, width: "100%",
+            maxHeight: "90vh", overflowY: "auto",
+            boxShadow: "0 40px 100px rgba(0,0,0,0.8)",
+          }}>
+            {/* Header */}
+            <div style={{ textAlign: "center", marginBottom: 28 }}>
+              <div style={{ fontSize: 52, marginBottom: 14, lineHeight: 1 }}>⏰</div>
+              <h2 style={{
+                margin: "0 0 10px",
+                fontSize: 24, fontWeight: 800,
+                color: "rgba(255,255,255,0.94)",
+                letterSpacing: "-0.02em",
+              }}>
+                Tu período de prueba finalizó
+              </h2>
+              <p style={{ margin: 0, fontSize: 15, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
+                Elige un plan para continuar usando todas las funciones de Zyncra sin interrupciones.
+              </p>
+            </div>
+
+            {/* Plans */}
+            {upgradePlans.length > 0 ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 24 }}>
+                {upgradePlans.map((plan, idx) => {
+                  const isPopular = idx === Math.floor(upgradePlans.length / 2);
+                  const fmt = (n: number) => new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
+                  return (
+                    <div key={plan.id} style={{
+                      borderRadius: 16, padding: "18px 20px",
+                      border: isPopular ? "1.5px solid rgba(251,15,5,0.5)" : "1px solid rgba(255,255,255,0.1)",
+                      background: isPopular
+                        ? "linear-gradient(135deg, rgba(251,15,5,0.1), rgba(0,39,254,0.05))"
+                        : "rgba(255,255,255,0.03)",
+                      position: "relative",
+                    }}>
+                      {isPopular && (
+                        <div style={{
+                          position: "absolute", top: -11, left: 18,
+                          background: "linear-gradient(135deg,#fb0f05,#0027fe)",
+                          color: "white", fontSize: 9, fontWeight: 700,
+                          padding: "3px 11px", borderRadius: 20, letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                        }}>
+                          Más popular
+                        </div>
+                      )}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: plan.features.length > 0 ? 12 : 0 }}>
+                        <div>
+                          <div style={{ fontSize: 16, fontWeight: 800, color: "rgba(255,255,255,0.94)" }}>{plan.name}</div>
+                          {plan.description && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.38)", marginTop: 2 }}>{plan.description}</div>}
+                        </div>
+                        <div style={{ textAlign: "right", flexShrink: 0 }}>
+                          <div style={{ fontSize: 22, fontWeight: 800, color: "#ff7d72" }}>{fmt(plan.price)}</div>
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>/{plan.billing_cycle === "monthly" ? "mes" : "año"}</div>
+                        </div>
+                      </div>
+                      {plan.features.length > 0 && (
+                        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                          {plan.features.slice(0, 4).map((f, i) => (
+                            <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", fontSize: 12, color: "rgba(255,255,255,0.55)" }}>
+                              <span style={{ color: "#34d399", flexShrink: 0 }}>✓</span> {f}
+                            </div>
+                          ))}
+                          {plan.features.length > 4 && (
+                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.28)", marginTop: 2 }}>
+                              +{plan.features.length - 4} más incluidas
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div style={{
+                textAlign: "center", padding: "20px 0 28px",
+                color: "rgba(255,255,255,0.4)", fontSize: 14,
+              }}>
+                Contacta con nuestro equipo para conocer los planes disponibles.
+              </div>
+            )}
+
+            {/* CTAs */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              <a
+                href="https://wa.me/573001234567?text=Hola%2C%20quiero%20activar%20un%20plan%20de%20Zyncra"
+                target="_blank" rel="noreferrer"
+                style={{
+                  display: "block", textAlign: "center",
+                  padding: "14px 24px", borderRadius: 12, border: "none",
+                  background: "linear-gradient(135deg,#fb0f05,#0027fe)",
+                  color: "white", fontWeight: 800, fontSize: 15,
+                  textDecoration: "none",
+                  boxShadow: "0 6px 24px rgba(251,15,5,0.3)",
+                }}>
+                💬 Hablar con ventas por WhatsApp
+              </a>
+              <button
+                onClick={() => setTrialExpired(false)}
+                style={{
+                  padding: "11px", borderRadius: 12,
+                  border: "1px solid rgba(255,255,255,0.12)",
+                  background: "transparent",
+                  color: "rgba(255,255,255,0.35)", fontWeight: 600, fontSize: 13,
+                  cursor: "pointer",
+                  fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                }}>
+                Continuar en modo limitado
+              </button>
+            </div>
+
+            <p style={{
+              textAlign: "center", margin: "16px 0 0",
+              fontSize: 11, color: "rgba(255,255,255,0.2)",
+            }}>
+              ¿Problemas? Escríbenos a soporte@zyncra.app
+            </p>
+          </div>
+        </div>
+      )}
     </AdminContext.Provider>
   );
 }
