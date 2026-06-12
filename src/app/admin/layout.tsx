@@ -493,7 +493,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* CTAs */}
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               <a
-                href="https://wa.me/573001234567?text=Hola%2C%20quiero%20activar%20un%20plan%20de%20Zyncra"
+                href="https://wa.me/573188886055?text=Hola%2C%20quiero%20activar%20un%20plan%20de%20Zyncra"
                 target="_blank" rel="noreferrer"
                 style={{
                   display: "block", textAlign: "center",
