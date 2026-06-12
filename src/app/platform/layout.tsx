@@ -5,7 +5,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { IconGrid, IconUsers, IconCreditCard, IconPackage, IconChartBar, IconCog } from "../admin/ZyncraIcons";
+import { IconGrid, IconUsers, IconCreditCard, IconPackage, IconChartBar, IconCog, IconChat } from "../admin/ZyncraIcons";
 
 type NavItem = { href: string; label: string; icon: React.ReactNode };
 
@@ -15,6 +15,7 @@ const NAV: NavItem[] = [
   { href: "/platform/billing",   label: "Cobros",    icon: <IconCreditCard size={16} /> },
   { href: "/platform/plans",     label: "Planes",    icon: <IconPackage size={16} /> },
   { href: "/platform/analytics", label: "Analytics", icon: <IconChartBar size={16} /> },
+  { href: "/platform/pqrs",      label: "PQRs",      icon: <IconChat size={16} /> },
   { href: "/platform/settings",  label: "Ajustes",   icon: <IconCog size={16} /> },
 ];
 
@@ -24,6 +25,7 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
   const [loading, setLoading] = useState(true);
   const [adminEmail, setAdminEmail] = useState("");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [pqrPending, setPqrPending] = useState(0);
 
   useEffect(() => {
     async function check() {
@@ -34,10 +36,30 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
         .eq("user_id", session.user.id).maybeSingle();
       if (!data) { router.push("/admin"); return; }
       setAdminEmail(session.user.email ?? "");
+
+      // Load pending PQR count
+      const { count } = await supabase.from("pqrs").select("id", { count: "exact", head: true }).eq("status", "pending");
+      setPqrPending(count ?? 0);
+
       setLoading(false);
     }
     check();
   }, [router]);
+
+  // Realtime: badge auto-updates when a new PQR arrives
+  useEffect(() => {
+    if (loading) return;
+    const ch = supabase
+      .channel("layout-pqrs")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "pqrs" }, () => {
+        setPqrPending(n => n + 1);
+        if (typeof window !== "undefined" && Notification.permission === "granted") {
+          new Notification("Nuevo PQR recibido", { body: "Hay un nuevo PQR pendiente de revisión en la plataforma." });
+        }
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [loading]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -134,6 +156,16 @@ export default function PlatformLayout({ children }: { children: React.ReactNode
                 }}>
                 <span style={{ display: "flex", alignItems: "center", opacity: active ? 1 : 0.6 }}>{item.icon}</span>
                 {item.label}
+                {item.href === "/platform/pqrs" && pqrPending > 0 && (
+                  <span style={{
+                    marginLeft: "auto", fontSize: 9, fontWeight: 800, lineHeight: 1,
+                    background: "#fb0f05", color: "white", borderRadius: 20,
+                    padding: "2px 6px", minWidth: 16, textAlign: "center",
+                    boxShadow: "0 0 6px rgba(251,15,5,0.6)",
+                  }}>
+                    {pqrPending > 99 ? "99+" : pqrPending}
+                  </span>
+                )}
               </Link>
             );
           })}
