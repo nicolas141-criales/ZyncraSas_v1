@@ -7,12 +7,12 @@ import { useState, useEffect, useCallback } from "react";
 import { Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import styles from "./admin.module.css";
 import { supabase } from "@/lib/supabase";
-import { AdminContext } from "./admin-context";
+import { AdminContext, type Location } from "./admin-context";
 import {
   IconGrid, IconCalendar, IconBell, IconChat, IconCreditCard,
   IconBanknotes, IconDocument, IconChartBar, IconStar, IconStorefront,
   IconUsers, IconUserGroup, IconPalette, IconPackage,
-  IconCog, IconLogout, IconX, IconServiceBell,
+  IconCog, IconLogout, IconX, IconServiceBell, IconMapPin,
 } from "./ZyncraIcons";
 import NotificationsBell from "./NotificationsBell";
 
@@ -96,6 +96,7 @@ const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/admin/services",      label: "Servicios",    icon: <IconServiceBell size={17} /> },
       { href: "/admin/professionals", label: "Equipo",       icon: <IconUserGroup size={17} /> },
+      { href: "/admin/locations",     label: "Sedes",        icon: <IconMapPin size={17} /> },
       { href: "/admin/branding",      label: "Mi Marca",     icon: <IconPalette size={17} /> },
       { href: "/admin/settings",      label: "Configuración",icon: <IconCog size={17} /> },
     ],
@@ -120,6 +121,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(true);
   const [tenantInfo, setTenantInfo] = useState<{ id: string; slug: string; name: string; logoUrl: string | null; currency: string; locale: string } | null>(null);
+
+  // Multi-sede state
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [locationId, setLocationIdState] = useState<string | null>(null);
+  const [locationSelectorOpen, setLocationSelectorOpen] = useState(false);
 
   // Trial state
   const [trialEndsAt, setTrialEndsAt] = useState<string | null>(null);
@@ -157,6 +163,24 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         const locale   = tenant.settings?.locale   ?? "es-CO";
         setTenantInfo({ ...tenant, logoUrl: brandingRows?.[0]?.logo_url ?? null, currency, locale });
 
+        // Cargar sedes activas
+        const { data: locs } = await supabase
+          .from("locations")
+          .select("id, name, address, phone, is_active")
+          .eq("tenant_id", tenant.id)
+          .eq("is_active", true)
+          .order("name");
+        const locationsList: Location[] = locs ?? [];
+        setLocations(locationsList);
+
+        // Restaurar sede guardada o usar la primera
+        if (locationsList.length > 0) {
+          const saved = typeof window !== "undefined"
+            ? localStorage.getItem(`zyncra_loc_${tenant.id}`) : null;
+          const valid = locationsList.find(l => l.id === saved);
+          setLocationIdState((valid ?? locationsList[0]).id);
+        }
+
         // subData puede ser null si no hay suscripción o si la RLS bloquea la lectura.
         // En ambos casos tratamos al usuario como trial (todos los nuevos empiezan en trial).
         const status = subData?.status ?? "trial";
@@ -190,6 +214,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     : null;
 
   const handleLogout = async () => { await supabase.auth.signOut(); router.push("/login"); };
+
+  const setLocationId = useCallback((id: string) => {
+    setLocationIdState(id);
+    if (tenantInfo?.id) {
+      localStorage.setItem(`zyncra_loc_${tenantInfo.id}`, id);
+    }
+    setLocationSelectorOpen(false);
+  }, [tenantInfo?.id]);
 
   const refreshCurrency = useCallback(async () => {
     if (!tenantInfo) return;
@@ -252,9 +284,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const initials = tenantInfo.name.substring(0, 2).toUpperCase();
+  const locationName = locations.find(l => l.id === locationId)?.name ?? null;
 
   return (
-    <AdminContext.Provider value={{ tenantId: tenantInfo.id, tenantSlug: tenantInfo.slug, businessName: tenantInfo.name, logoUrl: tenantInfo.logoUrl, currency: tenantInfo.currency, locale: tenantInfo.locale, refreshCurrency }}>
+    <AdminContext.Provider value={{
+      tenantId: tenantInfo.id, tenantSlug: tenantInfo.slug,
+      businessName: tenantInfo.name, logoUrl: tenantInfo.logoUrl,
+      currency: tenantInfo.currency, locale: tenantInfo.locale, refreshCurrency,
+      locationId, locationName, locations, setLocationId,
+    }}>
       <div className={`${styles.adminLayout} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
         <style>{ZN_KEYFRAMES}</style>
 
@@ -439,7 +477,96 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             </div>
 
             <div className={styles.headerRight}>
-              <span className={`${styles.tenantBadge} ${styles.hideMobile}`}>{tenantInfo.name}</span>
+              {/* Nombre del salón + selector de sede integrado */}
+              <div className={styles.hideMobile} style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                {locations.length > 1 ? (
+                  <>
+                    <button
+                      onClick={() => setLocationSelectorOpen(o => !o)}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 6,
+                        padding: "4px 10px", borderRadius: 8, cursor: "pointer",
+                        background: "transparent",
+                        border: "1px solid rgba(20,17,28,0.13)",
+                        color: "rgba(20,17,28,0.75)",
+                        fontSize: 13, fontWeight: 600,
+                        fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                        transition: "background .15s, border-color .15s",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <span style={{ color: "rgba(20,17,28,0.55)", fontWeight: 700 }}>{tenantInfo.name}</span>
+                      <span style={{ color: "rgba(20,17,28,0.25)", margin: "0 1px" }}>·</span>
+                      <span style={{ fontSize: 10 }}>📍</span>
+                      <span style={{ color: "#fb0f05", fontWeight: 700, maxWidth: 110, overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {locationName ?? "Sede"}
+                      </span>
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.4, flexShrink: 0 }}>
+                        <path d="M2 3.5L5 6.5L8 3.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                      </svg>
+                    </button>
+
+                    {locationSelectorOpen && (
+                      <>
+                        <div style={{ position: "fixed", inset: 0, zIndex: 40 }} onClick={() => setLocationSelectorOpen(false)} />
+                        <div style={{
+                          position: "absolute", top: "calc(100% + 6px)", right: 0,
+                          zIndex: 50, minWidth: 210,
+                          background: "white",
+                          border: "1px solid rgba(20,17,28,0.1)",
+                          borderRadius: 10,
+                          boxShadow: "0 8px 28px rgba(0,0,0,0.13)",
+                          overflow: "hidden",
+                        }}>
+                          <div style={{
+                            padding: "7px 13px 6px",
+                            fontSize: 9, fontWeight: 700, letterSpacing: "0.1em",
+                            textTransform: "uppercase", color: "rgba(20,17,28,0.32)",
+                            fontFamily: "var(--font-jetbrains-mono),'JetBrains Mono',monospace",
+                            borderBottom: "1px solid rgba(20,17,28,0.06)",
+                          }}>
+                            Cambiar sede
+                          </div>
+                          {locations.map(loc => {
+                            const active = loc.id === locationId;
+                            return (
+                              <button
+                                key={loc.id}
+                                onClick={() => setLocationId(loc.id)}
+                                style={{
+                                  width: "100%", textAlign: "left",
+                                  padding: "9px 14px", border: "none", cursor: "pointer",
+                                  background: active ? "rgba(251,15,5,0.05)" : "transparent",
+                                  display: "flex", alignItems: "center", gap: 9,
+                                  fontFamily: "var(--font-space-grotesk),'Space Grotesk',sans-serif",
+                                }}
+                              >
+                                <span style={{ fontSize: 13, flexShrink: 0, opacity: active ? 1 : 0.3 }}>📍</span>
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{
+                                    fontSize: 13, fontWeight: active ? 700 : 500,
+                                    color: active ? "#fb0f05" : "rgba(20,17,28,0.75)",
+                                    overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+                                  }}>
+                                    {loc.name}
+                                  </div>
+                                  {loc.address && (
+                                    <div style={{ fontSize: 11, color: "rgba(20,17,28,0.35)", marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                      {loc.address}
+                                    </div>
+                                  )}
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </>
+                ) : (
+                  <span className={styles.tenantBadge}>{tenantInfo.name}</span>
+                )}
+              </div>
               <NotificationsBell tenantId={tenantInfo.id} />
               {tenantInfo.logoUrl ? (
                 <span className={styles.avatarRing}>

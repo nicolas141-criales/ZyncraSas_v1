@@ -2,6 +2,14 @@
 
 import { createContext, useContext } from "react";
 
+export interface Location {
+  id: string;
+  name: string;
+  address: string | null;
+  phone: string | null;
+  is_active: boolean;
+}
+
 interface AdminContextType {
   tenantId: string | null;
   tenantSlug: string | null;
@@ -10,6 +18,13 @@ interface AdminContextType {
   currency: string;
   locale: string;
   refreshCurrency: () => Promise<void>;
+  /** Sede activa. null mientras carga o si el tenant no tiene sedes. */
+  locationId: string | null;
+  locationName: string | null;
+  /** Todas las sedes activas del tenant. */
+  locations: Location[];
+  /** Cambia la sede activa y la persiste en localStorage. */
+  setLocationId: (id: string) => void;
 }
 
 export const AdminContext = createContext<AdminContextType>({
@@ -20,6 +35,10 @@ export const AdminContext = createContext<AdminContextType>({
   currency: "COP",
   locale: "es-CO",
   refreshCurrency: async () => {},
+  locationId: null,
+  locationName: null,
+  locations: [],
+  setLocationId: () => {},
 });
 
 export const useAdmin = () => useContext(AdminContext);

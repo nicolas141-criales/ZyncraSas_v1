@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
 import { useAdmin } from "../admin-context";
-import { IconCog, IconBell, IconCreditCard, IconPalette, IconArrowRight, IconClock } from "../ZyncraIcons";
+import { IconCog, IconBell, IconCreditCard, IconPalette, IconArrowRight, IconClock, IconMapPin } from "../ZyncraIcons";
 
 // Claves numéricas "0"-"6" = Date.getDay() → igual que la app mobile
 const DAY_KEYS = ["1","2","3","4","5","6","0"] as const; // Lun→Dom
@@ -200,6 +200,27 @@ export default function SettingsPage() {
           );
         })}
       </SectionCard>
+
+      {/* Enlace rápido a Sedes */}
+      <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden" }}>
+        <div style={{ padding: "18px 22px", borderBottom: "1px solid rgba(20,15,30,0.08)", display: "flex", alignItems: "center", gap: "12px" }}>
+          <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(251,15,5,0.08)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fb0f05", flexShrink: 0 }}>
+            <IconMapPin size={17} />
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: "14px", color: "#14111C" }}>Sedes</div>
+            <div style={{ fontSize: "12px", color: "#8E879B", marginTop: "2px" }}>Gestiona los locales de tu negocio</div>
+          </div>
+        </div>
+        <div style={{ padding: "16px 22px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <p style={{ fontSize: "13px", color: "#564E66", lineHeight: 1.6, margin: 0, maxWidth: "480px" }}>
+            Crea y administra varias sedes bajo el mismo negocio. Cambia entre ellas desde la barra superior del panel.
+          </p>
+          <Link href="/admin/locations" style={{ display: "flex", alignItems: "center", gap: "6px", padding: "9px 18px", borderRadius: "10px", border: "1.5px solid rgba(20,15,30,0.08)", background: "white", color: "#fb0f05", fontWeight: 700, fontSize: "13px", textDecoration: "none", whiteSpace: "nowrap", marginLeft: "20px", flexShrink: 0 }}>
+            Ir a Sedes <IconArrowRight size={14} color="#fb0f05" />
+          </Link>
+        </div>
+      </div>
 
       {/* Enlace rápido a Mi Marca */}
       <div style={{ background: "white", border: "1px solid rgba(20,15,30,0.08)", borderRadius: "18px", overflow: "hidden" }}>
