@@ -10,6 +10,7 @@ const NAV = [
   { href: "/supplier",          label: "Dashboard",  icon: "▦" },
   { href: "/supplier/products", label: "Productos",  icon: "📦" },
   { href: "/supplier/orders",   label: "Pedidos",    icon: "🛒" },
+  { href: "/supplier/profile",  label: "Perfil",     icon: "⚙" },
 ];
 
 export default function SupplierLayout({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,7 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [companyName, setCompanyName] = useState("");
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [pendingOrders, setPendingOrders] = useState(0);
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -27,17 +29,18 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
 
       const { data: supplier } = await supabase
         .from("suppliers")
-        .select("id, company_name, status")
+        .select("id, company_name, status, logo_url")
         .eq("user_id", session.user.id)
         .maybeSingle();
 
       if (!supplier) { router.push("/suppliers/register"); return; }
       if (supplier.status === "pending") { router.push("/suppliers/pending"); return; }
       if (supplier.status === "rejected" || supplier.status === "suspended") {
-        router.push("/login"); return;
+        router.push("/suppliers/login"); return;
       }
 
       setCompanyName(supplier.company_name);
+      setLogoUrl(supplier.logo_url ?? null);
 
       const { count } = await supabase
         .from("supplier_orders")
@@ -53,7 +56,7 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    router.push("/login");
+    router.push("/suppliers/login");
   };
 
   if (loading) {
@@ -140,9 +143,21 @@ export default function SupplierLayout({ children }: { children: React.ReactNode
         </nav>
 
         <div style={{ padding: "12px 10px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-          <div style={{ padding: "8px 12px", marginBottom: 4 }}>
-            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", marginBottom: 2, textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>Empresa</div>
-            <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", fontWeight: 600, wordBreak: "break-all" }}>{companyName}</div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", marginBottom: 4 }}>
+            <div style={{
+              width: 36, height: 36, borderRadius: 10, flexShrink: 0, overflow: "hidden",
+              background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              {logoUrl
+                ? <img src={logoUrl} alt="Logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : <span style={{ fontSize: 16 }}>🏢</span>
+              }
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 10, color: "rgba(255,255,255,0.25)", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 600 }}>Empresa</div>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{companyName}</div>
+            </div>
           </div>
           <button onClick={handleLogout}
             style={{ width: "100%", padding: "8px 12px", borderRadius: 8, border: "none", background: "transparent", color: "rgba(239,68,68,0.7)", fontSize: 12, fontWeight: 600, cursor: "pointer", textAlign: "left" }}>
