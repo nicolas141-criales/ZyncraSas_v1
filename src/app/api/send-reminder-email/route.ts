@@ -3,12 +3,12 @@ import { createClient } from "@supabase/supabase-js";
 import { sendReminderEmail, type ReminderTemplateKey } from "@/lib/email";
 import { requireInternalOrUser, rateLimit, clientIp, tooManyRequests } from "@/lib/api-auth";
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  // Service role required — no anon fallback (this route writes reminder_logs
-  // and reads branding across tenants).
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+function getSupabaseAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+}
 
 const DAYS_ES   = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
 const MONTHS_ES = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
     if (authErr) return authErr;
     if (!rateLimit(`send-reminder:${clientIp(req)}`, 60, 60_000)) return tooManyRequests();
 
+    const supabaseAdmin = getSupabaseAdmin();
     const body = await req.json();
     const {
       appointmentId,
