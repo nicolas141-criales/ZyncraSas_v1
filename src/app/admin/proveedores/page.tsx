@@ -12,6 +12,8 @@ interface Supplier {
   city: string | null;
   phone: string | null;
   categories: string[];
+  logo_url: string | null;
+  cover_url: string | null;
 }
 
 interface Product {
@@ -76,6 +78,8 @@ export default function ProveedoresPage() {
   const [searchProd, setSearchProd] = useState("");
   const [catFilter, setCatFilter] = useState("Todos");
   const [supplierFilter, setSupplierFilter] = useState<string | null>(null);
+  // Modal de perfil de proveedor
+  const [profileModal, setProfileModal] = useState<Supplier | null>(null);
 
   // Carrito
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -110,7 +114,7 @@ export default function ProveedoresPage() {
   const loadCatalog = useCallback(async () => {
     setLoadingCat(true);
     const [{ data: supData }, { data: prodData }] = await Promise.all([
-      supabase.from("suppliers").select("id, company_name, description, city, phone, categories").eq("status", "approved"),
+      supabase.from("suppliers").select("id, company_name, description, city, phone, categories, logo_url, cover_url").eq("status", "approved"),
       supabase.from("supplier_products")
         .select("*, suppliers(company_name)")
         .eq("is_active", true)
@@ -318,53 +322,70 @@ export default function ProveedoresPage() {
       {/* ── TAB: Catálogo ── */}
       {tab === "catalogo" && (
         <>
-          {/* Proveedores — chips seleccionables para filtrar catálogo */}
+          {/* Tarjetas de proveedores con cover/logo */}
           {suppliers.length > 0 && (
-            <div style={{ marginBottom: 24 }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-                Proveedores disponibles · <span style={{ fontWeight: 500 }}>haz clic para ver su catálogo</span>
-              </p>
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {/* "Todos" pill */}
-                <button
-                  onClick={() => { setSupplierFilter(null); setCatFilter("Todos"); }}
-                  style={{
-                    background: !supplierFilter ? "rgba(251,15,5,0.07)" : "white",
-                    border: `1px solid ${!supplierFilter ? "#fb0f05" : "#e5e7eb"}`,
-                    borderRadius: 10, padding: "10px 14px", cursor: "pointer",
-                    display: "flex", flexDirection: "column", gap: 3, minWidth: 100,
-                    boxShadow: "0 2px 6px rgba(0,0,0,0.04)", textAlign: "left",
-                  }}
-                >
-                  <span style={{ fontSize: 13, fontWeight: 700, color: !supplierFilter ? "#fb0f05" : "#6b7280" }}>Todos</span>
-                  <span style={{ fontSize: 11, color: "#9ca3af" }}>{products.length} productos</span>
-                </button>
-
+            <div style={{ marginBottom: 28 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>
+                  Proveedores disponibles
+                </p>
+                {supplierFilter && (
+                  <button onClick={() => { setSupplierFilter(null); setCatFilter("Todos"); }}
+                    style={{ fontSize: 12, fontWeight: 600, color: "#fb0f05", background: "rgba(251,15,5,0.06)", border: "1px solid rgba(251,15,5,0.2)", borderRadius: 7, padding: "4px 10px", cursor: "pointer" }}>
+                    ✕ Ver todos
+                  </button>
+                )}
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 12 }}>
                 {suppliers.map(s => {
                   const active = supplierFilter === s.id;
-                  const count = products.filter(p => p.supplier_id === s.id).length;
+                  const prodCount = products.filter(p => p.supplier_id === s.id).length;
                   return (
-                    <button
-                      key={s.id}
-                      onClick={() => { setSupplierFilter(active ? null : s.id); setCatFilter("Todos"); }}
-                      style={{
-                        background: active ? "rgba(251,15,5,0.07)" : "white",
-                        border: `1px solid ${active ? "#fb0f05" : "#e5e7eb"}`,
-                        borderRadius: 10, padding: "10px 14px", cursor: "pointer",
-                        display: "flex", flexDirection: "column", gap: 3,
-                        minWidth: 160, boxShadow: "0 2px 6px rgba(0,0,0,0.04)", textAlign: "left",
-                        transition: "all .15s",
-                      }}
-                    >
-                      <span style={{ fontSize: 13, fontWeight: 700, color: active ? "#fb0f05" : "#111827" }}>{s.company_name}</span>
-                      {s.city && <span style={{ fontSize: 11, color: "#9ca3af" }}>📍 {s.city}</span>}
-                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 2 }}>
-                        {(s.categories ?? []).slice(0, 2).map(c => (
-                          <span key={c} style={{ fontSize: 10, fontWeight: 600, color: active ? "#fb0f05" : "#4b5563", background: active ? "rgba(251,15,5,0.08)" : "#f3f4f6", padding: "2px 7px", borderRadius: 4 }}>{c}</span>
-                        ))}
-                        <span style={{ fontSize: 10, color: "#9ca3af", marginLeft: "auto" }}>{count} prod.</span>
+                    <div key={s.id} style={{
+                      background: "white",
+                      border: `1px solid ${active ? "#fb0f05" : "#e5e7eb"}`,
+                      borderRadius: 14, overflow: "hidden", cursor: "pointer",
+                      boxShadow: active ? "0 0 0 2px rgba(251,15,5,0.15)" : "0 2px 8px rgba(0,0,0,0.05)",
+                      transition: "all .18s",
+                    }}>
+                      {/* Cover */}
+                      <div style={{ position: "relative", height: 80 }}>
+                        {s.cover_url
+                          // eslint-disable-next-line @next/next/no-img-element
+                          ? <img src={s.cover_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                          : <div style={{ height: "100%", background: "linear-gradient(135deg, #f0f0ff 0%, #ffe5e5 100%)" }} />
+                        }
+                        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(255,255,255,0.9) 0%, transparent 60%)" }} />
+                        {/* Logo */}
+                        <div style={{ position: "absolute", bottom: -18, left: 14, width: 40, height: 40, borderRadius: 10, border: "2px solid white", background: "white", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }}>
+                          {s.logo_url
+                            // eslint-disable-next-line @next/next/no-img-element
+                            ? <img src={s.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                            : <span style={{ fontSize: 18 }}>🏢</span>
+                          }
+                        </div>
                       </div>
-                    </button>
+                      {/* Body */}
+                      <div style={{ padding: "24px 14px 14px" }}>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: "#111827", marginBottom: 2 }}>{s.company_name}</div>
+                        {s.city && <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 6 }}>📍 {s.city}</div>}
+                        <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 10, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                          {s.description ?? (s.categories ?? []).join(", ")}
+                        </div>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          <button
+                            onClick={() => setProfileModal(s)}
+                            style={{ flex: 1, padding: "7px", borderRadius: 8, border: "1px solid #e5e7eb", background: "white", color: "#374151", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                            Ver perfil
+                          </button>
+                          <button
+                            onClick={() => { setSupplierFilter(active ? null : s.id); setCatFilter("Todos"); }}
+                            style={{ flex: 1, padding: "7px", borderRadius: 8, border: `1px solid ${active ? "#fb0f05" : "#e5e7eb"}`, background: active ? "rgba(251,15,5,0.06)" : "white", color: active ? "#fb0f05" : "#374151", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                            {active ? `✓ ${prodCount} prod.` : `${prodCount} prod.`}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
                   );
                 })}
               </div>
@@ -496,6 +517,59 @@ export default function ProveedoresPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* ── Modal perfil de proveedor ── */}
+      {profileModal && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 150, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+          onClick={e => { if (e.target === e.currentTarget) setProfileModal(null); }}
+        >
+          <div style={{ background: "white", borderRadius: 20, width: "100%", maxWidth: 600, maxHeight: "88vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.25)" }}>
+            {/* Cover */}
+            <div style={{ position: "relative", height: 160, flexShrink: 0 }}>
+              {profileModal.cover_url
+                // eslint-disable-next-line @next/next/no-img-element
+                ? <img src={profileModal.cover_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : <div style={{ height: "100%", background: "linear-gradient(135deg, #ede9fe 0%, #fce7f3 100%)" }} />
+              }
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(255,255,255,1) 0%, transparent 60%)" }} />
+              <button onClick={() => setProfileModal(null)} style={{ position: "absolute", top: 14, right: 14, width: 30, height: 30, borderRadius: "50%", border: "1px solid rgba(0,0,0,0.1)", background: "rgba(255,255,255,0.85)", color: "#374151", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+              {/* Logo */}
+              <div style={{ position: "absolute", bottom: -24, left: 24, width: 56, height: 56, borderRadius: 14, border: "3px solid white", background: "white", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(0,0,0,0.15)" }}>
+                {profileModal.logo_url
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={profileModal.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  : <span style={{ fontSize: 26 }}>🏢</span>
+                }
+              </div>
+            </div>
+
+            <div style={{ overflowY: "auto", flex: 1, padding: "34px 24px 24px" }}>
+              <div style={{ fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 4 }}>{profileModal.company_name}</div>
+              {profileModal.city && <div style={{ fontSize: 13, color: "#9ca3af", marginBottom: 10 }}>📍 {profileModal.city}</div>}
+              {profileModal.description && <p style={{ fontSize: 13, color: "#4b5563", lineHeight: 1.65, marginBottom: 14 }}>{profileModal.description}</p>}
+              {profileModal.phone && <div style={{ fontSize: 13, color: "#4b5563", marginBottom: 10 }}>📞 {profileModal.phone}</div>}
+              {profileModal.categories.length > 0 && (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 20 }}>
+                  {profileModal.categories.map(c => (
+                    <span key={c} style={{ fontSize: 11, fontWeight: 600, padding: "4px 10px", borderRadius: 8, background: "#f3f4f6", color: "#4b5563" }}>{c}</span>
+                  ))}
+                </div>
+              )}
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => { setProfileModal(null); setSupplierFilter(profileModal.id); setCatFilter("Todos"); }}
+                  style={{ flex: 1, padding: "11px", borderRadius: 10, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #fb0f05, #cc0a03)", color: "white", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(251,15,5,0.25)" }}>
+                  Ver catálogo y ordenar →
+                </button>
+                <button onClick={() => setProfileModal(null)}
+                  style={{ padding: "11px 16px", borderRadius: 10, border: "1px solid #e5e7eb", background: "white", color: "#6b7280", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── Modal Carrito / Checkout ── */}

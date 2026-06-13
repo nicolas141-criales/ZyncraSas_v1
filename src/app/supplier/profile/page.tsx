@@ -41,7 +41,7 @@ export default function SupplierProfilePage() {
       if (!session) return;
       const { data } = await supabase
         .from("suppliers")
-        .select("id, company_name, description, phone, nit, city, address, categories, logo_url, email")
+        .select("id, company_name, description, phone, nit, city, address, categories, logo_url, cover_url, email")
         .eq("user_id", session.user.id)
         .maybeSingle();
       if (!data) return;
@@ -56,14 +56,7 @@ export default function SupplierProfilePage() {
         categories: data.categories ?? [],
       });
       setLogoUrl(data.logo_url ?? null);
-      // Cover stored in logos bucket at supplier-covers/{id}/cover.*
-      if (data.id) {
-        const { data: coverObj } = await supabase.storage.from("logos").list(`supplier-covers/${data.id}`);
-        if (coverObj && coverObj.length > 0) {
-          const { data: { publicUrl } } = supabase.storage.from("logos").getPublicUrl(`supplier-covers/${data.id}/${coverObj[0].name}`);
-          setCoverUrl(publicUrl);
-        }
-      }
+      setCoverUrl(data.cover_url ?? null);
       setLoading(false);
     }
     load();
@@ -109,6 +102,7 @@ export default function SupplierProfilePage() {
     if (!file || !profile) return;
     uploadImage(file, "logos", `supplier-covers/${profile.id}/cover`, (url) => {
       setCoverUrl(url);
+      supabase.from("suppliers").update({ cover_url: url.split("?")[0] }).eq("id", profile.id);
     }, setUploadingCover);
     e.target.value = "";
   };
