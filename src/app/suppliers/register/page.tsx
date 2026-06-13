@@ -140,7 +140,7 @@ export default function SupplierRegisterPage() {
 
         <div style={{ fontSize: 12, color: "rgba(255,255,255,0.25)" }}>
           ¿Ya tienes cuenta?{" "}
-          <Link href="/login" style={{ color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Inicia sesión</Link>
+          <Link href="/suppliers/login" style={{ color: "#fb0f05", textDecoration: "none", fontWeight: 600 }}>Inicia sesión</Link>
         </div>
       </div>
 
