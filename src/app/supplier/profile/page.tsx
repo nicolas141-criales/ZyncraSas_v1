@@ -66,8 +66,10 @@ export default function SupplierProfilePage() {
     file: File,
     bucket: string,
     path: string,
-    onDone: (url: string) => void,
+    dbField: "logo_url" | "cover_url",
+    setUrl: (url: string) => void,
     setUploading: (v: boolean) => void,
+    supplierId: string,
   ) => {
     if (file.size > 5 * 1024 * 1024) { setError("La imagen no puede superar 5 MB."); return; }
     setUploading(true);
@@ -75,12 +77,21 @@ export default function SupplierProfilePage() {
     try {
       const ext = file.name.split(".").pop() ?? "jpg";
       const fullPath = `${path}.${ext}`;
-      const { error: err } = await supabase.storage.from(bucket).upload(fullPath, file, { upsert: true });
-      if (err) throw err;
+      const { error: uploadErr } = await supabase.storage.from(bucket).upload(fullPath, file, { upsert: true });
+      if (uploadErr) throw uploadErr;
       const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(fullPath);
-      onDone(publicUrl + `?t=${Date.now()}`);
-    } catch {
-      setError("Error al subir la imagen. Intenta de nuevo.");
+      const cleanUrl = publicUrl;
+      const { data: updated, error: dbErr } = await supabase
+        .from("suppliers")
+        .update({ [dbField]: cleanUrl })
+        .eq("id", supplierId)
+        .select(dbField)
+        .maybeSingle();
+      if (dbErr) throw new Error("Error al guardar la imagen en el perfil.");
+      if (!updated) throw new Error("No se pudo actualizar el perfil. Verifica tu sesión.");
+      setUrl(cleanUrl + `?t=${Date.now()}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Error al subir la imagen. Intenta de nuevo.");
     } finally {
       setUploading(false);
     }
@@ -89,21 +100,14 @@ export default function SupplierProfilePage() {
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
-    uploadImage(file, "logos", `supplier-logos/${profile.id}/logo`, (url) => {
-      setLogoUrl(url);
-      // Persist logo_url to suppliers table
-      supabase.from("suppliers").update({ logo_url: url.split("?")[0] }).eq("id", profile.id);
-    }, setUploadingLogo);
+    uploadImage(file, "logos", `supplier-logos/${profile.id}/logo`, "logo_url", setLogoUrl, setUploadingLogo, profile.id);
     e.target.value = "";
   };
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile) return;
-    uploadImage(file, "logos", `supplier-covers/${profile.id}/cover`, (url) => {
-      setCoverUrl(url);
-      supabase.from("suppliers").update({ cover_url: url.split("?")[0] }).eq("id", profile.id);
-    }, setUploadingCover);
+    uploadImage(file, "logos", `supplier-covers/${profile.id}/cover`, "cover_url", setCoverUrl, setUploadingCover, profile.id);
     e.target.value = "";
   };
 
@@ -120,17 +124,27 @@ export default function SupplierProfilePage() {
     setSaving(true);
     setError(null);
     setSuccess(false);
-    const { error: err } = await supabase.from("suppliers").update({
-      company_name: form.company_name.trim(),
-      description: form.description.trim() || null,
-      phone: form.phone.trim() || null,
-      nit: form.nit.trim() || null,
-      city: form.city.trim() || null,
-      address: form.address.trim() || null,
-      categories: form.categories,
-    }).eq("id", profile.id);
+    const { data: updated, error: err } = await supabase
+      .from("suppliers")
+      .update({
+        company_name: form.company_name.trim(),
+        description: form.description.trim() || null,
+        phone: form.phone.trim() || null,
+        nit: form.nit.trim() || null,
+        city: form.city.trim() || null,
+        address: form.address.trim() || null,
+        categories: form.categories,
+      })
+      .eq("id", profile.id)
+      .select("id, company_name, description, phone, nit, city, address, categories, logo_url, cover_url, email")
+      .maybeSingle();
     setSaving(false);
-    if (err) { setError("Error al guardar. Intenta de nuevo."); return; }
+    if (err) { setError("Error al guardar: " + err.message); return; }
+    if (!updated) {
+      setError("No se guardaron los cambios. Es posible que tu sesión haya expirado — intenta cerrar sesión y volver a entrar.");
+      return;
+    }
+    setProfile(updated as SupplierProfile);
     setSuccess(true);
     setTimeout(() => setSuccess(false), 3000);
   };
