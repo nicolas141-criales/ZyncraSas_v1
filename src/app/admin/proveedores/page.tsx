@@ -179,14 +179,16 @@ export default function ProveedoresPage() {
   const handlePlaceOrder = async () => {
     if (!tenantId || cart.length === 0) return;
     setPlacing(true);
+    let step = "inicio";
     try {
       let proofUrl: string | null = null;
 
       if (proofFile) {
+        step = "subir comprobante";
         const ext = proofFile.name.split(".").pop();
         const path = `payment-proofs/${tenantId}/${Date.now()}.${ext}`;
         const { error: uploadErr } = await supabase.storage.from("supplier-proofs").upload(path, proofFile);
-        if (uploadErr) throw uploadErr;
+        if (uploadErr) throw new Error("Comprobante: " + uploadErr.message);
         const { data: urlData } = supabase.storage.from("supplier-proofs").getPublicUrl(path);
         proofUrl = urlData.publicUrl;
       }
@@ -195,10 +197,12 @@ export default function ProveedoresPage() {
       for (const [supplierId, group] of Object.entries(cartBySupplier)) {
         const subtotal = group.items.reduce((s, i) => s + i.price * i.qty, 0);
 
-        // Generar número de pedido
-        const { data: numData } = await supabase.rpc("generate_order_number");
+        step = "generar número de pedido";
+        const { data: numData, error: rpcErr } = await supabase.rpc("generate_order_number");
+        if (rpcErr) throw new Error("Número de pedido: " + rpcErr.message);
         const orderNumber = numData as string;
 
+        step = "crear pedido";
         const { data: newOrder, error: orderErr } = await supabase
           .from("supplier_orders")
           .insert({
@@ -218,8 +222,9 @@ export default function ProveedoresPage() {
           .select("id")
           .single();
 
-        if (orderErr) throw orderErr;
+        if (orderErr) throw new Error("Pedido: " + orderErr.message + (orderErr.details ? " — " + orderErr.details : ""));
 
+        step = "agregar ítems al pedido";
         const items = group.items.map(i => ({
           order_id: newOrder.id,
           product_id: i.id,
@@ -229,7 +234,7 @@ export default function ProveedoresPage() {
           subtotal: i.price * i.qty,
         }));
         const { error: itemsErr } = await supabase.from("supplier_order_items").insert(items);
-        if (itemsErr) throw itemsErr;
+        if (itemsErr) throw new Error("Ítems: " + itemsErr.message);
       }
 
       setCart([]);
@@ -242,7 +247,8 @@ export default function ProveedoresPage() {
       setTab("mis-pedidos");
       setTimeout(() => setOrderSuccess(null), 6000);
     } catch (err) {
-      alert("Error al crear el pedido: " + (err instanceof Error ? err.message : ""));
+      const msg = err instanceof Error ? err.message : JSON.stringify(err);
+      alert(`Error en paso "${step}": ${msg}`);
     } finally {
       setPlacing(false);
     }
