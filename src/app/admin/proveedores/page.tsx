@@ -26,6 +26,7 @@ interface Product {
   unit: string;
   min_order_qty: number;
   stock: number | null;
+  images: string[];
   supplier_name?: string;
 }
 
@@ -80,6 +81,9 @@ export default function ProveedoresPage() {
   const [supplierFilter, setSupplierFilter] = useState<string | null>(null);
   // Modal de perfil de proveedor
   const [profileModal, setProfileModal] = useState<Supplier | null>(null);
+  // Modal de catálogo del proveedor
+  const [catalogModal, setCatalogModal] = useState<Supplier | null>(null);
+  const [catalogSearch, setCatalogSearch] = useState("");
 
   // Carrito
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -244,6 +248,12 @@ export default function ProveedoresPage() {
     }
   };
 
+  const openCatalog = (supplier: Supplier) => {
+    setProfileModal(null);
+    setCatalogSearch("");
+    setCatalogModal(supplier);
+  };
+
   // ── Filtros catálogo ───────────────────────────────────────────────────────
 
   const allCategories = ["Todos", ...Array.from(new Set(products.map(p => p.category).filter(Boolean) as string[]))];
@@ -379,9 +389,9 @@ export default function ProveedoresPage() {
                             Ver perfil
                           </button>
                           <button
-                            onClick={() => { setSupplierFilter(active ? null : s.id); setCatFilter("Todos"); }}
-                            style={{ flex: 1, padding: "7px", borderRadius: 8, border: `1px solid ${active ? "#fb0f05" : "#e5e7eb"}`, background: active ? "rgba(251,15,5,0.06)" : "white", color: active ? "#fb0f05" : "#374151", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
-                            {active ? `✓ ${prodCount} prod.` : `${prodCount} prod.`}
+                            onClick={() => openCatalog(s)}
+                            style={{ flex: 1, padding: "7px", borderRadius: 8, border: "1px solid #fb0f05", background: "rgba(251,15,5,0.05)", color: "#fb0f05", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+                            {prodCount > 0 ? `🛍 ${prodCount} prod.` : "📦 Catálogo"}
                           </button>
                         </div>
                       </div>
@@ -558,7 +568,7 @@ export default function ProveedoresPage() {
                 </div>
               )}
               <div style={{ display: "flex", gap: 10 }}>
-                <button onClick={() => { setProfileModal(null); setSupplierFilter(profileModal.id); setCatFilter("Todos"); }}
+                <button onClick={() => openCatalog(profileModal)}
                   style={{ flex: 1, padding: "11px", borderRadius: 10, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #fb0f05, #cc0a03)", color: "white", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(251,15,5,0.25)" }}>
                   Ver catálogo y ordenar →
                 </button>
@@ -571,6 +581,150 @@ export default function ProveedoresPage() {
           </div>
         </div>
       )}
+
+      {/* ── Modal Catálogo del Proveedor ── */}
+      {catalogModal && (() => {
+        const catProds = products
+          .filter(p => p.supplier_id === catalogModal.id)
+          .filter(p => !catalogSearch || p.name.toLowerCase().includes(catalogSearch.toLowerCase()) || (p.category ?? "").toLowerCase().includes(catalogSearch.toLowerCase()));
+        const cartHere = cart.filter(i => i.supplier_id === catalogModal.id);
+        const subtotalHere = cartHere.reduce((s, i) => s + i.price * i.qty, 0);
+        return (
+          <div
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 160, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+            onClick={e => { if (e.target === e.currentTarget) setCatalogModal(null); }}
+          >
+            <div style={{ background: "white", borderRadius: 20, width: "100%", maxWidth: 780, maxHeight: "94vh", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 32px 100px rgba(0,0,0,0.3)" }}>
+
+              {/* Cover header */}
+              <div style={{ position: "relative", height: 180, flexShrink: 0 }}>
+                {catalogModal.cover_url
+                  // eslint-disable-next-line @next/next/no-img-element
+                  ? <img src={catalogModal.cover_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  : <div style={{ height: "100%", background: "linear-gradient(135deg, #fef3f2 0%, #ffe4e6 50%, #fef3f2 100%)" }} />
+                }
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.2) 60%, transparent 100%)" }} />
+                {/* Close */}
+                <button onClick={() => setCatalogModal(null)} style={{ position: "absolute", top: 14, right: 14, width: 32, height: 32, borderRadius: "50%", border: "1px solid rgba(0,0,0,0.1)", background: "rgba(255,255,255,0.9)", color: "#374151", fontSize: 18, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", backdropFilter: "blur(8px)" }}>×</button>
+                {/* Logo */}
+                <div style={{ position: "absolute", bottom: -28, left: 24, width: 60, height: 60, borderRadius: 16, border: "3px solid white", background: "white", overflow: "hidden", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 20px rgba(0,0,0,0.15)" }}>
+                  {catalogModal.logo_url
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={catalogModal.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    : <span style={{ fontSize: 28 }}>🏢</span>
+                  }
+                </div>
+              </div>
+
+              {/* Supplier info + search */}
+              <div style={{ padding: "36px 24px 16px", flexShrink: 0, borderBottom: "1px solid #f3f4f6" }}>
+                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "#111827", lineHeight: 1.2 }}>{catalogModal.company_name}</div>
+                    <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 3 }}>
+                      {catalogModal.city && `📍 ${catalogModal.city}`}{catalogModal.phone && ` · 📞 ${catalogModal.phone}`}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <input
+                      type="text"
+                      placeholder="Buscar en este catálogo..."
+                      value={catalogSearch}
+                      onChange={e => setCatalogSearch(e.target.value)}
+                      style={{ padding: "8px 13px", borderRadius: 9, border: "1px solid #e5e7eb", fontSize: 13, outline: "none", width: 220, color: "#374151" }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Products grid */}
+              <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
+                {catProds.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                    <div style={{ fontSize: 40, marginBottom: 12 }}>📦</div>
+                    <div style={{ fontSize: 15, fontWeight: 700, color: "#374151", marginBottom: 6 }}>
+                      {catalogSearch ? "Sin resultados" : "Sin productos disponibles"}
+                    </div>
+                    <div style={{ fontSize: 13, color: "#9ca3af" }}>
+                      {catalogSearch ? `No hay productos que coincidan con "${catalogSearch}".` : "Este proveedor aún no ha publicado productos en su catálogo."}
+                    </div>
+                  </div>
+                ) : (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(210px, 1fr))", gap: 14 }}>
+                    {catProds.map(p => {
+                      const inCart = cart.find(i => i.id === p.id);
+                      const img = p.images?.[0] ?? null;
+                      return (
+                        <div key={p.id} style={{ background: "white", border: "1px solid #e5e7eb", borderRadius: 14, overflow: "hidden", boxShadow: "0 2px 8px rgba(0,0,0,0.05)", display: "flex", flexDirection: "column", transition: "box-shadow .15s" }}>
+                          {/* Product image */}
+                          <div style={{ height: 140, background: "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0 }}>
+                            {img
+                              // eslint-disable-next-line @next/next/no-img-element
+                              ? <img src={img} alt={p.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                              : <span style={{ fontSize: 36, opacity: 0.25 }}>🖼</span>
+                            }
+                          </div>
+                          {/* Info */}
+                          <div style={{ padding: "12px 14px", flex: 1, display: "flex", flexDirection: "column" }}>
+                            {p.category && (
+                              <span style={{ fontSize: 10, fontWeight: 700, color: "#6b7280", background: "#f3f4f6", borderRadius: 4, padding: "2px 7px", width: "fit-content", marginBottom: 5, textTransform: "uppercase", letterSpacing: "0.04em" }}>{p.category}</span>
+                            )}
+                            <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 3, lineHeight: 1.35 }}>{p.name}</div>
+                            {p.description && (
+                              <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 6, lineHeight: 1.45, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{p.description}</div>
+                            )}
+                            <div style={{ marginTop: "auto", paddingTop: 8 }}>
+                              <div style={{ fontSize: 17, fontWeight: 800, color: "#059669", marginBottom: 2 }}>{fmt(p.price)}</div>
+                              <div style={{ fontSize: 10, color: "#9ca3af", marginBottom: 10 }}>por {p.unit} · mín. {p.min_order_qty}</div>
+                              {p.stock !== null && p.stock <= 10 && (
+                                <div style={{ fontSize: 10, color: "#f59e0b", fontWeight: 600, marginBottom: 6 }}>⚠ {p.stock} disponibles</div>
+                              )}
+                              {inCart ? (
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <button onClick={() => updateQty(p.id, inCart.qty - 1)} style={qtyBtn}>−</button>
+                                  <span style={{ fontSize: 13, fontWeight: 800, color: "#374151", minWidth: 24, textAlign: "center" }}>{inCart.qty}</span>
+                                  <button onClick={() => updateQty(p.id, inCart.qty + 1)} style={qtyBtn}>+</button>
+                                  <span style={{ fontSize: 11, color: "#059669", fontWeight: 700, marginLeft: 4 }}>{fmt(inCart.qty * p.price)}</span>
+                                </div>
+                              ) : (
+                                <button onClick={() => addToCart(p)} style={{
+                                  width: "100%", padding: "8px", borderRadius: 8, border: "none", cursor: "pointer",
+                                  background: "linear-gradient(135deg, #fb0f05, #cc0a03)",
+                                  color: "white", fontSize: 12, fontWeight: 700,
+                                  boxShadow: "0 3px 10px rgba(251,15,5,0.2)",
+                                }}>
+                                  + Agregar al carrito
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer carrito */}
+              {cartHere.length > 0 && (
+                <div style={{ padding: "14px 24px", borderTop: "1px solid #e5e7eb", background: "#fafafa", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexShrink: 0 }}>
+                  <div>
+                    <div style={{ fontSize: 11, color: "#9ca3af", fontWeight: 600 }}>
+                      {cartHere.reduce((s, i) => s + i.qty, 0)} ítem(s) de {catalogModal.company_name}
+                    </div>
+                    <div style={{ fontSize: 17, fontWeight: 800, color: "#059669" }}>{fmt(subtotalHere)}</div>
+                  </div>
+                  <button
+                    onClick={() => { setCatalogModal(null); setShowCart(true); setCheckoutStep("cart"); }}
+                    style={{ padding: "11px 22px", borderRadius: 10, border: "none", cursor: "pointer", background: "linear-gradient(135deg, #fb0f05, #cc0a03)", color: "white", fontSize: 13, fontWeight: 700, boxShadow: "0 4px 14px rgba(251,15,5,0.25)", whiteSpace: "nowrap" }}>
+                    Ver carrito y pagar →
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ── Modal Carrito / Checkout ── */}
       {showCart && (
