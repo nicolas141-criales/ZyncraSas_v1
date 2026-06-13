@@ -152,13 +152,16 @@ export default function SupplierProfilePage() {
         </p>
       </div>
 
-      {error && (
-        <div style={{ background: "rgba(251,15,5,0.1)", border: "1px solid rgba(251,15,5,0.3)", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 13, color: "#ff7d72" }}>
-          ⚠ {error}
-        </div>
-      )}
+      {/* Toast fijo arriba-derecha */}
       {success && (
-        <div style={{ background: "rgba(52,211,153,0.1)", border: "1px solid rgba(52,211,153,0.3)", borderRadius: 10, padding: "12px 16px", marginBottom: 20, fontSize: 13, color: "#34d399", fontWeight: 600 }}>
+        <div style={{
+          position: "fixed", top: 20, right: 20, zIndex: 300,
+          background: "#0d2b1c", border: "1px solid rgba(52,211,153,0.4)",
+          borderRadius: 12, padding: "14px 18px",
+          fontSize: 13, color: "#34d399", fontWeight: 700,
+          boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+          display: "flex", alignItems: "center", gap: 8,
+        }}>
           ✓ Cambios guardados correctamente
         </div>
       )}
@@ -283,6 +286,11 @@ export default function SupplierProfilePage() {
         </Fl>
 
         <div style={{ paddingTop: 4 }}>
+          {error && (
+            <div style={{ background: "rgba(251,15,5,0.1)", border: "1px solid rgba(251,15,5,0.3)", borderRadius: 8, padding: "10px 14px", marginBottom: 12, fontSize: 13, color: "#ff7d72" }}>
+              ⚠ {error}
+            </div>
+          )}
           <button type="submit" disabled={saving} style={{
             padding: "12px 28px", borderRadius: 10, border: "none", cursor: saving ? "default" : "pointer",
             background: saving ? "rgba(255,255,255,0.1)" : "linear-gradient(135deg, #fb0f05, #cc0a03)",

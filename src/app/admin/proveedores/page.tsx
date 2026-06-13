@@ -75,6 +75,7 @@ export default function ProveedoresPage() {
   const [loadingCat, setLoadingCat] = useState(true);
   const [searchProd, setSearchProd] = useState("");
   const [catFilter, setCatFilter] = useState("Todos");
+  const [supplierFilter, setSupplierFilter] = useState<string | null>(null);
 
   // Carrito
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -247,7 +248,8 @@ export default function ProveedoresPage() {
     const matchSearch = p.name.toLowerCase().includes(searchProd.toLowerCase()) ||
       (p.supplier_name ?? "").toLowerCase().includes(searchProd.toLowerCase());
     const matchCat = catFilter === "Todos" || p.category === catFilter;
-    return matchSearch && matchCat;
+    const matchSupplier = !supplierFilter || p.supplier_id === supplierFilter;
+    return matchSearch && matchCat && matchSupplier;
   });
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -316,28 +318,55 @@ export default function ProveedoresPage() {
       {/* ── TAB: Catálogo ── */}
       {tab === "catalogo" && (
         <>
-          {/* Proveedores destacados */}
+          {/* Proveedores — chips seleccionables para filtrar catálogo */}
           {suppliers.length > 0 && (
             <div style={{ marginBottom: 24 }}>
               <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
-                Proveedores disponibles
+                Proveedores disponibles · <span style={{ fontWeight: 500 }}>haz clic para ver su catálogo</span>
               </p>
               <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                {suppliers.map(s => (
-                  <div key={s.id} style={{
-                    background: "white", border: "1px solid #e5e7eb", borderRadius: 10,
-                    padding: "10px 14px", display: "flex", flexDirection: "column", gap: 3,
-                    minWidth: 180, boxShadow: "0 2px 6px rgba(0,0,0,0.04)",
-                  }}>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#111827" }}>{s.company_name}</span>
-                    {s.city && <span style={{ fontSize: 11, color: "#9ca3af" }}>📍 {s.city}</span>}
-                    <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 4 }}>
-                      {(s.categories ?? []).slice(0, 2).map(c => (
-                        <span key={c} style={{ fontSize: 10, fontWeight: 600, color: "#4b5563", background: "#f3f4f6", padding: "2px 7px", borderRadius: 4 }}>{c}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                {/* "Todos" pill */}
+                <button
+                  onClick={() => { setSupplierFilter(null); setCatFilter("Todos"); }}
+                  style={{
+                    background: !supplierFilter ? "rgba(251,15,5,0.07)" : "white",
+                    border: `1px solid ${!supplierFilter ? "#fb0f05" : "#e5e7eb"}`,
+                    borderRadius: 10, padding: "10px 14px", cursor: "pointer",
+                    display: "flex", flexDirection: "column", gap: 3, minWidth: 100,
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.04)", textAlign: "left",
+                  }}
+                >
+                  <span style={{ fontSize: 13, fontWeight: 700, color: !supplierFilter ? "#fb0f05" : "#6b7280" }}>Todos</span>
+                  <span style={{ fontSize: 11, color: "#9ca3af" }}>{products.length} productos</span>
+                </button>
+
+                {suppliers.map(s => {
+                  const active = supplierFilter === s.id;
+                  const count = products.filter(p => p.supplier_id === s.id).length;
+                  return (
+                    <button
+                      key={s.id}
+                      onClick={() => { setSupplierFilter(active ? null : s.id); setCatFilter("Todos"); }}
+                      style={{
+                        background: active ? "rgba(251,15,5,0.07)" : "white",
+                        border: `1px solid ${active ? "#fb0f05" : "#e5e7eb"}`,
+                        borderRadius: 10, padding: "10px 14px", cursor: "pointer",
+                        display: "flex", flexDirection: "column", gap: 3,
+                        minWidth: 160, boxShadow: "0 2px 6px rgba(0,0,0,0.04)", textAlign: "left",
+                        transition: "all .15s",
+                      }}
+                    >
+                      <span style={{ fontSize: 13, fontWeight: 700, color: active ? "#fb0f05" : "#111827" }}>{s.company_name}</span>
+                      {s.city && <span style={{ fontSize: 11, color: "#9ca3af" }}>📍 {s.city}</span>}
+                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 2 }}>
+                        {(s.categories ?? []).slice(0, 2).map(c => (
+                          <span key={c} style={{ fontSize: 10, fontWeight: 600, color: active ? "#fb0f05" : "#4b5563", background: active ? "rgba(251,15,5,0.08)" : "#f3f4f6", padding: "2px 7px", borderRadius: 4 }}>{c}</span>
+                        ))}
+                        <span style={{ fontSize: 10, color: "#9ca3af", marginLeft: "auto" }}>{count} prod.</span>
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

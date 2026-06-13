@@ -15,7 +15,22 @@ interface SupplierRow {
   status: string;
   rejection_reason: string | null;
   created_at: string;
+  logo_url: string | null;
 }
+
+interface CatalogProduct {
+  id: string;
+  name: string;
+  category: string | null;
+  price: number;
+  unit: string;
+  stock: number | null;
+  is_active: boolean;
+  images: string[];
+}
+
+const fmt = (n: number) =>
+  new Intl.NumberFormat("es-CO", { style: "currency", currency: "COP", maximumFractionDigits: 0 }).format(n);
 
 type Filter = "all" | "pending" | "approved" | "rejected" | "suspended";
 
@@ -33,6 +48,8 @@ export default function PlatformSuppliersPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [rejectModal, setRejectModal] = useState<{ id: string; name: string } | null>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [catalogModal, setCatalogModal] = useState<{ supplier: SupplierRow; products: CatalogProduct[] } | null>(null);
+  const [loadingCatalog, setLoadingCatalog] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -70,6 +87,18 @@ export default function PlatformSuppliersPage() {
     await setStatus(rejectModal.id, "rejected", rejectReason || "No cumple los requisitos de la plataforma.");
     setRejectModal(null);
     setRejectReason("");
+  };
+
+  const openCatalog = async (supplier: SupplierRow) => {
+    setLoadingCatalog(true);
+    setCatalogModal({ supplier, products: [] });
+    const { data } = await supabase
+      .from("supplier_products")
+      .select("id, name, category, price, unit, stock, is_active, images")
+      .eq("supplier_id", supplier.id)
+      .order("name");
+    setCatalogModal({ supplier, products: (data ?? []) as CatalogProduct[] });
+    setLoadingCatalog(false);
   };
 
   const counts = suppliers.reduce((acc, s) => { acc[s.status] = (acc[s.status] ?? 0) + 1; return acc; }, {} as Record<string, number>);
@@ -158,6 +187,10 @@ export default function PlatformSuppliersPage() {
 
                   {/* Acciones */}
                   <div style={{ display: "flex", flexDirection: "column", gap: 7, alignItems: "flex-end" }}>
+                    <button onClick={() => openCatalog(s)}
+                      style={{ ...actionBtn, background: "rgba(96,165,250,0.1)", color: "#60a5fa", borderColor: "rgba(96,165,250,0.25)" }}>
+                      📦 Ver catálogo
+                    </button>
                     {s.status === "pending" && (
                       <>
                         <button onClick={() => setStatus(s.id, "approved")} disabled={updating === s.id}
@@ -187,6 +220,76 @@ export default function PlatformSuppliersPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Modal catálogo del proveedor */}
+      {catalogModal && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}
+          onClick={e => { if (e.target === e.currentTarget) setCatalogModal(null); }}
+        >
+          <div style={{
+            background: "#0d0d1e", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 16,
+            width: "100%", maxWidth: 700, maxHeight: "88vh", display: "flex", flexDirection: "column",
+          }}>
+            {/* Header */}
+            <div style={{ padding: "20px 24px", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                {catalogModal.supplier.logo_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={catalogModal.supplier.logo_url} alt="" style={{ width: 40, height: 40, borderRadius: 10, objectFit: "cover", border: "1px solid rgba(255,255,255,0.1)" }} />
+                )}
+                <div>
+                  <div style={{ fontSize: 16, fontWeight: 800, color: "white" }}>{catalogModal.supplier.company_name}</div>
+                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+                    {catalogModal.supplier.city && `📍 ${catalogModal.supplier.city} · `}
+                    {catalogModal.products.length} producto{catalogModal.products.length !== 1 ? "s" : ""}
+                  </div>
+                </div>
+              </div>
+              <button onClick={() => setCatalogModal(null)} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.4)", cursor: "pointer", fontSize: 22, lineHeight: 1 }}>×</button>
+            </div>
+
+            {/* Productos */}
+            <div style={{ overflowY: "auto", padding: "20px 24px" }}>
+              {loadingCatalog ? (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: 160 }}>
+                  <div style={{ width: 28, height: 28, border: "3px solid rgba(255,255,255,0.06)", borderTopColor: "#fb0f05", borderRadius: "50%", animation: "spin .8s linear infinite" }} />
+                  <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+                </div>
+              ) : catalogModal.products.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 20px", color: "rgba(255,255,255,0.25)", fontSize: 14 }}>
+                  Este proveedor aún no tiene productos publicados.
+                </div>
+              ) : (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 12 }}>
+                  {catalogModal.products.map(p => (
+                    <div key={p.id} style={{
+                      background: "rgba(255,255,255,0.03)", border: `1px solid ${p.is_active ? "rgba(255,255,255,0.09)" : "rgba(255,255,255,0.04)"}`,
+                      borderRadius: 12, overflow: "hidden", opacity: p.is_active ? 1 : 0.5,
+                    }}>
+                      {p.images?.[0] ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={p.images[0]} alt={p.name} style={{ width: "100%", height: 110, objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ height: 110, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(255,255,255,0.02)", fontSize: 28 }}>📦</div>
+                      )}
+                      <div style={{ padding: "12px 14px" }}>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: "white", marginBottom: 2 }}>{p.name}</div>
+                        {p.category && <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", marginBottom: 6 }}>{p.category}</div>}
+                        <div style={{ fontSize: 15, fontWeight: 800, color: "#34d399" }}>{fmt(p.price)}</div>
+                        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.3)", marginTop: 2 }}>
+                          por {p.unit}{p.stock !== null ? ` · stock: ${p.stock}` : ""}
+                        </div>
+                        {!p.is_active && <div style={{ fontSize: 10, color: "#f87171", fontWeight: 600, marginTop: 4 }}>Inactivo</div>}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
